@@ -40,15 +40,16 @@ jobs:
       - name: "Create Pull Request"
         uses: peter-evans/create-pull-request@v7
         with:
-          title: "[GHA] Bump version to $NEW_VERSION"
-          body: "Bump version to $NEW_VERSION"
-          commit-message: "chore(release): bump version to $NEW_VERSION [skip actions]"
+          title: "[GHA] Bump version to ${{ env.NEW_VERSION }}"
+          body: "Bump version to ${{ env.NEW_VERSION }}"
+          commit-message: "chore(release): bump version to ${{ env.NEW_VERSION }} [skip actions]"
         env:
           NEW_VERSION: ${{ steps.bump.outputs.new_version }}
 
       - name: "Release"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEW_VERSION: ${{ steps.bump.outputs.new_version }}
         run: |
-          gh release create $NEW_TAG \
-            -t $NEW_TAG
+          gh release create $NEW_VERSION \
+            -t $NEW_VERSION
