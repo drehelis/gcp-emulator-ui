@@ -1,0 +1,18 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directories:
+      - "/frontend"
+    schedule:
+      interval: "daily"
+    groups:
+      npm-dependencies:
+        update-types:
+        - "minor"
+        - "patch"
+
+  - package-ecosystem: "docker"
+    directories:
+      - "/deployments"
+    schedule:
+      interval: "weekly"

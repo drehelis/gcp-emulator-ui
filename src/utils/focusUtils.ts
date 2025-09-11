@@ -1,0 +1,88 @@
+/**
+ * Focus and highlight utilities for navigation
+ */
+import { nextTick } from 'vue'
+
+/**
+ * Applies a smooth fade-out highlight effect to an element
+ */
+export const applyFocusHighlight = async (element: HTMLElement) => {
+  // Add a smooth fade-out highlight effect
+  element.style.transition = 'background-color 1.5s ease-out'
+  element.style.backgroundColor = 'rgba(59, 130, 246, 0.25)'
+  
+  // Start fading out after a brief moment
+  setTimeout(() => {
+    element.style.backgroundColor = 'rgba(59, 130, 246, 0.08)'
+  }, 500)
+  
+  // Complete fade out
+  setTimeout(() => {
+    element.style.backgroundColor = ''
+  }, 3000)
+  
+  // Clean up transition
+  setTimeout(() => {
+    element.style.transition = ''
+  }, 4000)
+}
+
+/**
+ * Handles focus targeting for topics and subscriptions
+ */
+export const handleFocusTarget = async (targetName: string, targetType: 'topic' | 'subscription' = 'topic') => {
+  // Wait for DOM to be ready
+  await nextTick()
+  
+  // Give minimal time for page to load
+  setTimeout(async () => {
+    const elementId = `${targetType}-${targetName}`
+    const targetElement = document.getElementById(elementId)
+    
+    if (targetElement) {
+      // Scroll to the element immediately
+      targetElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      
+      // Apply highlight effect
+      await applyFocusHighlight(targetElement)
+    }
+  }, 300)
+}
+
+/**
+ * Handles focus for collapsed topics in subscriptions view
+ */
+export const handleTopicFocus = async (
+  hash: string, 
+  subscriptionsByTopic: Map<string, any[]>, 
+  expandedTopics: Set<string>,
+  getTopicDisplayName: (name: string) => string
+) => {
+  if (!hash || subscriptionsByTopic.size === 0) {
+    return
+  }
+  
+  // Find the topic that matches the hash
+  let targetTopicEntry = Array.from(subscriptionsByTopic).find(([topicName]) => {
+    const displayName = getTopicDisplayName(topicName)
+    return displayName === hash
+  })
+  
+  // If exact match fails, try partial match
+  if (!targetTopicEntry) {
+    targetTopicEntry = Array.from(subscriptionsByTopic).find(([topicName]) => {
+      const displayName = getTopicDisplayName(topicName)
+      return displayName.includes(hash) || hash.includes(displayName)
+    })
+  }
+  
+  if (targetTopicEntry) {
+    const [topicName] = targetTopicEntry
+    
+    // Expand the target topic
+    expandedTopics.add(topicName)
+    
+    // Wait for DOM update and apply focus
+    await handleFocusTarget(getTopicDisplayName(topicName), 'topic')
+  }
+}

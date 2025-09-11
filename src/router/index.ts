@@ -1,0 +1,727 @@
+/**
+ * Vue Router configuration
+ * Comprehensive routing with guards, lazy loading, and metadata
+ */
+
+import { createRouter, createWebHistory } from 'vue-router'
+import type { RouteRecordRaw } from 'vue-router'
+import { useProjectsStore } from '@/stores/projects'
+import { useAppStore } from '@/stores/app'
+
+// Layout imports
+const DefaultLayout = () => import('@/layouts/DefaultLayout.vue')
+const AuthLayout = () => import('@/layouts/AuthLayout.vue')
+const FullscreenLayout = () => import('@/layouts/FullscreenLayout.vue')
+
+// Route definitions with lazy loading
+const routes: RouteRecordRaw[] = [
+  {
+    path: '/',
+    component: DefaultLayout,
+    children: [
+      {
+        path: '',
+        name: 'dashboard',
+        component: () => import('@/views/DashboardView.vue'),
+        meta: {
+          title: 'Dashboard',
+          description: 'Overview of your Pub/Sub resources and metrics',
+          icon: 'ChartBarIcon',
+          requiresAuth: true,
+          breadcrumbs: [
+            { label: 'Home', route: '/' }
+          ]
+        }
+      },
+      {
+        path: 'projects',
+        name: 'projects',
+        component: () => import('@/views/ProjectsView.vue'),
+        meta: {
+          title: 'Projects',
+          description: 'Manage your Google Cloud projects',
+          icon: 'FolderIcon',
+          requiresAuth: true,
+          breadcrumbs: [
+            { label: 'Home', route: '/' },
+            { label: 'Projects' }
+          ]
+        }
+      },
+      {
+        path: 'projects/:projectId',
+        children: [
+          {
+            path: '',
+            name: 'project-services',
+            component: () => import('@/views/ProjectServicesView.vue'),
+            props: true,
+            meta: {
+              title: 'Project Services',
+              description: 'Choose which emulator service to manage',
+              icon: 'QueueListIcon',
+              requiresAuth: true,
+              requiresProject: true,
+              breadcrumbs: [
+                { label: 'Home', route: '/' },
+                { label: ':projectId' }
+              ]
+            }
+          },
+          {
+            path: 'pubsub/topics',
+            children: [
+              {
+                path: '',
+                name: 'project-topics',
+                component: () => import('@/views/topics/TopicsListView.vue'),
+                props: true,
+                meta: {
+                  title: 'Topics',
+                  description: 'Manage Pub/Sub topics',
+                  icon: 'QueueListIcon',
+                  requiresAuth: true,
+                  requiresProject: true,
+                  breadcrumbs: [
+                    { label: 'Home', route: '/' },
+                    { label: ':projectId', route: '/projects/:projectId' },
+                    { label: 'Pub/Sub' },
+                    { label: 'Topics' }
+                  ]
+                }
+              },
+              {
+                path: 'create',
+                name: 'create-topic',
+                component: () => import('@/views/topics/CreateTopicView.vue'),
+                props: true,
+                meta: {
+                  title: 'Create Topic',
+                  description: 'Create a new Pub/Sub topic',
+                  icon: 'PlusIcon',
+                  requiresAuth: true,
+                  requiresProject: true,
+                  breadcrumbs: [
+                    { label: 'Home', route: '/' },
+                    { label: ':projectId', route: '/projects/:projectId' },
+                    { label: 'Pub/Sub' },
+                    { label: 'Topics', route: '/projects/:projectId/pubsub/topics' },
+                    { label: 'Create Topic' }
+                  ]
+                }
+              },
+              {
+                path: ':topicName',
+                name: 'topic-details',
+                component: () => import('@/views/topics/TopicDetailsView.vue'),
+                props: true,
+                meta: {
+                  title: 'Topic Details',
+                  description: 'View and manage topic details',
+                  icon: 'InformationCircleIcon',
+                  requiresAuth: true,
+                  requiresProject: true,
+                  breadcrumbs: [
+                    { label: 'Home', route: '/' },
+                    { label: ':projectId', route: '/projects/:projectId' },
+                    { label: 'Pub/Sub' },
+                    { label: 'Topics', route: '/projects/:projectId/pubsub/topics' },
+                    { label: 'Topic Details' }
+                  ]
+                }
+              },
+              {
+                path: ':topicName/publish',
+                name: 'publish-messages',
+                component: () => import('@/views/topics/PublishMessagesView.vue'),
+                props: true,
+                meta: {
+                  title: 'Publish Messages',
+                  description: 'Publish messages to topic',
+                  icon: 'PaperAirplaneIcon',
+                  requiresAuth: true,
+                  requiresProject: true,
+                  breadcrumbs: [
+                    { label: 'Home', route: '/' },
+                    { label: ':projectId', route: '/projects/:projectId' },
+                    { label: 'Pub/Sub' },
+                    { label: 'Topics', route: '/projects/:projectId/pubsub/topics' },
+                    { label: 'Publish Messages' }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            path: 'pubsub/subscriptions',
+            children: [
+              {
+                path: '',
+                name: 'project-subscriptions',
+                component: () => import('@/views/subscriptions/SubscriptionsListView.vue'),
+                props: true,
+                meta: {
+                  title: 'Subscriptions',
+                  description: 'Manage Pub/Sub subscriptions',
+                  icon: 'InboxStackIcon',
+                  requiresAuth: true,
+                  requiresProject: true,
+                  breadcrumbs: [
+                    { label: 'Home', route: '/' },
+                    { label: ':projectId', route: '/projects/:projectId' },
+                    { label: 'Pub/Sub' },
+                    { label: 'Subscriptions' }
+                  ]
+                }
+              },
+              {
+                path: 'create',
+                name: 'create-subscription',
+                component: () => import('@/views/subscriptions/CreateSubscriptionView.vue'),
+                props: true,
+                meta: {
+                  title: 'Create Subscription',
+                  description: 'Create a new Pub/Sub subscription',
+                  icon: 'PlusIcon',
+                  requiresAuth: true,
+                  requiresProject: true,
+                  breadcrumbs: [
+                    { label: 'Home', route: '/' },
+                    { label: ':projectId', route: '/projects/:projectId' },
+                    { label: 'Pub/Sub' },
+                    { label: 'Subscriptions', route: '/projects/:projectId/pubsub/subscriptions' },
+                    { label: 'Create Subscription' }
+                  ]
+                }
+              },
+              {
+                path: ':subscriptionName',
+                name: 'subscription-details',
+                component: () => import('@/views/subscriptions/SubscriptionDetailsView.vue'),
+                props: true,
+                meta: {
+                  title: 'Subscription Details',
+                  description: 'View and manage subscription details',
+                  icon: 'InformationCircleIcon',
+                  requiresAuth: true,
+                  requiresProject: true,
+                  breadcrumbs: [
+                    { label: 'Home', route: '/' },
+                    { label: ':projectId', route: '/projects/:projectId' },
+                    { label: 'Pub/Sub' },
+                    { label: 'Subscriptions', route: '/projects/:projectId/pubsub/subscriptions' },
+                    { label: 'Subscription Details' }
+                  ]
+                }
+              },
+              {
+                path: ':subscriptionName/consume',
+                name: 'consume-messages',
+                component: () => import('@/views/subscriptions/ConsumeMessagesView.vue'),
+                props: true,
+                meta: {
+                  title: 'Consume Messages',
+                  description: 'Pull and consume messages from subscription',
+                  icon: 'ArrowDownTrayIcon',
+                  requiresAuth: true,
+                  requiresProject: true,
+                  breadcrumbs: [
+                    { label: 'Home', route: '/' },
+                    { label: ':projectId', route: '/projects/:projectId' },
+                    { label: 'Pub/Sub' },
+                    { label: 'Subscriptions', route: '/projects/:projectId/pubsub/subscriptions' },
+                    { label: 'Consume Messages' }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            path: 'pubsub/message-templates',
+            children: [
+              {
+                path: '',
+                name: 'project-message-templates',
+                component: () => import('@/views/messageTemplates/MessageTemplatesView.vue'),
+                props: true,
+                meta: {
+                  title: 'Message Templates',
+                  description: 'Manage reusable message templates',
+                  icon: 'DocumentDuplicateIcon',
+                  requiresAuth: true,
+                  requiresProject: true,
+                  breadcrumbs: [
+                    { label: 'Home', route: '/' },
+                    { label: ':projectId', route: '/projects/:projectId' },
+                    { label: 'Pub/Sub' },
+                    { label: 'Message Templates' }
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            path: 'pubsub/import-export',
+            children: [
+              {
+                path: '',
+                name: 'project-import-export',
+                component: () => import('@/views/settings/ImportExportView.vue'),
+                props: true,
+                meta: {
+                  title: 'Import/Export',
+                  description: 'Import and export topic and subscription configurations',
+                  icon: 'ArrowsRightLeftIcon',
+                  requiresAuth: true,
+                  requiresProject: true,
+                  breadcrumbs: [
+                    { label: 'Home', route: '/' },
+                    { label: ':projectId', route: '/projects/:projectId' },
+                    { label: 'Pub/Sub' },
+                    { label: 'Import/Export' }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      },
+      // Legacy redirects for backward compatibility
+      {
+        path: 'topics',
+        redirect: () => {
+          const projectsStore = useProjectsStore()
+          const selectedProject = projectsStore.selectedProjectId
+          if (selectedProject) {
+            return `/projects/${selectedProject}/pubsub/topics`
+          }
+          return '/' // Redirect to dashboard if no project selected
+        }
+      },
+      {
+        path: 'subscriptions',
+        redirect: () => {
+          const projectsStore = useProjectsStore()
+          const selectedProject = projectsStore.selectedProjectId
+          if (selectedProject) {
+            return `/projects/${selectedProject}/pubsub/subscriptions`
+          }
+          return '/' // Redirect to dashboard if no project selected
+        }
+      },
+      {
+        path: 'schemas',
+        children: [
+          {
+            path: '',
+            name: 'schemas',
+            component: () => import('@/views/schemas/SchemasListView.vue'),
+            meta: {
+              title: 'Schemas',
+              description: 'Manage Pub/Sub schemas',
+              icon: 'DocumentTextIcon',
+              requiresAuth: true,
+              requiresProject: true,
+              breadcrumbs: [
+                { label: 'Home', route: '/' },
+                { label: 'Schemas' }
+              ]
+            }
+          },
+          {
+            path: 'create',
+            name: 'create-schema',
+            component: () => import('@/views/schemas/CreateSchemaView.vue'),
+            meta: {
+              title: 'Create Schema',
+              description: 'Create a new Pub/Sub schema',
+              icon: 'PlusIcon',
+              requiresAuth: true,
+              requiresProject: true,
+              breadcrumbs: [
+                { label: 'Home', route: '/' },
+                { label: 'Schemas', route: '/schemas' },
+                { label: 'Create Schema' }
+              ]
+            }
+          },
+          {
+            path: ':schemaName',
+            name: 'schema-details',
+            component: () => import('@/views/schemas/SchemaDetailsView.vue'),
+            props: true,
+            meta: {
+              title: 'Schema Details',
+              description: 'View and manage schema details',
+              icon: 'InformationCircleIcon',
+              requiresAuth: true,
+              requiresProject: true,
+              breadcrumbs: [
+                { label: 'Home', route: '/' },
+                { label: 'Schemas', route: '/schemas' },
+                { label: 'Schema Details' }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        path: 'monitoring',
+        children: [
+          {
+            path: '',
+            name: 'monitoring',
+            component: () => import('@/views/monitoring/MonitoringDashboardView.vue'),
+            meta: {
+              title: 'Monitoring',
+              description: 'Real-time monitoring and metrics',
+              icon: 'ChartLineIcon',
+              requiresAuth: true,
+              requiresProject: true,
+              breadcrumbs: [
+                { label: 'Home', route: '/' },
+                { label: 'Monitoring' }
+              ]
+            }
+          },
+          {
+            path: 'metrics',
+            name: 'metrics',
+            component: () => import('@/views/monitoring/MetricsView.vue'),
+            meta: {
+              title: 'Metrics',
+              description: 'Detailed metrics and analytics',
+              icon: 'ChartBarIcon',
+              requiresAuth: true,
+              requiresProject: true,
+              breadcrumbs: [
+                { label: 'Home', route: '/' },
+                { label: 'Monitoring', route: '/monitoring' },
+                { label: 'Metrics' }
+              ]
+            }
+          },
+          {
+            path: 'alerts',
+            name: 'alerts',
+            component: () => import('@/views/monitoring/AlertsView.vue'),
+            meta: {
+              title: 'Alerts',
+              description: 'Configure and manage alerts',
+              icon: 'BellIcon',
+              requiresAuth: true,
+              requiresProject: true,
+              breadcrumbs: [
+                { label: 'Home', route: '/' },
+                { label: 'Monitoring', route: '/monitoring' },
+                { label: 'Alerts' }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        path: 'analytics',
+        name: 'analytics',
+        component: () => import('@/views/AnalyticsView.vue'),
+        meta: {
+          title: 'Analytics',
+          description: 'Advanced analytics and insights',
+          icon: 'ChartPieIcon',
+          requiresAuth: true,
+          requiresProject: true,
+          breadcrumbs: [
+            { label: 'Home', route: '/' },
+            { label: 'Analytics' }
+          ]
+        }
+      },
+      {
+        path: 'settings',
+        children: [
+          {
+            path: '',
+            name: 'settings',
+            component: () => import('@/views/settings/SettingsView.vue'),
+            meta: {
+              title: 'Settings',
+              description: 'Application settings and preferences',
+              icon: 'CogIcon',
+              requiresAuth: true,
+              breadcrumbs: [
+                { label: 'Home', route: '/' },
+                { label: 'Settings' }
+              ]
+            }
+          },
+          {
+            path: 'import-export',
+            name: 'import-export',
+            component: () => import('@/views/settings/ImportExportView.vue'),
+            meta: {
+              title: 'Import/Export',
+              description: 'Import and export configurations',
+              icon: 'ArrowsUpDownIcon',
+              requiresAuth: true,
+              breadcrumbs: [
+                { label: 'Home', route: '/' },
+                { label: 'Settings', route: '/settings' },
+                { label: 'Import/Export' }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  },
+  // Authentication routes
+  {
+    path: '/auth',
+    component: AuthLayout,
+    children: [
+      {
+        path: 'login',
+        name: 'login',
+        component: () => import('@/views/auth/LoginView.vue'),
+        meta: {
+          title: 'Sign In',
+          description: 'Sign in to your account',
+          requiresAuth: false
+        }
+      },
+      {
+        path: 'callback',
+        name: 'auth-callback',
+        component: () => import('@/views/auth/CallbackView.vue'),
+        meta: {
+          title: 'Authentication',
+          description: 'Processing authentication...',
+          requiresAuth: false
+        }
+      }
+    ]
+  },
+  // Fullscreen routes
+  {
+    path: '/fullscreen',
+    component: FullscreenLayout,
+    children: [
+      {
+        path: 'message-viewer/:messageId',
+        name: 'fullscreen-message-viewer',
+        component: () => import('@/views/fullscreen/MessageViewerView.vue'),
+        props: true,
+        meta: {
+          title: 'Message Viewer',
+          description: 'Fullscreen message viewer',
+          requiresAuth: true
+        }
+      },
+      {
+        path: 'metrics-dashboard',
+        name: 'fullscreen-metrics',
+        component: () => import('@/views/fullscreen/MetricsDashboardView.vue'),
+        meta: {
+          title: 'Metrics Dashboard',
+          description: 'Fullscreen metrics dashboard',
+          requiresAuth: true,
+          requiresProject: true
+        }
+      }
+    ]
+  },
+  // Error pages
+  {
+    path: '/error',
+    children: [
+      {
+        path: '404',
+        name: 'not-found',
+        component: () => import('@/views/error/NotFoundView.vue'),
+        meta: {
+          title: 'Page Not Found',
+          description: 'The page you are looking for does not exist'
+        }
+      },
+      {
+        path: '403',
+        name: 'forbidden',
+        component: () => import('@/views/error/ForbiddenView.vue'),
+        meta: {
+          title: 'Access Denied',
+          description: 'You do not have permission to access this resource'
+        }
+      },
+      {
+        path: '500',
+        name: 'server-error',
+        component: () => import('@/views/error/ServerErrorView.vue'),
+        meta: {
+          title: 'Server Error',
+          description: 'An unexpected error occurred'
+        }
+      }
+    ]
+  },
+  // Catch all route - redirect to 404
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/error/404'
+  }
+]
+
+// Create router instance
+const router = createRouter({
+  history: createWebHistory(import.meta.env.BASE_URL),
+  routes,
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    } else if (to.hash) {
+      return {
+        el: to.hash,
+        behavior: 'smooth'
+      }
+    } else {
+      return { top: 0 }
+    }
+  }
+})
+
+// Global navigation guards
+router.beforeEach(async (to, from, next) => {
+  const appStore = useAppStore()
+  const projectsStore = useProjectsStore()
+
+  // Set loading state
+  appStore.setGlobalLoading(true, 'Navigating...')
+
+  // Sync project selection from route parameters
+  if (to.params.projectId && typeof to.params.projectId === 'string') {
+    if (projectsStore.selectedProjectId !== to.params.projectId) {
+      projectsStore.selectProject(to.params.projectId)
+    }
+  }
+
+  // Update page title and breadcrumbs
+  if (to.meta.title) {
+    appStore.setPageTitle(to.meta.title as string)
+  }
+
+  if (to.meta.description) {
+    appStore.setPageDescription(to.meta.description as string)
+  }
+
+  if (to.meta.breadcrumbs) {
+    // Process breadcrumbs to replace :projectId with actual project ID
+    const projectId = to.params.projectId as string || projectsStore.selectedProjectId
+    const breadcrumbs = (to.meta.breadcrumbs as any[]).map(breadcrumb => ({
+      ...breadcrumb,
+      label: breadcrumb.label.replace(':projectId', projectId || 'Project'),
+      route: breadcrumb.route?.replace(':projectId', projectId || 'project')
+    }))
+    appStore.setBreadcrumbs(breadcrumbs)
+  }
+
+  // Authentication check
+  if (to.meta.requiresAuth) {
+    const isAuthenticated = checkAuthentication() // TODO: Implement actual auth check
+
+    if (!isAuthenticated) {
+      appStore.setGlobalLoading(false)
+      next({
+        name: 'login',
+        query: { redirect: to.fullPath }
+      })
+      return
+    }
+  }
+
+  // Project requirement check
+  if (to.meta.requiresProject && !to.params.projectId && !projectsStore.selectedProjectId) {
+    appStore.showToast({
+      type: 'warning',
+      title: 'Project Required',
+      message: 'Please select a project to continue'
+    })
+
+    appStore.setGlobalLoading(false)
+    next({ name: 'projects' })
+    return
+  }
+
+  // Role-based access control
+  if (to.meta.roles && to.meta.roles.length > 0) {
+    const userRoles = getUserRoles() // TODO: Implement actual role check
+    const hasRequiredRole = (to.meta.roles as string[]).some(role =>
+      userRoles.includes(role)
+    )
+
+    if (!hasRequiredRole) {
+      appStore.setGlobalLoading(false)
+      next({ name: 'forbidden' })
+      return
+    }
+  }
+
+  // Permission check
+  if (to.meta.permissions && to.meta.permissions.length > 0) {
+    const userPermissions = getUserPermissions() // TODO: Implement actual permission check
+    const hasRequiredPermission = (to.meta.permissions as string[]).some(permission =>
+      userPermissions.includes(permission)
+    )
+
+    if (!hasRequiredPermission) {
+      appStore.setGlobalLoading(false)
+      next({ name: 'forbidden' })
+      return
+    }
+  }
+
+  next()
+})
+
+router.afterEach((to, from) => {
+  const appStore = useAppStore()
+
+  // Clear loading state
+  appStore.setGlobalLoading(false)
+
+  // Log route changes in development
+  if (import.meta.env.DEV) {
+    console.log(`Route changed: ${from.path} → ${to.path}`)
+  }
+})
+
+// Error handling
+router.onError((error) => {
+  const appStore = useAppStore()
+
+  console.error('Router error:', error)
+
+  appStore.setGlobalLoading(false)
+  appStore.showToast({
+    type: 'error',
+    title: 'Navigation Error',
+    message: 'An error occurred while navigating. Please try again.'
+  })
+})
+
+// Helper functions (TODO: Implement actual authentication logic)
+function checkAuthentication(): boolean {
+  // TODO: Implement actual authentication check
+  // For now, return true to allow access
+  return true
+}
+
+function getUserRoles(): string[] {
+  // TODO: Implement actual role retrieval
+  return ['user', 'developer']
+}
+
+function getUserPermissions(): string[] {
+  // TODO: Implement actual permission retrieval
+  return ['read', 'write', 'admin']
+}
+
+export default router
