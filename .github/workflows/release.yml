@@ -55,4 +55,4 @@ jobs:
           gh release create $NEW_VERSION \
             -t $NEW_VERSION
 
-          gh pr merge --squash --auto ${{ steps.cpr.outputs.pull-request-number }}"
+          gh pr merge --squash --auto "${{ steps.cpr.outputs.pull-request-number }}"
