@@ -43,7 +43,7 @@ jobs:
         with:
           title: "[GHA] Bump version to ${{ env.NEW_VERSION }}"
           body: "Bump version to ${{ env.NEW_VERSION }}"
-          commit-message: "chore(release): bump version to ${{ env.NEW_VERSION }} [skip actions]"
+          commit-message: "chore(release): bump version to ${{ env.NEW_VERSION }}"
         env:
           NEW_VERSION: ${{ steps.bump.outputs.new_version }}
 
