@@ -38,6 +38,7 @@ jobs:
           echo "New version: $_version"
 
       - name: "Create Pull Request"
+        id: cpr
         uses: peter-evans/create-pull-request@v7
         with:
           title: "[GHA] Bump version to ${{ env.NEW_VERSION }}"
@@ -53,3 +54,5 @@ jobs:
         run: |
           gh release create $NEW_VERSION \
             -t $NEW_VERSION
+
+          gh pr merge --squash --auto ${{ steps.cpr.outputs.pull-request-number }}"
