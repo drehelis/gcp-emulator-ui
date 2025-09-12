@@ -102,10 +102,14 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
 
       - name: "Create manifest list and push"
+        id: push
         working-directory: ${{ runner.temp }}/digests
         run: |
+          digest=$(docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+            $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *) --dry-run | grep -oP 'sha256:[a-f0-9]{64}')
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
             $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)
+          echo "digest=$digest" >> $GITHUB_OUTPUT
 
       - name: "Inspect image"
         run: |
@@ -115,5 +119,5 @@ jobs:
         uses: actions/attest-build-provenance@v3
         with:
           subject-name: ${{ env.REGISTRY_IMAGE }}
-          subject-digest: ${{ steps.meta.outputs.digest }}
+          subject-digest: ${{ steps.push.outputs.digest }}
           push-to-registry: true
