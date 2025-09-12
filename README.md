@@ -2,6 +2,10 @@
 
 A modern web interface for managing Google Cloud Platform emulator services 🎮
 
+
+https://github.com/user-attachments/assets/a578672c-4ecc-44ce-9fe1-ea606bbb775c
+
+
 ## Features
 
 ### Supported Emulators
@@ -15,11 +19,12 @@ A modern web interface for managing Google Cloud Platform emulator services 🎮
 
 ## Quick Start
 ```bash
-# Run PubSub emulator first
+# Start pubsub emulator first
 docker run \
    --rm --publish 8085:8085 \
    gcr.io/google.com/cloudsdktool/cloud-sdk:emulators sh -c 'gcloud beta emulators pubsub start --host-port=0.0.0.0:8085'
 
+# Now start the UI
 docker run \
    --rm \
    --env PUBSUB_EMULATOR_URL="http://host.docker.internal:8085" \
@@ -32,8 +37,11 @@ Browse to http://localhost:9090
 
 1. **Clone and install dependencies**
    ```bash
-   git clone <repository-url>
+   git clone git@github.com:drehelis/gcp-emulator-ui.git
    cd gcp-emulator-ui
+   code .
+   (run in devcontainer)
+   
    npm install
    ```
 
