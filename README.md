@@ -2,9 +2,12 @@
 
 A modern web interface for managing Google Cloud Platform emulator services 🎮
 
+[![Release](https://img.shields.io/github/release/drehelis/gcp-emulator-ui.svg?style=flat-square)](https://github.com/drehelis/gcp-emulator-ui/releases/latest)
+[![license](https://img.shields.io/github/license/drehelis/gcp-emulator-ui.svg?style=flat-square)](LICENSE)
 
 https://github.com/user-attachments/assets/a578672c-4ecc-44ce-9fe1-ea606bbb775c
 
+> Supports `amd64` and `arm64` container images
 
 ## Features
 
@@ -21,7 +24,8 @@ https://github.com/user-attachments/assets/a578672c-4ecc-44ce-9fe1-ea606bbb775c
 ```bash
 # Start pubsub emulator first
 docker run \
-   --rm --publish 8085:8085 \
+   --rm \
+   --publish 8085:8085 \
    gcr.io/google.com/cloudsdktool/cloud-sdk:emulators sh -c 'gcloud beta emulators pubsub start --host-port=0.0.0.0:8085'
 
 # Now start the UI
@@ -65,10 +69,10 @@ Browse to http://localhost:9090
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `VITE_ENABLE_PUBSUB` | `true` | Enable Pub/Sub service management |
-| `VITE_ENABLE_CLOUD_STORAGE` | `false` | Enable Cloud Storage service (coming soon) |
-| `VITE_PUBSUB_BASE_URL` | `http://localhost:8085` | Pub/Sub emulator endpoint |
-| `VITE_STORAGE_BASE_URL` | `http://localhost:8086` | Storage emulator endpoint |
+| `ENABLE_PUBSUB` | `true` | Enable Pub/Sub service management |
+| `ENABLE_CLOUD_STORAGE` | `false` | Enable Cloud Storage service (coming soon) |
+| `PUBSUB_BASE_URL` | `http://localhost:8085` | Pub/Sub emulator endpoint |
+| `STORAGE_BASE_URL` | `http://localhost:8086` | Storage emulator endpoint |
 
 ## Development
 
