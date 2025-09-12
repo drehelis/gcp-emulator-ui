@@ -242,7 +242,7 @@
           <!-- Save dropdown menu -->
           <div 
             v-if="showSaveOptions" 
-            class="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 z-10"
+            class="absolute right-0 bottom-full mb-1 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 z-50"
           >
             <div class="py-1">
               <button
@@ -288,7 +288,7 @@
           <!-- Dropdown menu -->
           <div 
             v-if="showPublishOptions" 
-            class="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 z-10"
+            class="absolute right-0 bottom-full mb-1 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg border border-gray-200 dark:border-gray-600 z-50"
           >
             <div class="py-1">
               <button
