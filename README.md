@@ -2,6 +2,10 @@
 
 A modern web interface for managing Google Cloud Platform emulator services 🎮
 
+
+https://github.com/user-attachments/assets/a578672c-4ecc-44ce-9fe1-ea606bbb775c
+
+
 ## Features
 
 ### Supported Emulators
