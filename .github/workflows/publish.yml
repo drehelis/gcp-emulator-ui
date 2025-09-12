@@ -52,7 +52,6 @@ jobs:
           context: .
           file: deployments/Dockerfile
           labels: ${{ steps.meta.outputs.labels }}
-          tags: ${{ env.REGISTRY_IMAGE }}
           outputs: type=image,push-by-digest=true,name-canonical=true,push=true
 
       - name: "Export digest"
@@ -64,7 +63,7 @@ jobs:
       - name: "Upload digest"
         uses: actions/upload-artifact@v4
         with:
-          name: digests-${{ env.PLATFORM_PAIR }}
+          name: digests-${{ matrix.os }}
           path: ${{ runner.temp }}/digests/*
           if-no-files-found: error
           retention-days: 1
