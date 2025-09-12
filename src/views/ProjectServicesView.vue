@@ -137,11 +137,11 @@ const currentProjectId = computed(() => {
 })
 
 const isPubSubEnabled = computed(() => {
-  return import.meta.env.VITE_ENABLE_PUBSUB === 'true'
+  return import.meta.env.ENABLE_PUBSUB === 'true'
 })
 
 const isCloudStorageEnabled = computed(() => {
-  return import.meta.env.VITE_ENABLE_CLOUD_STORAGE === 'true'
+  return import.meta.env.ENABLE_CLOUD_STORAGE === 'true'
 })
 
 const hasAnyServices = computed(() => {

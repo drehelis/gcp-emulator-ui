@@ -11,7 +11,7 @@ let apiClient: AxiosInstance
 export function setupApiClient() {
   // Create axios instance
   apiClient = axios.create({
-    baseURL: import.meta.env.VITE_PUBSUB_BASE_URL || '/pubsub', // Either go directly to the emulator or a proxy endpoint
+    baseURL: import.meta.env.PUBSUB_BASE_URL || '/pubsub', // Either go directly to the emulator or a proxy endpoint
     timeout: 30000,
     headers: {
       'Content-Type': 'application/json',
