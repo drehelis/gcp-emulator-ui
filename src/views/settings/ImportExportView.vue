@@ -852,7 +852,7 @@ const importConfiguration = async () => {
 
           await topicsApi.createTopic(currentProjectId.value, topicRequest)
           successCount++
-        } catch (error) {
+        } catch {
           errorCount++
         }
       }
@@ -906,7 +906,7 @@ const importConfiguration = async () => {
 
           await subscriptionsApi.createSubscription(currentProjectId.value, subscriptionRequest)
           successCount++
-        } catch (error) {
+        } catch {
           errorCount++
         }
       }
@@ -990,7 +990,7 @@ const importTemplatesData = async () => {
         }
         
         successCount++
-      } catch (error) {
+      } catch {
         errorCount++
       }
     }

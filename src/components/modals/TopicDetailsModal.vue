@@ -887,22 +887,6 @@ const getSubscriptionDisplayName = (fullName: string | undefined): string => {
 }
 
 
-const formatDate = (dateStr: string | Date): string => {
-  const date = typeof dateStr === 'string' ? new Date(dateStr) : dateStr
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-  
-  if (diffDays === 0) {
-    return 'Today'
-  } else if (diffDays === 1) {
-    return 'Yesterday'
-  } else if (diffDays < 7) {
-    return `${diffDays}d ago`
-  } else {
-    return date.toLocaleDateString()
-  }
-}
 
 const loadTopic = async () => {
   if (!props.topicName || !currentProjectId.value) return

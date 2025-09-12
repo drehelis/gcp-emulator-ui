@@ -279,7 +279,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch, nextTick } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { handleFocusTarget } from '@/utils/focusUtils'
 import { useAppStore } from '@/stores/app'

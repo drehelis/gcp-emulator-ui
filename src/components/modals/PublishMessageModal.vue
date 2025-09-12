@@ -362,7 +362,6 @@ import {
 import { topicsApi } from '@/api/pubsub'
 import { useMessageTemplatesStore } from '@/stores/messageTemplates'
 import { useTopicsStore } from '@/stores/topics'
-import { useProjectsStore } from '@/stores/projects'
 import { useToast } from 'vue-toastification'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import TemplateVariableInput from '@/components/ui/TemplateVariableInput.vue'
@@ -390,7 +389,6 @@ const emit = defineEmits<{
 // Stores
 const templatesStore = useMessageTemplatesStore()
 const topicsStore = useTopicsStore()
-const projectsStore = useProjectsStore()
 const toast = useToast()
 
 // Main modal state
