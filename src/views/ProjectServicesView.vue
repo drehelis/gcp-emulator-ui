@@ -154,12 +154,7 @@ const navigateToService = (service: 'pubsub' | 'storage') => {
   if (service === 'pubsub') {
     router.push(`/projects/${projectId}/pubsub/topics`)
   } else if (service === 'storage') {
-    // Future implementation for Cloud Storage
-    appStore.showToast({
-      type: 'info',
-      title: 'Coming Soon',
-      message: 'Cloud Storage management will be available in a future update'
-    })
+    router.push(`/projects/${projectId}/storage/buckets`)
   }
 }
 </script>

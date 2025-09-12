@@ -123,6 +123,22 @@
                 Import/Export
               </router-link>
             </div>
+
+            <!-- Storage services (show when in storage routes) -->
+            <div v-if="$route.path.includes('/storage')" class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3">
+              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Storage</p>
+              <router-link
+                :to="`/projects/${currentProject}/storage/buckets`"
+                @click="handleMobileNavClick"
+                class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+                :class="$route.path.includes('/buckets') ? 
+                  'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
+                  'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'"
+              >
+                <ArchiveBoxIcon class="w-4 h-4 mr-3" />
+                Buckets
+              </router-link>
+            </div>
           </div>
 
           <!-- Collapsed Project Navigation -->
@@ -179,6 +195,20 @@
                 title="Import/Export"
               >
                 <ArrowsRightLeftIcon class="w-5 h-5" />
+              </router-link>
+            </template>
+
+            <!-- Show Storage nav items when in storage routes -->
+            <template v-if="$route.path.includes('/storage')">
+              <router-link
+                :to="`/projects/${currentProject}/storage/buckets`"
+                class="flex items-center justify-center w-full px-2 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+                :class="$route.path.includes('/buckets') ? 
+                  'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
+                  'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'"
+                title="Buckets"
+              >
+                <ArchiveBoxIcon class="w-5 h-5" />
               </router-link>
             </template>
           </div>
@@ -313,7 +343,8 @@ import {
   InboxStackIcon,
   CubeIcon,
   DocumentDuplicateIcon,
-  ArrowsRightLeftIcon
+  ArrowsRightLeftIcon,
+  ArchiveBoxIcon
 } from '@heroicons/vue/24/outline'
 
 import { useAppStore } from '@/stores/app'

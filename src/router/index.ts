@@ -283,6 +283,118 @@ const routes: RouteRecordRaw[] = [
                 }
               }
             ]
+          },
+          // Cloud Storage routes
+          {
+            path: 'storage/buckets',
+            children: [
+              {
+                path: '',
+                name: 'project-storage-buckets',
+                component: () => import('@/views/storage/BucketsListView.vue'),
+                props: true,
+                meta: {
+                  title: 'Buckets',
+                  description: 'Manage Cloud Storage buckets',
+                  icon: 'ArchiveBoxIcon',
+                  requiresAuth: true,
+                  requiresProject: true,
+                  breadcrumbs: [
+                    { label: 'Home', route: '/' },
+                    { label: ':projectId', route: '/projects/:projectId' },
+                    { label: 'Cloud Storage' },
+                    { label: 'Buckets' }
+                  ]
+                }
+              },
+              {
+                path: 'create',
+                name: 'create-storage-bucket',
+                component: () => import('@/views/storage/CreateBucketView.vue'),
+                props: true,
+                meta: {
+                  title: 'Create Bucket',
+                  description: 'Create a new Cloud Storage bucket',
+                  icon: 'PlusIcon',
+                  requiresAuth: true,
+                  requiresProject: true,
+                  breadcrumbs: [
+                    { label: 'Home', route: '/' },
+                    { label: ':projectId', route: '/projects/:projectId' },
+                    { label: 'Cloud Storage' },
+                    { label: 'Buckets', route: '/projects/:projectId/storage/buckets' },
+                    { label: 'Create Bucket' }
+                  ]
+                }
+              },
+              {
+                path: ':bucketName',
+                children: [
+                  {
+                    path: '',
+                    name: 'storage-bucket-browser',
+                    component: () => import('@/views/storage/BucketBrowserView.vue'),
+                    props: true,
+                    meta: {
+                      title: 'Bucket Browser',
+                      description: 'Browse and manage objects in bucket',
+                      icon: 'FolderIcon',
+                      requiresAuth: true,
+                      requiresProject: true,
+                      breadcrumbs: [
+                        { label: 'Home', route: '/' },
+                        { label: ':projectId', route: '/projects/:projectId' },
+                        { label: 'Cloud Storage' },
+                        { label: 'Buckets', route: '/projects/:projectId/storage/buckets' },
+                        { label: ':bucketName' }
+                      ]
+                    }
+                  },
+                  {
+                    path: 'objects/:objectPath*',
+                    name: 'storage-object-details',
+                    component: () => import('@/views/storage/ObjectDetailsView.vue'),
+                    props: true,
+                    meta: {
+                      title: 'Object Details',
+                      description: 'View and manage object details',
+                      icon: 'DocumentIcon',
+                      requiresAuth: true,
+                      requiresProject: true,
+                      breadcrumbs: [
+                        { label: 'Home', route: '/' },
+                        { label: ':projectId', route: '/projects/:projectId' },
+                        { label: 'Cloud Storage' },
+                        { label: 'Buckets', route: '/projects/:projectId/storage/buckets' },
+                        { label: ':bucketName', route: '/projects/:projectId/storage/buckets/:bucketName' },
+                        { label: 'Object Details' }
+                      ]
+                    }
+                  },
+                  {
+                    path: 'upload',
+                    name: 'storage-upload-objects',
+                    component: () => import('@/views/storage/UploadObjectsView.vue'),
+                    props: true,
+                    meta: {
+                      title: 'Upload Objects',
+                      description: 'Upload files to the bucket',
+                      icon: 'ArrowUpTrayIcon',
+                      requiresAuth: true,
+                      requiresProject: true,
+                      breadcrumbs: [
+                        { label: 'Home', route: '/' },
+                        { label: ':projectId', route: '/projects/:projectId' },
+                        { label: 'Cloud Storage' },
+                        { label: 'Buckets', route: '/projects/:projectId/storage/buckets' },
+                        { label: ':bucketName', route: '/projects/:projectId/storage/buckets/:bucketName' },
+                        { label: 'Upload' }
+                      ]
+                    }
+                  }
+                ]
+              }
+            ]
           }
         ]
       },

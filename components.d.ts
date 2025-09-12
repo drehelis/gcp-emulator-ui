@@ -12,6 +12,7 @@ declare module 'vue' {
     BaseModal: typeof import('./src/components/ui/BaseModal.vue')['default']
     ConfirmationModal: typeof import('./src/components/modals/ConfirmationModal.vue')['default']
     ConnectionWarning: typeof import('./src/components/ConnectionWarning.vue')['default']
+    CreateBucketModal: typeof import('./src/components/modals/CreateBucketModal.vue')['default']
     CreateTopicModal: typeof import('./src/components/modals/CreateTopicModal.vue')['default']
     GlobalSearch: typeof import('./src/components/search/GlobalSearch.vue')['default']
     KeyValueInput: typeof import('./src/components/ui/KeyValueInput.vue')['default']
