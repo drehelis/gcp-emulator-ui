@@ -106,7 +106,7 @@ jobs:
         working-directory: ${{ runner.temp }}/digests
         run: |
           digest=$(docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-            $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *) --dry-run | grep -oP 'sha256:[a-f0-9]{64}')
+            $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *) --dry-run | grep -oP 'sha256:[a-f0-9]{64}' | cut -d: -f2)
           docker buildx imagetools create $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
             $(printf '${{ env.REGISTRY_IMAGE }}@sha256:%s ' *)
           echo "digest=$digest" >> $GITHUB_OUTPUT
