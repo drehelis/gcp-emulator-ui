@@ -16,7 +16,7 @@ env:
 permissions:
   packages: write
   attestations: write
-#   id-token: write
+  id-token: write
 
 jobs:
   build:
