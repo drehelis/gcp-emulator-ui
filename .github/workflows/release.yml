@@ -41,7 +41,7 @@ jobs:
         id: cpr
         uses: peter-evans/create-pull-request@v7
         with:
-          title: "[GHA] Bump version to ${{ env.NEW_VERSION }}"
+          title: "Bump version to ${{ env.NEW_VERSION }}"
           body: "Bump version to ${{ env.NEW_VERSION }}"
           commit-message: "chore(release): bump version to ${{ env.NEW_VERSION }}"
         env:
@@ -49,10 +49,15 @@ jobs:
 
       - name: "Release"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow#triggering-a-workflow-from-a-workflow
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PAT }}
           NEW_VERSION: ${{ steps.bump.outputs.new_version }}
         run: |
           gh release create $NEW_VERSION \
             -t $NEW_VERSION
 
+      - name: "Auto-merge PR"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
           gh pr merge --squash --auto "${{ steps.cpr.outputs.pull-request-number }}"
