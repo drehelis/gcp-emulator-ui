@@ -1,0 +1,1 @@
+import{s as t,x as s,O as a,F as o}from"./vendor-C_kCRdsv.js";const r={class:"bg-white dark:bg-gray-800 shadow rounded-lg p-6"},c=t({__name:"CreateSubscriptionView",setup(n){return(i,e)=>(a(),s("div",r,[...e[0]||(e[0]=[o("p",{class:"text-gray-500 dark:text-gray-400"}," Create Subscription - Coming soon... ",-1)])]))}});export{c as default};

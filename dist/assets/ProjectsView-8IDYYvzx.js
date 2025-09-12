@@ -1,0 +1,1 @@
+import{s,x as t,O as o,F as a}from"./vendor-C_kCRdsv.js";const r={class:"bg-white dark:bg-gray-800 shadow rounded-lg p-6"},i=s({__name:"ProjectsView",setup(n){return(c,e)=>(o(),t("div",r,[...e[0]||(e[0]=[a("p",{class:"text-gray-500 dark:text-gray-400"}," Projects view - Coming soon... ",-1)])]))}});export{i as default};

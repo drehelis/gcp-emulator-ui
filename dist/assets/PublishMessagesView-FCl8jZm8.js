@@ -1,0 +1,1 @@
+import{s,x as a,O as t,F as o}from"./vendor-C_kCRdsv.js";const r={class:"bg-white dark:bg-gray-800 shadow rounded-lg p-6"},g=s({__name:"PublishMessagesView",setup(n){return(d,e)=>(t(),a("div",r,[...e[0]||(e[0]=[o("p",{class:"text-gray-500 dark:text-gray-400"}," Publish Messages - Coming soon... ",-1)])]))}});export{g as default};

@@ -1,0 +1,1 @@
+import{s as t,x as a,O as o,F as s}from"./vendor-C_kCRdsv.js";const r={class:"bg-white dark:bg-gray-800 shadow rounded-lg p-6"},d=t({__name:"CreateTopicView",setup(n){return(p,e)=>(o(),a("div",r,[...e[0]||(e[0]=[s("p",{class:"text-gray-500 dark:text-gray-400"}," Create Topic - Coming soon... ",-1)])]))}});export{d as default};

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Modern, comprehensive Google Cloud Emulator management interface" />
+  <meta name="keywords" content="Google Cloud, Emulator, Pub/Sub, Cloud Storage" />
+  <meta name="author" content="Danny Rehelis" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="GCP Emulator UI - Google Cloud Emulator Management" />
+  <meta property="og:description" content="Modern, comprehensive Google Cloud Emulator management interface" />
+  <meta property="og:image" content="/og-image.png" />
+  <meta property="og:url" content="https://emulator-ui.example.com" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="GCP Emulator UI - Google Cloud Emulator Management" />
+  <meta name="twitter:description" content="Modern, comprehensive Google Cloud Emulator management interface" />
+  <meta name="twitter:image" content="/twitter-image.png" />
+
+  <!-- Favicon and PWA icons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png">
+  <link rel="manifest" href="/site.webmanifest" />
+  <meta name="theme-color" content="#1f2937" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="GCP Emulator UI" />
+
+  <!-- Preconnect to external domains for performance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- Critical CSS will be inlined here by Vite -->
+
+  <title>GCP Emulator UI - Google Cloud Emulator Management</title>
+
+  <!-- Preload critical fonts -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" as="style"
+    onload="this.onload=null;this.rel='stylesheet'" />
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" />
+  </noscript>
+
+  <!-- Performance optimizations -->
+  <link rel="dns-prefetch" href="//fonts.googleapis.com" />
+  <link rel="dns-prefetch" href="//fonts.gstatic.com" />
+
+  <!-- Security headers -->
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
+  <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
+
+  <!-- Content Security Policy (adjust as needed for your deployment) -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+    font-src 'self' https://fonts.gstatic.com;
+    img-src 'self' data: https:;
+    connect-src 'self' https://www.google-analytics.com http://host.docker.internal:* http://localhost:* http: https: ws: wss:;
+    frame-src 'none';
+    object-src 'none';
+    base-uri 'self';
+    form-action 'self';
+  " />
+  <script type="module" crossorigin src="/assets/index-CET3MO9v.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/vendor-C_kCRdsv.js">
+  <link rel="modulepreload" crossorigin href="/assets/pinia-B2SWLoi0.js">
+  <link rel="modulepreload" crossorigin href="/assets/query-BV4EBN_X.js">
+  <link rel="stylesheet" crossorigin href="/assets/index-B9gG-XjU.css">
+<link rel="manifest" href="/manifest.webmanifest"></head>
+
+<body class="h-full bg-gray-50 dark:bg-gray-900 antialiased">
+  <div id="app" class="h-full">
+  </div>
+
+  <!-- Fallback for users with JavaScript disabled -->
+  <noscript>
+    <div style="
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      text-align: center;
+      padding: 2rem;
+    ">
+      <div>
+        <h1 style="font-size: 2rem; margin-bottom: 1rem;">JavaScript Required</h1>
+        <p style="font-size: 1.1rem; margin-bottom: 1.5rem; opacity: 0.9;">
+          GCP Emulator UI requires JavaScript to function properly. Please enable JavaScript in your browser and refresh
+          the page.
+        </p>
+        <div
+          style="background: rgba(255, 255, 255, 0.1); padding: 1rem; border-radius: 0.5rem; border: 1px solid rgba(255, 255, 255, 0.2);">
+          <p style="margin: 0; font-size: 0.9rem;">
+            This application provides a modern interface for managing Google Cloud Emulator resources with real-time
+            monitoring and analytics.
+          </p>
+        </div>
+      </div>
+    </div>
+  </noscript>
+
+  <!-- Main application script -->
+
+  <!-- Theme initialization -->
+  <script>
+    // Set initial theme based on user preference
+    (function () {
+      const savedTheme = localStorage.getItem('app-theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+      if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+        document.documentElement.classList.add('dark');
+        document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+      }
+    })();
+
+    // Performance measurement
+    if (window.performance && window.performance.mark) {
+      window.performance.mark('app-start');
+    }
+  </script>
+</body>
+
+</html>

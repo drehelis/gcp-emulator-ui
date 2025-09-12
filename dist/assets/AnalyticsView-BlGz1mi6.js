@@ -1,0 +1,1 @@
+import{s,x as t,O as a,F as o}from"./vendor-C_kCRdsv.js";const n={class:"bg-white dark:bg-gray-800 shadow rounded-lg p-6"},i=s({__name:"AnalyticsView",setup(r){return(c,e)=>(a(),t("div",n,[...e[0]||(e[0]=[o("p",{class:"text-gray-500 dark:text-gray-400"}," Analytics - Coming soon... ",-1)])]))}});export{i as default};

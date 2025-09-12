@@ -1,0 +1,1 @@
+import{s,x as t,O as a,F as o}from"./vendor-C_kCRdsv.js";const r={class:"bg-white dark:bg-gray-800 shadow rounded-lg p-6"},c=s({__name:"TopicDetailsView",setup(n){return(i,e)=>(a(),t("div",r,[...e[0]||(e[0]=[o("p",{class:"text-gray-500 dark:text-gray-400"}," Topic Details - Coming soon... ",-1)])]))}});export{c as default};

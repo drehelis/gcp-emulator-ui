@@ -1,0 +1,1 @@
+import{s as t,x as s,O as a,F as o}from"./vendor-C_kCRdsv.js";const n={class:"bg-white dark:bg-gray-800 shadow rounded-lg p-6"},g=t({__name:"SettingsView",setup(r){return(d,e)=>(a(),s("div",n,[...e[0]||(e[0]=[o("p",{class:"text-gray-500 dark:text-gray-400"}," Settings - Coming soon... ",-1)])]))}});export{g as default};
