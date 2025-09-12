@@ -110,7 +110,7 @@ jobs:
       - name: "Inspect image and get digest"
         id: inspect
         run: |
-          digest=$(docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }} --format '{{.Manifest.Digest}}')
+          digest=$(docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }} --format '{{json .Manifest.Digest}}')
           echo "digest=$digest" >> $GITHUB_OUTPUT
           docker buildx imagetools inspect ${{ env.REGISTRY_IMAGE }}:${{ steps.meta.outputs.version }}
 
