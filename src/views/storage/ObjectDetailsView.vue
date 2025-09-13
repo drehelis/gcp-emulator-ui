@@ -5,26 +5,26 @@
       <div class="px-4 sm:px-6 lg:px-8">
         <div class="py-4">
           <div class="flex items-center justify-between">
-            <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-4 min-w-0 flex-1">
               <button
                 @click="navigateBack"
-                class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 flex-shrink-0"
               >
                 <ArrowLeftIcon class="w-5 h-5" />
               </button>
               
-              <div>
+              <div class="min-w-0 flex-1">
                 <div class="flex items-center space-x-2">
-                  <DocumentIcon class="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                  <DocumentIcon class="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <h1 class="text-sm sm:text-xl font-bold text-gray-900 dark:text-white truncate">
-                    {{ objectName }}
+                    {{ displayFileName }}
                   </h1>
                 </div>
               </div>
             </div>
             
             <!-- Action buttons -->
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-3 flex-shrink-0">
               <button
                 @click="downloadObject"
                 :disabled="storageStore.loading.download"
@@ -40,20 +40,20 @@
     </div>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="px-4 sm:px-6 lg:px-8 py-6">
       <!-- Breadcrumbs -->
-      <nav v-if="objectBreadcrumbs.length > 0" class="flex mb-6" aria-label="Breadcrumb">
-        <ol class="flex items-center space-x-2 text-sm">
+      <nav v-if="objectBreadcrumbs.length > 0" class="mb-6" aria-label="Breadcrumb">
+        <ol class="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm">
           <li>
             <button
               @click="navigateToPath('')"
               class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200"
             >
-              <HomeIcon class="w-4 h-4" />
+              <HomeIcon class="w-4 h-4 translate-y-0.5" />
               <span class="sr-only">Home</span>
             </button>
           </li>
-          <li v-for="(breadcrumb, index) in objectBreadcrumbs" :key="index" class="flex items-center">
+          <li v-for="(breadcrumb, index) in objectBreadcrumbs" :key="index" class="flex items-baseline">
             <ChevronRightIcon class="flex-shrink-0 h-4 w-4 text-gray-400 mx-2" />
             <button
               v-if="!breadcrumb.isLast"
@@ -142,7 +142,7 @@
               v-if="objectData.contentType?.startsWith('image/')"
               :src="previewUrl"
               :alt="objectData.name"
-              class="max-w-full max-h-96 object-contain rounded-lg"
+              class="max-w-full max-h-[70vh] object-contain rounded-lg"
               @error="previewError = true"
             />
             <!-- Video Preview -->
@@ -151,7 +151,7 @@
               :src="previewUrl"
               controls
               preload="metadata"
-              class="max-w-full max-h-96 rounded-lg"
+              class="max-w-full max-h-[70vh] rounded-lg"
               @error="previewError = true"
             >
               Your browser does not support the video tag.
@@ -160,7 +160,7 @@
             <iframe
               v-else-if="objectData.contentType === 'application/pdf'"
               :src="previewUrl"
-              class="w-full h-96 rounded-lg border-0"
+              class="w-full h-[70vh] rounded-lg border-0"
               @error="previewError = true"
             >
               <p>Your browser does not support PDF preview. <a :href="previewUrl" target="_blank" class="text-blue-600 hover:text-blue-700">Download the PDF</a> to view it.</p>
@@ -169,7 +169,7 @@
             <div v-else-if="isTextFile" class="w-full">
               <!-- Read-only view -->
               <div v-if="!isEditing" class="relative">
-                <pre class="w-full h-96 p-4 text-sm bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-lg overflow-auto font-mono whitespace-pre-wrap">{{ fileContent }}</pre>
+                <pre class="w-full h-[60vh] p-4 text-sm bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-lg overflow-auto font-mono whitespace-pre-wrap">{{ fileContent }}</pre>
               </div>
               <!-- Editor view -->
               <div v-else>
@@ -225,7 +225,7 @@
                       <textarea
                         v-model="editContent"
                         @input="validateContent"
-                        class="w-full h-96 p-4 text-sm bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-0 resize-none font-mono focus:outline-none leading-5"
+                        class="w-full h-[60vh] p-4 text-sm bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-0 resize-none font-mono focus:outline-none leading-5"
                         :class="{ 'bg-red-50 dark:bg-red-900/10': !isValidContent }"
                         :placeholder="`Edit ${objectData.name} content here...`"
                         spellcheck="false"
@@ -362,6 +362,15 @@ const fileExtension = computed(() => {
 const lineCount = computed(() => {
   if (!editContent.value) return 1
   return editContent.value.split('\n').length
+})
+
+const displayFileName = computed(() => {
+  const objName = objectName.value
+  if (!objName) return ''
+
+  // Extract just the filename from the full path
+  const parts = objName.split('/')
+  return parts[parts.length - 1] || objName
 })
 
 const objectBreadcrumbs = computed(() => {

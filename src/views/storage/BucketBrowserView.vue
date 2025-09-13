@@ -14,10 +14,10 @@
                 <ArrowLeftIcon class="w-5 h-5" />
               </router-link>
               
-              <div>
+              <div class="min-w-0 flex-1">
                 <div class="flex items-center space-x-2">
-                  <ArchiveBoxIcon class="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
-                  <h1 class="text-lg sm:text-xl font-bold text-gray-900 dark:text-white truncate">
+                  <ArchiveBoxIcon class="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                  <h1 class="text-sm sm:text-xl font-bold text-gray-900 dark:text-white truncate">
                     {{ bucketName }}
                   </h1>
                 </div>
@@ -86,18 +86,18 @@
     <!-- Main Content -->
     <div class="px-4 sm:px-6 lg:px-8 py-6">
       <!-- Breadcrumbs -->
-      <nav v-if="storageStore.breadcrumbs.length > 0" class="flex mb-6" aria-label="Breadcrumb">
-        <ol class="flex items-center space-x-2 text-sm">
+      <nav v-if="storageStore.breadcrumbs.length > 0" class="mb-6" aria-label="Breadcrumb">
+        <ol class="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm">
           <li>
             <button
               @click="navigateToPath('')"
               class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200"
             >
-              <HomeIcon class="w-4 h-4" />
+              <HomeIcon class="w-4 h-4 translate-y-0.5" />
               <span class="sr-only">Home</span>
             </button>
           </li>
-          <li v-for="(breadcrumb, index) in storageStore.breadcrumbs" :key="index" class="flex items-center">
+          <li v-for="(breadcrumb, index) in storageStore.breadcrumbs" :key="index" class="flex items-baseline">
             <ChevronRightIcon class="flex-shrink-0 h-4 w-4 text-gray-400 mx-2" />
             <button
               v-if="!breadcrumb.isLast"
@@ -457,8 +457,8 @@
                       <span v-if="!object.isFolder">
                         {{ formatFileSize(parseInt(object.size || '0')) }}
                       </span>
-                      <span class="truncate max-w-24">
-                        {{ object.isFolder ? 'Folder' : (object.contentType || 'Unknown') }}
+                      <span v-if="!object.isFolder" class="truncate max-w-24">
+                        {{ object.contentType || 'Unknown' }}
                       </span>
                     </div>
                     <span v-if="!object.isFolder" class="whitespace-nowrap">
@@ -573,7 +573,7 @@
           leave-from="opacity-100"
           leave-to="opacity-0"
         >
-          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          <div class="fixed inset-0 backdrop-blur-[2px] bg-white/5 dark:bg-black/5 transition-opacity" />
         </TransitionChild>
 
         <div class="fixed inset-0 z-10 overflow-y-auto">
@@ -746,7 +746,7 @@
           leave-from="opacity-100"
           leave-to="opacity-0"
         >
-          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+          <div class="fixed inset-0 backdrop-blur-[2px] bg-white/5 dark:bg-black/5 transition-opacity" />
         </TransitionChild>
 
         <div class="fixed inset-0 z-10 overflow-y-auto">

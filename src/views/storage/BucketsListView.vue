@@ -77,14 +77,14 @@
                   <span class="text-sm font-medium text-gray-900 dark:text-white">
                     {{ bucket.name }}
                   </span>
-                  <div v-if="bucket.location" class="flex items-center">
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                </div>
+                <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                  <div class="flex items-center space-x-2">
+                    <span>{{ bucket.storageClass || 'STANDARD' }}</span>
+                    <span v-if="bucket.location" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
                       {{ bucket.location }}
                     </span>
                   </div>
-                </div>
-                <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                  <div>{{ bucket.storageClass || 'STANDARD' }}</div>
                 </div>
               </div>
             </div>
