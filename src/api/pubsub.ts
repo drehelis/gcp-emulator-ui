@@ -222,6 +222,11 @@ export const subscriptionsApi = {
     const subscriptionData = { ...request }
     delete subscriptionData.name
 
+    // Ensure topic name is in full path format
+    if (subscriptionData.topic && !subscriptionData.topic.startsWith('projects/')) {
+      subscriptionData.topic = `projects/${projectId}/topics/${subscriptionData.topic}`
+    }
+
     const response = await api.put(`/v1/${subscriptionPath}`, subscriptionData)
 
     // Enhance the response with the data we sent (emulator response is minimal)
