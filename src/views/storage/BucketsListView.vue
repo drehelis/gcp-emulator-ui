@@ -170,71 +170,19 @@
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <TransitionRoot as="template" :show="deleteModal.show">
-      <Dialog as="div" class="relative z-50" @close="deleteModal.show = false">
-        <TransitionChild
-          as="template"
-          enter="ease-out duration-300"
-          enter-from="opacity-0"
-          enter-to="opacity-100"
-          leave="ease-in duration-200"
-          leave-from="opacity-100"
-          leave-to="opacity-0"
-        >
-          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-        </TransitionChild>
-
-        <div class="fixed inset-0 z-10 overflow-y-auto">
-          <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-            <TransitionChild
-              as="template"
-              enter="ease-out duration-300"
-              enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-              enter-to="opacity-100 translate-y-0 sm:scale-100"
-              leave="ease-in duration-200"
-              leave-from="opacity-100 translate-y-0 sm:scale-100"
-              leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            >
-              <DialogPanel class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
-                <div class="sm:flex sm:items-start">
-                  <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20 sm:mx-0 sm:h-10 sm:w-10">
-                    <ExclamationTriangleIcon class="h-6 w-6 text-red-600 dark:text-red-400" />
-                  </div>
-                  <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                    <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900 dark:text-white">
-                      Delete Bucket
-                    </DialogTitle>
-                    <div class="mt-2">
-                      <p class="text-sm text-gray-500 dark:text-gray-400">
-                        Are you sure you want to delete bucket "{{ deleteModal.bucket?.name }}"? 
-                        This action cannot be undone and will permanently delete the bucket and all its contents.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-3">
-                  <button
-                    @click="handleDeleteBucket"
-                    :disabled="storageStore.loading.delete"
-                    class="inline-flex w-full justify-center rounded-lg border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
-                  >
-                    <ArrowPathIcon v-if="storageStore.loading.delete" class="animate-spin -ml-1 mr-2 h-4 w-4" />
-                    {{ storageStore.loading.delete ? 'Deleting...' : 'Delete' }}
-                  </button>
-                  <button
-                    @click="deleteModal.show = false"
-                    :disabled="storageStore.loading.delete"
-                    class="mt-3 inline-flex w-full justify-center rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed sm:mt-0 sm:w-auto sm:text-sm transition-colors duration-200"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </DialogPanel>
-            </TransitionChild>
-          </div>
-        </div>
-      </Dialog>
-    </TransitionRoot>
+    <ConfirmationModal
+      v-model="deleteModal.show"
+      title="Delete Bucket"
+      :message="`Are you sure you want to delete bucket '${deleteModal.bucket?.name || ''}'?`"
+      confirm-label="Delete Bucket"
+      :is-loading="storageStore.loading.delete"
+      :details="{
+        title: 'Bucket Details',
+        description: deleteModal.bucket?.name || ''
+      }"
+      @confirm="handleDeleteBucket"
+      @cancel="cancelDeleteBucket"
+    />
 
     <!-- Create Bucket Modal -->
     <CreateBucketModal
@@ -245,7 +193,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   ArchiveBoxIcon,
@@ -256,18 +204,12 @@ import {
   DocumentDuplicateIcon,
   TrashIcon
 } from '@heroicons/vue/24/outline'
-import {
-  Dialog,
-  DialogPanel,
-  DialogTitle,
-  TransitionChild,
-  TransitionRoot
-} from '@headlessui/vue'
 import { useStorageStore } from '@/stores/storage'
 import { useProjectsStore } from '@/stores/projects'
 import { useAppStore } from '@/stores/app'
 import type { StorageBucket } from '@/types'
 import CreateBucketModal from '@/components/modals/CreateBucketModal.vue'
+import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -335,6 +277,13 @@ async function handleDeleteBucket(): Promise<void> {
   }
 }
 
+function cancelDeleteBucket(): void {
+  deleteModal.value = {
+    show: false,
+    bucket: null
+  }
+}
+
 function handleBucketCreated(): void {
   // Refresh the buckets list after successful creation
   refreshBuckets()
@@ -365,9 +314,19 @@ function formatDate(dateString?: string): string {
 
 // Lifecycle
 onMounted(async () => {
-  if (!storageStore.buckets.length) {
-    await storageStore.fetchBuckets()
+  // Wait for the current project ID to be available
+  if (currentProjectId.value && currentProjectId.value !== 'Unknown') {
+    if (!storageStore.buckets.length) {
+      await storageStore.fetchBuckets()
+    }
   }
 })
+
+// Watch for project ID changes and refetch buckets
+watch(currentProjectId, async (newProjectId, oldProjectId) => {
+  if (newProjectId && newProjectId !== 'Unknown' && newProjectId !== oldProjectId) {
+    await storageStore.fetchBuckets(true) // Force refresh
+  }
+}, { immediate: true })
 
 </script>

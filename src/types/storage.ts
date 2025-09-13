@@ -240,6 +240,7 @@ export interface StorageObjectWithPreview extends StorageObject {
   preview?: string
   thumbnailUrl?: string
   downloadUrl?: string
+  fullPath?: string // Original full path for API operations
 }
 
 export interface BucketStatistics {

@@ -2,21 +2,21 @@
   <div class="min-h-full bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
     <!-- Page Header -->
     <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="py-6">
+      <div class="px-4 sm:px-6 lg:px-8">
+        <div class="py-4">
           <div class="flex items-center justify-between">
             <div class="flex items-center space-x-4">
-              <router-link
-                :to="`/projects/${currentProjectId}/storage/buckets/${encodeURIComponent(bucketName)}`"
+              <button
+                @click="navigateBack"
                 class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
               >
                 <ArrowLeftIcon class="w-5 h-5" />
-              </router-link>
+              </button>
               
               <div>
                 <div class="flex items-center space-x-2">
                   <DocumentIcon class="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                  <h1 class="text-xl font-bold text-gray-900 dark:text-white">
+                  <h1 class="text-sm sm:text-xl font-bold text-gray-900 dark:text-white truncate">
                     {{ objectName }}
                   </h1>
                 </div>
@@ -40,7 +40,34 @@
     </div>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <!-- Breadcrumbs -->
+      <nav v-if="objectBreadcrumbs.length > 0" class="flex mb-6" aria-label="Breadcrumb">
+        <ol class="flex items-center space-x-2 text-sm">
+          <li>
+            <button
+              @click="navigateToPath('')"
+              class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200"
+            >
+              <HomeIcon class="w-4 h-4" />
+              <span class="sr-only">Home</span>
+            </button>
+          </li>
+          <li v-for="(breadcrumb, index) in objectBreadcrumbs" :key="index" class="flex items-center">
+            <ChevronRightIcon class="flex-shrink-0 h-4 w-4 text-gray-400 mx-2" />
+            <button
+              v-if="!breadcrumb.isLast"
+              @click="navigateToPath(breadcrumb.path)"
+              class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 truncate transition-colors duration-200"
+            >
+              {{ breadcrumb.name }}
+            </button>
+            <span v-else class="text-gray-500 dark:text-gray-400 truncate">
+              {{ breadcrumb.name }}
+            </span>
+          </li>
+        </ol>
+      </nav>
       <!-- Loading State -->
       <div v-if="loading" class="text-center py-12">
         <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm text-blue-600 dark:text-blue-400">
@@ -51,60 +78,63 @@
 
       <!-- Object Details -->
       <div v-else-if="objectData" class="space-y-6">
-        <!-- Object Info Card -->
+        <!-- Object Summary Card -->
         <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            Object Information
-          </h2>
-          
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div>
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Name</dt>
-              <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ objectData.name }}</dd>
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+            <!-- Key Information -->
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 flex-1">
+              <!-- Mobile: Stack all elements vertically -->
+              <div class="flex flex-col sm:hidden gap-1">
+                <div class="flex items-center gap-2">
+                  <span class="text-xl font-bold text-blue-600 dark:text-blue-400">{{ formatFileSize(parseInt(objectData.size || '0')) }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ objectData.contentType || 'Unknown' }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm text-gray-600 dark:text-gray-400">{{ objectData.storageClass || 'STANDARD' }} class</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-sm text-gray-600 dark:text-gray-400">Modified {{ formatDate(objectData.updated) }}</span>
+                </div>
+              </div>
+
+              <!-- Desktop: Horizontal layout -->
+              <div class="hidden sm:flex sm:items-center gap-4">
+                <div class="flex items-center gap-2">
+                  <span class="text-2xl font-bold text-blue-600 dark:text-blue-400">{{ formatFileSize(parseInt(objectData.size || '0')) }}</span>
+                  <span class="text-sm text-gray-500 dark:text-gray-400">•</span>
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ objectData.contentType || 'Unknown' }}</span>
+                </div>
+                <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                  <span class="text-gray-500 dark:text-gray-400">•</span>
+                  <span>{{ objectData.storageClass || 'STANDARD' }} class</span>
+                  <span class="text-gray-500 dark:text-gray-400">•</span>
+                  <span>Modified {{ formatDate(objectData.updated) }}</span>
+                </div>
+              </div>
             </div>
-            
-            <div>
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Size</dt>
-              <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ formatFileSize(parseInt(objectData.size || '0')) }}</dd>
-            </div>
-            
-            <div>
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Content Type</dt>
-              <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ objectData.contentType || 'Unknown' }}</dd>
-            </div>
-            
-            <div>
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Storage Class</dt>
-              <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ objectData.storageClass || 'STANDARD' }}</dd>
-            </div>
-            
-            <div>
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Created</dt>
-              <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ formatDate(objectData.timeCreated) }}</dd>
-            </div>
-            
-            <div>
-              <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Last Modified</dt>
-              <dd class="mt-1 text-sm text-gray-900 dark:text-white">{{ formatDate(objectData.updated) }}</dd>
+
+            <!-- Quick Actions -->
+            <div class="flex items-center gap-2 mt-2 sm:mt-0">
+              <button
+                v-if="isTextFile && !isEditing"
+                @click="startEditing"
+                class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-transparent rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+                title="Edit file"
+              >
+                <PencilSquareIcon class="w-4 h-4 mr-1" />
+                Edit
+              </button>
             </div>
           </div>
         </div>
 
         <!-- Preview Card -->
         <div v-if="canPreview" class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
-          <div class="flex items-center mb-4">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">
-              Preview
-            </h2>
-            <button
-              v-if="isTextFile && !isEditing"
-              @click="startEditing"
-              class="ml-2 p-1 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors duration-200"
-              title="Edit file"
-            >
-              <PencilSquareIcon class="w-4 h-4" />
-            </button>
-          </div>
+          <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            Content Preview
+          </h2>
           
           <div class="flex items-center justify-center p-8 bg-gray-50 dark:bg-gray-900 rounded-lg">
             <!-- Image Preview -->
@@ -249,7 +279,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import {
   ArrowLeftIcon,
   ArrowDownTrayIcon,
@@ -257,7 +287,9 @@ import {
   DocumentIcon,
   DocumentTextIcon,
   PencilSquareIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  HomeIcon,
+  ChevronRightIcon
 } from '@heroicons/vue/24/outline'
 import { useStorageStore } from '@/stores/storage'
 import { useProjectsStore } from '@/stores/projects'
@@ -266,6 +298,7 @@ import storageApi from '@/api/storage'
 import type { StorageObject } from '@/types'
 
 const route = useRoute()
+const router = useRouter()
 const storageStore = useStorageStore()
 const projectsStore = useProjectsStore()
 const appStore = useAppStore()
@@ -331,7 +364,52 @@ const lineCount = computed(() => {
   return editContent.value.split('\n').length
 })
 
+const objectBreadcrumbs = computed(() => {
+  const objName = objectName.value
+  if (!objName) return []
+
+  const breadcrumbs: Array<{ name: string; path: string; isLast: boolean }> = []
+  const parts = objName.split('/').filter(Boolean)
+
+  let currentPath = ''
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i]
+    const isLast = i === parts.length - 1
+
+    if (i < parts.length - 1) {
+      // It's a folder
+      currentPath += part + '/'
+      breadcrumbs.push({
+        name: part,
+        path: currentPath,
+        isLast: false
+      })
+    } else {
+      // It's the file itself
+      breadcrumbs.push({
+        name: part,
+        path: objName,
+        isLast: true
+      })
+    }
+  }
+
+  return breadcrumbs
+})
+
 // Methods
+async function navigateBack(): Promise<void> {
+  router.push(`/projects/${currentProjectId.value}/storage/buckets/${encodeURIComponent(bucketName.value)}`)
+}
+
+async function navigateToPath(path: string): Promise<void> {
+  // Update the storage store with the new path
+  await storageStore.fetchObjects(bucketName.value, path, true)
+
+  // Navigate to bucket browser with the specified path
+  router.push(`/projects/${currentProjectId.value}/storage/buckets/${encodeURIComponent(bucketName.value)}`)
+}
+
 async function loadObject(): Promise<void> {
   if (!bucketName.value || !objectName.value) return
 

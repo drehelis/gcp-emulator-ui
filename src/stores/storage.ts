@@ -269,15 +269,22 @@ export const useStorageStore = defineStore('storage', () => {
       }
 
       const response = await storageApi.listObjects(request)
-      
+
       // Process objects and add preview info
       const processedObjects: StorageObjectWithPreview[] = []
       
       // Add folders (prefixes)
       if (response.prefixes) {
         for (const prefix of response.prefixes) {
+          // Remove trailing slash from prefix
+          const cleanPrefix = prefix.replace(/\/$/, '')
+
+          // Extract only the folder name (not the full path)
+          // If we're at prefix "5/" and get "5/service/", we want just "service"
+          const folderName = cleanPrefix.substring(request.prefix?.length || 0)
+
           processedObjects.push({
-            name: prefix.replace(/\/$/, ''), // Remove trailing slash
+            name: folderName,
             bucket: bucketName,
             isFolder: true,
             size: '0',
@@ -289,9 +296,14 @@ export const useStorageStore = defineStore('storage', () => {
       // Add files
       if (response.items) {
         for (const item of response.items) {
+          // Extract only the filename (not the full path) for display
+          const fileName = item.name.substring(request.prefix?.length || 0)
+
           const preview = getObjectPreview(item)
           processedObjects.push({
             ...item,
+            name: fileName, // Use relative filename for display
+            fullPath: item.name, // Keep full path for API operations
             isFolder: false,
             downloadUrl: storageApi.getObjectDownloadUrl(bucketName, item.name),
             ...(preview && { preview })

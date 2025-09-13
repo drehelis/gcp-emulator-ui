@@ -21,9 +21,6 @@
                     {{ bucketName }}
                   </h1>
                 </div>
-                <p v-if="currentPath" class="text-sm text-gray-500 dark:text-gray-400">
-                  {{ currentPath }}
-                </p>
               </div>
             </div>
             
@@ -51,61 +48,36 @@
             </div>
           </div>
 
-          <!-- Breadcrumbs -->
-          <nav v-if="storageStore.breadcrumbs.length > 0" class="flex" aria-label="Breadcrumb">
-            <ol class="flex items-center space-x-2 text-sm">
-              <li>
-                <button
-                  @click="navigateToPath('')"
-                  class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200"
-                >
-                  <HomeIcon class="w-4 h-4" />
-                  <span class="sr-only">Home</span>
-                </button>
-              </li>
-              <li v-for="(breadcrumb, index) in storageStore.breadcrumbs" :key="index" class="flex items-center">
-                <ChevronRightIcon class="flex-shrink-0 h-4 w-4 text-gray-400 mx-2" />
-                <button
-                  v-if="!breadcrumb.isLast"
-                  @click="navigateToPath(breadcrumb.path)"
-                  class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 truncate transition-colors duration-200"
-                >
-                  {{ breadcrumb.name }}
-                </button>
-                <span v-else class="text-gray-500 dark:text-gray-400 truncate">
-                  {{ breadcrumb.name }}
-                </span>
-              </li>
-            </ol>
-          </nav>
-
           <!-- Selection actions -->
-          <div v-if="storageStore.selectedObjects.length > 0" class="flex items-center justify-end space-x-2 mt-2">
+          <div v-if="storageStore.selectedObjects.length > 0" class="flex items-center justify-between mt-2">
             <span class="text-sm text-gray-500 dark:text-gray-400">
               {{ storageStore.selectedObjects.length }} selected
             </span>
-            <button
-              @click="handleBulkDownload"
-              :disabled="storageStore.loading.download"
-              class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border border-transparent rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-            >
-              <ArrowDownTrayIcon class="w-4 h-4 mr-2" />
-              Download
-            </button>
-            <button
-              @click="confirmBulkDelete"
-              :disabled="storageStore.loading.delete"
-              class="inline-flex items-center px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-transparent rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-            >
-              <TrashIcon class="w-4 h-4 mr-2" />
-              Delete
-            </button>
-            <button
-              @click="storageStore.clearSelection"
-              class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 border border-transparent rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
-            >
-              Clear
-            </button>
+            <div class="flex items-center space-x-2">
+              <button
+                @click="handleBulkDownload"
+                :disabled="storageStore.loading.download"
+                class="inline-flex items-center px-2 sm:px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border border-transparent rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              >
+                <ArrowDownTrayIcon class="w-4 h-4 sm:mr-2" />
+                <span class="hidden sm:inline">Download</span>
+              </button>
+              <button
+                @click="confirmBulkDelete"
+                :disabled="storageStore.loading.delete"
+                class="inline-flex items-center px-2 sm:px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-transparent rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              >
+                <TrashIcon class="w-4 h-4 sm:mr-2" />
+                <span class="hidden sm:inline">Delete</span>
+              </button>
+              <button
+                @click="storageStore.clearSelection"
+                class="inline-flex items-center px-2 sm:px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 border border-transparent rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
+              >
+                <XMarkIcon class="w-4 h-4 sm:mr-2" />
+                <span class="hidden sm:inline">Clear</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -113,6 +85,34 @@
 
     <!-- Main Content -->
     <div class="px-4 sm:px-6 lg:px-8 py-6">
+      <!-- Breadcrumbs -->
+      <nav v-if="storageStore.breadcrumbs.length > 0" class="flex mb-6" aria-label="Breadcrumb">
+        <ol class="flex items-center space-x-2 text-sm">
+          <li>
+            <button
+              @click="navigateToPath('')"
+              class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200"
+            >
+              <HomeIcon class="w-4 h-4" />
+              <span class="sr-only">Home</span>
+            </button>
+          </li>
+          <li v-for="(breadcrumb, index) in storageStore.breadcrumbs" :key="index" class="flex items-center">
+            <ChevronRightIcon class="flex-shrink-0 h-4 w-4 text-gray-400 mx-2" />
+            <button
+              v-if="!breadcrumb.isLast"
+              @click="navigateToPath(breadcrumb.path)"
+              class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 truncate transition-colors duration-200"
+            >
+              {{ breadcrumb.name }}
+            </button>
+            <span v-else class="text-gray-500 dark:text-gray-400 truncate">
+              {{ breadcrumb.name }}
+            </span>
+          </li>
+        </ol>
+      </nav>
+
       <!-- Loading State -->
       <div v-if="storageStore.loading.objects && !storageStore.objects.length" class="text-center py-12">
         <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm text-blue-600 dark:text-blue-400 transition ease-in-out duration-150">
@@ -422,8 +422,8 @@
                   v-if="!object.isFolder"
                   type="checkbox"
                   :checked="storageStore.selectedObjects.includes(object.name)"
-                  @click.stop
-                  @change="toggleObjectSelection(object.name)"
+                  @click.stop="storageStore.selectObject(object.name)"
+                  @change="() => {}"
                   class="mt-1 w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
                 />
                 <div class="w-4 h-4 mt-1" v-else></div>
@@ -545,71 +545,21 @@
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <TransitionRoot as="template" :show="deleteModal.show">
-      <Dialog as="div" class="relative z-50" @close="deleteModal.show = false">
-        <TransitionChild
-          as="template"
-          enter="ease-out duration-300"
-          enter-from="opacity-0"
-          enter-to="opacity-100"
-          leave="ease-in duration-200"
-          leave-from="opacity-100"
-          leave-to="opacity-0"
-        >
-          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
-        </TransitionChild>
-
-        <div class="fixed inset-0 z-10 overflow-y-auto">
-          <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-            <TransitionChild
-              as="template"
-              enter="ease-out duration-300"
-              enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-              enter-to="opacity-100 translate-y-0 sm:scale-100"
-              leave="ease-in duration-200"
-              leave-from="opacity-100 translate-y-0 sm:scale-100"
-              leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-            >
-              <DialogPanel class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
-                <div class="sm:flex sm:items-start">
-                  <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20 sm:mx-0 sm:h-10 sm:w-10">
-                    <ExclamationTriangleIcon class="h-6 w-6 text-red-600 dark:text-red-400" />
-                  </div>
-                  <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                    <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900 dark:text-white">
-                      Delete Objects
-                    </DialogTitle>
-                    <div class="mt-2">
-                      <p class="text-sm text-gray-500 dark:text-gray-400">
-                        Are you sure you want to delete {{ deleteModal.objects.length }} object{{ deleteModal.objects.length === 1 ? '' : 's' }}? 
-                        This action cannot be undone.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-3">
-                  <button
-                    @click="handleBulkDelete"
-                    :disabled="storageStore.loading.delete"
-                    class="inline-flex w-full justify-center rounded-lg border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed sm:ml-3 sm:w-auto sm:text-sm transition-colors duration-200"
-                  >
-                    <ArrowPathIcon v-if="storageStore.loading.delete" class="animate-spin -ml-1 mr-2 h-4 w-4" />
-                    {{ storageStore.loading.delete ? 'Deleting...' : 'Delete' }}
-                  </button>
-                  <button
-                    @click="deleteModal.show = false"
-                    :disabled="storageStore.loading.delete"
-                    class="mt-3 inline-flex w-full justify-center rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed sm:mt-0 sm:w-auto sm:text-sm transition-colors duration-200"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </DialogPanel>
-            </TransitionChild>
-          </div>
-        </div>
-      </Dialog>
-    </TransitionRoot>
+    <ConfirmationModal
+      v-model="deleteModal.show"
+      :title="deleteModal.objects.length === 1 ? 'Delete Object' : 'Delete Objects'"
+      :message="`Are you sure you want to delete ${deleteModal.objects.length} object${deleteModal.objects.length === 1 ? '' : 's'}?`"
+      :confirm-label="deleteModal.objects.length === 1 ? 'Delete Object' : 'Delete Objects'"
+      :is-loading="storageStore.loading.delete"
+      :details="{
+        title: deleteModal.objects.length === 1 ? 'Object Details' : 'Objects to Delete',
+        description: deleteModal.objects.length === 1
+          ? deleteModal.objects[0]
+          : `${deleteModal.objects.length} selected objects`
+      }"
+      @confirm="handleBulkDelete"
+      @cancel="cancelDelete"
+    />
 
     <!-- Upload Modal -->
     <TransitionRoot as="template" :show="showUploadModal">
@@ -964,15 +914,13 @@ import {
   XMarkIcon
 } from '@heroicons/vue/24/outline'
 import {
-  Dialog,
-  DialogPanel,
-  DialogTitle,
   TransitionChild,
   TransitionRoot
 } from '@headlessui/vue'
 import { useStorageStore } from '@/stores/storage'
 import { useProjectsStore } from '@/stores/projects'
 import { useAppStore } from '@/stores/app'
+import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
 import type { StorageObjectWithPreview } from '@/types'
 
 const router = useRouter()
@@ -1078,8 +1026,8 @@ function handleObjectClick(object: StorageObjectWithPreview): void {
     const newPath = currentPath.value + object.name + '/'
     navigateToPath(newPath)
   } else {
-    // Navigate to object details
-    const objectPath = encodeURIComponent(object.name)
+    // Navigate to object details using fullPath if available, otherwise use name
+    const objectPath = encodeURIComponent(object.fullPath || object.name)
     router.push(`/projects/${currentProjectId.value}/storage/buckets/${encodeURIComponent(bucketName.value)}/objects/${objectPath}`)
   }
 }
@@ -1116,6 +1064,13 @@ async function handleBulkDelete(): Promise<void> {
     deleteModal.value.show = false
   } catch (error) {
     // Error is handled in the store
+  }
+}
+
+function cancelDelete(): void {
+  deleteModal.value = {
+    show: false,
+    objects: []
   }
 }
 
@@ -1426,7 +1381,9 @@ onMounted(async () => {
   if (bucketName.value) {
     try {
       await storageStore.fetchBucket(bucketName.value)
-      await storageStore.fetchObjects(bucketName.value, '', true)
+      // Use existing currentPath from store, or default to root if none exists
+      const pathToLoad = storageStore.currentPath || ''
+      await storageStore.fetchObjects(bucketName.value, pathToLoad, true)
     } catch (error) {
       console.error('Error loading bucket:', error)
     }
