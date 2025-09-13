@@ -7,14 +7,11 @@
           <h2 class="text-base sm:text-lg font-medium text-gray-900 dark:text-white">
             Import/Export
           </h2>
-          <button
-            @click="refreshData"
-            :disabled="isRefreshing"
-            class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <ArrowPathIcon class="h-4 w-4 mr-2" :class="{ 'animate-spin': isRefreshing }" />
+          <!-- Invisible placeholder to maintain header height -->
+          <div class="inline-flex items-center px-3 py-2 text-sm font-medium opacity-0 pointer-events-none">
+            <div class="h-4 w-4 mr-2"></div>
             Refresh
-          </button>
+          </div>
         </div>
       </div>
     </div>
@@ -369,7 +366,6 @@ const isExporting = ref(false)
 const isExportingTemplates = ref(false)
 const isImporting = ref(false)
 const isImportingTemplates = ref(false)
-const isRefreshing = ref(false)
 const isDragOver = ref(false)
 const importFile = ref<File | null>(null)
 const importPreview = ref<any[] | null>(null)
@@ -456,26 +452,6 @@ const loadData = async () => {
   }
 }
 
-const refreshData = async () => {
-  isRefreshing.value = true
-  try {
-    await loadData()
-    appStore.showToast({
-      type: 'success',
-      title: 'Data refreshed',
-      message: 'Topics and subscriptions have been refreshed'
-    })
-  } catch (error) {
-    console.error('Failed to refresh data:', error)
-    appStore.showToast({
-      type: 'error',
-      title: 'Failed to refresh data',
-      message: (error as Error).message
-    })
-  } finally {
-    isRefreshing.value = false
-  }
-}
 
 const exportConfiguration = async () => {
   isExporting.value = true

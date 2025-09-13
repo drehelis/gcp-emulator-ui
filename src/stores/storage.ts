@@ -386,7 +386,7 @@ export const useStorageStore = defineStore('storage', () => {
       appStore.showToast({
         type: 'success',
         title: 'Upload Complete',
-        message: `Successfully uploaded ${files.length} files`
+        message: `Successfully uploaded ${files.length} file${files.length === 1 ? '' : 's'}`
       })
     } catch (error: any) {
       console.error('Error uploading files:', error)

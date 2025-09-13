@@ -20,9 +20,6 @@
                     {{ objectName }}
                   </h1>
                 </div>
-                <p class="text-sm text-gray-500 dark:text-gray-400">
-                  in {{ bucketName }}
-                </p>
               </div>
             </div>
             
@@ -147,9 +144,21 @@
               <!-- Editor view -->
               <div v-else>
                 <div class="flex items-center justify-between mb-3">
-                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Editing: {{ objectData.name }}
-                  </span>
+                  <div class="flex items-center space-x-3">
+                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Editing: {{ objectData.name }}
+                    </span>
+                    <div v-if="validationError" class="flex items-center text-red-600 dark:text-red-400">
+                      <ExclamationTriangleIcon class="w-4 h-4 mr-1" />
+                      <span class="text-xs">{{ validationError }}</span>
+                    </div>
+                    <div v-else-if="isValidContent && editContent.trim()" class="flex items-center text-green-600 dark:text-green-400">
+                      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                      </svg>
+                      <span class="text-xs">Valid {{ fileExtension.toUpperCase() }}</span>
+                    </div>
+                  </div>
                   <div class="flex items-center gap-2">
                     <button
                       @click="cancelEditing"
@@ -160,20 +169,57 @@
                     </button>
                     <button
                       @click="saveTextContent"
-                      :disabled="isSaving"
+                      :disabled="isSaving || !isValidContent"
                       class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 transition-colors"
+                      :class="{ 'bg-gray-400 hover:bg-gray-400': !isValidContent }"
                     >
                       <ArrowPathIcon v-if="isSaving" class="animate-spin w-3 h-3 mr-1" />
                       {{ isSaving ? 'Saving...' : 'Save' }}
                     </button>
                   </div>
                 </div>
-                <textarea
-                  v-model="editContent"
-                  class="w-full h-96 p-4 text-sm bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-lg resize-none font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  :placeholder="`Edit ${objectData.name} content here...`"
-                  spellcheck="false"
-                ></textarea>
+
+                <!-- Enhanced Editor with Line Numbers -->
+                <div class="relative border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                  <div class="flex">
+                    <!-- Line Numbers -->
+                    <div class="bg-gray-100 dark:bg-gray-800 px-3 py-4 border-r border-gray-200 dark:border-gray-700 select-none">
+                      <div class="text-xs font-mono text-gray-500 dark:text-gray-400 leading-5">
+                        <div v-for="lineNum in lineCount" :key="lineNum" class="h-5 text-right">
+                          {{ lineNum }}
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Editor Area -->
+                    <div class="flex-1 relative">
+                      <textarea
+                        v-model="editContent"
+                        @input="validateContent"
+                        class="w-full h-96 p-4 text-sm bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-0 resize-none font-mono focus:outline-none leading-5"
+                        :class="{ 'bg-red-50 dark:bg-red-900/10': !isValidContent }"
+                        :placeholder="`Edit ${objectData.name} content here...`"
+                        spellcheck="false"
+                        style="line-height: 1.25rem;"
+                      ></textarea>
+                    </div>
+                  </div>
+
+                  <!-- Status Bar -->
+                  <div class="bg-gray-100 dark:bg-gray-800 px-4 py-2 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex justify-between items-center text-xs text-gray-600 dark:text-gray-400">
+                      <div class="flex items-center space-x-4">
+                        <span>Lines: {{ lineCount }}</span>
+                        <span>Characters: {{ editContent.length }}</span>
+                        <span>Type: {{ fileExtension.toUpperCase() || 'Text' }}</span>
+                      </div>
+                      <div class="flex items-center space-x-2">
+                        <span v-if="isValidContent && editContent.trim()" class="text-green-600 dark:text-green-400">✓ Valid</span>
+                        <span v-else-if="validationError" class="text-red-600 dark:text-red-400">✗ Invalid</span>
+                        <span class="text-gray-500">{{ objectData.contentType || 'text/plain' }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             <!-- Error State -->
@@ -232,6 +278,8 @@ const fileContent = ref('')
 const isEditing = ref(false)
 const isSaving = ref(false)
 const editContent = ref('')
+const validationError = ref('')
+const isValidContent = ref(true)
 
 // Props from route
 const bucketName = computed(() => route.params.bucketName as string)
@@ -271,6 +319,16 @@ const canPreview = computed(() => {
 const previewUrl = computed(() => {
   if (!objectData.value) return ''
   return storageApi.getObjectPreviewUrl(bucketName.value, objectData.value.name)
+})
+
+const fileExtension = computed(() => {
+  if (!objectData.value?.name) return ''
+  return objectData.value.name.split('.').pop()?.toLowerCase() || ''
+})
+
+const lineCount = computed(() => {
+  if (!editContent.value) return 1
+  return editContent.value.split('\n').length
 })
 
 // Methods
@@ -328,6 +386,33 @@ async function downloadObject(): Promise<void> {
 function startEditing(): void {
   isEditing.value = true
   editContent.value = fileContent.value
+  validateContent()
+}
+
+function validateContent(): void {
+  validationError.value = ''
+  isValidContent.value = true
+
+  if (!editContent.value.trim()) {
+    return // Empty content is valid
+  }
+
+  try {
+    if (fileExtension.value === 'json' || objectData.value?.contentType === 'application/json') {
+      JSON.parse(editContent.value)
+    } else if (fileExtension.value === 'xml' || objectData.value?.contentType === 'application/xml') {
+      // Basic XML validation - check for matching tags
+      const parser = new DOMParser()
+      const xmlDoc = parser.parseFromString(editContent.value, 'text/xml')
+      const parseError = xmlDoc.getElementsByTagName('parsererror')
+      if (parseError.length > 0) {
+        throw new Error('Invalid XML format')
+      }
+    }
+  } catch (error: any) {
+    validationError.value = error.message || 'Invalid format'
+    isValidContent.value = false
+  }
 }
 
 function cancelEditing(): void {

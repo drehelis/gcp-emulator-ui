@@ -42,18 +42,18 @@
             <div class="flex items-center space-x-3">
               <button
                 @click="showCreateTopicModal = true"
-                class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                class="inline-flex items-center px-2 sm:px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
               >
-                <PlusIcon class="h-4 w-4 mr-2" />
-                Create Topic
+                <PlusIcon class="h-4 w-4 sm:mr-2" />
+                <span class="hidden sm:inline">Create Topic</span>
               </button>
               <button
                 @click="fetchTopics"
                 :disabled="isLoading"
-                class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                class="inline-flex items-center px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                <ArrowPathIcon class="h-4 w-4 mr-2" :class="{ 'animate-spin': isLoading }" />
-                Refresh
+                <ArrowPathIcon class="h-4 w-4 sm:mr-2" :class="{ 'animate-spin': isLoading }" />
+                <span class="hidden sm:inline">Refresh</span>
               </button>
             </div>
           </div>
@@ -199,18 +199,18 @@
             <div class="flex items-center space-x-3">
               <button
                 @click="showCreateTopicModal = true"
-                class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                class="inline-flex items-center px-2 sm:px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
               >
-                <PlusIcon class="h-4 w-4 mr-2" />
-                Create Topic
+                <PlusIcon class="h-4 w-4 sm:mr-2" />
+                <span class="hidden sm:inline">Create Topic</span>
               </button>
               <button
                 @click="fetchTopics"
                 :disabled="isLoading"
-                class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                class="inline-flex items-center px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                <ArrowPathIcon class="h-4 w-4 mr-2" :class="{ 'animate-spin': isLoading }" />
-                Refresh
+                <ArrowPathIcon class="h-4 w-4 sm:mr-2" :class="{ 'animate-spin': isLoading }" />
+                <span class="hidden sm:inline">Refresh</span>
               </button>
             </div>
           </div>
@@ -230,10 +230,10 @@
           <div class="mt-6">
             <button
               @click="showCreateTopicModal = true"
-              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+              class="inline-flex items-center px-3 sm:px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
             >
-              <PlusIcon class="h-4 w-4 mr-2" />
-              Create Topic
+              <PlusIcon class="h-4 w-4 sm:mr-2" />
+              <span class="hidden sm:inline">Create Topic</span>
             </button>
           </div>
         </div>

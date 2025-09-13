@@ -40,13 +40,14 @@
                 <span class="hidden sm:inline">Refresh</span>
               </button>
 
-              <router-link
-                :to="`/projects/${currentProjectId}/storage/buckets/${encodeURIComponent(bucketName)}/upload`"
+
+              <button
+                @click="showUploadModal = true"
                 class="inline-flex items-center px-2 sm:px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
               >
                 <ArrowUpTrayIcon class="w-4 h-4 sm:mr-2" />
                 <span class="hidden sm:inline">Upload</span>
-              </router-link>
+              </button>
             </div>
           </div>
 
@@ -198,6 +199,13 @@
 
           <!-- Upload Button -->
           <div v-if="!storageStore.loading.upload" class="flex flex-col sm:flex-row gap-3 items-center justify-center">
+            <button
+              @click="showCreateFileModal = true"
+              class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
+            >
+              <DocumentTextIcon class="w-4 h-4 mr-2" />
+              Create File
+            </button>
             <button
               @click="triggerFileInput"
               class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
@@ -602,6 +610,336 @@
         </div>
       </Dialog>
     </TransitionRoot>
+
+    <!-- Upload Modal -->
+    <TransitionRoot as="template" :show="showUploadModal">
+      <Dialog as="div" class="relative z-50" @close="handleUploadModalClose">
+        <TransitionChild
+          as="template"
+          enter="ease-out duration-300"
+          enter-from="opacity-0"
+          enter-to="opacity-100"
+          leave="ease-in duration-200"
+          leave-from="opacity-100"
+          leave-to="opacity-0"
+        >
+          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+        </TransitionChild>
+
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+          <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <TransitionChild
+              as="template"
+              enter="ease-out duration-300"
+              enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              enter-to="opacity-100 translate-y-0 sm:scale-100"
+              leave="ease-in duration-200"
+              leave-from="opacity-100 translate-y-0 sm:scale-100"
+              leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            >
+              <DialogPanel class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:p-6">
+                <div>
+                  <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/20">
+                    <ArrowUpTrayIcon class="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div class="mt-3 text-center sm:mt-5">
+                    <DialogTitle as="h3" class="text-lg font-semibold leading-6 text-gray-900 dark:text-white">
+                      Upload Files
+                    </DialogTitle>
+                    <div class="mt-2">
+                      <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Upload files to <span class="font-medium">{{ bucketName }}</span>{{ currentPath ? `/${currentPath}` : '' }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Upload Area -->
+                <div class="mt-6">
+                  <div
+                    @drop.prevent="handleModalDrop"
+                    @dragover.prevent="isDragOver = true"
+                    @dragleave.prevent="isDragOver = false"
+                    :class="[
+                      'border-2 border-dashed rounded-lg p-6 text-center transition-colors duration-200',
+                      isDragOver
+                        ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+                    ]"
+                  >
+                    <ArrowUpTrayIcon class="mx-auto h-12 w-12 text-gray-400" />
+                    <div class="mt-4">
+                      <div class="flex flex-col sm:flex-row gap-3 items-center justify-center">
+                        <button
+                          @click="showUploadModal = false; showCreateFileModal = true"
+                          class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
+                        >
+                          <DocumentTextIcon class="w-4 h-4 mr-2" />
+                          Create File
+                        </button>
+                        <label for="upload-files" class="cursor-pointer">
+                          <span class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                            <ArrowUpTrayIcon class="w-4 h-4 mr-2" />
+                            Choose Files
+                          </span>
+                          <input
+                            id="upload-files"
+                            ref="modalFileInput"
+                            type="file"
+                            multiple
+                            class="sr-only"
+                            @change="handleModalFileSelect"
+                          />
+                        </label>
+                      </div>
+                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
+                        or drag and drop files here
+                      </p>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      Multiple files supported • Max 100MB per file
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Selected Files -->
+                <div v-if="selectedFiles.length > 0" class="mt-4">
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                    Selected Files ({{ selectedFiles.length }})
+                  </h4>
+                  <div class="max-h-40 overflow-y-auto">
+                    <div
+                      v-for="(file, index) in selectedFiles"
+                      :key="index"
+                      class="flex items-center justify-between py-2 px-3 bg-gray-50 dark:bg-gray-700 rounded-lg mb-2"
+                    >
+                      <div class="flex items-center space-x-3">
+                        <DocumentIcon class="w-4 h-4 text-gray-400" />
+                        <div>
+                          <p class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                            {{ file.name }}
+                          </p>
+                          <p class="text-xs text-gray-500 dark:text-gray-400">
+                            {{ formatFileSize(file.size) }}
+                          </p>
+                        </div>
+                      </div>
+                      <button
+                        @click="removeFile(index)"
+                        class="text-red-400 hover:text-red-600 p-1"
+                      >
+                        <XMarkIcon class="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Upload Progress -->
+                <div v-if="uploadProgress.length > 0" class="mt-4">
+                  <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                    Upload Progress
+                  </h4>
+                  <div class="space-y-2">
+                    <div
+                      v-for="progress in uploadProgress"
+                      :key="progress.fileName"
+                      class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3"
+                    >
+                      <div class="flex justify-between items-center mb-1">
+                        <span class="text-sm text-gray-900 dark:text-white">{{ progress.fileName }}</span>
+                        <span class="text-xs text-gray-500 dark:text-gray-400">{{ Math.round(progress.progress * 100) }}%</span>
+                      </div>
+                      <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                        <div
+                          class="bg-blue-600 h-2 rounded-full transition-all duration-200"
+                          :style="{ width: `${progress.progress * 100}%` }"
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Modal Actions -->
+                <div class="mt-6 sm:flex sm:flex-row-reverse gap-3">
+                  <button
+                    @click="handleUpload"
+                    :disabled="selectedFiles.length === 0 || isUploading"
+                    class="inline-flex w-full justify-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
+                  >
+                    <ArrowPathIcon v-if="isUploading" class="animate-spin -ml-1 mr-2 h-4 w-4" />
+                    {{ isUploading ? 'Uploading...' : `Upload ${selectedFiles.length} file${selectedFiles.length === 1 ? '' : 's'}` }}
+                  </button>
+                  <button
+                    @click="closeUploadModal"
+                    :disabled="isUploading"
+                    class="mt-3 inline-flex w-full justify-center rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed sm:mt-0 sm:w-auto"
+                  >
+                    {{ isUploading ? 'Cancel' : 'Close' }}
+                  </button>
+                </div>
+              </DialogPanel>
+            </TransitionChild>
+          </div>
+        </div>
+      </Dialog>
+    </TransitionRoot>
+
+    <!-- Create File Modal -->
+    <TransitionRoot as="template" :show="showCreateFileModal">
+      <Dialog as="div" class="relative z-50" @close="showCreateFileModal = false">
+        <TransitionChild
+          as="template"
+          enter="ease-out duration-300"
+          enter-from="opacity-0"
+          enter-to="opacity-100"
+          leave="ease-in duration-200"
+          leave-from="opacity-100"
+          leave-to="opacity-0"
+        >
+          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
+        </TransitionChild>
+
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+          <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <TransitionChild
+              as="template"
+              enter="ease-out duration-300"
+              enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              enter-to="opacity-100 translate-y-0 sm:scale-100"
+              leave="ease-in duration-200"
+              leave-from="opacity-100 translate-y-0 sm:scale-100"
+              leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            >
+              <DialogPanel class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:p-6">
+                <div>
+                  <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/20">
+                    <DocumentTextIcon class="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div class="mt-3 text-center sm:mt-5">
+                    <DialogTitle as="h3" class="text-lg font-semibold leading-6 text-gray-900 dark:text-white">
+                      Create New File
+                    </DialogTitle>
+                    <div class="mt-2">
+                      <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Create a new file in <span class="font-medium">{{ bucketName }}</span>{{ currentPath ? `/${currentPath}` : '' }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- File Details Form -->
+                <div class="mt-6">
+                  <div class="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-6 space-y-6">
+                    <!-- Filename Input -->
+                    <div class="space-y-2">
+                      <label for="fileName" class="flex items-center text-sm font-semibold text-gray-900 dark:text-gray-100">
+                        <DocumentTextIcon class="w-4 h-4 mr-2 text-gray-500 dark:text-gray-400" />
+                        File Name
+                      </label>
+                      <div class="relative">
+                        <input
+                          v-model="fileName"
+                          type="text"
+                          id="fileName"
+                          placeholder="example.json"
+                          class="block w-full rounded-lg border-0 bg-white dark:bg-gray-800 px-4 py-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-200 text-sm"
+                          :class="{
+                            'ring-red-500 dark:ring-red-400': createFileValidationError && fileName.trim(),
+                            'ring-green-500 dark:ring-green-400': !createFileValidationError && fileName.trim()
+                          }"
+                          @input="validateCreateFile"
+                        />
+                        <div v-if="!createFileValidationError && fileName.trim()" class="absolute inset-y-0 right-0 flex items-center pr-3">
+                          <svg class="h-4 w-4 text-green-500 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                      </div>
+                      <!-- Auto-detected Content Type Display -->
+                      <div v-if="fileName.trim()" class="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                        <span>{{ getContentTypeLabel(autoDetectedContentType) }} will be auto-detected</span>
+                      </div>
+                    </div>
+
+                    <!-- Validation Error -->
+                    <div v-if="createFileValidationError" class="flex items-center justify-center bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                      <ExclamationTriangleIcon class="w-5 h-5 mr-2 text-red-600 dark:text-red-400" />
+                      <span class="text-sm font-medium text-red-700 dark:text-red-300">{{ createFileValidationError }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Content Editor -->
+                <div class="mt-6">
+                  <label for="fileContent" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    File Content
+                  </label>
+                  <div class="relative border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                    <div class="flex">
+                      <!-- Line Numbers -->
+                      <div class="bg-gray-100 dark:bg-gray-800 px-3 py-4 border-r border-gray-200 dark:border-gray-700 select-none">
+                        <div class="text-xs font-mono text-gray-500 dark:text-gray-400 leading-6">
+                          <div v-for="lineNum in Math.max(1, fileContent.split('\n').length)" :key="lineNum" class="h-6 text-right">
+                            {{ lineNum }}
+                          </div>
+                        </div>
+                      </div>
+                      <!-- Editor Area -->
+                      <div class="flex-1">
+                        <textarea
+                          v-model="fileContent"
+                          @input="validateCreateFile"
+                          class="w-full h-80 p-4 text-sm bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-0 resize-none font-mono focus:outline-none leading-6"
+                          :class="{ 'bg-red-50 dark:bg-red-900/10': createFileValidationError }"
+                          placeholder="Enter your file content here..."
+                          spellcheck="false"
+                          style="line-height: 1.5rem;"
+                        ></textarea>
+                      </div>
+                    </div>
+
+                    <!-- Status Bar -->
+                    <div class="bg-gray-100 dark:bg-gray-800 px-4 py-2 border-t border-gray-200 dark:border-gray-700">
+                      <div class="flex justify-between items-center text-xs text-gray-600 dark:text-gray-400">
+                        <div class="flex items-center space-x-4">
+                          <span>Lines: {{ Math.max(1, fileContent.split('\n').length) }}</span>
+                          <span>Characters: {{ fileContent.length }}</span>
+                          <span>Type: {{ getFileExtension(fileName).toUpperCase() || 'Text' }}</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                          <span v-if="!createFileValidationError && fileContent.trim()" class="text-green-600 dark:text-green-400">✓ Valid</span>
+                          <span v-else-if="createFileValidationError" class="text-red-600 dark:text-red-400">✗ Invalid</span>
+                          <span class="text-gray-500">{{ autoDetectedContentType }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Modal Actions -->
+                <div class="mt-6 sm:flex sm:flex-row-reverse gap-3">
+                  <button
+                    @click="handleCreateFile"
+                    :disabled="!fileName.trim() || isCreatingFile || !!createFileValidationError"
+                    class="inline-flex w-full justify-center rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed sm:w-auto"
+                  >
+                    <ArrowPathIcon v-if="isCreatingFile" class="animate-spin -ml-1 mr-2 h-4 w-4" />
+                    {{ isCreatingFile ? 'Creating...' : 'Create File' }}
+                  </button>
+                  <button
+                    @click="closeCreateFileModal"
+                    :disabled="isCreatingFile"
+                    class="mt-3 inline-flex w-full justify-center rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-white shadow-sm hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed sm:mt-0 sm:w-auto"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </DialogPanel>
+            </TransitionChild>
+          </div>
+        </div>
+      </Dialog>
+    </TransitionRoot>
   </div>
 </template>
 
@@ -619,9 +957,11 @@ import {
   ChevronUpIcon,
   ChevronDownIcon,
   DocumentIcon,
+  DocumentTextIcon,
   FolderIcon,
   TrashIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  XMarkIcon
 } from '@heroicons/vue/24/outline'
 import {
   Dialog,
@@ -632,6 +972,7 @@ import {
 } from '@headlessui/vue'
 import { useStorageStore } from '@/stores/storage'
 import { useProjectsStore } from '@/stores/projects'
+import { useAppStore } from '@/stores/app'
 import type { StorageObjectWithPreview } from '@/types'
 
 const router = useRouter()
@@ -651,6 +992,21 @@ const deleteModal = ref<{
 // Drag and drop state
 const isDragOver = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
+const showUploadModal = ref(false)
+const showCreateFileModal = ref(false)
+
+// Upload modal state
+const selectedFiles = ref<File[]>([])
+const modalFileInput = ref<HTMLInputElement | null>(null)
+const isUploading = ref(false)
+const uploadProgress = ref<Array<{ fileName: string; progress: number }>>([])
+const appStore = useAppStore()
+
+// Create file modal state
+const fileName = ref('')
+const fileContent = ref('')
+const isCreatingFile = ref(false)
+const createFileValidationError = ref('')
 
 // Props from route
 const bucketName = computed(() => decodeURIComponent(route.params.bucketName as string))
@@ -667,8 +1023,14 @@ const allObjectsSelected = computed(() => {
 
 const someObjectsSelected = computed(() => {
   const nonFolderObjects = storageStore.objects.filter(obj => !obj.isFolder)
-  return storageStore.selectedObjects.length > 0 && 
+  return storageStore.selectedObjects.length > 0 &&
          storageStore.selectedObjects.length < nonFolderObjects.length
+})
+
+// Auto-detect content type from file extension
+const autoDetectedContentType = computed(() => {
+  if (!fileName.value.trim()) return 'text/plain'
+  return getContentTypeFromExtension(fileName.value)
 })
 
 // Methods
@@ -784,6 +1146,226 @@ function formatDate(dateString?: string): string {
     minute: '2-digit',
     hour12: false
   })
+}
+
+// Upload modal functions
+function handleModalFileSelect(event: Event): void {
+  const target = event.target as HTMLInputElement
+  const files = target.files
+  if (files) {
+    selectedFiles.value = [...selectedFiles.value, ...Array.from(files)]
+  }
+}
+
+function handleModalDrop(event: DragEvent): void {
+  isDragOver.value = false
+  const files = event.dataTransfer?.files
+  if (files) {
+    selectedFiles.value = [...selectedFiles.value, ...Array.from(files)]
+  }
+}
+
+function removeFile(index: number): void {
+  selectedFiles.value.splice(index, 1)
+}
+
+async function handleUpload(): Promise<void> {
+  if (selectedFiles.value.length === 0) return
+
+  try {
+    isUploading.value = true
+    uploadProgress.value = selectedFiles.value.map(file => ({
+      fileName: file.name,
+      progress: 0
+    }))
+
+    // Upload all files at once (uploadFiles handles success toast and refresh)
+    await storageStore.uploadFiles(selectedFiles.value, bucketName.value, currentPath.value)
+
+    // Mark all files as complete for UI
+    uploadProgress.value.forEach(progress => {
+      progress.progress = 1
+    })
+
+    // Close modal (uploadFiles already shows success toast and refreshes objects)
+    closeUploadModal()
+
+  } catch (error: any) {
+    console.error('Upload failed:', error)
+    appStore.showToast({
+      type: 'error',
+      title: 'Upload Failed',
+      message: error.message || 'Failed to upload files'
+    })
+  } finally {
+    isUploading.value = false
+  }
+}
+
+function handleUploadModalClose(): void {
+  // Prevent closing during upload
+  if (!isUploading.value) {
+    closeUploadModal()
+  }
+}
+
+function closeUploadModal(): void {
+  showUploadModal.value = false
+  selectedFiles.value = []
+  uploadProgress.value = []
+  isDragOver.value = false
+  if (modalFileInput.value) {
+    modalFileInput.value.value = ''
+  }
+}
+
+// Create file functions
+function getFileExtension(filename: string): string {
+  if (!filename) return ''
+  return filename.split('.').pop()?.toLowerCase() || ''
+}
+
+function getContentTypeFromExtension(filename: string): string {
+  const extension = getFileExtension(filename)
+  const contentTypeMap: Record<string, string> = {
+    'json': 'application/json',
+    'xml': 'application/xml',
+    'yaml': 'application/yaml',
+    'yml': 'application/yaml',
+    'html': 'text/html',
+    'htm': 'text/html',
+    'css': 'text/css',
+    'js': 'text/javascript',
+    'mjs': 'text/javascript',
+    'ts': 'text/typescript',
+    'tsx': 'text/typescript',
+    'jsx': 'text/javascript',
+    'md': 'text/markdown',
+    'csv': 'text/csv',
+    'txt': 'text/plain',
+    'log': 'text/plain',
+    'conf': 'text/plain',
+    'ini': 'text/plain',
+    'sh': 'text/x-shellscript',
+    'py': 'text/x-python',
+    'rb': 'text/x-ruby',
+    'php': 'text/x-php',
+    'go': 'text/x-go',
+    'java': 'text/x-java-source',
+    'c': 'text/x-csrc',
+    'cpp': 'text/x-c++src',
+    'h': 'text/x-chdr',
+    'hpp': 'text/x-c++hdr'
+  }
+
+  return contentTypeMap[extension] || 'text/plain'
+}
+
+
+function getContentTypeLabel(contentType: string): string {
+  const labelMap: Record<string, string> = {
+    'application/json': 'JSON',
+    'application/xml': 'XML',
+    'application/yaml': 'YAML',
+    'text/html': 'HTML',
+    'text/css': 'CSS',
+    'text/javascript': 'JavaScript',
+    'text/typescript': 'TypeScript',
+    'text/markdown': 'Markdown',
+    'text/csv': 'CSV',
+    'text/x-shellscript': 'Shell Script',
+    'text/x-python': 'Python',
+    'text/x-ruby': 'Ruby',
+    'text/x-php': 'PHP',
+    'text/x-go': 'Go',
+    'text/x-java-source': 'Java',
+    'text/x-csrc': 'C Source',
+    'text/x-c++src': 'C++ Source',
+    'text/plain': 'Plain Text'
+  }
+
+  return labelMap[contentType] || 'Plain Text'
+}
+
+function validateCreateFile(): void {
+  createFileValidationError.value = ''
+
+  if (!fileName.value.trim()) {
+    return
+  }
+
+  // Validate filename
+  if (fileName.value.includes('/') || fileName.value.includes('\\')) {
+    createFileValidationError.value = 'Filename cannot contain slashes'
+    return
+  }
+
+  if (!fileContent.value.trim()) {
+    return // Empty content is valid
+  }
+
+  // Validate content based on auto-detected type
+  try {
+    const extension = getFileExtension(fileName.value)
+    const detectedType = autoDetectedContentType.value
+
+    if (extension === 'json' || detectedType === 'application/json') {
+      JSON.parse(fileContent.value)
+    } else if (extension === 'xml' || detectedType === 'application/xml') {
+      const parser = new DOMParser()
+      const xmlDoc = parser.parseFromString(fileContent.value, 'text/xml')
+      const parseError = xmlDoc.getElementsByTagName('parsererror')
+      if (parseError.length > 0) {
+        throw new Error('Invalid XML format')
+      }
+    }
+  } catch (error: any) {
+    createFileValidationError.value = error.message || 'Invalid format'
+  }
+}
+
+async function handleCreateFile(): Promise<void> {
+  if (!fileName.value.trim()) return
+
+  try {
+    isCreatingFile.value = true
+
+    // Auto-detect content type from file extension
+    const detectedContentType = autoDetectedContentType.value
+
+    // Create file content as blob
+    const blob = new Blob([fileContent.value], {
+      type: detectedContentType
+    })
+
+    // Create File object
+    const file = new File([blob], fileName.value, {
+      type: detectedContentType
+    })
+
+    // Upload the file using uploadFiles
+    await storageStore.uploadFiles([file], bucketName.value, currentPath.value)
+
+    // Close modal (uploadFiles already shows success toast and refreshes objects)
+    closeCreateFileModal()
+
+  } catch (error: any) {
+    console.error('Create file failed:', error)
+    appStore.showToast({
+      type: 'error',
+      title: 'Create Failed',
+      message: error.message || 'Failed to create file'
+    })
+  } finally {
+    isCreatingFile.value = false
+  }
+}
+
+function closeCreateFileModal(): void {
+  showCreateFileModal.value = false
+  fileName.value = ''
+  fileContent.value = ''
+  createFileValidationError.value = ''
 }
 
 // Drag and drop functions
