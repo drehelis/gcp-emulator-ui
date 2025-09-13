@@ -42,18 +42,18 @@
             <div class="flex items-center space-x-3">
               <button
                 @click="showCreateBucketModal = true"
-                class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                class="inline-flex items-center px-2 sm:px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
               >
-                <PlusIcon class="h-4 w-4 mr-2" />
-                Create Bucket
+                <PlusIcon class="h-4 w-4 sm:mr-2" />
+                <span class="hidden sm:inline">Create Bucket</span>
               </button>
               <button
                 @click="refreshBuckets"
                 :disabled="storageStore.loading.buckets"
-                class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                class="inline-flex items-center px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                <ArrowPathIcon class="h-4 w-4 mr-2" :class="{ 'animate-spin': storageStore.loading.buckets }" />
-                Refresh
+                <ArrowPathIcon class="h-4 w-4 sm:mr-2" :class="{ 'animate-spin': storageStore.loading.buckets }" />
+                <span class="hidden sm:inline">Refresh</span>
               </button>
             </div>
           </div>
@@ -74,15 +74,9 @@
               <ArchiveBoxIcon class="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
               <div class="flex-1 min-w-0 cursor-pointer">
                 <div class="flex items-center space-x-2 mb-1">
-                  <button
-                    @click.stop="navigateToBucket(bucket.name)"
-                    class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 transition-colors group"
-                  >
-                    <span>{{ bucket.name }}</span>
-                    <svg class="w-3 h-3 ml-1 opacity-60 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                    </svg>
-                  </button>
+                  <span class="text-sm font-medium text-gray-900 dark:text-white">
+                    {{ bucket.name }}
+                  </span>
                   <div v-if="bucket.location" class="flex items-center">
                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
                       {{ bucket.location }}
@@ -91,51 +85,34 @@
                 </div>
                 <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
                   <div>{{ bucket.storageClass || 'STANDARD' }}</div>
-                  <div v-if="bucket.timeCreated">Created {{ formatDate(bucket.timeCreated) }}</div>
                 </div>
               </div>
             </div>
             
-            <!-- Actions Menu -->
-            <div class="relative ml-4">
+            <!-- Bucket Actions -->
+            <div class="flex items-center space-x-2 ml-4">
               <button
-                @click.stop="toggleBucketMenu(bucket.name)"
-                class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                @click.stop="navigateToBucket(bucket.name)"
+                class="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                title="Browse objects"
               >
-                <EllipsisVerticalIcon class="w-5 h-5" />
+                <FolderIcon class="w-4 h-4" />
               </button>
-              
-              <!-- Dropdown Menu -->
-              <div
-                v-if="activeBucketMenu === bucket.name"
-                v-click-outside="() => closeBucketMenu()"
-                class="absolute right-0 z-10 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-gray-700"
+              <button
+                @click.stop="copyBucketName(bucket.name)"
+                class="p-1.5 text-gray-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors"
+                title="Copy bucket name"
               >
-                <div class="py-1">
-                  <button
-                    @click="navigateToBucket(bucket.name)"
-                    class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    <FolderIcon class="w-4 h-4 mr-2 inline" />
-                    Browse Objects
-                  </button>
-                  <button
-                    @click="copyBucketName(bucket.name)"
-                    class="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                  >
-                    <DocumentDuplicateIcon class="w-4 h-4 mr-2 inline" />
-                    Copy Name
-                  </button>
-                  <hr class="my-1 border-gray-200 dark:border-gray-600">
-                  <button
-                    @click="confirmDeleteBucket(bucket)"
-                    class="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-                  >
-                    <TrashIcon class="w-4 h-4 mr-2 inline" />
-                    Delete Bucket
-                  </button>
-                </div>
-              </div>
+                <DocumentDuplicateIcon class="w-4 h-4" />
+              </button>
+              <button
+                @click.stop="confirmDeleteBucket(bucket)"
+                :disabled="storageStore.loading.delete"
+                class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Delete bucket"
+              >
+                <TrashIcon class="w-4 h-4" />
+              </button>
             </div>
           </div>
           </div>
@@ -155,18 +132,18 @@
             <div class="flex items-center space-x-3">
               <button
                 @click="showCreateBucketModal = true"
-                class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                class="inline-flex items-center px-2 sm:px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
               >
-                <PlusIcon class="h-4 w-4 mr-2" />
-                Create Bucket
+                <PlusIcon class="h-4 w-4 sm:mr-2" />
+                <span class="hidden sm:inline">Create Bucket</span>
               </button>
               <button
                 @click="refreshBuckets"
                 :disabled="storageStore.loading.buckets"
-                class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                class="inline-flex items-center px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                <ArrowPathIcon class="h-4 w-4 mr-2" :class="{ 'animate-spin': storageStore.loading.buckets }" />
-                Refresh
+                <ArrowPathIcon class="h-4 w-4 sm:mr-2" :class="{ 'animate-spin': storageStore.loading.buckets }" />
+                <span class="hidden sm:inline">Refresh</span>
               </button>
             </div>
           </div>
@@ -275,7 +252,6 @@ import {
   PlusIcon,
   ArrowPathIcon,
   ExclamationTriangleIcon,
-  EllipsisVerticalIcon,
   FolderIcon,
   DocumentDuplicateIcon,
   TrashIcon
@@ -300,7 +276,6 @@ const projectsStore = useProjectsStore()
 const appStore = useAppStore()
 
 // Local state
-const activeBucketMenu = ref<string | null>(null)
 const showCreateBucketModal = ref(false)
 const deleteModal = ref<{
   show: boolean
@@ -324,14 +299,6 @@ function navigateToBucket(bucketName: string): void {
   router.push(`/projects/${currentProjectId.value}/storage/buckets/${encodeURIComponent(bucketName)}`)
 }
 
-function toggleBucketMenu(bucketName: string): void {
-  activeBucketMenu.value = activeBucketMenu.value === bucketName ? null : bucketName
-}
-
-function closeBucketMenu(): void {
-  activeBucketMenu.value = null
-}
-
 async function copyBucketName(bucketName: string): Promise<void> {
   try {
     await navigator.clipboard.writeText(bucketName)
@@ -348,7 +315,6 @@ async function copyBucketName(bucketName: string): Promise<void> {
       message: 'Failed to copy bucket name to clipboard'
     })
   }
-  closeBucketMenu()
 }
 
 function confirmDeleteBucket(bucket: StorageBucket): void {
@@ -356,7 +322,6 @@ function confirmDeleteBucket(bucket: StorageBucket): void {
     show: true,
     bucket
   }
-  closeBucketMenu()
 }
 
 async function handleDeleteBucket(): Promise<void> {
@@ -405,19 +370,4 @@ onMounted(async () => {
   }
 })
 
-// Click outside directive
-const vClickOutside = {
-  mounted(el: HTMLElement, binding: any) {
-    el._clickOutside = (event: Event) => {
-      if (!(el === event.target || el.contains(event.target as Node))) {
-        binding.value()
-      }
-    }
-    document.addEventListener('click', el._clickOutside)
-  },
-  unmounted(el: HTMLElement) {
-    document.removeEventListener('click', el._clickOutside)
-    delete el._clickOutside
-  }
-}
 </script>

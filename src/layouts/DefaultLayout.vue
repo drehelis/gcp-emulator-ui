@@ -131,12 +131,23 @@
                 :to="`/projects/${currentProject}/storage/buckets`"
                 @click="handleMobileNavClick"
                 class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-                :class="$route.path.includes('/buckets') ? 
+                :class="$route.path.includes('/buckets') ?
                   'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
                   'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'"
               >
                 <ArchiveBoxIcon class="w-4 h-4 mr-3" />
                 Buckets
+              </router-link>
+              <router-link
+                :to="`/projects/${currentProject}/storage/settings`"
+                @click="handleMobileNavClick"
+                class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+                :class="$route.path.includes('/storage/settings') ?
+                  'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
+                  'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'"
+              >
+                <CogIcon class="w-4 h-4 mr-3" />
+                Settings
               </router-link>
             </div>
           </div>
@@ -203,12 +214,22 @@
               <router-link
                 :to="`/projects/${currentProject}/storage/buckets`"
                 class="flex items-center justify-center w-full px-2 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-                :class="$route.path.includes('/buckets') ? 
+                :class="$route.path.includes('/buckets') ?
                   'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
                   'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'"
                 title="Buckets"
               >
                 <ArchiveBoxIcon class="w-5 h-5" />
+              </router-link>
+              <router-link
+                :to="`/projects/${currentProject}/storage/settings`"
+                class="flex items-center justify-center w-full px-2 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+                :class="$route.path.includes('/storage/settings') ?
+                  'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
+                  'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'"
+                title="Settings"
+              >
+                <CogIcon class="w-5 h-5" />
               </router-link>
             </template>
           </div>
@@ -344,7 +365,8 @@ import {
   CubeIcon,
   DocumentDuplicateIcon,
   ArrowsRightLeftIcon,
-  ArchiveBoxIcon
+  ArchiveBoxIcon,
+  CogIcon
 } from '@heroicons/vue/24/outline'
 
 import { useAppStore } from '@/stores/app'

@@ -100,6 +100,7 @@
           </h2>
           
           <div class="flex items-center justify-center p-8 bg-gray-50 dark:bg-gray-900 rounded-lg">
+            <!-- Image Preview -->
             <img
               v-if="objectData.contentType?.startsWith('image/')"
               :src="previewUrl"
@@ -107,6 +108,27 @@
               class="max-w-full max-h-96 object-contain rounded-lg"
               @error="previewError = true"
             />
+            <!-- Video Preview -->
+            <video
+              v-else-if="objectData.contentType?.startsWith('video/')"
+              :src="previewUrl"
+              controls
+              preload="metadata"
+              class="max-w-full max-h-96 rounded-lg"
+              @error="previewError = true"
+            >
+              Your browser does not support the video tag.
+            </video>
+            <!-- PDF Preview -->
+            <iframe
+              v-else-if="objectData.contentType === 'application/pdf'"
+              :src="previewUrl"
+              class="w-full h-96 rounded-lg border-0"
+              @error="previewError = true"
+            >
+              <p>Your browser does not support PDF preview. <a :href="previewUrl" target="_blank" class="text-blue-600 hover:text-blue-700">Download the PDF</a> to view it.</p>
+            </iframe>
+            <!-- Error State -->
             <div v-else-if="previewError" class="text-center text-gray-500 dark:text-gray-400">
               <DocumentIcon class="w-12 h-12 mx-auto mb-2" />
               <p>Preview not available</p>
@@ -165,7 +187,8 @@ const currentProjectId = computed(() => route.params.projectId as string || proj
 
 // Computed
 const canPreview = computed(() => {
-  return objectData.value?.contentType?.startsWith('image/')
+  const contentType = objectData.value?.contentType
+  return contentType?.startsWith('image/') || contentType?.startsWith('video/') || contentType === 'application/pdf'
 })
 
 const previewUrl = computed(() => {

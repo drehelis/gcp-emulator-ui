@@ -62,9 +62,10 @@
     script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com;
     style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
     font-src 'self' https://fonts.gstatic.com;
-    img-src 'self' data: https:;
+    img-src 'self' data: https: http://host.docker.internal:*;
+    media-src 'self' http://host.docker.internal:*;
     connect-src 'self' https://www.google-analytics.com http://host.docker.internal:* http://localhost:* http: https: ws: wss:;
-    frame-src 'none';
+    frame-src 'self' http://host.docker.internal:*;
     object-src 'none';
     base-uri 'self';
     form-action 'self';

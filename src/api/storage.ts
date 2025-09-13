@@ -19,7 +19,7 @@ import type {
 
 // Create storage-specific axios instance - same pattern as PubSub
 const storageClient = axios.create({
-  baseURL: '/storage',
+  baseURL: import.meta.env.VITE_STORAGE_BASE_URL || 'http://localhost:4443',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
@@ -36,7 +36,7 @@ export const storageApi = {
     project?: string
   } = {}): Promise<ListBucketsResponse> {
     const api = getApi()
-    const response = await api.get('/v1/b', {
+    const response = await api.get('/storage/v1/b', {
       params: {
         maxResults: options.maxResults || 1000,
         pageToken: options.pageToken,
@@ -59,7 +59,7 @@ export const storageApi = {
     userProject?: string
   } = {}): Promise<StorageBucket> {
     const api = getApi()
-    const response = await api.get(`/v1/b/${encodeURIComponent(bucketName)}`, {
+    const response = await api.get(`/storage/v1/b/${encodeURIComponent(bucketName)}`, {
       params: {
         projection: options.projection || 'full',
         ifMetagenerationMatch: options.ifMetagenerationMatch,
@@ -82,7 +82,7 @@ export const storageApi = {
       iamConfiguration: iamConfiguration
     }
 
-    const response = await api.post('/v1/b', bucketData, {
+    const response = await api.post('/storage/v1/b', bucketData, {
       params: {
         project: options.project || import.meta.env.VITE_GOOGLE_CLOUD_PROJECT_ID || 'test-project',
         predefinedAcl: options.predefinedAcl,
@@ -101,7 +101,7 @@ export const storageApi = {
     userProject?: string
   } = {}): Promise<void> {
     const api = getApi()
-    await api.delete(`/b/${encodeURIComponent(bucketName)}`, {
+    await api.delete(`/storage/v1/b/${encodeURIComponent(bucketName)}`, {
       params: {
         ifMetagenerationMatch: options.ifMetagenerationMatch,
         ifMetagenerationNotMatch: options.ifMetagenerationNotMatch,
@@ -113,7 +113,7 @@ export const storageApi = {
   // Object Management
   async listObjects(request: ListObjectsRequest): Promise<ListObjectsResponse> {
     const api = getApi()
-    const response = await api.get(`/b/${encodeURIComponent(request.bucket)}/o`, {
+    const response = await api.get(`/storage/v1/b/${encodeURIComponent(request.bucket)}/o`, {
       params: {
         delimiter: request.delimiter,
         prefix: request.prefix,
@@ -143,7 +143,7 @@ export const storageApi = {
     userProject?: string
   } = {}): Promise<StorageObject> {
     const api = getApi()
-    const response = await api.get(`/b/${encodeURIComponent(bucket)}/o/${encodeURIComponent(objectName)}`, {
+    const response = await api.get(`/storage/v1/b/${encodeURIComponent(bucket)}/o/${encodeURIComponent(objectName)}`, {
       params: {
         generation: options.generation,
         projection: options.projection || 'full',
@@ -164,57 +164,99 @@ export const storageApi = {
     onProgress?: (progress: UploadProgress) => void
   ): Promise<StorageObject> {
     const api = getApi()
-    const formData = new FormData()
 
-    // Add metadata
-    const metadata: Partial<StorageObject> = {
-      name: request.name,
-      contentType: request.contentType || file.type,
-      contentEncoding: request.contentEncoding,
-      metadata: request.metadata
-    }
-
-    formData.append('file', file)
-    formData.append('metadata', JSON.stringify(metadata))
-
-    const response = await api.post(
-      `/b/${encodeURIComponent(request.bucket)}/o`,
-      formData,
-      {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        params: {
-          uploadType: request.uploadType || 'multipart',
-          predefinedAcl: request.predefinedAcl,
-          ifGenerationMatch: request.ifGenerationMatch,
-          ifGenerationNotMatch: request.ifGenerationNotMatch,
-          ifMetagenerationMatch: request.ifMetagenerationMatch,
-          ifMetagenerationNotMatch: request.ifMetagenerationNotMatch,
-          kmsKeyName: request.kmsKeyName,
-          userProject: request.userProject
-        },
-        onUploadProgress: (progressEvent) => {
-          if (onProgress && progressEvent.total) {
-            const progress: UploadProgress = {
-              loaded: progressEvent.loaded,
-              total: progressEvent.total,
-              percentage: Math.round((progressEvent.loaded * 100) / progressEvent.total),
-              file,
-              status: progressEvent.loaded === progressEvent.total ? 'completed' : 'uploading'
+    // Try direct binary upload first, which is more commonly supported by fake-gcs-server
+    try {
+      const response = await api.post(
+        `/upload/storage/v1/b/${encodeURIComponent(request.bucket)}/o`,
+        file,
+        {
+          headers: {
+            'Content-Type': request.contentType || file.type || 'application/octet-stream',
+          },
+          params: {
+            name: request.name,
+            uploadType: 'media',
+            predefinedAcl: request.predefinedAcl,
+            ifGenerationMatch: request.ifGenerationMatch,
+            ifGenerationNotMatch: request.ifGenerationNotMatch,
+            ifMetagenerationMatch: request.ifMetagenerationMatch,
+            ifMetagenerationNotMatch: request.ifMetagenerationNotMatch,
+            kmsKeyName: request.kmsKeyName,
+            userProject: request.userProject
+          },
+          onUploadProgress: (progressEvent) => {
+            if (onProgress && progressEvent.total) {
+              const progress: UploadProgress = {
+                loaded: progressEvent.loaded,
+                total: progressEvent.total,
+                percentage: Math.round((progressEvent.loaded * 100) / progressEvent.total),
+                file,
+                status: progressEvent.loaded === progressEvent.total ? 'completed' : 'uploading'
+              }
+              onProgress(progress)
             }
-            onProgress(progress)
           }
         }
-      }
-    )
+      )
 
-    return response.data
+      return response.data
+    } catch (error) {
+      console.warn('Direct upload failed, trying multipart upload:', error)
+
+      // Fallback to multipart upload if direct upload fails
+      const formData = new FormData()
+
+      // Add metadata
+      const metadata: Partial<StorageObject> = {
+        name: request.name,
+        contentType: request.contentType || file.type,
+        ...(request.contentEncoding && { contentEncoding: request.contentEncoding }),
+        ...(request.metadata && { metadata: request.metadata })
+      }
+
+      formData.append('file', file)
+      formData.append('metadata', JSON.stringify(metadata))
+
+      const response = await api.post(
+        `/upload/storage/v1/b/${encodeURIComponent(request.bucket)}/o`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          params: {
+            uploadType: 'multipart',
+            predefinedAcl: request.predefinedAcl,
+            ifGenerationMatch: request.ifGenerationMatch,
+            ifGenerationNotMatch: request.ifGenerationNotMatch,
+            ifMetagenerationMatch: request.ifMetagenerationMatch,
+            ifMetagenerationNotMatch: request.ifMetagenerationNotMatch,
+            kmsKeyName: request.kmsKeyName,
+            userProject: request.userProject
+          },
+          onUploadProgress: (progressEvent) => {
+            if (onProgress && progressEvent.total) {
+              const progress: UploadProgress = {
+                loaded: progressEvent.loaded,
+                total: progressEvent.total,
+                percentage: Math.round((progressEvent.loaded * 100) / progressEvent.total),
+                file,
+                status: progressEvent.loaded === progressEvent.total ? 'completed' : 'uploading'
+              }
+              onProgress(progress)
+            }
+          }
+        }
+      )
+
+      return response.data
+    }
   },
 
   async downloadObject(request: DownloadObjectRequest): Promise<Blob> {
     const api = getApi()
-    const response = await api.get(`/b/${encodeURIComponent(request.bucket)}/o/${encodeURIComponent(request.object)}`, {
+    const response = await api.get(`/storage/v1/b/${encodeURIComponent(request.bucket)}/o/${encodeURIComponent(request.object)}`, {
       params: {
         alt: request.alt || 'media',
         generation: request.generation,
@@ -233,7 +275,7 @@ export const storageApi = {
 
   async deleteObject(request: DeleteObjectRequest): Promise<void> {
     const api = getApi()
-    await api.delete(`/b/${encodeURIComponent(request.bucket)}/o/${encodeURIComponent(request.object)}`, {
+    await api.delete(`/storage/v1/b/${encodeURIComponent(request.bucket)}/o/${encodeURIComponent(request.object)}`, {
       params: {
         generation: request.generation,
         ifGenerationMatch: request.ifGenerationMatch,
@@ -273,7 +315,7 @@ export const storageApi = {
     }
 
     const response = await api.post(
-      `/b/${encodeURIComponent(sourceBucket)}/o/${encodeURIComponent(sourceObject)}/copyTo/b/${encodeURIComponent(destinationBucket)}/o/${encodeURIComponent(destinationObject)}`,
+      `/storage/v1/b/${encodeURIComponent(sourceBucket)}/o/${encodeURIComponent(sourceObject)}/copyTo/b/${encodeURIComponent(destinationBucket)}/o/${encodeURIComponent(destinationObject)}`,
       requestBody,
       {
         params: {
@@ -297,11 +339,11 @@ export const storageApi = {
 
   // Utility methods
   getObjectDownloadUrl(bucket: string, objectName: string): string {
-    return `/storage/download/storage/v1/b/${encodeURIComponent(bucket)}/o/${encodeURIComponent(objectName)}?alt=media`
+    return `${import.meta.env.VITE_STORAGE_BASE_URL}/storage/v1/b/${encodeURIComponent(bucket)}/o/${encodeURIComponent(objectName)}?alt=media`
   },
 
   getObjectPreviewUrl(bucket: string, objectName: string): string {
-    return `/storage/v1/b/${encodeURIComponent(bucket)}/o/${encodeURIComponent(objectName)}?alt=media`
+    return `${import.meta.env.VITE_STORAGE_BASE_URL}/storage/v1/b/${encodeURIComponent(bucket)}/o/${encodeURIComponent(objectName)}?alt=media`
   },
 
   // Batch operations
@@ -321,7 +363,7 @@ export const storageApi = {
   ): Promise<StorageObject[]> {
     const progressMap = new Map<string, UploadProgress>()
 
-    const uploadPromises = files.map(async (file, index) => {
+    const uploadPromises = files.map(async (file) => {
       const request: UploadObjectRequest = {
         ...options,
         bucket,
@@ -329,8 +371,8 @@ export const storageApi = {
         contentType: file.type
       }
 
-      return this.uploadObject(file, request, (progress) => {
-        progressMap.set(file.name, progress)
+      return this.uploadObject(file, request, (uploadProgress) => {
+        progressMap.set(file.name, uploadProgress)
         if (onProgress) {
           onProgress(Array.from(progressMap.values()))
         }
@@ -344,7 +386,7 @@ export const storageApi = {
   async healthCheck(): Promise<boolean> {
     try {
       const api = getApi()
-      await api.get('/storage/', { timeout: 5000 })
+      await api.get('/storage/v1/b', { timeout: 5000 })
       return true
     } catch (error) {
       console.warn('Storage emulator health check failed:', error)

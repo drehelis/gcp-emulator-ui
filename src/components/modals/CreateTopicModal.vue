@@ -178,6 +178,7 @@
                 >
                   <option value="pull">Pull</option>
                   <option value="push">Push</option>
+                  <option value="bigquery">BigQuery</option>
                 </select>
               </div>
 
@@ -192,6 +193,45 @@
                   placeholder="https://example.com/webhook"
                   class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
                 />
+              </div>
+
+              <!-- BigQuery Config (if bigquery) -->
+              <div v-if="subscription.deliveryType === 'bigquery'" class="lg:col-span-2 space-y-3">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    BigQuery Table *
+                  </label>
+                  <input
+                    v-model="subscription.bigqueryTable"
+                    type="text"
+                    placeholder="project.dataset.table"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                  />
+                </div>
+
+                <div class="flex items-center space-x-4">
+                  <label class="flex items-center">
+                    <input
+                      v-model="subscription.useTopicSchema"
+                      type="checkbox"
+                      class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
+                    />
+                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Use Topic Schema</span>
+                  </label>
+
+                  <label class="flex items-center">
+                    <input
+                      v-model="subscription.writeMetadata"
+                      type="checkbox"
+                      class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
+                    />
+                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Write Metadata</span>
+                  </label>
+                </div>
+
+                <p class="text-xs text-amber-600 dark:text-amber-400">
+                  ⚠️ Note: BigQuery subscriptions can be created but don't send messages to BigQuery in the emulator
+                </p>
               </div>
 
               <!-- Ack Deadline -->
@@ -323,8 +363,11 @@ interface TopicLabel {
 
 interface SubscriptionForm {
   name: string
-  deliveryType: 'pull' | 'push'
+  deliveryType: 'pull' | 'push' | 'bigquery'
   pushEndpoint?: string
+  bigqueryTable?: string
+  useTopicSchema?: boolean
+  writeMetadata?: boolean
   ackDeadlineSeconds: number
   enableMessageOrdering: boolean
   useDeadLetter: boolean
@@ -410,6 +453,10 @@ const validateSubscription = (subscription: SubscriptionForm): Record<string, st
   if (subscription.deliveryType === 'push' && !subscription.pushEndpoint?.trim()) {
     errors.pushEndpoint = 'Push endpoint is required for push subscriptions'
   }
+
+  if (subscription.deliveryType === 'bigquery' && !subscription.bigqueryTable?.trim()) {
+    errors.bigqueryTable = 'BigQuery table is required for BigQuery subscriptions'
+  }
   
   return errors
 }
@@ -470,6 +517,11 @@ const handleSubmit = async () => {
         enableMessageOrdering: subscription.enableMessageOrdering,
         pushConfig: subscription.deliveryType === 'push' ? {
           pushEndpoint: subscription.pushEndpoint
+        } : undefined,
+        bigqueryConfig: subscription.deliveryType === 'bigquery' ? {
+          table: subscription.bigqueryTable,
+          useTopicSchema: subscription.useTopicSchema,
+          writeMetadata: subscription.writeMetadata
         } : undefined,
         deadLetterPolicy: subscription.useDeadLetter ? {
           deadLetterTopic: subscription.deadLetterTopic ? `projects/${currentProjectId.value}/topics/${subscription.deadLetterTopic}` : undefined,
@@ -551,7 +603,9 @@ const addSubscription = () => {
     maxDeliveryAttempts: 5,
     useRetryPolicy: false,
     minimumBackoff: '1s',
-    maximumBackoff: '600s'
+    maximumBackoff: '600s',
+    useTopicSchema: false,
+    writeMetadata: false
   })
 }
 

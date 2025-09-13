@@ -57,7 +57,7 @@ export const useStorageStore = defineStore('storage', () => {
 
   // UI state
   const selectedObjects = ref<string[]>([])
-  const viewMode = ref<'grid' | 'list'>('grid')
+  const viewMode = ref<'grid' | 'list'>('list')
   const sortBy = ref<'name' | 'size' | 'modified'>('name')
   const sortOrder = ref<'asc' | 'desc'>('asc')
   
@@ -144,12 +144,6 @@ export const useStorageStore = defineStore('storage', () => {
       buckets.value = response.items || []
       state.value.state = 'success'
       state.value.lastUpdated = new Date()
-
-      appStore.showToast({
-        type: 'success',
-        title: 'Buckets Loaded',
-        message: `Found ${buckets.value.length} buckets`
-      })
     } catch (error: any) {
       console.error('Error fetching buckets:', error)
       state.value.error = error.message || 'Failed to fetch buckets'
@@ -271,7 +265,7 @@ export const useStorageStore = defineStore('storage', () => {
         prefix: prefix,
         delimiter: '/',
         maxResults: 1000,
-        pageToken: pagination.value.nextPageToken
+        ...(pagination.value.nextPageToken && { pageToken: pagination.value.nextPageToken })
       }
 
       const response = await storageApi.listObjects(request)
@@ -295,11 +289,12 @@ export const useStorageStore = defineStore('storage', () => {
       // Add files
       if (response.items) {
         for (const item of response.items) {
+          const preview = getObjectPreview(item)
           processedObjects.push({
             ...item,
             isFolder: false,
             downloadUrl: storageApi.getObjectDownloadUrl(bucketName, item.name),
-            preview: getObjectPreview(item)
+            ...(preview && { preview })
           })
         }
       }
@@ -360,17 +355,25 @@ export const useStorageStore = defineStore('storage', () => {
         }
 
         try {
-          uploadProgress.value[index].status = 'uploading'
-          
+          if (uploadProgress.value[index]) {
+            uploadProgress.value[index].status = 'uploading'
+          }
+
           const result = await storageApi.uploadObject(file, request, (progress) => {
-            uploadProgress.value[index] = { ...progress, status: 'uploading' }
+            if (uploadProgress.value[index]) {
+              uploadProgress.value[index] = { ...progress, status: 'uploading' }
+            }
           })
 
-          uploadProgress.value[index].status = 'completed'
+          if (uploadProgress.value[index]) {
+            uploadProgress.value[index].status = 'completed'
+          }
           return result
         } catch (error: any) {
-          uploadProgress.value[index].status = 'error'
-          uploadProgress.value[index].error = error.message
+          if (uploadProgress.value[index]) {
+            uploadProgress.value[index].status = 'error'
+            uploadProgress.value[index].error = error.message
+          }
           throw error
         }
       })
@@ -485,12 +488,15 @@ export const useStorageStore = defineStore('storage', () => {
     let currentPath = ''
 
     for (let i = 0; i < parts.length; i++) {
-      currentPath += parts[i] + '/'
-      breadcrumbs.value.push({
-        name: parts[i],
-        path: currentPath,
-        isLast: i === parts.length - 1
-      })
+      const part = parts[i]
+      if (part) {
+        currentPath += part + '/'
+        breadcrumbs.value.push({
+          name: part,
+          path: currentPath,
+          isLast: i === parts.length - 1
+        })
+      }
     }
   }
 
@@ -545,7 +551,9 @@ export const useStorageStore = defineStore('storage', () => {
     }
 
     stats.averageObjectSize = stats.objectCount > 0 ? stats.totalSize / stats.objectCount : 0
-    stats.lastModified = lastModified?.toISOString()
+    if (lastModified) {
+      stats.lastModified = lastModified.toISOString()
+    }
 
     bucketStatistics.value = stats
   }

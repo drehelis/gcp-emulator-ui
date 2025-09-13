@@ -395,6 +395,25 @@ const routes: RouteRecordRaw[] = [
                 ]
               }
             ]
+          },
+          {
+            path: 'storage/settings',
+            name: 'project-storage-settings',
+            component: () => import('@/views/storage/StorageSettingsView.vue'),
+            props: true,
+            meta: {
+              title: 'Storage Settings',
+              description: 'Configure Cloud Storage preferences',
+              icon: 'CogIcon',
+              requiresAuth: true,
+              requiresProject: true,
+              breadcrumbs: [
+                { label: 'Home', route: '/' },
+                { label: ':projectId', route: '/projects/:projectId' },
+                { label: 'Cloud Storage' },
+                { label: 'Settings' }
+              ]
+            }
           }
         ]
       },
@@ -725,12 +744,17 @@ router.beforeEach(async (to, from, next) => {
   }
 
   if (to.meta.breadcrumbs) {
-    // Process breadcrumbs to replace :projectId with actual project ID
+    // Process breadcrumbs to replace :projectId and :bucketName with actual values
     const projectId = to.params.projectId as string || projectsStore.selectedProjectId
+    const bucketName = to.params.bucketName as string
     const breadcrumbs = (to.meta.breadcrumbs as any[]).map(breadcrumb => ({
       ...breadcrumb,
-      label: breadcrumb.label.replace(':projectId', projectId || 'Project'),
-      route: breadcrumb.route?.replace(':projectId', projectId || 'project')
+      label: breadcrumb.label
+        .replace(':projectId', projectId || 'Project')
+        .replace(':bucketName', bucketName || 'Bucket'),
+      route: breadcrumb.route
+        ?.replace(':projectId', projectId || 'project')
+        ?.replace(':bucketName', bucketName || 'bucket')
     }))
     appStore.setBreadcrumbs(breadcrumbs)
   }

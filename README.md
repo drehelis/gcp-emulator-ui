@@ -17,7 +17,8 @@ https://github.com/user-attachments/assets/a578672c-4ecc-44ce-9fe1-ea606bbb775c
    * Handle subscriptions with pull/push configurations
    * Publish messages with attributes and template variables
    * Import/export configurations
-- **Google Cloud Storage** - Coming soon
+- **Google Cloud Storage ([fake-gcs](https://github.com/fsouza/fake-gcs-server))**
+   * Create, view, and manage Storage buckets
 - **Google Firestore/Datastore mode** - Coming soon
 
 ## Quick Start
@@ -70,7 +71,7 @@ Browse to http://localhost:9090
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `VITE_ENABLE_PUBSUB` | `true` | Enable Pub/Sub service management |
-| `VITE_ENABLE_CLOUD_STORAGE` | `false` | Enable Cloud Storage service (coming soon) |
+| `VITE_ENABLE_CLOUD_STORAGE` | `true` | Enable Cloud Storage service (coming soon) |
 | `VITE_PUBSUB_BASE_URL` | `http://localhost:8085` | Pub/Sub emulator endpoint |
 | `VITE_STORAGE_BASE_URL` | `http://localhost:4443` | Storage emulator endpoint |
 
