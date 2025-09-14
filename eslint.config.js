@@ -7,10 +7,10 @@ import tsParser from '@typescript-eslint/parser'
 export default [
   // Base JS config
   js.configs.recommended,
-  
+
   // Vue configs
   ...pluginVue.configs['flat/essential'],
-  
+
   // Main config
   {
     files: ['**/*.{js,mjs,cjs,ts,vue}'],
@@ -54,7 +54,9 @@ export default [
         indexedDB: 'readonly',
         IDBDatabase: 'readonly',
         IDBRequest: 'readonly',
-        IDBOpenDBRequest: 'readonly'
+        IDBOpenDBRequest: 'readonly',
+        // Vite global constants
+        __APP_VERSION__: 'readonly'
       }
     },
     rules: {
@@ -65,7 +67,7 @@ export default [
       'prefer-template': 'error'
     }
   },
-  
+
   // TypeScript specific config
   {
     files: ['**/*.{ts,tsx,vue}'],
@@ -84,7 +86,7 @@ export default [
       '@typescript-eslint/no-unused-vars': ['error', { 'argsIgnorePattern': '^_' }]
     }
   },
-  
+
   // Ignore patterns
   {
     ignores: [
