@@ -283,11 +283,9 @@ const route = useRoute()
 const appStore = useAppStore()
 const projectsStore = useProjectsStore()
 const { 
-  pubsubConnected, 
-  storageConnected, 
-  checkPubSubConnection, 
-  checkStorageConnection, 
-  checkAllConnections 
+  pubsubConnected,
+  storageConnected,
+  checkAllConnections
 } = useServiceConnections()
 
 // Reactive state
