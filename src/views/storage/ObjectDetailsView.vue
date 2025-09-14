@@ -298,6 +298,21 @@
 </template>
 
 <script setup lang="ts">
+// TypeScript declarations for browser globals
+declare global {
+  interface Window {
+    DOMParser: {
+      new(): {
+        parseFromString(): {
+          getElementsByTagName(): {
+            length: number
+          }
+        }
+      }
+    }
+  }
+}
+
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
@@ -305,7 +320,6 @@ import {
   ArrowDownTrayIcon,
   ArrowPathIcon,
   DocumentIcon,
-  DocumentTextIcon,
   PencilSquareIcon,
   ExclamationTriangleIcon,
   HomeIcon,
@@ -403,7 +417,6 @@ const objectBreadcrumbs = computed(() => {
   let currentPath = ''
   for (let i = 0; i < parts.length; i++) {
     const part = parts[i]
-    const isLast = i === parts.length - 1
 
     if (i < parts.length - 1) {
       // It's a folder
@@ -509,7 +522,7 @@ function validateContent(): void {
       JSON.parse(editContent.value)
     } else if (fileExtension.value === 'xml' || objectData.value?.contentType === 'application/xml') {
       // Basic XML validation - check for matching tags
-      const parser = new DOMParser()
+      const parser = new window.DOMParser()
       const xmlDoc = parser.parseFromString(editContent.value, 'text/xml')
       const parseError = xmlDoc.getElementsByTagName('parsererror')
       if (parseError.length > 0) {

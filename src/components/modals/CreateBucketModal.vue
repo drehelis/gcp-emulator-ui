@@ -113,7 +113,6 @@
 
 <script setup lang="ts">
 import { ref, computed, nextTick, watch } from 'vue'
-import { useRoute } from 'vue-router'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import { storageApi } from '@/api/storage'
 import { useAppStore } from '@/stores/app'
@@ -129,7 +128,6 @@ const emit = defineEmits<{
   'bucket-created': []
 }>()
 
-const route = useRoute()
 const appStore = useAppStore()
 
 const bucketNameInput = ref<HTMLInputElement>()
@@ -150,7 +148,6 @@ const modelValue = computed({
   set: (value: boolean) => emit('update:modelValue', value)
 })
 
-const currentProjectId = computed(() => route.params.projectId as string)
 
 const modalActions = computed<ModalAction[]>(() => [
   {

@@ -1045,7 +1045,7 @@ declare global {
   }
 
   interface FileSystemFileEntry extends FileSystemEntry {
-    file(successCallback: (file: File) => void, errorCallback?: (error: any) => void): void
+    file(callback: (file: File) => void): void
   }
 
   interface FileSystemDirectoryEntry extends FileSystemEntry {
@@ -1053,10 +1053,7 @@ declare global {
   }
 
   interface FileSystemDirectoryReader {
-    readEntries(
-      successCallback: (entries: FileSystemEntry[]) => void,
-      errorCallback?: (error: any) => void
-    ): void
+    readEntries(callback: (entries: FileSystemEntry[]) => void): void
   }
 }
 import {
@@ -1234,7 +1231,7 @@ async function handleBulkDelete(): Promise<void> {
   try {
     await storageStore.deleteObjects(bucketName.value, deleteModal.value.objects)
     deleteModal.value.show = false
-  } catch (error) {
+  } catch {
     // Error is handled in the store
   }
 }

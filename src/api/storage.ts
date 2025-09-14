@@ -3,7 +3,7 @@
  * Provides comprehensive storage management functionality
  */
 
-import axios, { type AxiosInstance } from 'axios'
+import axios from 'axios'
 import type {
   StorageBucket,
   StorageObject,
@@ -161,7 +161,7 @@ export const storageApi = {
   async uploadObject(
     file: File,
     request: UploadObjectRequest,
-    onProgress?: (progress: UploadProgress) => void
+    onProgress?: () => void
   ): Promise<StorageObject> {
     const api = getApi()
 
@@ -359,7 +359,7 @@ export const storageApi = {
     files: File[],
     bucket: string,
     options: Omit<UploadObjectRequest, 'bucket' | 'name'> = {},
-    onProgress?: (progress: UploadProgress[]) => void
+    onProgress?: () => void
   ): Promise<StorageObject[]> {
     const progressMap = new Map<string, UploadProgress>()
 

@@ -195,7 +195,6 @@ import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ArrowTopRightOnSquareIcon,
-  WifiIcon,
   ExclamationTriangleIcon
 } from '@heroicons/vue/24/outline'
 import { useAppStore } from '@/stores/app'
@@ -215,17 +214,6 @@ const currentProjectId = computed(() => {
   return route.params.projectId as string || projectsStore.selectedProjectId || 'Unknown'
 })
 
-const isPubSubEnabled = computed(() => {
-  return true
-})
-
-const isCloudStorageEnabled = computed(() => {
-  return true
-})
-
-const hasAnyServices = computed(() => {
-  return true
-})
 
 const checkPubSubConnection = async () => {
   try {

@@ -420,7 +420,7 @@ async function handleSubmit(): Promise<void> {
     
     // Navigate to the new bucket
     router.push(`/projects/${currentProjectId.value}/storage/buckets/${encodeURIComponent(form.value.name)}`)
-  } catch (error) {
+  } catch {
     // Error is handled in the store
   }
 }

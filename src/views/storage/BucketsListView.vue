@@ -362,7 +362,7 @@ async function handleDeleteBucket(): Promise<void> {
   try {
     await storageStore.deleteBucket(deleteModal.value.bucket.name)
     deleteModal.value.show = false
-  } catch (error) {
+  } catch {
     // Error is already handled in the store
   }
 }
@@ -379,28 +379,6 @@ function handleBucketCreated(): void {
   refreshBuckets()
 }
 
-function formatDate(dateString?: string): string {
-  if (!dateString) return 'Unknown'
-  
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
-  
-  if (diffDays === 0) {
-    return 'Today'
-  } else if (diffDays === 1) {
-    return 'Yesterday'
-  } else if (diffDays < 7) {
-    return `${diffDays} days ago`
-  } else if (diffDays < 30) {
-    return `${Math.floor(diffDays / 7)} weeks ago`
-  } else if (diffDays < 365) {
-    return `${Math.floor(diffDays / 30)} months ago`
-  } else {
-    return `${Math.floor(diffDays / 365)} years ago`
-  }
-}
 
 // Lifecycle
 onMounted(async () => {
