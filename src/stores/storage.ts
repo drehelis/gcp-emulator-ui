@@ -490,7 +490,7 @@ export const useStorageStore = defineStore('storage', () => {
       if (remainingFiles.length === 0 && currentPath.value) {
         // Navigate to parent directory
         const pathParts = currentPath.value.split('/').filter(part => part)
-        const parentPath = pathParts.length > 1 ? pathParts.slice(0, -1).join('/') + '/' : ''
+        const parentPath = pathParts.length > 1 ? `${pathParts.slice(0, -1).join('/')  }/` : ''
 
         // Fetch parent directory contents
         if (currentBucket.value) {

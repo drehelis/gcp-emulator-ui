@@ -245,12 +245,10 @@ import {
 } from '@heroicons/vue/24/outline'
 
 import { useStorageStore } from '@/stores/storage'
-import { useAppStore } from '@/stores/app'
 
 // Stores
 const route = useRoute()
 const storageStore = useStorageStore()
-const appStore = useAppStore()
 
 // Reactive state
 const isExporting = ref(false)
@@ -308,7 +306,7 @@ const exportBuckets = async () => {
 
     // Download as JSON file
     const dataStr = JSON.stringify(exportData, null, 2)
-    const dataUri = `data:application/json;charset=utf-8,${ encodeURIComponent(dataStr)}`
+    const dataUri = `data:application/json;charset=utf-8,${encodeURIComponent(dataStr)}`
 
     const exportFileDefaultName = `storage-buckets-${currentProjectId.value}-${new Date().toISOString().split('T')[0]}.json`
 

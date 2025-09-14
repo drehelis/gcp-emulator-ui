@@ -226,13 +226,11 @@ import {
 } from '@heroicons/vue/24/outline'
 import { useStorageStore } from '@/stores/storage'
 import { useProjectsStore } from '@/stores/projects'
-import { useAppStore } from '@/stores/app'
 
 const router = useRouter()
 const route = useRoute()
 const storageStore = useStorageStore()
 const projectsStore = useProjectsStore()
-const appStore = useAppStore()
 
 // Local state
 const selectedFiles = ref<File[]>([])
@@ -306,7 +304,7 @@ async function handleUpload(): Promise<void> {
     
     // Navigate back to bucket browser
     router.push(`/projects/${currentProjectId.value}/storage/buckets/${encodeURIComponent(bucketName.value)}`)
-  } catch (error) {
+  } catch {
     // Error is handled in the store
   }
 }
@@ -316,6 +314,6 @@ function formatFileSize(bytes: number): string {
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))  } ${  sizes[i]}`
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))} ${sizes[i]}`
 }
 </script>

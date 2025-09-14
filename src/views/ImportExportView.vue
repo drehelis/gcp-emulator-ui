@@ -791,7 +791,7 @@ const importPubSubTemplates = async (importData: any[], options: any) => {
           // Check if we need to generate a unique name
           if (projectTemplates.find(t => t.name === templateName)) {
             let counter = 1
-            let baseName = template.name
+            const baseName = template.name
             do {
               templateName = `${baseName} (${counter})`
               counter++
