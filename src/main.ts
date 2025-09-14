@@ -135,7 +135,7 @@ if (import.meta.env.DEV) {
 }
 
 // Set global properties
-app.config.globalProperties.$APP_VERSION = import.meta.env.VITE_VERSION || '1.0.0'
+app.config.globalProperties.$APP_VERSION = __APP_VERSION__
 
 // Initialize stores and mount app
 async function initializeApp() {

@@ -228,6 +228,41 @@ export const useStorageStore = defineStore('storage', () => {
       loading.value.delete = true
       state.value.error = null
 
+      // First, get all objects in the bucket and delete them
+      let allObjects: string[] = []
+      let pageToken: string | undefined = undefined
+
+      // Fetch all objects in the bucket (handle pagination)
+      do {
+        const response = await storageApi.listObjects({
+          bucket: bucketName,
+          maxResults: 1000,
+          pageToken
+        })
+
+        if (response.items && response.items.length > 0) {
+          // Get object names, excluding folders
+          const objectNames = response.items
+            .filter(obj => !obj.name.endsWith('/'))
+            .map(obj => obj.name)
+          allObjects.push(...objectNames)
+        }
+
+        pageToken = response.nextPageToken
+      } while (pageToken)
+
+      // Delete all objects if any exist
+      if (allObjects.length > 0) {
+        await storageApi.deleteMultipleObjects(bucketName, allObjects)
+
+        appStore.showToast({
+          type: 'info',
+          title: 'Objects Deleted',
+          message: `Deleted ${allObjects.length} object${allObjects.length === 1 ? '' : 's'} from bucket`
+        })
+      }
+
+      // Now delete the empty bucket
       await storageApi.deleteBucket(bucketName)
 
       // Remove from local state
@@ -242,7 +277,7 @@ export const useStorageStore = defineStore('storage', () => {
       appStore.showToast({
         type: 'success',
         title: 'Bucket Deleted',
-        message: `Bucket "${bucketName}" deleted successfully`
+        message: `Bucket "${bucketName}" and all its contents deleted successfully`
       })
     } catch (error: any) {
       console.error('Error deleting bucket:', error)

@@ -6,6 +6,11 @@ import { fileURLToPath, URL } from 'node:url'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { HeadlessUiResolver } from 'unplugin-vue-components/resolvers'
+import { readFileSync } from 'fs'
+
+// Read version from package.json
+const packageJson = JSON.parse(readFileSync('./package.json', 'utf8'))
+const version = packageJson.version
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -228,6 +233,7 @@ export default defineConfig({
   },
   define: {
     __VUE_OPTIONS_API__: true,
-    __VUE_PROD_DEVTOOLS__: false
+    __VUE_PROD_DEVTOOLS__: false,
+    __APP_VERSION__: JSON.stringify(version)
   }
 })
