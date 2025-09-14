@@ -159,7 +159,7 @@
             <!-- PDF Preview -->
             <div v-else-if="objectData.contentType === 'application/pdf'" class="w-full h-[70vh] rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
               <iframe
-                :src="previewUrl"
+                :src="pdfBlobUrl || previewUrl"
                 class="w-full h-full border-0"
                 @error="previewError = true"
               >
@@ -170,9 +170,9 @@
                   <p class="text-gray-600 dark:text-gray-400 mb-4">
                     Your browser does not support PDF preview.
                   </p>
-                  <a 
-                    :href="previewUrl" 
-                    target="_blank" 
+                  <a
+                    :href="previewUrl"
+                    target="_blank"
                     class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                   >
                     Download PDF
@@ -313,7 +313,7 @@ declare global {
   }
 }
 
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ArrowLeftIcon,
@@ -347,6 +347,9 @@ const isSaving = ref(false)
 const editContent = ref('')
 const validationError = ref('')
 const isValidContent = ref(true)
+
+// PDF blob URL for preview
+const pdfBlobUrl = ref('')
 
 // Props from route
 const bucketName = computed(() => route.params.bucketName as string)
@@ -540,6 +543,21 @@ function cancelEditing(): void {
   editContent.value = fileContent.value
 }
 
+// Load PDF as blob for preview
+async function loadPdfBlob(): Promise<void> {
+  if (!objectData.value) return
+
+  try {
+    const blob = await storageApi.downloadObject({
+      bucket: bucketName.value,
+      object: objectData.value.name
+    })
+    pdfBlobUrl.value = URL.createObjectURL(blob)
+  } catch (error) {
+    console.error('Failed to load PDF blob:', error)
+  }
+}
+
 async function saveTextContent(): Promise<void> {
   if (!objectData.value) return
 
@@ -615,8 +633,22 @@ function syncLineNumbersScroll(): void {
   }
 }
 
+// Auto-load PDF as blob when object is loaded
+watch(objectData, (newObjectData) => {
+  if (newObjectData?.contentType === 'application/pdf') {
+    loadPdfBlob()
+  }
+}, { immediate: true })
+
 // Lifecycle
 onMounted(() => {
   loadObject()
+})
+
+// Cleanup blob URLs to prevent memory leaks
+onUnmounted(() => {
+  if (pdfBlobUrl.value) {
+    URL.revokeObjectURL(pdfBlobUrl.value)
+  }
 })
 </script>
