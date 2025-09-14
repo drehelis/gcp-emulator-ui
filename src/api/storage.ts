@@ -338,11 +338,13 @@ export const storageApi = {
 
   // Utility methods
   getObjectDownloadUrl(bucket: string, objectName: string): string {
-    return `${import.meta.env.VITE_STORAGE_BASE_URL}/storage/v1/b/${encodeURIComponent(bucket)}/o/${encodeURIComponent(objectName)}?alt=media`
+    const baseUrl = import.meta.env.VITE_STORAGE_BASE_URL || '/storage'
+    return `${baseUrl}/storage/v1/b/${encodeURIComponent(bucket)}/o/${encodeURIComponent(objectName)}?alt=media`
   },
 
   getObjectPreviewUrl(bucket: string, objectName: string): string {
-    return `${import.meta.env.VITE_STORAGE_BASE_URL}/storage/v1/b/${encodeURIComponent(bucket)}/o/${encodeURIComponent(objectName)}?alt=media`
+    const baseUrl = import.meta.env.VITE_STORAGE_BASE_URL || '/storage'
+    return `${baseUrl}/storage/v1/b/${encodeURIComponent(bucket)}/o/${encodeURIComponent(objectName)}?alt=media`
   },
 
   // Batch operations
