@@ -1023,7 +1023,7 @@ function navigateToPath(path: string): void {
 
 function handleObjectClick(object: StorageObjectWithPreview): void {
   if (object.isFolder) {
-    const newPath = currentPath.value + object.name + '/'
+    const newPath = `${currentPath.value + object.name  }/`
     navigateToPath(newPath)
   } else {
     // Navigate to object details using fullPath if available, otherwise use name
@@ -1084,7 +1084,7 @@ function formatFileSize(bytes: number): string {
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(2))  } ${  sizes[i]}`
 }
 
 function formatDate(dateString?: string): string {

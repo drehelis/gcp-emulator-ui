@@ -70,8 +70,6 @@ Browse to http://localhost:9090
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `VITE_ENABLE_PUBSUB` | `true` | Enable Pub/Sub service management |
-| `VITE_ENABLE_CLOUD_STORAGE` | `true` | Enable Cloud Storage service (coming soon) |
 | `VITE_PUBSUB_BASE_URL` | `http://localhost:8085` | Pub/Sub emulator endpoint |
 | `VITE_STORAGE_BASE_URL` | `http://localhost:4443` | Storage emulator endpoint |
 

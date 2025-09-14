@@ -262,7 +262,7 @@ export const useStorageStore = defineStore('storage', () => {
 
       const request: ListObjectsRequest = {
         bucket: bucketName,
-        prefix: prefix,
+        prefix,
         delimiter: '/',
         maxResults: 1000,
         ...(pagination.value.nextPageToken && { pageToken: pagination.value.nextPageToken })
@@ -502,7 +502,7 @@ export const useStorageStore = defineStore('storage', () => {
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i]
       if (part) {
-        currentPath += part + '/'
+        currentPath += `${part  }/`
         breadcrumbs.value.push({
           name: part,
           path: currentPath,

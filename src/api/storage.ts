@@ -79,7 +79,7 @@ export const storageApi = {
       name,
       location: location || 'US',
       storageClass: storageClass || 'STANDARD',
-      iamConfiguration: iamConfiguration
+      iamConfiguration
     }
 
     const response = await api.post('/storage/v1/b', bucketData, {
