@@ -30,7 +30,7 @@
           Start the Pub/Sub or Storage emulators to use the import/export functionality.
         </p>
         <button
-          @click="checkAllConnections"
+          @click="checkAllConnectionsAndUpdateTabs"
           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         >
           <ArrowPathIcon class="h-4 w-4 mr-2" />
@@ -218,6 +218,7 @@ import { useRoute } from 'vue-router'
 import { useAppStore } from '@/stores/app'
 import { useMessageTemplatesStore } from '@/stores/messageTemplates'
 import { useStorageStore } from '@/stores/storage'
+import { useServiceConnections } from '@/composables/useServiceConnections'
 import { topicsApi, subscriptionsApi } from '@/api/pubsub'
 import type { PubSubTopic, PubSubSubscription, CreateTopicRequest, CreateSubscriptionRequest } from '@/types'
 import type { MessageTemplate } from '@/utils/templateStorage'
@@ -234,6 +235,13 @@ const route = useRoute()
 const appStore = useAppStore()
 const templatesStore = useMessageTemplatesStore()
 const storageStore = useStorageStore()
+const { 
+  pubsubConnected, 
+  storageConnected, 
+  checkPubSubConnection, 
+  checkStorageConnection, 
+  checkAllConnections 
+} = useServiceConnections()
 
 // Component state
 const activeTab = ref('pubsub')
@@ -308,41 +316,6 @@ interface StorageBucketConfig {
   publicAccessPrevention?: 'enforced' | 'inherited'
   versioning?: boolean
   labels?: Record<string, string>
-}
-
-// Connection status
-const pubsubConnected = ref(false)
-const storageConnected = ref(false)
-
-// Check connection status
-const checkPubSubConnection = async () => {
-  try {
-    const baseUrl = import.meta.env.VITE_PUBSUB_BASE_URL || 'http://localhost:8085'
-    const response = await fetch(`${baseUrl}/`, {
-      method: 'GET',
-      signal: AbortSignal.timeout(3000)
-    })
-    pubsubConnected.value = response.ok
-    return response.ok
-  } catch {
-    pubsubConnected.value = false
-    return false
-  }
-}
-
-const checkStorageConnection = async () => {
-  try {
-    const baseUrl = import.meta.env.VITE_STORAGE_BASE_URL || 'http://localhost:4443'
-    const response = await fetch(`${baseUrl}/_internal/healthcheck`, {
-      method: 'GET',
-      signal: AbortSignal.timeout(3000)
-    })
-    storageConnected.value = response.ok
-    return response.ok
-  } catch {
-    storageConnected.value = false
-    return false
-  }
 }
 
 // Methods
@@ -984,12 +957,9 @@ const extractSubscriptionName = (fullName: string): string => {
   return fullName
 }
 
-// Method to check all connections
-const checkAllConnections = async () => {
-  await Promise.all([
-    checkPubSubConnection(),
-    checkStorageConnection()
-  ])
+// Method to check all connections and handle tab switching
+const checkAllConnectionsAndUpdateTabs = async () => {
+  await checkAllConnections()
 
   // Switch to first available tab if current tab is not available
   if (availableTabs.value.length > 0) {
@@ -1022,7 +992,7 @@ watch(availableTabs, (newTabs) => {
 // Lifecycle
 onMounted(async () => {
   // Check connections first
-  await checkAllConnections()
+  await checkAllConnectionsAndUpdateTabs()
 
   // Load data for the active tab
   if (activeTab.value === 'pubsub' && pubsubConnected.value) {

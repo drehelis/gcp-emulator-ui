@@ -271,6 +271,7 @@ import {
 
 import { useAppStore } from '@/stores/app'
 import { useProjectsStore } from '@/stores/projects'
+import { useServiceConnections } from '@/composables/useServiceConnections'
 import type { NavigationItem } from '@/types'
 
 // Import components (these would be created)
@@ -281,14 +282,17 @@ import GlobalSearch from '@/components/search/GlobalSearch.vue'
 const route = useRoute()
 const appStore = useAppStore()
 const projectsStore = useProjectsStore()
+const { 
+  pubsubConnected, 
+  storageConnected, 
+  checkPubSubConnection, 
+  checkStorageConnection, 
+  checkAllConnections 
+} = useServiceConnections()
 
 // Reactive state
 const isMobile = ref(false)
 const isFullscreen = ref(false)
-
-// Connection status
-const pubsubConnected = ref(true)
-const storageConnected = ref(true)
 
 // Current project from route only (for navigation)
 const currentProject = computed(() => {
@@ -504,40 +508,6 @@ const navigationItems = computed<NavigationItem[]>(() => {
 // Always show services when in a project, but with connection status
 const showPubSubNav = computed(() => !!currentProject.value)
 const showStorageNav = computed(() => !!currentProject.value)
-
-// Connection checking functions
-const checkPubSubConnection = async () => {
-  try {
-    const baseUrl = import.meta.env.VITE_PUBSUB_BASE_URL || 'http://localhost:8085'
-    const response = await fetch(`${baseUrl}/`, {
-      method: 'GET',
-      signal: AbortSignal.timeout(3000)
-    })
-    pubsubConnected.value = response.ok
-  } catch {
-    pubsubConnected.value = false
-  }
-}
-
-const checkStorageConnection = async () => {
-  try {
-    const baseUrl = import.meta.env.VITE_STORAGE_BASE_URL || 'http://localhost:4443'
-    const response = await fetch(`${baseUrl}/_internal/healthcheck`, {
-      method: 'GET',
-      signal: AbortSignal.timeout(3000)
-    })
-    storageConnected.value = response.ok
-  } catch {
-    storageConnected.value = false
-  }
-}
-
-const checkAllConnections = async () => {
-  await Promise.all([
-    checkPubSubConnection(),
-    checkStorageConnection()
-  ])
-}
 
 // Watch for route changes and sync project selection
 watch(() => route.params.projectId, (newProjectId) => {
