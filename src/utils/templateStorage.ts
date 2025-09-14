@@ -86,10 +86,17 @@ class MessageTemplateStorage {
       updatedAt: now
     }
 
+    // Clean up the object to ensure it's serializable
+    const cleanTemplate = JSON.parse(JSON.stringify(fullTemplate))
+
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([this.storeName], 'readwrite')
       const store = transaction.objectStore(this.storeName)
-      const request = store.add(fullTemplate)
+      const request = store.add({
+        ...cleanTemplate,
+        createdAt: now,
+        updatedAt: now
+      })
 
       request.onsuccess = () => resolve(fullTemplate)
       request.onerror = () => reject(request.error)
@@ -164,10 +171,21 @@ class MessageTemplateStorage {
       updatedAt: new Date()
     }
 
+    // Clean up the object to ensure it's serializable - clean both existing and updates separately
+    const cleanExisting = JSON.parse(JSON.stringify(existingTemplate))
+    const cleanUpdates = JSON.parse(JSON.stringify(updates))
+
+    const cleanTemplate = {
+      ...cleanExisting,
+      ...cleanUpdates,
+      id,
+      updatedAt: new Date()
+    }
+
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([this.storeName], 'readwrite')
       const store = transaction.objectStore(this.storeName)
-      const request = store.put(updatedTemplate)
+      const request = store.put(cleanTemplate)
 
       request.onsuccess = () => resolve(updatedTemplate)
       request.onerror = () => reject(request.error)

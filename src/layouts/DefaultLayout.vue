@@ -58,8 +58,9 @@
         </div>
 
         <!-- Dynamic Navigation -->
-        <div class="flex-1 px-4 py-4 space-y-2 overflow-y-auto scrollbar-thin" v-if="currentProject">
+        <div class="flex-1 px-4 py-4 space-y-2 overflow-y-auto scrollbar-thin" v-if="navigationItems.length > 0">
           <template v-for="item in navigationItems" :key="item.id">
+
             <!-- Services Header -->
             <div v-if="item.label === 'Services' && !appStore.layout.sidebar.collapsed" class="mb-3">
               <NavItem
@@ -118,9 +119,24 @@
               </template>
             </div>
 
+            <!-- Other Items (Expanded Mode) -->
+            <div v-else-if="!item.id.includes('-section') && !appStore.layout.sidebar.collapsed" class="mt-4">
+              <router-link
+                :to="item.route"
+                class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors"
+                @click="handleMobileNavClick"
+              >
+                <component :is="item.icon" class="w-5 h-5 mr-3" />
+                {{ item.label }}
+              </router-link>
+            </div>
+
+            <!-- Collapsed Separator -->
+            <div v-else-if="item.isSeparator && appStore.layout.sidebar.collapsed" class="my-3 mx-auto w-8 border-t border-gray-200 dark:border-gray-700"></div>
+
             <!-- Collapsed/Other Items -->
             <NavItem
-              v-else-if="!item.id.includes('-section')"
+              v-else-if="!item.id.includes('-section') && appStore.layout.sidebar.collapsed && !item.isSeparator"
               :to="item.route"
               :icon="item.icon"
               :label="item.label"
@@ -342,14 +358,6 @@ const navigationItems = computed<NavigationItem[]>(() => {
           isSubItem: true
         })
 
-        pubsubChildren.push({
-          id: 'pubsub-import-export',
-          label: 'Import/Export',
-          route: `/projects/${currentProject.value}/pubsub/import-export`,
-          icon: ArrowsRightLeftIcon,
-          disabled: false,
-          isSubItem: true
-        })
       }
 
       items.push({
@@ -394,6 +402,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
           disabled: false,
           isSubItem: true
         })
+
       }
 
       items.push({
@@ -403,6 +412,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
         children: storageChildren
       })
     }
+
   } else {
     // Collapsed sidebar navigation (icon only)
     items.push({
@@ -414,6 +424,16 @@ const navigationItems = computed<NavigationItem[]>(() => {
     })
 
     if (showPubSubNav.value) {
+      // Add separator before PubSub section
+      items.push({
+        id: 'separator-pubsub',
+        label: '',
+        route: null,
+        icon: null,
+        disabled: false,
+        isSeparator: true
+      })
+
       items.push({
         id: 'collapsed-pubsub-topics',
         label: 'Topics',
@@ -441,17 +461,19 @@ const navigationItems = computed<NavigationItem[]>(() => {
         customClasses: !pubsubConnected.value ? 'opacity-50' : ''
       })
 
-      items.push({
-        id: 'collapsed-pubsub-import-export',
-        label: 'Import/Export',
-        route: `/projects/${currentProject.value}/pubsub/import-export`,
-        icon: ArrowsRightLeftIcon,
-        disabled: false,
-        customClasses: !pubsubConnected.value ? 'opacity-50' : ''
-      })
     }
 
     if (showStorageNav.value) {
+      // Add separator before Storage section
+      items.push({
+        id: 'separator-storage',
+        label: '',
+        route: null,
+        icon: null,
+        disabled: false,
+        isSeparator: true
+      })
+
       items.push({
         id: 'collapsed-storage-buckets',
         label: 'Buckets',
@@ -469,8 +491,29 @@ const navigationItems = computed<NavigationItem[]>(() => {
         disabled: false,
         customClasses: !storageConnected.value ? 'opacity-50' : ''
       })
+
     }
+
+    // Add separator before Import/Export
+    items.push({
+      id: 'separator-import-export',
+      label: '',
+      route: null,
+      icon: null,
+      disabled: false,
+      isSeparator: true
+    })
+
   }
+
+  // Always add unified Import/Export (after all service sections in both modes)
+  items.push({
+    id: 'unified-import-export',
+    label: 'Import/Export',
+    route: `/projects/${currentProject.value}/import-export`,
+    icon: ArrowsRightLeftIcon,
+    disabled: false
+  })
 
   return items
 })

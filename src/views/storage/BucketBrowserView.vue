@@ -197,23 +197,39 @@
             </div>
           </div>
 
-          <!-- Upload Button -->
-          <div v-if="!storageStore.loading.upload" class="flex flex-col sm:flex-row gap-3 items-center justify-center">
-            <button
-              @click="showCreateFileModal = true"
-              class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
-            >
-              <DocumentTextIcon class="w-4 h-4 mr-2" />
-              Create File
-            </button>
-            <button
-              @click="triggerFileInput"
-              class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
-            >
-              <ArrowUpTrayIcon class="w-4 h-4 mr-2" />
-              Choose Files
-            </button>
-            <span class="text-sm text-gray-500 dark:text-gray-400">or drag and drop files here</span>
+          <!-- Upload Buttons -->
+          <div v-if="!storageStore.loading.upload" class="flex flex-col items-center justify-center">
+            <div class="flex flex-col sm:flex-row gap-3 items-center justify-center mb-3">
+              <button
+                @click="showCreateFolderModal = true"
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
+              >
+                <FolderPlusIcon class="w-4 h-4 mr-2" />
+                Create Folder
+              </button>
+              <button
+                @click="showCreateFileModal = true"
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
+              >
+                <DocumentTextIcon class="w-4 h-4 mr-2" />
+                Create File
+              </button>
+              <button
+                @click="triggerFileInput"
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
+              >
+                <ArrowUpTrayIcon class="w-4 h-4 mr-2" />
+                Choose Files
+              </button>
+            </div>
+            <div class="text-center">
+              <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                or drag and drop files here
+              </div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">
+                Multiple files supported • Max 100MB per file
+              </div>
+            </div>
           </div>
 
           <!-- Hidden File Input -->
@@ -627,6 +643,13 @@
                           <DocumentTextIcon class="w-4 h-4 mr-2" />
                           Create File
                         </button>
+                        <button
+                          @click="showUploadModal = false; showCreateFolderModal = true"
+                          class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
+                        >
+                          <FolderPlusIcon class="w-4 h-4 mr-2" />
+                          Create Folder
+                        </button>
                         <label for="upload-files" class="cursor-pointer">
                           <span class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
                             <ArrowUpTrayIcon class="w-4 h-4 mr-2" />
@@ -890,6 +913,97 @@
         </div>
       </Dialog>
     </TransitionRoot>
+
+    <!-- Create Folder Modal -->
+    <TransitionRoot as="template" :show="showCreateFolderModal">
+      <Dialog as="div" class="relative z-50" @close="showCreateFolderModal = false">
+        <TransitionChild
+          as="template"
+          enter="ease-out duration-300"
+          enter-from="opacity-0"
+          enter-to="opacity-100"
+          leave="ease-in duration-200"
+          leave-from="opacity-100"
+          leave-to="opacity-0"
+        >
+          <div class="fixed inset-0 backdrop-blur-[2px] bg-white/5 dark:bg-black/5 transition-opacity" />
+        </TransitionChild>
+
+        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+          <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <TransitionChild
+              as="template"
+              enter="ease-out duration-300"
+              enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              enter-to="opacity-100 translate-y-0 sm:scale-100"
+              leave="ease-in duration-200"
+              leave-from="opacity-100 translate-y-0 sm:scale-100"
+              leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+            >
+              <DialogPanel class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+                <div class="bg-white dark:bg-gray-800 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+                  <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30 sm:mx-0 sm:h-10 sm:w-10">
+                      <FolderPlusIcon class="h-6 w-6 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+                    </div>
+                    <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left w-full">
+                      <DialogTitle as="h3" class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+                        Create New Folder
+                      </DialogTitle>
+                      <div class="mt-4">
+                        <div class="space-y-4">
+                          <div>
+                            <label for="folder-name" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-300">
+                              Folder Name
+                            </label>
+                            <div class="mt-2">
+                              <input
+                                id="folder-name"
+                                v-model="folderName"
+                                type="text"
+                                placeholder="Enter folder name..."
+                                class="block w-full rounded-lg border-0 bg-white dark:bg-gray-800 px-4 py-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-200 text-sm"
+                                :class="{
+                                  'ring-red-500 dark:ring-red-400': createFolderValidationError && folderName.trim(),
+                                  'ring-green-500 dark:ring-green-400': !createFolderValidationError && folderName.trim()
+                                }"
+                                @input="createFolderValidationError = ''"
+                              />
+                            </div>
+                            <div v-if="createFolderValidationError" class="mt-2 text-sm text-red-600 dark:text-red-400">
+                              {{ createFolderValidationError }}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="bg-gray-50 dark:bg-gray-900 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+                  <button
+                    type="button"
+                    @click="handleCreateFolder"
+                    :disabled="!folderName.trim() || storageStore.loading.upload"
+                    class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed sm:ml-3 sm:w-auto"
+                  >
+                    <ArrowPathIcon v-if="storageStore.loading.upload" class="w-4 h-4 mr-2 animate-spin" />
+                    <FolderPlusIcon v-else class="w-4 h-4 mr-2" />
+                    {{ storageStore.loading.upload ? 'Creating...' : 'Create Folder' }}
+                  </button>
+                  <button
+                    type="button"
+                    @click="closeCreateFolderModal"
+                    class="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-300 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 sm:mt-0 sm:w-auto"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </DialogPanel>
+            </TransitionChild>
+          </div>
+        </div>
+      </Dialog>
+    </TransitionRoot>
   </div>
 </template>
 
@@ -909,11 +1023,15 @@ import {
   DocumentIcon,
   DocumentTextIcon,
   FolderIcon,
+  FolderPlusIcon,
   TrashIcon,
   ExclamationTriangleIcon,
   XMarkIcon
 } from '@heroicons/vue/24/outline'
 import {
+  Dialog,
+  DialogPanel,
+  DialogTitle,
   TransitionChild,
   TransitionRoot
 } from '@headlessui/vue'
@@ -942,6 +1060,7 @@ const isDragOver = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 const showUploadModal = ref(false)
 const showCreateFileModal = ref(false)
+const showCreateFolderModal = ref(false)
 
 // Upload modal state
 const selectedFiles = ref<File[]>([])
@@ -955,6 +1074,10 @@ const fileName = ref('')
 const fileContent = ref('')
 const isCreatingFile = ref(false)
 const createFileValidationError = ref('')
+
+// Create folder modal state
+const folderName = ref('')
+const createFolderValidationError = ref('')
 
 // Props from route
 const bucketName = computed(() => decodeURIComponent(route.params.bucketName as string))
@@ -1321,6 +1444,56 @@ function closeCreateFileModal(): void {
   fileName.value = ''
   fileContent.value = ''
   createFileValidationError.value = ''
+}
+
+// Create folder modal functions
+function closeCreateFolderModal(): void {
+  showCreateFolderModal.value = false
+  folderName.value = ''
+  createFolderValidationError.value = ''
+}
+
+async function handleCreateFolder(): Promise<void> {
+  if (!folderName.value.trim()) {
+    createFolderValidationError.value = 'Folder name is required'
+    return
+  }
+
+  // Validate folder name
+  if (folderName.value.includes('/') || folderName.value.includes('\\')) {
+    createFolderValidationError.value = 'Folder name cannot contain slashes'
+    return
+  }
+
+  if (folderName.value.includes('..') || folderName.value.startsWith('.')) {
+    createFolderValidationError.value = 'Invalid folder name'
+    return
+  }
+
+  try {
+    // Create folder by uploading a placeholder file
+    const folderPath = currentPath.value ? `${currentPath.value}${folderName.value.trim()}/` : `${folderName.value.trim()}/`
+    const placeholderFileName = '.keep'
+
+    // Create a placeholder file to represent the folder
+    const placeholderFile = new File([''], placeholderFileName, { type: 'text/plain' })
+
+    await storageStore.uploadFiles([placeholderFile], bucketName.value, folderPath)
+
+    // Refresh objects to show the new folder
+    await refreshObjects()
+
+    appStore.showToast({
+      type: 'success',
+      title: 'Folder created',
+      message: `Folder "${folderName.value}" has been created successfully`
+    })
+
+    closeCreateFolderModal()
+  } catch (error) {
+    console.error('Error creating folder:', error)
+    createFolderValidationError.value = error instanceof Error ? error.message : 'Failed to create folder'
+  }
 }
 
 // Drag and drop functions

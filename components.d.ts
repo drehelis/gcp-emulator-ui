@@ -18,6 +18,7 @@ declare module 'vue' {
     DialogPanel: typeof import('@headlessui/vue')['DialogPanel']
     DialogTitle: typeof import('@headlessui/vue')['DialogTitle']
     GlobalSearch: typeof import('./src/components/search/GlobalSearch.vue')['default']
+    ImportComponent: typeof import('./src/components/import-export/ImportComponent.vue')['default']
     KeyValueInput: typeof import('./src/components/ui/KeyValueInput.vue')['default']
     MessageAttributeInput: typeof import('./src/components/ui/MessageAttributeInput.vue')['default']
     NavItem: typeof import('./src/components/navigation/NavItem.vue')['default']

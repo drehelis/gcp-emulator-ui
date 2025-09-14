@@ -60,7 +60,7 @@ export const useStorageStore = defineStore('storage', () => {
   const viewMode = ref<'grid' | 'list'>('list')
   const sortBy = ref<'name' | 'size' | 'modified'>('name')
   const sortOrder = ref<'asc' | 'desc'>('asc')
-  
+
   // Pagination
   const pagination = ref({
     hasMore: false,
@@ -81,14 +81,14 @@ export const useStorageStore = defineStore('storage', () => {
 
   // Computed properties
   const hasCurrentBucket = computed(() => currentBucket.value !== null)
-  
+
   const sortedObjects = computed(() => {
     if (!objects.value) return []
-    
+
     const sorted = [...objects.value].sort((a, b) => {
       let aValue: any = a[sortBy.value]
       let bValue: any = b[sortBy.value]
-      
+
       // Handle special cases
       if (sortBy.value === 'size') {
         aValue = parseInt(a.size || '0')
@@ -100,13 +100,13 @@ export const useStorageStore = defineStore('storage', () => {
         aValue = (a.name || '').toLowerCase()
         bValue = (b.name || '').toLowerCase()
       }
-      
+
       if (sortOrder.value === 'desc') {
         return bValue > aValue ? 1 : -1
       }
       return aValue > bValue ? 1 : -1
     })
-    
+
     // Always show folders first
     return sorted.sort((a, b) => {
       if (a.isFolder && !b.isFolder) return -1
@@ -132,7 +132,7 @@ export const useStorageStore = defineStore('storage', () => {
   // Actions
   async function fetchBuckets(refresh = false): Promise<void> {
     if (loading.value.buckets && !refresh) return
-    
+
     try {
       loading.value.buckets = true
       state.value.error = null
@@ -177,7 +177,7 @@ export const useStorageStore = defineStore('storage', () => {
     } catch (error: any) {
       console.error('Error fetching bucket:', error)
       state.value.error = error.message || 'Failed to fetch bucket'
-      
+
       appStore.showToast({
         type: 'error',
         title: 'Error Loading Bucket',
@@ -188,7 +188,7 @@ export const useStorageStore = defineStore('storage', () => {
     }
   }
 
-  async function createBucket(request: CreateBucketRequest): Promise<void> {
+  async function createBucket(request: CreateBucketRequest, silent = false): Promise<void> {
     try {
       loading.value.create = true
       state.value.error = null
@@ -197,20 +197,24 @@ export const useStorageStore = defineStore('storage', () => {
       buckets.value.push(bucket)
       currentBucket.value = bucket
 
-      appStore.showToast({
-        type: 'success',
-        title: 'Bucket Created',
-        message: `Bucket "${bucket.name}" created successfully`
-      })
+      if (!silent) {
+        appStore.showToast({
+          type: 'success',
+          title: 'Bucket Created',
+          message: `Bucket "${bucket.name}" created successfully`
+        })
+      }
     } catch (error: any) {
       console.error('Error creating bucket:', error)
       state.value.error = error.message || 'Failed to create bucket'
-      
-      appStore.showToast({
-        type: 'error',
-        title: 'Error Creating Bucket',
-        message: error.message || 'Failed to create bucket'
-      })
+
+      if (!silent) {
+        appStore.showToast({
+          type: 'error',
+          title: 'Error Creating Bucket',
+          message: error.message || 'Failed to create bucket'
+        })
+      }
       throw error
     } finally {
       loading.value.create = false
@@ -223,7 +227,7 @@ export const useStorageStore = defineStore('storage', () => {
       state.value.error = null
 
       await storageApi.deleteBucket(bucketName)
-      
+
       // Remove from local state
       buckets.value = buckets.value.filter(b => b.name !== bucketName)
       if (currentBucket.value?.name === bucketName) {
@@ -241,7 +245,7 @@ export const useStorageStore = defineStore('storage', () => {
     } catch (error: any) {
       console.error('Error deleting bucket:', error)
       state.value.error = error.message || 'Failed to delete bucket'
-      
+
       appStore.showToast({
         type: 'error',
         title: 'Error Deleting Bucket',
@@ -255,7 +259,7 @@ export const useStorageStore = defineStore('storage', () => {
 
   async function fetchObjects(bucketName: string, prefix: string = '', refresh = false): Promise<void> {
     if (loading.value.objects && !refresh) return
-    
+
     try {
       loading.value.objects = true
       state.value.error = null
@@ -272,7 +276,7 @@ export const useStorageStore = defineStore('storage', () => {
 
       // Process objects and add preview info
       const processedObjects: StorageObjectWithPreview[] = []
-      
+
       // Add folders (prefixes)
       if (response.prefixes) {
         for (const prefix of response.prefixes) {
@@ -292,7 +296,7 @@ export const useStorageStore = defineStore('storage', () => {
           })
         }
       }
-      
+
       // Add files
       if (response.items) {
         for (const item of response.items) {
@@ -316,24 +320,24 @@ export const useStorageStore = defineStore('storage', () => {
       } else {
         objects.value.push(...processedObjects)
       }
-      
+
       currentPath.value = prefix
       updateBreadcrumbs(prefix)
-      
+
       // Update pagination
       pagination.value.hasMore = !!response.nextPageToken
       pagination.value.nextPageToken = response.nextPageToken
 
       // Calculate statistics
       calculateBucketStatistics()
-      
+
       state.value.state = 'success'
       state.value.lastUpdated = new Date()
     } catch (error: any) {
       console.error('Error fetching objects:', error)
       state.value.error = error.message || 'Failed to fetch objects'
       state.value.state = 'error'
-      
+
       appStore.showToast({
         type: 'error',
         title: 'Error Loading Objects',
@@ -391,7 +395,7 @@ export const useStorageStore = defineStore('storage', () => {
       })
 
       await Promise.all(uploadPromises)
-      
+
       // Refresh objects list
       await fetchObjects(bucketName, prefix, true)
 
@@ -403,7 +407,7 @@ export const useStorageStore = defineStore('storage', () => {
     } catch (error: any) {
       console.error('Error uploading files:', error)
       state.value.error = error.message || 'Failed to upload files'
-      
+
       appStore.showToast({
         type: 'error',
         title: 'Upload Error',
@@ -447,7 +451,7 @@ export const useStorageStore = defineStore('storage', () => {
     } catch (error: any) {
       console.error('Error downloading object:', error)
       state.value.error = error.message || 'Failed to download object'
-      
+
       appStore.showToast({
         type: 'error',
         title: 'Download Error',
@@ -464,11 +468,28 @@ export const useStorageStore = defineStore('storage', () => {
       loading.value.delete = true
       state.value.error = null
 
-      await storageApi.deleteMultipleObjects(bucketName, objectNames)
-      
+      // Convert display names to full paths for API calls
+      const objectsToDelete = objects.value.filter(obj => objectNames.includes(obj.name))
+      const fullPaths = objectsToDelete.map(obj => obj.fullPath || obj.name)
+
+      await storageApi.deleteMultipleObjects(bucketName, fullPaths)
+
       // Remove from local state
       objects.value = objects.value.filter(obj => !objectNames.includes(obj.name))
       selectedObjects.value = []
+
+      // Check if we need to navigate up after deleting the last file in a folder
+      const remainingFiles = objects.value.filter(obj => !obj.isFolder)
+      if (remainingFiles.length === 0 && currentPath.value) {
+        // Navigate to parent directory
+        const pathParts = currentPath.value.split('/').filter(part => part)
+        const parentPath = pathParts.length > 1 ? pathParts.slice(0, -1).join('/') + '/' : ''
+
+        // Fetch parent directory contents
+        if (currentBucket.value) {
+          await fetchObjects(currentBucket.value.name, parentPath, true)
+        }
+      }
 
       appStore.showToast({
         type: 'success',
@@ -478,7 +499,7 @@ export const useStorageStore = defineStore('storage', () => {
     } catch (error: any) {
       console.error('Error deleting objects:', error)
       state.value.error = error.message || 'Failed to delete objects'
-      
+
       appStore.showToast({
         type: 'error',
         title: 'Delete Error',
@@ -493,7 +514,7 @@ export const useStorageStore = defineStore('storage', () => {
   // Helper functions
   function updateBreadcrumbs(path: string): void {
     breadcrumbs.value = []
-    
+
     if (!path) return
 
     const parts = path.split('/').filter(part => part)
@@ -502,7 +523,7 @@ export const useStorageStore = defineStore('storage', () => {
     for (let i = 0; i < parts.length; i++) {
       const part = parts[i]
       if (part) {
-        currentPath += `${part  }/`
+        currentPath += `${part}/`
         breadcrumbs.value.push({
           name: part,
           path: currentPath,
@@ -640,7 +661,7 @@ export const useStorageStore = defineStore('storage', () => {
     sortOrder: computed(() => sortOrder.value),
     pagination: computed(() => pagination.value),
     settings: computed(() => settings.value),
-    
+
     // Computed
     hasCurrentBucket,
     isLoading,

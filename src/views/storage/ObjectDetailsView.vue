@@ -157,14 +157,29 @@
               Your browser does not support the video tag.
             </video>
             <!-- PDF Preview -->
-            <iframe
-              v-else-if="objectData.contentType === 'application/pdf'"
-              :src="previewUrl"
-              class="w-full h-[70vh] rounded-lg border-0"
-              @error="previewError = true"
-            >
-              <p>Your browser does not support PDF preview. <a :href="previewUrl" target="_blank" class="text-blue-600 hover:text-blue-700">Download the PDF</a> to view it.</p>
-            </iframe>
+            <div v-else-if="objectData.contentType === 'application/pdf'" class="w-full h-[70vh] rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <iframe
+                :src="previewUrl"
+                class="w-full h-full border-0"
+                @error="previewError = true"
+              >
+                Your browser does not support PDF preview.
+              </iframe>
+              <div v-if="previewError" class="flex items-center justify-center h-full bg-gray-50 dark:bg-gray-900">
+                <div class="text-center">
+                  <p class="text-gray-600 dark:text-gray-400 mb-4">
+                    Your browser does not support PDF preview.
+                  </p>
+                  <a 
+                    :href="previewUrl" 
+                    target="_blank" 
+                    class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Download PDF
+                  </a>
+                </div>
+              </div>
+            </div>
             <!-- Text File Preview/Editor -->
             <div v-else-if="isTextFile" class="w-full">
               <!-- Read-only view -->
@@ -211,10 +226,13 @@
 
                 <!-- Enhanced Editor with Line Numbers -->
                 <div class="relative border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
-                  <div class="flex">
+                  <div class="flex h-[60vh]">
                     <!-- Line Numbers -->
-                    <div class="bg-gray-100 dark:bg-gray-800 px-3 py-4 border-r border-gray-200 dark:border-gray-700 select-none">
-                      <div class="text-xs font-mono text-gray-500 dark:text-gray-400 leading-5">
+                    <div 
+                      ref="lineNumbersRef"
+                      class="bg-gray-100 dark:bg-gray-800 px-3 py-4 border-r border-gray-200 dark:border-gray-700 select-none overflow-hidden"
+                    >
+                      <div class="text-xs font-mono text-gray-500 dark:text-gray-400 leading-5" style="line-height: 1.25rem;">
                         <div v-for="lineNum in lineCount" :key="lineNum" class="h-5 text-right">
                           {{ lineNum }}
                         </div>
@@ -223,9 +241,11 @@
                     <!-- Editor Area -->
                     <div class="flex-1 relative">
                       <textarea
+                        ref="textareaRef"
                         v-model="editContent"
                         @input="validateContent"
-                        class="w-full h-[60vh] p-4 text-sm bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-0 resize-none font-mono focus:outline-none leading-5"
+                        @scroll="syncLineNumbersScroll"
+                        class="w-full h-full p-4 text-sm bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-0 resize-none font-mono focus:outline-none leading-5"
                         :class="{ 'bg-red-50 dark:bg-red-900/10': !isValidContent }"
                         :placeholder="`Edit ${objectData.name} content here...`"
                         spellcheck="false"
@@ -565,6 +585,21 @@ function formatFileSize(bytes: number): string {
 function formatDate(dateString?: string): string {
   if (!dateString) return 'Unknown'
   return new Date(dateString).toLocaleString()
+}
+
+// Editor scroll synchronization
+const lineNumbersRef = ref<HTMLElement>()
+const textareaRef = ref<HTMLElement>()
+
+function syncLineNumbersScroll(): void {
+  if (lineNumbersRef.value && textareaRef.value) {
+    // Apply negative transform to move line numbers up based on textarea scroll
+    const scrollTop = textareaRef.value.scrollTop
+    const lineNumbersContainer = lineNumbersRef.value.querySelector('div')
+    if (lineNumbersContainer) {
+      lineNumbersContainer.style.transform = `translateY(-${scrollTop}px)`
+    }
+  }
 }
 
 // Lifecycle

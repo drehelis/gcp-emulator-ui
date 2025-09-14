@@ -261,28 +261,22 @@ const routes: RouteRecordRaw[] = [
             ]
           },
           {
-            path: 'pubsub/import-export',
-            children: [
-              {
-                path: '',
-                name: 'project-import-export',
-                component: () => import('@/views/settings/ImportExportView.vue'),
-                props: true,
-                meta: {
-                  title: 'Import/Export',
-                  description: 'Import and export topic and subscription configurations',
-                  icon: 'ArrowsRightLeftIcon',
-                  requiresAuth: true,
-                  requiresProject: true,
-                  breadcrumbs: [
-                    { label: 'Home', route: '/' },
-                    { label: ':projectId', route: '/projects/:projectId' },
-                    { label: 'Pub/Sub' },
-                    { label: 'Import/Export' }
-                  ]
-                }
-              }
-            ]
+            path: 'import-export',
+            name: 'project-unified-import-export',
+            component: () => import('@/views/ImportExportView.vue'),
+            props: true,
+            meta: {
+              title: 'Import/Export',
+              description: 'Import and export configurations for all emulator services',
+              icon: 'ArrowsRightLeftIcon',
+              requiresAuth: true,
+              requiresProject: true,
+              breadcrumbs: [
+                { label: 'Home', route: '/' },
+                { label: ':projectId', route: '/projects/:projectId' },
+                { label: 'Import/Export' }
+              ]
+            }
           },
           // Cloud Storage routes
           {
@@ -582,22 +576,6 @@ const routes: RouteRecordRaw[] = [
               breadcrumbs: [
                 { label: 'Home', route: '/' },
                 { label: 'Settings' }
-              ]
-            }
-          },
-          {
-            path: 'import-export',
-            name: 'import-export',
-            component: () => import('@/views/settings/ImportExportView.vue'),
-            meta: {
-              title: 'Import/Export',
-              description: 'Import and export configurations',
-              icon: 'ArrowsUpDownIcon',
-              requiresAuth: true,
-              breadcrumbs: [
-                { label: 'Home', route: '/' },
-                { label: 'Settings', route: '/settings' },
-                { label: 'Import/Export' }
               ]
             }
           }
