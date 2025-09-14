@@ -6,6 +6,16 @@ import { fileURLToPath, URL } from 'node:url'
 import AutoImport from 'unplugin-auto-import/vite'
 import Components from 'unplugin-vue-components/vite'
 import { HeadlessUiResolver } from 'unplugin-vue-components/resolvers'
+import { readFileSync } from 'fs'
+
+let version = '1.0.0'
+try {
+  const packageJson = JSON.parse(readFileSync('./package.json', 'utf8'))
+  version = packageJson.version || '1.0.0'
+} catch (error) {
+  console.warn('Warning: Could not read version from package.json, using fallback version:', version)
+  console.warn('Error details:', error)
+}
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -228,6 +238,7 @@ export default defineConfig({
   },
   define: {
     __VUE_OPTIONS_API__: true,
-    __VUE_PROD_DEVTOOLS__: false
+    __VUE_PROD_DEVTOOLS__: false,
+    __APP_VERSION__: JSON.stringify(version)
   }
 })

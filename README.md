@@ -89,14 +89,16 @@ Browse to http://localhost:9090
 ```
 src/
 ├── api/           # API client configurations
+├── assets/        # Static assets and styles
 ├── components/    # Reusable Vue components
 ├── composables/   # Vue composition functions
 ├── layouts/       # Page layout components
+├── plugins/       # Vue plugins and global configurations
 ├── router/        # Vue Router configuration
 ├── stores/        # Pinia state management
 ├── types/         # TypeScript type definitions
-├── utils/         # Utility functions
-└── views/         # Page components
+├── utils/         # Utility functions and helpers
+└── views/         # Page components organized by feature
 ```
 
 ## Stack

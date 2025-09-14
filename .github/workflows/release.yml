@@ -42,8 +42,8 @@ jobs:
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.RELEASE_PAT }}
-          title: "Bump version to ${{ env.NEW_VERSION }}"
-          body: "Bump version to ${{ env.NEW_VERSION }}"
+          title: "Release version ${{ env.NEW_VERSION }}"
+          body: "Release version ${{ env.NEW_VERSION }}"
           commit-message: "chore(release): bump version to ${{ env.NEW_VERSION }}"
         env:
           NEW_VERSION: ${{ steps.bump.outputs.new_version }}
