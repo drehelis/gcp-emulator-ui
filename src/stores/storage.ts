@@ -229,7 +229,7 @@ export const useStorageStore = defineStore('storage', () => {
       state.value.error = null
 
       // First, get all objects in the bucket and delete them
-      let allObjects: string[] = []
+      const allObjects: string[] = []
       let pageToken: string | undefined = undefined
 
       // Fetch all objects in the bucket (handle pagination)
