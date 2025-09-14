@@ -17,9 +17,8 @@ import type {
   UploadProgress
 } from '@/types'
 
-// Create storage-specific axios instance - same pattern as PubSub
 const storageClient = axios.create({
-  baseURL: import.meta.env.VITE_STORAGE_BASE_URL || 'http://localhost:4443',
+  baseURL: import.meta.env.VITE_STORAGE_BASE_URL || '/storage',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
