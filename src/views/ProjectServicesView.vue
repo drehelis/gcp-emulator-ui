@@ -199,15 +199,19 @@ import {
 } from '@heroicons/vue/24/outline'
 import { useAppStore } from '@/stores/app'
 import { useProjectsStore } from '@/stores/projects'
+import { useServiceConnections } from '@/composables/useServiceConnections'
 
 const route = useRoute()
 const router = useRouter()
 const appStore = useAppStore()
 const projectsStore = useProjectsStore()
+const { 
+  pubsubConnected, 
+  storageConnected, 
+  checkAllConnections 
+} = useServiceConnections()
 
-// Connection status
-const pubsubConnected = ref(true)
-const storageConnected = ref(true)
+// UI state
 const isCheckingConnections = ref(false)
 
 const currentProjectId = computed(() => {
@@ -215,41 +219,10 @@ const currentProjectId = computed(() => {
 })
 
 
-const checkPubSubConnection = async () => {
-  try {
-    const baseUrl = import.meta.env.VITE_PUBSUB_BASE_URL || 'http://localhost:8085'
-    const response = await fetch(`${baseUrl}/`, {
-      method: 'GET',
-      signal: AbortSignal.timeout(3000) // 3 second timeout
-    })
-    pubsubConnected.value = response.ok
-  } catch (error) {
-    console.warn('Pub/Sub emulator connection check failed:', error)
-    pubsubConnected.value = false
-  }
-}
-
-const checkStorageConnection = async () => {
-  try {
-    const baseUrl = import.meta.env.VITE_STORAGE_BASE_URL || 'http://localhost:4443'
-    const response = await fetch(`${baseUrl}/_internal/healthcheck`, {
-      method: 'GET',
-      signal: AbortSignal.timeout(3000) // 3 second timeout
-    })
-    storageConnected.value = response.ok
-  } catch (error) {
-    console.warn('Storage emulator connection check failed:', error)
-    storageConnected.value = false
-  }
-}
-
-const checkAllConnections = async () => {
+const checkAllConnectionsWithLoading = async () => {
   isCheckingConnections.value = true
   try {
-    await Promise.all([
-      checkPubSubConnection(),
-      checkStorageConnection()
-    ])
+    await checkAllConnections()
   } finally {
     isCheckingConnections.value = false
   }
@@ -286,6 +259,6 @@ const navigateToService = (service: 'pubsub' | 'storage') => {
 
 // Check connections on mount
 onMounted(() => {
-  checkAllConnections()
+  checkAllConnectionsWithLoading()
 })
 </script>
