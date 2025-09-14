@@ -1045,7 +1045,7 @@ declare global {
   }
 
   interface FileSystemFileEntry extends FileSystemEntry {
-    file(callback: (file: File) => void): void
+    file(): void
   }
 
   interface FileSystemDirectoryEntry extends FileSystemEntry {
@@ -1053,7 +1053,40 @@ declare global {
   }
 
   interface FileSystemDirectoryReader {
-    readEntries(callback: (entries: FileSystemEntry[]) => void): void
+    readEntries(): void
+  }
+
+  interface HTMLSelectElement extends HTMLElement {
+    value: string
+  }
+
+  interface Node {
+    contains(): boolean
+  }
+
+  interface DataTransferItemList {
+    length: number
+  }
+
+  interface FileList {
+    length: number
+  }
+
+  interface DataTransfer {
+    items: DataTransferItemList
+    files: FileList
+  }
+
+  interface Window {
+    DOMParser: {
+      new(): {
+        parseFromString(): {
+          getElementsByTagName(): {
+            length: number
+          }
+        }
+      }
+    }
   }
 }
 import {
@@ -1169,7 +1202,7 @@ function handleSort(field: 'name' | 'size' | 'type' | 'modified'): void {
 }
 
 function handleMobileSortChange(event: Event): void {
-  const target = event.target as HTMLSelectElement
+  const target = event.target as any
   const [field, order] = target.value.split('-')
 
   const sortFieldMap: Record<string, 'name' | 'size' | 'modified'> = {
@@ -1446,7 +1479,7 @@ function validateCreateFile(): void {
     if (extension === 'json' || detectedType === 'application/json') {
       JSON.parse(fileContent.value)
     } else if (extension === 'xml' || detectedType === 'application/xml') {
-      const parser = new DOMParser()
+      const parser = new window.DOMParser()
       const xmlDoc = parser.parseFromString(fileContent.value, 'text/xml')
       const parseError = xmlDoc.getElementsByTagName('parsererror')
       if (parseError.length > 0) {
@@ -1572,13 +1605,13 @@ function handleDragEnter(event: DragEvent): void {
 function handleDragLeave(event: DragEvent): void {
   event.preventDefault()
   // Only set isDragOver to false if we're actually leaving the drop zone
-  if (!event.currentTarget?.contains(event.relatedTarget as Node)) {
+  if (!event.currentTarget?.contains(event.relatedTarget as any)) {
     isDragOver.value = false
   }
 }
 
 // Helper function to read directory entries recursively
-async function readDirectoryEntries(directoryEntry: FileSystemDirectoryEntry, path = ''): Promise<File[]> {
+async function readDirectoryEntries(directoryEntry: any, path = ''): Promise<File[]> {
   return new Promise((resolve, reject) => {
     const reader = directoryEntry.createReader()
     const allFiles: File[] = []
@@ -1595,14 +1628,14 @@ async function readDirectoryEntries(directoryEntry: FileSystemDirectoryEntry, pa
 
           if (entry.isFile) {
             return new Promise<File>((fileResolve, fileReject) => {
-              (entry as FileSystemFileEntry).file((file) => {
+              (entry as any).file((file: any) => {
                 // Create a new File with the full path
                 const fileWithPath = new File([file], currentPath, { type: file.type })
                 fileResolve(fileWithPath)
               }, fileReject)
             })
           } else if (entry.isDirectory) {
-            return readDirectoryEntries(entry as FileSystemDirectoryEntry, currentPath)
+            return readDirectoryEntries(entry as any, currentPath)
           }
           return []
         })
@@ -1628,7 +1661,7 @@ async function readDirectoryEntries(directoryEntry: FileSystemDirectoryEntry, pa
 }
 
 // Helper function to get all files from DataTransferItems (supports both files and folders)
-async function getFilesFromDataTransfer(dataTransfer: DataTransfer): Promise<File[]> {
+async function getFilesFromDataTransfer(dataTransfer: any): Promise<File[]> {
   const allFiles: File[] = []
 
   if (dataTransfer.items) {
@@ -1646,7 +1679,7 @@ async function getFilesFromDataTransfer(dataTransfer: DataTransfer): Promise<Fil
           }
         } else if (entry?.isDirectory) {
           // Include the root folder name in the path
-          const directoryFiles = await readDirectoryEntries(entry as FileSystemDirectoryEntry, entry.name)
+          const directoryFiles = await readDirectoryEntries(entry as any, entry.name)
           allFiles.push(...directoryFiles)
         }
       }
