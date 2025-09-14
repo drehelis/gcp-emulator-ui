@@ -40,6 +40,32 @@
               Buckets ({{ storageStore.buckets.length }})
             </h2>
             <div class="flex items-center space-x-3">
+              <!-- View Mode Toggle -->
+              <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-md p-0.5">
+                <button
+                  @click="storageStore.setViewMode('list')"
+                  :class="[
+                    'p-1.5 rounded text-sm font-medium transition-colors',
+                    storageStore.viewMode === 'list'
+                      ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  ]"
+                >
+                  <Bars3Icon class="w-4 h-4" />
+                </button>
+                <button
+                  @click="storageStore.setViewMode('grid')"
+                  :class="[
+                    'p-1.5 rounded text-sm font-medium transition-colors',
+                    storageStore.viewMode === 'grid'
+                      ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  ]"
+                >
+                  <Squares2X2Icon class="w-4 h-4" />
+                </button>
+              </div>
+
               <button
                 @click="showCreateBucketModal = true"
                 class="inline-flex items-center px-2 sm:px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
@@ -60,8 +86,8 @@
         </div>
       </div>
       
-      <!-- Buckets List Content -->
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+      <!-- Buckets List View -->
+      <div v-if="storageStore.viewMode === 'list'" class="bg-white dark:bg-gray-800 shadow rounded-lg">
         <div class="divide-y divide-gray-200 dark:divide-gray-700">
           <div
             v-for="bucket in storageStore.buckets"
@@ -69,52 +95,114 @@
             @click="navigateToBucket(bucket.name)"
             class="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
           >
-          <div class="flex items-start justify-between cursor-pointer">
-            <div class="flex items-start space-x-3 flex-1 cursor-pointer">
-              <ArchiveBoxIcon class="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
-              <div class="flex-1 min-w-0 cursor-pointer">
-                <div class="flex items-center space-x-2 mb-1">
-                  <span class="text-sm font-medium text-gray-900 dark:text-white">
-                    {{ bucket.name }}
-                  </span>
-                </div>
-                <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                  <div class="flex items-center space-x-2">
-                    <span>{{ bucket.storageClass || 'STANDARD' }}</span>
-                    <span v-if="bucket.location" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
-                      {{ bucket.location }}
+            <div class="flex items-start justify-between cursor-pointer">
+              <div class="flex items-start space-x-3 flex-1 cursor-pointer">
+                <ArchiveBoxIcon class="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
+                <div class="flex-1 min-w-0 cursor-pointer">
+                  <div class="flex items-center space-x-2 mb-1">
+                    <span class="text-sm font-medium text-gray-900 dark:text-white">
+                      {{ bucket.name }}
                     </span>
+                  </div>
+                  <div class="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                    <div class="flex items-center space-x-2">
+                      <span>{{ bucket.storageClass || 'STANDARD' }}</span>
+                      <span v-if="bucket.location" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                        {{ bucket.location }}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            
-            <!-- Bucket Actions -->
-            <div class="flex items-center space-x-2 ml-4">
-              <button
-                @click.stop="navigateToBucket(bucket.name)"
-                class="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
-                title="Browse objects"
-              >
-                <FolderIcon class="w-4 h-4" />
-              </button>
-              <button
-                @click.stop="copyBucketName(bucket.name)"
-                class="p-1.5 text-gray-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors"
-                title="Copy bucket name"
-              >
-                <DocumentDuplicateIcon class="w-4 h-4" />
-              </button>
-              <button
-                @click.stop="confirmDeleteBucket(bucket)"
-                :disabled="storageStore.loading.delete"
-                class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Delete bucket"
-              >
-                <TrashIcon class="w-4 h-4" />
-              </button>
+
+              <!-- Bucket Actions -->
+              <div class="flex items-center space-x-2 ml-4">
+                <button
+                  @click.stop="navigateToBucket(bucket.name)"
+                  class="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                  title="Browse objects"
+                >
+                  <FolderIcon class="w-4 h-4" />
+                </button>
+                <button
+                  @click.stop="copyBucketName(bucket.name)"
+                  class="p-1.5 text-gray-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors"
+                  title="Copy bucket name"
+                >
+                  <DocumentDuplicateIcon class="w-4 h-4" />
+                </button>
+                <button
+                  @click.stop="confirmDeleteBucket(bucket)"
+                  :disabled="storageStore.loading.delete"
+                  class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Delete bucket"
+                >
+                  <TrashIcon class="w-4 h-4" />
+                </button>
+              </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Buckets Grid View -->
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div
+          v-for="bucket in storageStore.buckets"
+          :key="bucket.name"
+          @click="navigateToBucket(bucket.name)"
+          class="group relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md dark:hover:shadow-blue-900/10 transition-all duration-200 cursor-pointer"
+        >
+          <!-- Bucket Icon -->
+          <div class="flex flex-col items-center text-center">
+            <div class="w-12 h-12 mb-3 flex items-center justify-center">
+              <ArchiveBoxIcon class="w-10 h-10 text-blue-500" />
+            </div>
+
+            <!-- Bucket Name -->
+            <div class="w-full mb-2">
+              <h3 class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                {{ bucket.name }}
+              </h3>
+            </div>
+
+            <!-- Bucket Details -->
+            <div class="w-full text-center space-y-1">
+              <div class="text-xs text-gray-500 dark:text-gray-400">
+                {{ bucket.storageClass || 'STANDARD' }}
+              </div>
+              <div v-if="bucket.location" class="text-xs">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                  {{ bucket.location }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons (visible on hover) -->
+          <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex space-x-1">
+            <button
+              @click.stop="navigateToBucket(bucket.name)"
+              class="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+              title="Browse objects"
+            >
+              <FolderIcon class="w-3.5 h-3.5" />
+            </button>
+            <button
+              @click.stop="copyBucketName(bucket.name)"
+              class="p-1.5 text-gray-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors"
+              title="Copy bucket name"
+            >
+              <DocumentDuplicateIcon class="w-3.5 h-3.5" />
+            </button>
+            <button
+              @click.stop="confirmDeleteBucket(bucket)"
+              :disabled="storageStore.loading.delete"
+              class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Delete bucket"
+            >
+              <TrashIcon class="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
       </div>
@@ -202,7 +290,9 @@ import {
   ExclamationTriangleIcon,
   FolderIcon,
   DocumentDuplicateIcon,
-  TrashIcon
+  TrashIcon,
+  Bars3Icon,
+  Squares2X2Icon
 } from '@heroicons/vue/24/outline'
 import { useStorageStore } from '@/stores/storage'
 import { useProjectsStore } from '@/stores/projects'

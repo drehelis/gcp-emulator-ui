@@ -266,8 +266,7 @@ import {
   CubeIcon,
   DocumentDuplicateIcon,
   ArrowsRightLeftIcon,
-  ArchiveBoxIcon,
-  CogIcon
+  ArchiveBoxIcon
 } from '@heroicons/vue/24/outline'
 
 import { useAppStore } from '@/stores/app'
@@ -394,14 +393,6 @@ const navigationItems = computed<NavigationItem[]>(() => {
           isSubItem: true
         })
 
-        storageChildren.push({
-          id: 'storage-settings',
-          label: 'Settings',
-          route: `/projects/${currentProject.value}/storage/settings`,
-          icon: CogIcon,
-          disabled: false,
-          isSubItem: true
-        })
 
       }
 
@@ -483,14 +474,6 @@ const navigationItems = computed<NavigationItem[]>(() => {
         customClasses: !storageConnected.value ? 'opacity-50' : ''
       })
 
-      items.push({
-        id: 'collapsed-storage-settings',
-        label: 'Settings',
-        route: `/projects/${currentProject.value}/storage/settings`,
-        icon: CogIcon,
-        disabled: false,
-        customClasses: !storageConnected.value ? 'opacity-50' : ''
-      })
 
     }
 

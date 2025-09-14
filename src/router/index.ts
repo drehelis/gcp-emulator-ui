@@ -389,25 +389,6 @@ const routes: RouteRecordRaw[] = [
                 ]
               }
             ]
-          },
-          {
-            path: 'storage/settings',
-            name: 'project-storage-settings',
-            component: () => import('@/views/storage/StorageSettingsView.vue'),
-            props: true,
-            meta: {
-              title: 'Storage Settings',
-              description: 'Configure Cloud Storage preferences',
-              icon: 'CogIcon',
-              requiresAuth: true,
-              requiresProject: true,
-              breadcrumbs: [
-                { label: 'Home', route: '/' },
-                { label: ':projectId', route: '/projects/:projectId' },
-                { label: 'Cloud Storage' },
-                { label: 'Settings' }
-              ]
-            }
           }
         ]
       },
@@ -560,26 +541,6 @@ const routes: RouteRecordRaw[] = [
             { label: 'Analytics' }
           ]
         }
-      },
-      {
-        path: 'settings',
-        children: [
-          {
-            path: '',
-            name: 'settings',
-            component: () => import('@/views/settings/SettingsView.vue'),
-            meta: {
-              title: 'Settings',
-              description: 'Application settings and preferences',
-              icon: 'CogIcon',
-              requiresAuth: true,
-              breadcrumbs: [
-                { label: 'Home', route: '/' },
-                { label: 'Settings' }
-              ]
-            }
-          }
-        ]
       }
     ]
   },

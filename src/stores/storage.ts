@@ -57,7 +57,10 @@ export const useStorageStore = defineStore('storage', () => {
 
   // UI state
   const selectedObjects = ref<string[]>([])
-  const viewMode = ref<'grid' | 'list'>('list')
+  const viewMode = ref<'grid' | 'list'>(() => {
+    const saved = localStorage.getItem('storage-view-mode')
+    return (saved === 'grid' || saved === 'list') ? saved : 'list'
+  }())
   const sortBy = ref<'name' | 'size' | 'modified'>('name')
   const sortOrder = ref<'asc' | 'desc'>('asc')
 
@@ -607,6 +610,7 @@ export const useStorageStore = defineStore('storage', () => {
 
   function setViewMode(mode: 'grid' | 'list'): void {
     viewMode.value = mode
+    localStorage.setItem('storage-view-mode', mode)
   }
 
   function selectObject(objectName: string): void {
