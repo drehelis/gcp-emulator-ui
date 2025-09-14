@@ -57,149 +57,101 @@
           <ProjectSelector :collapsed="appStore.layout.sidebar.collapsed && !isMobile" />
         </div>
 
-        <!-- Project Navigation -->
-        <div v-if="currentProject">
-          <div v-if="(!appStore.layout.sidebar.collapsed || isMobile)" class="px-4 py-3">
-            <!-- Project overview link -->
-            <div class="mb-3">
-              <router-link
-                :to="`/projects/${currentProject}`"
-                @click="handleMobileNavClick"
-                class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-                :class="$route.path === `/projects/${currentProject}` ? 
-                  'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
-                  'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'"
-              >
-                <CubeIcon class="w-4 h-4 mr-3" />
-                Services
-              </router-link>
-            </div>
-
-            <!-- PubSub services (show when in pubsub routes) -->
-            <div v-if="$route.path.includes('/pubsub')" class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3">
-              <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Pub/Sub</p>
-              <router-link
-                :to="`/projects/${currentProject}/pubsub/topics`"
-                @click="handleMobileNavClick"
-                class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-                :class="$route.path.includes('/topics') ? 
-                  'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
-                  'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'"
-              >
-                <QueueListIcon class="w-4 h-4 mr-3" />
-                Topics
-              </router-link>
-              <router-link
-                :to="`/projects/${currentProject}/pubsub/subscriptions`"
-                @click="handleMobileNavClick"
-                class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-                :class="$route.path.includes('/subscriptions') ? 
-                  'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
-                  'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'"
-              >
-                <InboxStackIcon class="w-4 h-4 mr-3" />
-                Subscriptions
-              </router-link>
-              <router-link
-                :to="`/projects/${currentProject}/pubsub/message-templates`"
-                @click="handleMobileNavClick"
-                class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-                :class="$route.path.includes('/message-templates') ? 
-                  'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
-                  'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'"
-              >
-                <DocumentDuplicateIcon class="w-4 h-4 mr-3" />
-                Message Templates
-              </router-link>
-              <router-link
-                :to="`/projects/${currentProject}/pubsub/import-export`"
-                @click="handleMobileNavClick"
-                class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-                :class="$route.path.includes('/import-export') ? 
-                  'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
-                  'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'"
-              >
-                <ArrowsRightLeftIcon class="w-4 h-4 mr-3" />
-                Import/Export
-              </router-link>
-            </div>
-          </div>
-
-          <!-- Collapsed Project Navigation -->
-          <div v-else-if="appStore.layout.sidebar.collapsed && !isMobile" class="px-2 py-3 space-y-1">
-            <router-link
-              :to="`/projects/${currentProject}`"
-              class="flex items-center justify-center w-full px-2 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-              :class="$route.path === `/projects/${currentProject}` ? 
-                'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
-                'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'"
-              title="Project Services"
-            >
-              <CubeIcon class="w-5 h-5" />
-            </router-link>
-            
-            <!-- Show PubSub nav items when in pubsub routes -->
-            <template v-if="$route.path.includes('/pubsub')">
-              <router-link
-                :to="`/projects/${currentProject}/pubsub/topics`"
-                class="flex items-center justify-center w-full px-2 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-                :class="$route.path.includes('/topics') ? 
-                  'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
-                  'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'"
-                title="Topics"
-              >
-                <QueueListIcon class="w-5 h-5" />
-              </router-link>
-              <router-link
-                :to="`/projects/${currentProject}/pubsub/subscriptions`"
-                class="flex items-center justify-center w-full px-2 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-                :class="$route.path.includes('/subscriptions') ? 
-                  'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
-                  'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'"
-                title="Subscriptions"
-              >
-                <InboxStackIcon class="w-5 h-5" />
-              </router-link>
-              <router-link
-                :to="`/projects/${currentProject}/pubsub/message-templates`"
-                class="flex items-center justify-center w-full px-2 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-                :class="$route.path.includes('/message-templates') ? 
-                  'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
-                  'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'"
-                title="Message Templates"
-              >
-                <DocumentDuplicateIcon class="w-5 h-5" />
-              </router-link>
-              <router-link
-                :to="`/projects/${currentProject}/pubsub/import-export`"
-                class="flex items-center justify-center w-full px-2 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
-                :class="$route.path.includes('/import-export') ? 
-                  'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
-                  'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200'"
-                title="Import/Export"
-              >
-                <ArrowsRightLeftIcon class="w-5 h-5" />
-              </router-link>
-            </template>
-          </div>
-        </div>
-
-        <!-- Navigation -->
-        <nav class="flex-1 px-4 py-4 space-y-2 overflow-y-auto scrollbar-thin">
+        <!-- Dynamic Navigation -->
+        <div class="flex-1 px-4 py-4 space-y-2 overflow-y-auto scrollbar-thin" v-if="navigationItems.length > 0">
           <template v-for="item in navigationItems" :key="item.id">
-            <div v-if="item.divider" class="my-3 border-t border-gray-200 dark:border-gray-700"></div>
-            <NavItem 
-              v-else
+
+            <!-- Services Header -->
+            <div v-if="item.label === 'Services' && !appStore.layout.sidebar.collapsed" class="mb-3">
+              <NavItem
+                :to="item.route"
+                :icon="item.icon"
+                :label="item.label"
+                :badge="item.badge"
+                :disabled="item.disabled"
+                :is-service-header="item.isServiceHeader"
+                :is-sub-item="item.isSubItem"
+                :is-section-header="item.isSectionHeader"
+                :connected="item.connected"
+                :is-collapsed="appStore.layout.sidebar.collapsed && !isMobile"
+                :custom-classes="item.customClasses"
+                @click="handleMobileNavClick"
+              />
+            </div>
+
+            <!-- PubSub Section Container -->
+            <div v-else-if="item.id === 'pubsub-section'" class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3">
+              <template v-for="subItem in item.children" :key="subItem.id">
+                <NavItem
+                  :to="subItem.route"
+                  :icon="subItem.icon"
+                  :label="subItem.label"
+                  :badge="subItem.badge"
+                  :disabled="subItem.disabled"
+                  :is-service-header="subItem.isServiceHeader"
+                  :is-sub-item="subItem.isSubItem"
+                  :is-section-header="subItem.isSectionHeader"
+                  :connected="subItem.connected"
+                  :is-collapsed="appStore.layout.sidebar.collapsed && !isMobile"
+                  :custom-classes="subItem.customClasses"
+                  @click="handleMobileNavClick"
+                />
+              </template>
+            </div>
+
+            <!-- Storage Section Container -->
+            <div v-else-if="item.id === 'storage-section'" class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3">
+              <template v-for="subItem in item.children" :key="subItem.id">
+                <NavItem
+                  :to="subItem.route"
+                  :icon="subItem.icon"
+                  :label="subItem.label"
+                  :badge="subItem.badge"
+                  :disabled="subItem.disabled"
+                  :is-service-header="subItem.isServiceHeader"
+                  :is-sub-item="subItem.isSubItem"
+                  :is-section-header="subItem.isSectionHeader"
+                  :connected="subItem.connected"
+                  :is-collapsed="appStore.layout.sidebar.collapsed && !isMobile"
+                  :custom-classes="subItem.customClasses"
+                  @click="handleMobileNavClick"
+                />
+              </template>
+            </div>
+
+            <!-- Other Items (Expanded Mode) -->
+            <div v-else-if="!item.id.includes('-section') && !appStore.layout.sidebar.collapsed" class="mt-4">
+              <router-link
+                :to="item.route"
+                class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors"
+                @click="handleMobileNavClick"
+              >
+                <component :is="item.icon" class="w-5 h-5 mr-3" />
+                {{ item.label }}
+              </router-link>
+            </div>
+
+            <!-- Collapsed Separator -->
+            <div v-else-if="item.isSeparator && appStore.layout.sidebar.collapsed" class="my-3 mx-auto w-8 border-t border-gray-200 dark:border-gray-700"></div>
+
+            <!-- Collapsed/Other Items -->
+            <NavItem
+              v-else-if="!item.id.includes('-section') && appStore.layout.sidebar.collapsed && !item.isSeparator"
               :to="item.route"
               :icon="item.icon"
               :label="item.label"
               :badge="item.badge"
               :disabled="item.disabled"
+              :is-service-header="item.isServiceHeader"
+              :is-sub-item="item.isSubItem"
+              :is-section-header="item.isSectionHeader"
+              :connected="item.connected"
               :is-collapsed="appStore.layout.sidebar.collapsed && !isMobile"
+              :custom-classes="item.customClasses"
               @click="handleMobileNavClick"
             />
           </template>
-        </nav>
+        </div>
 
       </aside>
     </Transition>
@@ -313,7 +265,8 @@ import {
   InboxStackIcon,
   CubeIcon,
   DocumentDuplicateIcon,
-  ArrowsRightLeftIcon
+  ArrowsRightLeftIcon,
+  ArchiveBoxIcon
 } from '@heroicons/vue/24/outline'
 
 import { useAppStore } from '@/stores/app'
@@ -333,15 +286,258 @@ const projectsStore = useProjectsStore()
 const isMobile = ref(false)
 const isFullscreen = ref(false)
 
+// Connection status
+const pubsubConnected = ref(true)
+const storageConnected = ref(true)
+
 // Current project from route only (for navigation)
 const currentProject = computed(() => {
   return route.params.projectId as string
 })
 
-// Navigation items
+
+// Dynamic navigation items that replicate the exact hardcoded structure
 const navigationItems = computed<NavigationItem[]>(() => {
-  return []
+  if (!currentProject.value) return []
+
+  const items: NavigationItem[] = []
+
+  // Only show navigation when not collapsed or on mobile
+  if (!appStore.layout.sidebar.collapsed || isMobile.value) {
+    // Project overview link (Services header)
+    items.push({
+      id: 'services-header',
+      label: 'Services',
+      route: `/projects/${currentProject.value}`,
+      icon: CubeIcon,
+      disabled: false
+    })
+
+    // PubSub services with connection status
+    if (showPubSubNav.value) {
+      const pubsubChildren: NavigationItem[] = []
+
+      // PubSub section header
+      pubsubChildren.push({
+        id: 'pubsub-section-header',
+        label: 'Pub/Sub',
+        route: null,
+        icon: null,
+        disabled: false,
+        isSectionHeader: true,
+        connected: pubsubConnected.value
+      })
+
+      // Only show PubSub navigation items when connected
+      if (pubsubConnected.value) {
+        pubsubChildren.push({
+          id: 'pubsub-topics',
+          label: 'Topics',
+          route: `/projects/${currentProject.value}/pubsub/topics`,
+          icon: QueueListIcon,
+          disabled: false,
+          isSubItem: true
+        })
+
+        pubsubChildren.push({
+          id: 'pubsub-subscriptions',
+          label: 'Subscriptions',
+          route: `/projects/${currentProject.value}/pubsub/subscriptions`,
+          icon: InboxStackIcon,
+          disabled: false,
+          isSubItem: true
+        })
+
+        pubsubChildren.push({
+          id: 'pubsub-templates',
+          label: 'Templates',
+          route: `/projects/${currentProject.value}/pubsub/message-templates`,
+          icon: DocumentDuplicateIcon,
+          disabled: false,
+          isSubItem: true
+        })
+
+      }
+
+      items.push({
+        id: 'pubsub-section',
+        label: 'PubSub Section',
+        route: null,
+        children: pubsubChildren
+      })
+    }
+
+    // Storage services with connection status
+    if (showStorageNav.value) {
+      const storageChildren: NavigationItem[] = []
+
+      // Storage section header
+      storageChildren.push({
+        id: 'storage-section-header',
+        label: 'Storage',
+        route: null,
+        icon: null,
+        disabled: false,
+        isSectionHeader: true,
+        connected: storageConnected.value
+      })
+
+      // Only show Storage navigation items when connected
+      if (storageConnected.value) {
+        storageChildren.push({
+          id: 'storage-buckets',
+          label: 'Buckets',
+          route: `/projects/${currentProject.value}/storage/buckets`,
+          icon: ArchiveBoxIcon,
+          disabled: false,
+          isSubItem: true
+        })
+
+
+      }
+
+      items.push({
+        id: 'storage-section',
+        label: 'Storage Section',
+        route: null,
+        children: storageChildren
+      })
+    }
+
+  } else {
+    // Collapsed sidebar navigation (icon only)
+    items.push({
+      id: 'collapsed-services',
+      label: 'Project Services',
+      route: `/projects/${currentProject.value}`,
+      icon: CubeIcon,
+      disabled: false
+    })
+
+    if (showPubSubNav.value) {
+      // Add separator before PubSub section
+      items.push({
+        id: 'separator-pubsub',
+        label: '',
+        route: null,
+        icon: null,
+        disabled: false,
+        isSeparator: true
+      })
+
+      items.push({
+        id: 'collapsed-pubsub-topics',
+        label: 'Topics',
+        route: `/projects/${currentProject.value}/pubsub/topics`,
+        icon: QueueListIcon,
+        disabled: false,
+        customClasses: !pubsubConnected.value ? 'opacity-50' : ''
+      })
+
+      items.push({
+        id: 'collapsed-pubsub-subscriptions',
+        label: 'Subscriptions',
+        route: `/projects/${currentProject.value}/pubsub/subscriptions`,
+        icon: InboxStackIcon,
+        disabled: false,
+        customClasses: !pubsubConnected.value ? 'opacity-50' : ''
+      })
+
+      items.push({
+        id: 'collapsed-pubsub-templates',
+        label: 'Templates',
+        route: `/projects/${currentProject.value}/pubsub/message-templates`,
+        icon: DocumentDuplicateIcon,
+        disabled: false,
+        customClasses: !pubsubConnected.value ? 'opacity-50' : ''
+      })
+
+    }
+
+    if (showStorageNav.value) {
+      // Add separator before Storage section
+      items.push({
+        id: 'separator-storage',
+        label: '',
+        route: null,
+        icon: null,
+        disabled: false,
+        isSeparator: true
+      })
+
+      items.push({
+        id: 'collapsed-storage-buckets',
+        label: 'Buckets',
+        route: `/projects/${currentProject.value}/storage/buckets`,
+        icon: ArchiveBoxIcon,
+        disabled: false,
+        customClasses: !storageConnected.value ? 'opacity-50' : ''
+      })
+
+
+    }
+
+    // Add separator before Import/Export
+    items.push({
+      id: 'separator-import-export',
+      label: '',
+      route: null,
+      icon: null,
+      disabled: false,
+      isSeparator: true
+    })
+
+  }
+
+  // Always add unified Import/Export (after all service sections in both modes)
+  items.push({
+    id: 'unified-import-export',
+    label: 'Import/Export',
+    route: `/projects/${currentProject.value}/import-export`,
+    icon: ArrowsRightLeftIcon,
+    disabled: false
+  })
+
+  return items
 })
+
+// Always show services when in a project, but with connection status
+const showPubSubNav = computed(() => !!currentProject.value)
+const showStorageNav = computed(() => !!currentProject.value)
+
+// Connection checking functions
+const checkPubSubConnection = async () => {
+  try {
+    const baseUrl = import.meta.env.VITE_PUBSUB_BASE_URL || 'http://localhost:8085'
+    const response = await fetch(`${baseUrl}/`, {
+      method: 'GET',
+      signal: AbortSignal.timeout(3000)
+    })
+    pubsubConnected.value = response.ok
+  } catch {
+    pubsubConnected.value = false
+  }
+}
+
+const checkStorageConnection = async () => {
+  try {
+    const baseUrl = import.meta.env.VITE_STORAGE_BASE_URL || 'http://localhost:4443'
+    const response = await fetch(`${baseUrl}/_internal/healthcheck`, {
+      method: 'GET',
+      signal: AbortSignal.timeout(3000)
+    })
+    storageConnected.value = response.ok
+  } catch {
+    storageConnected.value = false
+  }
+}
+
+const checkAllConnections = async () => {
+  await Promise.all([
+    checkPubSubConnection(),
+    checkStorageConnection()
+  ])
+}
 
 // Watch for route changes and sync project selection
 watch(() => route.params.projectId, (newProjectId) => {
@@ -415,11 +611,19 @@ function handleFullscreenChange() {
   isFullscreen.value = !!document.fullscreenElement
 }
 
+// Check connections when project changes
+watch(currentProject, (newProject) => {
+  if (newProject) {
+    checkAllConnections()
+  }
+}, { immediate: true })
+
 // Lifecycle
 onMounted(() => {
   handleResize()
   window.addEventListener('resize', handleResize)
   document.addEventListener('fullscreenchange', handleFullscreenChange)
+  checkAllConnections()
 })
 
 onUnmounted(() => {

@@ -261,26 +261,132 @@ const routes: RouteRecordRaw[] = [
             ]
           },
           {
-            path: 'pubsub/import-export',
+            path: 'import-export',
+            name: 'project-unified-import-export',
+            component: () => import('@/views/ImportExportView.vue'),
+            props: true,
+            meta: {
+              title: 'Import/Export',
+              description: 'Import and export configurations for all emulator services',
+              icon: 'ArrowsRightLeftIcon',
+              requiresAuth: true,
+              requiresProject: true,
+              breadcrumbs: [
+                { label: 'Home', route: '/' },
+                { label: ':projectId', route: '/projects/:projectId' },
+                { label: 'Import/Export' }
+              ]
+            }
+          },
+          // Cloud Storage routes
+          {
+            path: 'storage/buckets',
             children: [
               {
                 path: '',
-                name: 'project-import-export',
-                component: () => import('@/views/settings/ImportExportView.vue'),
+                name: 'project-storage-buckets',
+                component: () => import('@/views/storage/BucketsListView.vue'),
                 props: true,
                 meta: {
-                  title: 'Import/Export',
-                  description: 'Import and export topic and subscription configurations',
-                  icon: 'ArrowsRightLeftIcon',
+                  title: 'Buckets',
+                  description: 'Manage Cloud Storage buckets',
+                  icon: 'ArchiveBoxIcon',
                   requiresAuth: true,
                   requiresProject: true,
                   breadcrumbs: [
                     { label: 'Home', route: '/' },
                     { label: ':projectId', route: '/projects/:projectId' },
-                    { label: 'Pub/Sub' },
-                    { label: 'Import/Export' }
+                    { label: 'Cloud Storage' },
+                    { label: 'Buckets' }
                   ]
                 }
+              },
+              {
+                path: 'create',
+                name: 'create-storage-bucket',
+                component: () => import('@/views/storage/CreateBucketView.vue'),
+                props: true,
+                meta: {
+                  title: 'Create Bucket',
+                  description: 'Create a new Cloud Storage bucket',
+                  icon: 'PlusIcon',
+                  requiresAuth: true,
+                  requiresProject: true,
+                  breadcrumbs: [
+                    { label: 'Home', route: '/' },
+                    { label: ':projectId', route: '/projects/:projectId' },
+                    { label: 'Cloud Storage' },
+                    { label: 'Buckets', route: '/projects/:projectId/storage/buckets' },
+                    { label: 'Create Bucket' }
+                  ]
+                }
+              },
+              {
+                path: ':bucketName',
+                children: [
+                  {
+                    path: '',
+                    name: 'storage-bucket-browser',
+                    component: () => import('@/views/storage/BucketBrowserView.vue'),
+                    props: true,
+                    meta: {
+                      title: 'Bucket Browser',
+                      description: 'Browse and manage objects in bucket',
+                      icon: 'FolderIcon',
+                      requiresAuth: true,
+                      requiresProject: true,
+                      breadcrumbs: [
+                        { label: 'Home', route: '/' },
+                        { label: ':projectId', route: '/projects/:projectId' },
+                        { label: 'Cloud Storage' },
+                        { label: 'Buckets', route: '/projects/:projectId/storage/buckets' },
+                        { label: ':bucketName' }
+                      ]
+                    }
+                  },
+                  {
+                    path: 'objects/:objectPath*',
+                    name: 'storage-object-details',
+                    component: () => import('@/views/storage/ObjectDetailsView.vue'),
+                    props: true,
+                    meta: {
+                      title: 'Object Details',
+                      description: 'View and manage object details',
+                      icon: 'DocumentIcon',
+                      requiresAuth: true,
+                      requiresProject: true,
+                      breadcrumbs: [
+                        { label: 'Home', route: '/' },
+                        { label: ':projectId', route: '/projects/:projectId' },
+                        { label: 'Cloud Storage' },
+                        { label: 'Buckets', route: '/projects/:projectId/storage/buckets' },
+                        { label: ':bucketName', route: '/projects/:projectId/storage/buckets/:bucketName' },
+                        { label: 'Object Details' }
+                      ]
+                    }
+                  },
+                  {
+                    path: 'upload',
+                    name: 'storage-upload-objects',
+                    component: () => import('@/views/storage/UploadObjectsView.vue'),
+                    props: true,
+                    meta: {
+                      title: 'Upload Objects',
+                      description: 'Upload files to the bucket',
+                      icon: 'ArrowUpTrayIcon',
+                      requiresAuth: true,
+                      requiresProject: true,
+                      breadcrumbs: [
+                        { label: 'Home', route: '/' },
+                        { label: ':projectId', route: '/projects/:projectId' },
+                        { label: 'Cloud Storage' },
+                        { label: 'Buckets', route: '/projects/:projectId/storage/buckets' },
+                        { label: ':bucketName', route: '/projects/:projectId/storage/buckets/:bucketName' },
+                        { label: 'Upload' }
+                      ]
+                    }
+                  }
+                ]
               }
             ]
           }
@@ -435,42 +541,6 @@ const routes: RouteRecordRaw[] = [
             { label: 'Analytics' }
           ]
         }
-      },
-      {
-        path: 'settings',
-        children: [
-          {
-            path: '',
-            name: 'settings',
-            component: () => import('@/views/settings/SettingsView.vue'),
-            meta: {
-              title: 'Settings',
-              description: 'Application settings and preferences',
-              icon: 'CogIcon',
-              requiresAuth: true,
-              breadcrumbs: [
-                { label: 'Home', route: '/' },
-                { label: 'Settings' }
-              ]
-            }
-          },
-          {
-            path: 'import-export',
-            name: 'import-export',
-            component: () => import('@/views/settings/ImportExportView.vue'),
-            meta: {
-              title: 'Import/Export',
-              description: 'Import and export configurations',
-              icon: 'ArrowsUpDownIcon',
-              requiresAuth: true,
-              breadcrumbs: [
-                { label: 'Home', route: '/' },
-                { label: 'Settings', route: '/settings' },
-                { label: 'Import/Export' }
-              ]
-            }
-          }
-        ]
       }
     ]
   },
@@ -613,12 +683,17 @@ router.beforeEach(async (to, from, next) => {
   }
 
   if (to.meta.breadcrumbs) {
-    // Process breadcrumbs to replace :projectId with actual project ID
+    // Process breadcrumbs to replace :projectId and :bucketName with actual values
     const projectId = to.params.projectId as string || projectsStore.selectedProjectId
+    const bucketName = to.params.bucketName as string
     const breadcrumbs = (to.meta.breadcrumbs as any[]).map(breadcrumb => ({
       ...breadcrumb,
-      label: breadcrumb.label.replace(':projectId', projectId || 'Project'),
-      route: breadcrumb.route?.replace(':projectId', projectId || 'project')
+      label: breadcrumb.label
+        .replace(':projectId', projectId || 'Project')
+        .replace(':bucketName', bucketName || 'Bucket'),
+      route: breadcrumb.route
+        ?.replace(':projectId', projectId || 'project')
+        ?.replace(':bucketName', bucketName || 'bucket')
     }))
     appStore.setBreadcrumbs(breadcrumbs)
   }

@@ -39,13 +39,20 @@ export interface NavigationItem {
   id: string
   label: string
   icon?: Component
-  route?: string
+  route?: string | null
   href?: string
   children?: NavigationItem[]
   badge?: string | number
   disabled?: boolean
   divider?: boolean
   external?: boolean
+  isServiceHeader?: boolean
+  isSubItem?: boolean
+  isSectionHeader?: boolean
+  isContainerStart?: boolean
+  isContainerEnd?: boolean
+  connected?: boolean
+  customClasses?: string
 }
 
 export interface BreadcrumbItem {

@@ -5,6 +5,7 @@
 
 // Re-export all types
 export * from './pubsub'
+export * from './storage'
 export * from './api'
 export * from './ui'
 

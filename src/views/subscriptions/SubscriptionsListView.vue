@@ -43,10 +43,10 @@
               <button
                 @click="loadSubscriptions"
                 :disabled="loading"
-                class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                class="inline-flex items-center px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
               >
-                <ArrowPathIcon class="h-4 w-4 mr-2" :class="{ 'animate-spin': loading }" />
-                Refresh
+                <ArrowPathIcon class="h-4 w-4 sm:mr-2" :class="{ 'animate-spin': loading }" />
+                <span class="hidden sm:inline">Refresh</span>
               </button>
             </div>
           </div>
@@ -186,10 +186,10 @@
               <button
                 @click="loadSubscriptions"
                 :disabled="loading"
-                class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                class="inline-flex items-center px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
               >
-                <ArrowPathIcon class="h-4 w-4 mr-2" :class="{ 'animate-spin': loading }" />
-                Refresh
+                <ArrowPathIcon class="h-4 w-4 sm:mr-2" :class="{ 'animate-spin': loading }" />
+                <span class="hidden sm:inline">Refresh</span>
               </button>
             </div>
           </div>

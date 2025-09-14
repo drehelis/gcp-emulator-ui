@@ -19,20 +19,29 @@ https://github.com/user-attachments/assets/a578672c-4ecc-44ce-9fe1-ea606bbb775c
    * Import/export configurations
 - **Google Cloud Storage ([fake-gcs](https://github.com/fsouza/fake-gcs-server))**
    * Create, view, and manage Storage buckets
+   * Support drag'n'drop files and folders
+   * Import/export configurations
 - **Google Firestore/Datastore mode** - Coming soon
 
 ## Quick Start
 ```bash
-# Start pubsub emulator first
+# Start Google Pub/Sub emulator
 docker run \
    --rm \
    --publish 8085:8085 \
    gcr.io/google.com/cloudsdktool/cloud-sdk:emulators sh -c 'gcloud beta emulators pubsub start --host-port=0.0.0.0:8085'
 
+# Start fake-gcs emulator
+docker run \
+   --rm \
+   --publish 4443:4443 \
+   fsouza/fake-gcs-server -scheme http
+
 # Now start the UI
 docker run \
    --rm \
-   --env PUBSUB_EMULATOR_URL="http://host.docker.internal:8085" \
+   --env PUBSUB_EMULATOR_URL="host.docker.internal:8085" \
+   --env STORAGE_EMULATOR_URL="host.docker.internal:4443" \
    --publish 9090:80 \
    ghcr.io/drehelis/gcp-emulator-ui:main
 ```
@@ -70,10 +79,8 @@ Browse to http://localhost:9090
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `VITE_ENABLE_PUBSUB` | `true` | Enable Pub/Sub service management |
-| `VITE_ENABLE_CLOUD_STORAGE` | `true` | Enable Cloud Storage service (coming soon) |
 | `VITE_PUBSUB_BASE_URL` | `http://localhost:8085` | Pub/Sub emulator endpoint |
-| `VITE_STORAGE_BASE_URL` | `http://localhost:8086` | Storage emulator endpoint |
+| `VITE_STORAGE_BASE_URL` | `http://localhost:4443` | Storage emulator endpoint |
 
 ## Development
 

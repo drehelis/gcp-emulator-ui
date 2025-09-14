@@ -189,11 +189,27 @@ let updateSW: (() => Promise<void>) | undefined
 const showKeyboardHelp = ref(false)
 const { registerShortcuts, unregisterShortcuts } = useKeyboardShortcuts()
 
+// Handle online/offline status
+function handleOnline() {
+  // Connection restored - could implement red ribbon dismissal here
+}
+
+function handleOffline() {
+  // Network offline - could implement red ribbon display here
+}
+
+// Register all lifecycle hooks before any async operations
+onUnmounted(() => {
+  window.removeEventListener('online', handleOnline)
+  window.removeEventListener('offline', handleOffline)
+  unregisterShortcuts()
+})
+
 onMounted(async () => {
   // Register PWA update handler
   if ('serviceWorker' in navigator) {
     const { registerSW } = await import('virtual:pwa-register')
-    
+
     updateSW = registerSW({
       onNeedRefresh() {
         showUpdatePrompt.value = true
@@ -234,7 +250,7 @@ onMounted(async () => {
           showKeyboardHelp.value = false
           return
         }
-        
+
         if (appStore.hasActiveModals) {
           appStore.closeAllModals()
         }
@@ -249,7 +265,7 @@ onMounted(async () => {
         const currentTheme = appStore.theme
         const newTheme = currentTheme === 'dark' ? 'light' : 'dark'
         appStore.setTheme(newTheme)
-        
+
         appStore.showToast({
           type: 'info',
           title: 'Theme changed',
@@ -269,25 +285,9 @@ onMounted(async () => {
     }
   ])
 
-
-  // Handle online/offline status
-  function handleOnline() {
-    // Connection restored - could implement red ribbon dismissal here
-  }
-
-  function handleOffline() {
-    // Network offline - could implement red ribbon display here
-  }
-
+  // Add event listeners for online/offline status
   window.addEventListener('online', handleOnline)
   window.addEventListener('offline', handleOffline)
-
-  // Cleanup on unmount
-  onUnmounted(() => {
-    window.removeEventListener('online', handleOnline)
-    window.removeEventListener('offline', handleOffline)
-    unregisterShortcuts()
-  })
 })
 
 function refreshApp() {

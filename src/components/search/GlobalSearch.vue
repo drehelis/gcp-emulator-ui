@@ -154,7 +154,7 @@ const loadSearchData = async () => {
     allSubscriptions.value = Array.isArray(subscriptions) ? subscriptions : []
     
     // Load message templates from store
-    await messageTemplatesStore.loadTemplates(currentProjectId.value)
+    await messageTemplatesStore.loadTemplates()
     allTemplates.value = messageTemplatesStore.templates || []
   } catch (error) {
     console.warn('Failed to load search data:', error)

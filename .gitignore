@@ -1,7 +1,10 @@
 .env
 
 node_modules
+dist
 dev-dist
+
 
 .claude
 CLAUDE.md
+repomix.md
