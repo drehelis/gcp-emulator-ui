@@ -348,7 +348,7 @@ export const useStorageStore = defineStore('storage', () => {
     }
   }
 
-  async function uploadFiles(files: File[], bucketName: string, prefix: string = ''): Promise<void> {
+  async function uploadFiles(files: File[], bucketName: string, prefix: string = '', silent: boolean = false): Promise<void> {
     try {
       loading.value.upload = true
       state.value.error = null
@@ -399,20 +399,24 @@ export const useStorageStore = defineStore('storage', () => {
       // Refresh objects list
       await fetchObjects(bucketName, prefix, true)
 
-      appStore.showToast({
-        type: 'success',
-        title: 'Upload Complete',
-        message: `Successfully uploaded ${files.length} file${files.length === 1 ? '' : 's'}`
-      })
+      if (!silent) {
+        appStore.showToast({
+          type: 'success',
+          title: 'Upload Complete',
+          message: `Successfully uploaded ${files.length} file${files.length === 1 ? '' : 's'}`
+        })
+      }
     } catch (error: any) {
       console.error('Error uploading files:', error)
       state.value.error = error.message || 'Failed to upload files'
 
-      appStore.showToast({
-        type: 'error',
-        title: 'Upload Error',
-        message: error.message || 'Failed to upload files'
-      })
+      if (!silent) {
+        appStore.showToast({
+          type: 'error',
+          title: 'Upload Error',
+          message: error.message || 'Failed to upload files'
+        })
+      }
       throw error
     } finally {
       loading.value.upload = false

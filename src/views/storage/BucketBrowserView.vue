@@ -351,6 +351,12 @@
                     @change="() => {}"
                     class="w-3.5 h-3.5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
                   />
+                  <input
+                    v-else
+                    type="checkbox"
+                    disabled
+                    class="w-3.5 h-3.5 text-gray-400 bg-gray-100 border-gray-300 rounded cursor-not-allowed dark:bg-gray-600 dark:border-gray-500 opacity-50"
+                  />
                 </td>
                 <td class="px-3 py-1.5">
                   <div class="flex items-center min-w-0">
@@ -442,7 +448,12 @@
                   @change="() => {}"
                   class="mt-1 w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
                 />
-                <div class="w-4 h-4 mt-1" v-else></div>
+                <input
+                  v-else
+                  type="checkbox"
+                  disabled
+                  class="mt-1 w-4 h-4 text-gray-400 bg-gray-100 border-gray-300 rounded cursor-not-allowed dark:bg-gray-600 dark:border-gray-500 opacity-50"
+                />
 
                 <FolderIcon
                   v-if="object.isFolder"
@@ -513,6 +524,17 @@
               @click.stop="storageStore.selectObject(object.name)"
               @change="() => {}"
               class="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+            />
+          </div>
+          <!-- Disabled checkbox for folders -->
+          <div
+            v-else
+            class="absolute top-2 left-2 opacity-50"
+          >
+            <input
+              type="checkbox"
+              disabled
+              class="w-4 h-4 text-gray-400 bg-gray-100 border-gray-300 rounded cursor-not-allowed dark:bg-gray-600 dark:border-gray-500"
             />
           </div>
 
@@ -951,28 +973,27 @@
                         Create New Folder
                       </DialogTitle>
                       <div class="mt-4">
-                        <div class="space-y-4">
-                          <div>
-                            <label for="folder-name" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-300">
-                              Folder Name
-                            </label>
-                            <div class="mt-2">
-                              <input
-                                id="folder-name"
-                                v-model="folderName"
-                                type="text"
-                                placeholder="Enter folder name..."
-                                class="block w-full rounded-lg border-0 bg-white dark:bg-gray-800 px-4 py-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-200 text-sm"
-                                :class="{
-                                  'ring-red-500 dark:ring-red-400': createFolderValidationError && folderName.trim(),
-                                  'ring-green-500 dark:ring-green-400': !createFolderValidationError && folderName.trim()
-                                }"
-                                @input="createFolderValidationError = ''"
-                              />
-                            </div>
-                            <div v-if="createFolderValidationError" class="mt-2 text-sm text-red-600 dark:text-red-400">
-                              {{ createFolderValidationError }}
-                            </div>
+                        <div>
+                          <label for="folder-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Folder Name
+                          </label>
+                          <input
+                            id="folder-name"
+                            v-model="folderName"
+                            type="text"
+                            placeholder="Enter folder name..."
+                            class="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:focus:ring-blue-400 transition-colors duration-200 text-sm"
+                            :class="{
+                              'border-red-500 dark:border-red-400 focus:ring-red-500 dark:focus:ring-red-400': createFolderValidationError,
+                              'focus:ring-blue-500 dark:focus:ring-blue-400': !createFolderValidationError
+                            }"
+                            @input="createFolderValidationError = ''"
+                          />
+                          <div v-if="createFolderValidationError" class="mt-2 flex items-center text-sm text-red-600 dark:text-red-400">
+                            <svg class="w-4 h-4 mr-1 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                            </svg>
+                            {{ createFolderValidationError }}
                           </div>
                         </div>
                       </div>
@@ -1010,6 +1031,34 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+
+// TypeScript declarations for webkit File System API
+declare global {
+  interface DataTransferItem {
+    webkitGetAsEntry(): FileSystemEntry | null
+  }
+
+  interface FileSystemEntry {
+    isFile: boolean
+    isDirectory: boolean
+    name: string
+  }
+
+  interface FileSystemFileEntry extends FileSystemEntry {
+    file(successCallback: (file: File) => void, errorCallback?: (error: any) => void): void
+  }
+
+  interface FileSystemDirectoryEntry extends FileSystemEntry {
+    createReader(): FileSystemDirectoryReader
+  }
+
+  interface FileSystemDirectoryReader {
+    readEntries(
+      successCallback: (entries: FileSystemEntry[]) => void,
+      errorCallback?: (error: any) => void
+    ): void
+  }
+}
 import {
   ArchiveBoxIcon,
   ArrowLeftIcon,
@@ -1235,11 +1284,21 @@ function handleModalFileSelect(event: Event): void {
   }
 }
 
-function handleModalDrop(event: DragEvent): void {
+async function handleModalDrop(event: DragEvent): Promise<void> {
   isDragOver.value = false
-  const files = event.dataTransfer?.files
-  if (files) {
-    selectedFiles.value = [...selectedFiles.value, ...Array.from(files)]
+
+  try {
+    const files = await getFilesFromDataTransfer(event.dataTransfer!)
+    if (files.length > 0) {
+      selectedFiles.value = [...selectedFiles.value, ...files]
+    }
+  } catch (error) {
+    console.error('Error processing dropped files/folders in modal:', error)
+    appStore.showToast({
+      type: 'error',
+      title: 'Upload Error',
+      message: 'Failed to process dropped files or folders'
+    })
   }
 }
 
@@ -1478,7 +1537,7 @@ async function handleCreateFolder(): Promise<void> {
     // Create a placeholder file to represent the folder
     const placeholderFile = new File([''], placeholderFileName, { type: 'text/plain' })
 
-    await storageStore.uploadFiles([placeholderFile], bucketName.value, folderPath)
+    await storageStore.uploadFiles([placeholderFile], bucketName.value, folderPath, true)
 
     // Refresh objects to show the new folder
     await refreshObjects()
@@ -1493,6 +1552,12 @@ async function handleCreateFolder(): Promise<void> {
   } catch (error) {
     console.error('Error creating folder:', error)
     createFolderValidationError.value = error instanceof Error ? error.message : 'Failed to create folder'
+
+    appStore.showToast({
+      type: 'error',
+      title: 'Folder creation failed',
+      message: error instanceof Error ? error.message : 'Failed to create folder'
+    })
   }
 }
 
@@ -1515,13 +1580,104 @@ function handleDragLeave(event: DragEvent): void {
   }
 }
 
+// Helper function to read directory entries recursively
+async function readDirectoryEntries(directoryEntry: FileSystemDirectoryEntry, path = ''): Promise<File[]> {
+  return new Promise((resolve, reject) => {
+    const reader = directoryEntry.createReader()
+    const allFiles: File[] = []
+
+    const readEntries = () => {
+      reader.readEntries(async (entries) => {
+        if (entries.length === 0) {
+          resolve(allFiles)
+          return
+        }
+
+        const promises = entries.map(async (entry) => {
+          const currentPath = path ? `${path}/${entry.name}` : entry.name
+
+          if (entry.isFile) {
+            return new Promise<File>((fileResolve, fileReject) => {
+              (entry as FileSystemFileEntry).file((file) => {
+                // Create a new File with the full path
+                const fileWithPath = new File([file], currentPath, { type: file.type })
+                fileResolve(fileWithPath)
+              }, fileReject)
+            })
+          } else if (entry.isDirectory) {
+            return readDirectoryEntries(entry as FileSystemDirectoryEntry, currentPath)
+          }
+          return []
+        })
+
+        try {
+          const results = await Promise.all(promises)
+          results.forEach(result => {
+            if (Array.isArray(result)) {
+              allFiles.push(...result)
+            } else if (result) {
+              allFiles.push(result)
+            }
+          })
+          readEntries() // Continue reading more entries
+        } catch (error) {
+          reject(error)
+        }
+      }, reject)
+    }
+
+    readEntries()
+  })
+}
+
+// Helper function to get all files from DataTransferItems (supports both files and folders)
+async function getFilesFromDataTransfer(dataTransfer: DataTransfer): Promise<File[]> {
+  const allFiles: File[] = []
+
+  if (dataTransfer.items) {
+    // Use DataTransferItems API for folder support
+    const items = Array.from(dataTransfer.items)
+
+    for (const item of items) {
+      if (item.kind === 'file') {
+        const entry = item.webkitGetAsEntry()
+
+        if (entry?.isFile) {
+          const file = item.getAsFile()
+          if (file) {
+            allFiles.push(file)
+          }
+        } else if (entry?.isDirectory) {
+          // Include the root folder name in the path
+          const directoryFiles = await readDirectoryEntries(entry as FileSystemDirectoryEntry, entry.name)
+          allFiles.push(...directoryFiles)
+        }
+      }
+    }
+  } else {
+    // Fallback to files API (files only, no folders)
+    allFiles.push(...Array.from(dataTransfer.files))
+  }
+
+  return allFiles
+}
+
 async function handleDrop(event: DragEvent): Promise<void> {
   event.preventDefault()
   isDragOver.value = false
 
-  const files = Array.from(event.dataTransfer?.files || [])
-  if (files.length > 0) {
-    await uploadFiles(files)
+  try {
+    const files = await getFilesFromDataTransfer(event.dataTransfer!)
+    if (files.length > 0) {
+      await uploadFiles(files)
+    }
+  } catch (error) {
+    console.error('Error processing dropped files/folders:', error)
+    appStore.showToast({
+      type: 'error',
+      title: 'Upload Error',
+      message: 'Failed to process dropped files or folders'
+    })
   }
 }
 
