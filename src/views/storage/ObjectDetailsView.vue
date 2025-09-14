@@ -635,6 +635,11 @@ function syncLineNumbersScroll(): void {
 
 // Auto-load PDF as blob when object is loaded
 watch(objectData, (newObjectData) => {
+  if (pdfBlobUrl.value) {
+    URL.revokeObjectURL(pdfBlobUrl.value)
+    pdfBlobUrl.value = ''
+  }
+
   if (newObjectData?.contentType === 'application/pdf') {
     loadPdfBlob()
   }
