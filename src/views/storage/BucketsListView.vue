@@ -132,6 +132,14 @@
                   <DocumentDuplicateIcon class="w-4 h-4" />
                 </button>
                 <button
+                  @click.stop="downloadBucketAsZip(bucket.name)"
+                  :disabled="downloadingBuckets.has(bucket.name)"
+                  class="p-1.5 text-gray-400 hover:text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Download bucket as ZIP"
+                >
+                  <ArrowDownTrayIcon :class="['w-4 h-4', downloadingBuckets.has(bucket.name) ? 'animate-pulse' : '']" />
+                </button>
+                <button
                   @click.stop="confirmDeleteBucket(bucket)"
                   :disabled="storageStore.loading.delete"
                   class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -194,6 +202,14 @@
               title="Copy bucket name"
             >
               <DocumentDuplicateIcon class="w-3.5 h-3.5" />
+            </button>
+            <button
+              @click.stop="downloadBucketAsZip(bucket.name)"
+              :disabled="downloadingBuckets.has(bucket.name)"
+              class="p-1.5 text-gray-400 hover:text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Download bucket as ZIP"
+            >
+              <ArrowDownTrayIcon :class="['w-3.5 h-3.5', downloadingBuckets.has(bucket.name) ? 'animate-pulse' : '']" />
             </button>
             <button
               @click.stop="confirmDeleteBucket(bucket)"
@@ -287,6 +303,7 @@ import {
   ArchiveBoxIcon,
   PlusIcon,
   ArrowPathIcon,
+  ArrowDownTrayIcon,
   ExclamationTriangleIcon,
   FolderIcon,
   DocumentDuplicateIcon,
@@ -297,6 +314,7 @@ import {
 import { useStorageStore } from '@/stores/storage'
 import { useProjectsStore } from '@/stores/projects'
 import { useAppStore } from '@/stores/app'
+import storageApi from '@/api/storage'
 import type { StorageBucket } from '@/types'
 import CreateBucketModal from '@/components/modals/CreateBucketModal.vue'
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
@@ -316,6 +334,7 @@ const deleteModal = ref<{
   show: false,
   bucket: null
 })
+const downloadingBuckets = ref(new Set<string>())
 
 // Computed
 const currentProjectId = computed(() => {
@@ -377,6 +396,44 @@ function cancelDeleteBucket(): void {
 function handleBucketCreated(): void {
   // Refresh the buckets list after successful creation
   refreshBuckets()
+}
+
+async function downloadBucketAsZip(bucketName: string): Promise<void> {
+  if (downloadingBuckets.value.has(bucketName)) {
+    return
+  }
+
+  downloadingBuckets.value.add(bucketName)
+
+  try {
+    const blob = await storageApi.downloadBucketAsZip(bucketName, (progress) => {
+      console.log(`Downloading bucket ${bucketName}: ${progress.current}/${progress.total} - ${progress.currentFile}`)
+    })
+
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `${bucketName}.zip`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    appStore.showToast({
+      type: 'success',
+      title: 'Download Complete',
+      message: `Bucket "${bucketName}" downloaded successfully`
+    })
+  } catch (error) {
+    console.error('Failed to download bucket:', error)
+    appStore.showToast({
+      type: 'error',
+      title: 'Download Failed',
+      message: `Failed to download bucket "${bucketName}"`
+    })
+  } finally {
+    downloadingBuckets.value.delete(bucketName)
+  }
 }
 
 
