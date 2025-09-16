@@ -1167,9 +1167,6 @@ const bucketName = computed(() => decodeURIComponent(route.params.bucketName as 
 const currentProjectId = computed(() => route.params.projectId as string || projectsStore.selectedProjectId || 'Unknown')
 const currentPath = computed(() => storageStore.currentPath)
 
-const hasObjects = computed(() => {
-  return storageStore.objects.length > 0
-})
 
 
 // Computed
@@ -1197,42 +1194,6 @@ async function refreshObjects(): Promise<void> {
   await storageStore.fetchObjects(bucketName.value, currentPath.value, true)
 }
 
-async function downloadBucketAsZip(): Promise<void> {
-  if (!hasObjects.value) return
-
-  try {
-    downloadingZip.value = true
-
-    const zipBlob = await storageApi.downloadBucketAsZip(bucketName.value, (progress) => {
-      console.log(`Creating ZIP: ${progress.current}/${progress.total} - ${progress.currentFile}`)
-    })
-
-    // Create download link and trigger download
-    const url = URL.createObjectURL(zipBlob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `${bucketName.value}.zip`
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-
-    appStore.showToast({
-      type: 'success',
-      title: 'Download Complete',
-      message: `Successfully downloaded entire bucket`
-    })
-  } catch (error: any) {
-    console.error('Failed to download bucket as ZIP:', error)
-    appStore.showToast({
-      type: 'error',
-      title: 'Download Failed',
-      message: error.message || 'Failed to create ZIP file'
-    })
-  } finally {
-    downloadingZip.value = false
-  }
-}
 
 async function downloadSelectedAsZip(): Promise<void> {
   const selectedObjects = [...storageStore.selectedObjects] // Create a copy to avoid reactivity issues
@@ -1368,11 +1329,6 @@ async function downloadObject(object: StorageObjectWithPreview): Promise<void> {
   await storageStore.downloadObject(bucketName.value, object.name)
 }
 
-async function handleBulkDownload(): Promise<void> {
-  for (const objectName of storageStore.selectedObjects) {
-    await storageStore.downloadObject(bucketName.value, objectName)
-  }
-}
 
 function confirmBulkDelete(): void {
   deleteModal.value = {

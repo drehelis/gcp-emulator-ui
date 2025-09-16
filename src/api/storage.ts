@@ -388,6 +388,7 @@ export const storageApi = {
     bucketName: string,
     objectNames: string[],
     zipFileName?: string,
+    // eslint-disable-next-line no-unused-vars
     onProgress?: (progress: { current: number; total: number; currentFile: string }) => void
   ): Promise<Blob> {
     // Dynamic import to avoid bundling JSZip in main chunk
@@ -433,6 +434,7 @@ export const storageApi = {
   // Download entire bucket as ZIP
   async downloadBucketAsZip(
     bucketName: string,
+    // eslint-disable-next-line no-unused-vars
     onProgress?: (progress: { current: number; total: number; currentFile: string }) => void
   ): Promise<Blob> {
     // Get all objects in the bucket

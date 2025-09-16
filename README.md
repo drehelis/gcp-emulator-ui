@@ -12,7 +12,7 @@ https://github.com/user-attachments/assets/a578672c-4ecc-44ce-9fe1-ea606bbb775c
 ## Features
 
 ### Supported Emulators
-- **Google Cloud Pub/Sub**
+- **Google Cloud Pub/Sub ([gcloud](https://cloud.google.com/pubsub/docs/emulator))**
    * Create, view, and manage Pub/Sub topics
    * Handle subscriptions with pull/push configurations
    * Publish messages with attributes and template variables
@@ -21,7 +21,7 @@ https://github.com/user-attachments/assets/a578672c-4ecc-44ce-9fe1-ea606bbb775c
    * Create, view, and manage Storage buckets
    * Support drag'n'drop files and folders
    * Import/export configurations
-- **Google Firestore/Datastore mode** - Coming soon
+- **Google Firestore/Datastore mode ([gcloud](https://cloud.google.com/firestore/native/docs/emulator))** - Coming soon
 
 ## Quick Start
 ```bash

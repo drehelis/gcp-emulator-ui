@@ -553,7 +553,7 @@ function handleSort(field: 'name' | 'created' | 'location' | 'storageClass'): vo
 }
 
 function handleMobileSortChange(event: Event): void {
-  const target = event.target as HTMLSelectElement
+  const target = event.target as { value: string }
   const [field, order] = target.value.split('-') as [string, 'asc' | 'desc']
 
   switch (field) {
