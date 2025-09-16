@@ -95,23 +95,30 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { MagnifyingGlassIcon, ClockIcon, QueueListIcon, InboxStackIcon, DocumentTextIcon } from '@heroicons/vue/24/outline'
+import { MagnifyingGlassIcon, ClockIcon, QueueListIcon, InboxStackIcon, DocumentTextIcon, ArchiveBoxIcon, DocumentIcon } from '@heroicons/vue/24/outline'
 import { topicsApi, subscriptionsApi } from '@/api/pubsub'
+import storageApi from '@/api/storage'
 import { useMessageTemplatesStore } from '@/stores/messageTemplates'
-import type { PubSubTopic, PubSubSubscription, MessageTemplate } from '@/types'
+import { useTopicsStore } from '@/stores/topics'
+import { useStorageStore } from '@/stores/storage'
+import type { PubSubTopic, PubSubSubscription, MessageTemplate, StorageBucket, StorageObjectWithPreview } from '@/types'
 
 interface SearchResult {
   title: string
   description?: string
-  type: 'topic' | 'subscription' | 'template'
+  type: 'topic' | 'subscription' | 'template' | 'bucket' | 'object'
   icon: any
   route: string
   focusTarget?: string
+  bucket?: string
+  objectPath?: string
 }
 
 const router = useRouter()
 const route = useRoute()
 const messageTemplatesStore = useMessageTemplatesStore()
+const topicsStore = useTopicsStore()
+const storageStore = useStorageStore()
 
 const searchInput = ref<HTMLInputElement>()
 const searchQuery = ref('')
@@ -125,6 +132,8 @@ const searchResults = ref<SearchResult[]>([])
 const allTopics = ref<PubSubTopic[]>([])
 const allSubscriptions = ref<PubSubSubscription[]>([])
 const allTemplates = ref<MessageTemplate[]>([])
+const allBuckets = ref<StorageBucket[]>([])
+const allObjects = ref<StorageObjectWithPreview[]>([])
 
 // Get current project ID from route
 const currentProjectId = computed(() => route.params.projectId as string)
@@ -143,25 +152,74 @@ const getSubscriptionDisplayName = (fullName: string): string => {
 // Load data for search
 const loadSearchData = async () => {
   if (!currentProjectId.value) return
-  
+
+  // Load topics (PubSub)
   try {
-    // Load topics
     const topics = await topicsApi.getTopics(currentProjectId.value)
     allTopics.value = topics || []
-    
-    // Load subscriptions
+    console.log('Topics loaded:', allTopics.value.length)
+  } catch (error) {
+    console.warn('Failed to load topics:', error)
+    allTopics.value = []
+  }
+
+  // Load subscriptions (PubSub)
+  try {
     const subscriptions = await subscriptionsApi.getSubscriptions(currentProjectId.value)
     allSubscriptions.value = Array.isArray(subscriptions) ? subscriptions : []
-    
-    // Load message templates from store
+    console.log('Subscriptions loaded:', allSubscriptions.value.length)
+  } catch (error) {
+    console.warn('Failed to load subscriptions:', error)
+    allSubscriptions.value = []
+  }
+
+  // Load message templates (local storage)
+  try {
     await messageTemplatesStore.loadTemplates()
     allTemplates.value = messageTemplatesStore.templates || []
+    console.log('Templates loaded:', allTemplates.value.length)
   } catch (error) {
-    console.warn('Failed to load search data:', error)
-    allTopics.value = []
-    allSubscriptions.value = []
+    console.warn('Failed to load templates:', error)
     allTemplates.value = []
   }
+
+  // Load storage buckets
+  try {
+    const bucketsResponse = await storageApi.listBuckets({
+      project: currentProjectId.value
+    })
+    allBuckets.value = bucketsResponse.items || []
+    console.log('Storage buckets loaded:', allBuckets.value.length)
+  } catch (error) {
+    console.warn('Failed to load storage buckets:', error)
+    allBuckets.value = []
+  }
+
+  // Load objects from all buckets for search
+  const allObjectsTemp: StorageObjectWithPreview[] = []
+  for (const bucket of allBuckets.value) {
+    try {
+      const objectsResponse = await storageApi.listObjects({
+        bucket: bucket.name,
+        maxResults: 100 // Limit objects per bucket for performance
+      })
+
+      if (objectsResponse.items) {
+        const objectsWithBucket = objectsResponse.items.map(obj => ({
+          ...obj,
+          bucket: bucket.name,
+          isFolder: obj.name.endsWith('/'),
+          downloadUrl: storageApi.getObjectDownloadUrl(bucket.name, obj.name)
+        } as StorageObjectWithPreview))
+
+        allObjectsTemp.push(...objectsWithBucket)
+      }
+    } catch (error) {
+      console.warn(`Failed to load objects from bucket ${bucket.name}:`, error)
+    }
+  }
+  allObjects.value = allObjectsTemp
+  console.log('Storage objects loaded:', allObjects.value.length)
 }
 
 // Real search function using actual data
@@ -222,8 +280,8 @@ const performSearch = async (query: string) => {
     const name = template.name || 'Untitled Template'
     const description = template.description || ''
     const data = template.data || ''
-    
-    if (name.toLowerCase().includes(lowerQuery) || 
+
+    if (name.toLowerCase().includes(lowerQuery) ||
         description.toLowerCase().includes(lowerQuery) ||
         data.toLowerCase().includes(lowerQuery)) {
       results.push({
@@ -232,6 +290,55 @@ const performSearch = async (query: string) => {
         type: 'template',
         icon: DocumentTextIcon,
         route: `/projects/${currentProjectId.value}/pubsub/message-templates`
+      })
+    }
+  })
+
+  // Search through storage buckets
+  allBuckets.value.forEach(bucket => {
+    const bucketName = bucket.name || ''
+    const location = bucket.location || ''
+    const storageClass = bucket.storageClass || ''
+
+    if (bucketName.toLowerCase().includes(lowerQuery) ||
+        location.toLowerCase().includes(lowerQuery) ||
+        storageClass.toLowerCase().includes(lowerQuery)) {
+      results.push({
+        title: bucketName,
+        description: `Bucket in ${location} (${storageClass})`,
+        type: 'bucket',
+        icon: ArchiveBoxIcon,
+        route: `/projects/${currentProjectId.value}/storage/buckets`,
+        focusTarget: bucketName,
+        bucket: bucketName
+      })
+    }
+  })
+
+  // Search through storage objects
+  allObjects.value.forEach(obj => {
+    const objectName = obj.name || ''
+    const bucketName = obj.bucket || ''
+    const contentType = obj.contentType || ''
+    const fullPath = `${bucketName}/${objectName}`
+
+    if (objectName.toLowerCase().includes(lowerQuery) ||
+        bucketName.toLowerCase().includes(lowerQuery) ||
+        contentType.toLowerCase().includes(lowerQuery) ||
+        fullPath.toLowerCase().includes(lowerQuery)) {
+
+      // Get just the filename for display
+      const fileName = objectName.split('/').pop() || objectName
+
+      results.push({
+        title: fileName,
+        description: `Object in ${bucketName}${obj.isFolder ? ' (folder)' : ` (${contentType || 'unknown type'})`}`,
+        type: 'object',
+        icon: obj.isFolder ? ArchiveBoxIcon : DocumentIcon,
+        route: `/projects/${currentProjectId.value}/storage/buckets/${encodeURIComponent(bucketName)}/objects`,
+        focusTarget: objectName,
+        bucket: bucketName,
+        objectPath: objectName
       })
     }
   })
@@ -263,6 +370,12 @@ const groupedResults = computed(() => {
         break
       case 'template':
         groupName = 'Message Templates'
+        break
+      case 'bucket':
+        groupName = 'Storage Buckets'
+        break
+      case 'object':
+        groupName = 'Storage Objects'
         break
       default:
         groupName = 'Other'
@@ -303,7 +416,7 @@ const handleKeydown = (event: KeyboardEvent) => {
 const selectResult = (result: SearchResult) => {
   // Add to recent searches
   recentSearches.value = [result, ...recentSearches.value.filter(r => r.title !== result.title)].slice(0, 5)
-  
+
   // Navigate to result with focus target
   let targetRoute = result.route
   if (result.focusTarget) {
@@ -313,11 +426,25 @@ const selectResult = (result: SearchResult) => {
     } else if (result.type === 'subscription') {
       // For subscriptions, focus on the topic that contains the subscription
       targetRoute = `${result.route}#${result.focusTarget}`
+    } else if (result.type === 'bucket') {
+      // For buckets, navigate to bucket list and focus on the bucket
+      targetRoute = `${result.route}#${result.focusTarget}`
+    } else if (result.type === 'object') {
+      // For objects, navigate based on whether it's a file or folder
+      if (result.bucket && result.objectPath) {
+        if (result.objectPath.endsWith('/')) {
+          // For folders, navigate to bucket browser with the folder as prefix
+          targetRoute = `/projects/${currentProjectId.value}/storage/buckets/${encodeURIComponent(result.bucket)}?prefix=${encodeURIComponent(result.objectPath)}`
+        } else {
+          // For files, navigate to the object details view
+          targetRoute = `/projects/${currentProjectId.value}/storage/buckets/${encodeURIComponent(result.bucket)}/objects/${encodeURIComponent(result.objectPath)}`
+        }
+      }
     }
   }
-  
+
   router.push(targetRoute)
-  
+
   // Close search
   isOpen.value = false
   searchQuery.value = ''
@@ -351,6 +478,11 @@ onMounted(() => {
 onUnmounted(() => {
   document.removeEventListener('keydown', handleGlobalKeydown)
   document.removeEventListener('click', handleClickOutside)
+
+  // Clean up refresh interval
+  if (refreshInterval) {
+    clearInterval(refreshInterval)
+  }
 })
 
 // Watch for project changes and reload data
@@ -362,7 +494,78 @@ watch(currentProjectId, (newProjectId) => {
     allTopics.value = []
     allSubscriptions.value = []
     allTemplates.value = []
+    allBuckets.value = []
+    allObjects.value = []
     searchResults.value = []
   }
 }, { immediate: true })
+
+// Watch for store changes to keep search data in sync
+watch(() => topicsStore.topics, (newTopics) => {
+  if (newTopics) {
+    allTopics.value = newTopics
+  }
+}, { deep: true })
+
+watch(() => storageStore.buckets, (newBuckets) => {
+  if (newBuckets) {
+    allBuckets.value = newBuckets
+  }
+}, { deep: true })
+
+watch(() => storageStore.objects, (newObjects) => {
+  if (newObjects) {
+    // Transform storage objects to search format
+    allObjects.value = newObjects.map(obj => ({
+      ...obj,
+      bucket: storageStore.currentBucket?.name || '',
+      downloadUrl: obj.downloadUrl || ''
+    }))
+  }
+}, { deep: true })
+
+watch(() => messageTemplatesStore.templates, (newTemplates) => {
+  if (newTemplates) {
+    allTemplates.value = newTemplates
+  }
+}, { deep: true })
+
+// Auto-refresh PubSub data when the search component is focused
+// This is a fallback since topics/subscriptions created via API calls don't update stores directly
+let refreshInterval: ReturnType<typeof setInterval> | null = null
+watch(isOpen, (open) => {
+  if (open && currentProjectId.value) {
+    // Refresh PubSub data when search is opened
+    refreshPubSubData()
+
+    // Set up periodic refresh while search is open
+    refreshInterval = setInterval(() => {
+      if (isOpen.value && currentProjectId.value) {
+        refreshPubSubData()
+      }
+    }, 5000) // Refresh every 5 seconds
+  } else if (refreshInterval) {
+    // Clean up interval when search is closed
+    clearInterval(refreshInterval)
+    refreshInterval = null
+  }
+})
+
+// Helper function to refresh topics and subscriptions data
+const refreshPubSubData = async () => {
+  if (!currentProjectId.value) return
+
+  try {
+    // Refresh both topics and subscriptions since they're created via direct API calls
+    const [topics, subscriptions] = await Promise.all([
+      topicsApi.getTopics(currentProjectId.value),
+      subscriptionsApi.getSubscriptions(currentProjectId.value)
+    ])
+
+    allTopics.value = topics || []
+    allSubscriptions.value = Array.isArray(subscriptions) ? subscriptions : []
+  } catch (error) {
+    console.warn('Failed to refresh topics and subscriptions:', error)
+  }
+}
 </script>
