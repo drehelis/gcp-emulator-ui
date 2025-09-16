@@ -14,7 +14,6 @@ import type {
   DownloadObjectRequest,
   ListObjectsRequest,
   DeleteObjectRequest,
-  // UploadProgress
 } from '@/types'
 
 const storageClient = axios.create({
