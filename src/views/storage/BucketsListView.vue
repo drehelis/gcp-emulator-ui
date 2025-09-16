@@ -237,12 +237,24 @@
 
                 <!-- Actions -->
                 <td class="px-3 py-1.5 text-right">
-                  <button
-                    @click.stop="navigateToBucket(bucket.name)"
-                    class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-150 px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                  >
-                    →
-                  </button>
+                  <div class="flex items-center justify-end space-x-1">
+                    <button
+                      @click.stop="downloadBucketAsZip(bucket.name)"
+                      :disabled="downloadingBuckets.has(bucket.name)"
+                      class="p-1 text-gray-400 hover:text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Download bucket as ZIP"
+                    >
+                      <ArrowDownTrayIcon :class="['w-3.5 h-3.5', downloadingBuckets.has(bucket.name) ? 'animate-pulse' : '']" />
+                    </button>
+                    <button
+                      @click.stop="confirmDeleteBucket(bucket)"
+                      :disabled="storageStore.loading.delete"
+                      class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Delete bucket"
+                    >
+                      <TrashIcon class="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
