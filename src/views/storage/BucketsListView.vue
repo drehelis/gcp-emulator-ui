@@ -186,6 +186,7 @@
               <tr
                 v-for="(bucket, index) in sortedBuckets"
                 :key="bucket.name"
+                :id="`bucket-${bucket.name}`"
                 class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150 cursor-pointer"
                 :class="[
                   index !== sortedBuckets.length - 1 ? 'border-b border-gray-100 dark:border-gray-700/50' : ''
@@ -288,6 +289,7 @@
               <div
                 v-for="bucket in sortedBuckets"
                 :key="bucket.name"
+                :id="`bucket-${bucket.name}`"
                 class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150 cursor-pointer"
                 @click="navigateToBucket(bucket.name)"
               >
@@ -316,6 +318,7 @@
           <div
             v-for="bucket in storageStore.buckets"
             :key="bucket.name"
+            :id="`bucket-${bucket.name}`"
             @click="navigateToBucket(bucket.name)"
             class="group relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md dark:hover:shadow-blue-900/10 transition-all duration-200 cursor-pointer"
           >
@@ -456,7 +459,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   ArchiveBoxIcon,
@@ -479,6 +482,7 @@ import storageApi from '@/api/storage'
 import type { StorageBucket } from '@/types'
 import CreateBucketModal from '@/components/modals/CreateBucketModal.vue'
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
+import { handleFocusTarget } from '@/utils/focusUtils'
 
 const router = useRouter()
 const route = useRoute()
@@ -671,6 +675,16 @@ async function downloadBucketAsZip(bucketName: string): Promise<void> {
 }
 
 
+// Handle focus targeting when hash is present
+async function handleBucketFocus(): Promise<void> {
+  const hash = route.hash.slice(1) // Remove the # prefix
+  if (hash && storageStore.buckets.length > 0) {
+    // Wait for DOM to be ready
+    await nextTick()
+    handleFocusTarget(hash, 'bucket')
+  }
+}
+
 // Lifecycle
 onMounted(async () => {
   // Wait for the current project ID to be available
@@ -679,6 +693,9 @@ onMounted(async () => {
       await storageStore.fetchBuckets()
     }
   }
+
+  // Handle focus if there's a hash in the URL
+  await handleBucketFocus()
 })
 
 // Watch for project ID changes and refetch buckets
@@ -687,5 +704,17 @@ watch(currentProjectId, async (newProjectId, oldProjectId) => {
     await storageStore.fetchBuckets(true) // Force refresh
   }
 }, { immediate: true })
+
+// Watch for route hash changes to handle focus targeting
+watch(() => route.hash, () => {
+  handleBucketFocus()
+})
+
+// Watch for buckets to be loaded to handle focus targeting when data loads
+watch(() => storageStore.buckets.length, () => {
+  if (route.hash) {
+    handleBucketFocus()
+  }
+})
 
 </script>

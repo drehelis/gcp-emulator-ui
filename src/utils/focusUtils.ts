@@ -28,9 +28,9 @@ export const applyFocusHighlight = async (element: HTMLElement) => {
 }
 
 /**
- * Handles focus targeting for topics and subscriptions
+ * Handles focus targeting for topics, subscriptions, and buckets
  */
-export const handleFocusTarget = async (targetName: string, targetType: 'topic' | 'subscription' = 'topic') => {
+export const handleFocusTarget = async (targetName: string, targetType: 'topic' | 'subscription' | 'bucket' = 'topic') => {
   // Wait for DOM to be ready
   await nextTick()
 
