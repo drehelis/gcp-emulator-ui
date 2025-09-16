@@ -37,7 +37,6 @@
                 <span class="hidden sm:inline">Refresh</span>
               </button>
 
-
               <button
                 @click="showUploadModal = true"
                 class="inline-flex items-center px-2 sm:px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
@@ -48,37 +47,6 @@
             </div>
           </div>
 
-          <!-- Selection actions -->
-          <div v-if="storageStore.selectedObjects.length > 0" class="flex items-center justify-between mt-2">
-            <span class="text-sm text-gray-500 dark:text-gray-400">
-              {{ storageStore.selectedObjects.length }} selected
-            </span>
-            <div class="flex items-center space-x-2">
-              <button
-                @click="handleBulkDownload"
-                :disabled="storageStore.loading.download"
-                class="inline-flex items-center px-2 sm:px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border border-transparent rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-              >
-                <ArrowDownTrayIcon class="w-4 h-4 sm:mr-2" />
-                <span class="hidden sm:inline">Download</span>
-              </button>
-              <button
-                @click="confirmBulkDelete"
-                :disabled="storageStore.loading.delete"
-                class="inline-flex items-center px-2 sm:px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-transparent rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-              >
-                <TrashIcon class="w-4 h-4 sm:mr-2" />
-                <span class="hidden sm:inline">Delete</span>
-              </button>
-              <button
-                @click="storageStore.clearSelection"
-                class="inline-flex items-center px-2 sm:px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 border border-transparent rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
-              >
-                <XMarkIcon class="w-4 h-4 sm:mr-2" />
-                <span class="hidden sm:inline">Clear</span>
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -86,8 +54,9 @@
     <!-- Main Content -->
     <div class="px-4 sm:px-6 lg:px-8 py-6">
       <!-- Breadcrumbs -->
-      <nav v-if="storageStore.breadcrumbs.length > 0" class="mb-6" aria-label="Breadcrumb">
+      <nav class="mb-6 flex items-center justify-between" aria-label="Breadcrumb">
         <ol class="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm">
+          <!-- Always show Home icon -->
           <li>
             <button
               @click="navigateToPath('')"
@@ -97,20 +66,52 @@
               <span class="sr-only">Home</span>
             </button>
           </li>
-          <li v-for="(breadcrumb, index) in storageStore.breadcrumbs" :key="index" class="flex items-baseline">
-            <ChevronRightIcon class="flex-shrink-0 h-4 w-4 text-gray-400 mx-2" />
-            <button
-              v-if="!breadcrumb.isLast"
-              @click="navigateToPath(breadcrumb.path)"
-              class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 truncate transition-colors duration-200"
-            >
-              {{ breadcrumb.name }}
-            </button>
-            <span v-else class="text-gray-500 dark:text-gray-400 truncate">
-              {{ breadcrumb.name }}
-            </span>
-          </li>
+
+          <!-- Show folder breadcrumbs only when in subfolders -->
+          <template v-if="storageStore.breadcrumbs.length > 0">
+            <li v-for="(breadcrumb, index) in storageStore.breadcrumbs" :key="index" class="flex items-baseline">
+              <ChevronRightIcon class="flex-shrink-0 h-4 w-4 text-gray-400 mx-2" />
+              <button
+                v-if="!breadcrumb.isLast"
+                @click="navigateToPath(breadcrumb.path)"
+                class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 truncate transition-colors duration-200"
+              >
+                {{ breadcrumb.name }}
+              </button>
+              <span v-else class="text-gray-500 dark:text-gray-400 truncate">
+                {{ breadcrumb.name }}
+              </span>
+            </li>
+          </template>
         </ol>
+
+        <!-- Selection actions -->
+        <div v-if="storageStore.selectedObjects.length > 0 || downloadingZip" class="flex items-center space-x-2">
+            <button
+              @click="downloadSelectedAsZip"
+              :disabled="downloadingZip"
+              class="inline-flex items-center px-1 sm:px-2 text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            >
+              <ArrowDownTrayIcon :class="['w-3 h-3 sm:w-4 sm:h-4 sm:mr-1', downloadingZip ? 'animate-pulse' : '']" />
+              <span class="hidden sm:inline">{{ downloadingZip ? ((downloadContext?.count || storageStore.selectedObjects.length) === 1 ? 'Downloading...' : 'Creating ZIP...') : `Download (${downloadContext?.count || storageStore.selectedObjects.length})` }}</span>
+            </button>
+            <button
+              @click="confirmBulkDelete"
+              :disabled="storageStore.loading.delete"
+              class="inline-flex items-center px-1 sm:px-2 text-xs sm:text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 rounded focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            >
+              <TrashIcon class="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
+              <span class="hidden sm:inline">Delete</span>
+            </button>
+            <button
+              @click="storageStore.clearSelection"
+              :disabled="downloadingZip"
+              class="inline-flex items-center px-1 sm:px-2 text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            >
+              <XMarkIcon class="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
+              <span class="hidden sm:inline">Clear</span>
+            </button>
+        </div>
       </nav>
 
       <!-- Loading State -->
@@ -1117,6 +1118,7 @@ import {
 import { useStorageStore } from '@/stores/storage'
 import { useProjectsStore } from '@/stores/projects'
 import { useAppStore } from '@/stores/app'
+import storageApi from '@/api/storage'
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
 import type { StorageObjectWithPreview } from '@/types'
 
@@ -1140,6 +1142,8 @@ const fileInput = ref<HTMLInputElement | null>(null)
 const showUploadModal = ref(false)
 const showCreateFileModal = ref(false)
 const showCreateFolderModal = ref(false)
+const downloadingZip = ref(false)
+const downloadContext = ref<{ count: number; objects: string[] } | null>(null)
 
 // Upload modal state
 const selectedFiles = ref<File[]>([])
@@ -1162,6 +1166,8 @@ const createFolderValidationError = ref('')
 const bucketName = computed(() => decodeURIComponent(route.params.bucketName as string))
 const currentProjectId = computed(() => route.params.projectId as string || projectsStore.selectedProjectId || 'Unknown')
 const currentPath = computed(() => storageStore.currentPath)
+
+
 
 // Computed
 const allObjectsSelected = computed(() => {
@@ -1186,6 +1192,82 @@ const autoDetectedContentType = computed(() => {
 // Methods
 async function refreshObjects(): Promise<void> {
   await storageStore.fetchObjects(bucketName.value, currentPath.value, true)
+}
+
+
+async function downloadSelectedAsZip(): Promise<void> {
+  const selectedObjects = [...storageStore.selectedObjects] // Create a copy to avoid reactivity issues
+  if (selectedObjects.length === 0) return
+
+  try {
+    downloadingZip.value = true
+    downloadContext.value = { count: selectedObjects.length, objects: selectedObjects }
+
+    // Add a small delay to ensure loading state is visible
+    await new Promise(resolve => setTimeout(resolve, 500))
+
+    if (selectedObjects.length === 1) {
+      // Single file - download directly without zipping
+      const objectName = selectedObjects[0]
+      const blob = await storageApi.downloadObject({
+        bucket: bucketName.value,
+        object: objectName
+      })
+
+      // Create download link and trigger download
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = objectName
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+
+      appStore.showToast({
+        type: 'success',
+        title: 'Download Complete',
+        message: `Successfully downloaded "${objectName}"`
+      })
+    } else {
+      // Multiple files - create ZIP
+      const fileName = `${bucketName.value}-selected-${selectedObjects.length}-files.zip`
+      const zipBlob = await storageApi.downloadObjectsAsZip(
+        bucketName.value,
+        selectedObjects,
+        fileName
+      )
+
+      // Create download link and trigger download
+      const url = URL.createObjectURL(zipBlob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = fileName
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+
+      appStore.showToast({
+        type: 'success',
+        title: 'Download Complete',
+        message: `Successfully downloaded ${selectedObjects.length} selected files`
+      })
+    }
+
+  } catch (error: any) {
+    console.error('Failed to download selected files:', error)
+    appStore.showToast({
+      type: 'error',
+      title: 'Download Failed',
+      message: error.message || 'Failed to download file(s)'
+    })
+  } finally {
+    downloadingZip.value = false
+    downloadContext.value = null
+    // Clear selection after download completes (success or failure)
+    storageStore.clearSelection()
+  }
 }
 
 function handleSort(field: 'name' | 'size' | 'type' | 'modified'): void {
@@ -1247,11 +1329,6 @@ async function downloadObject(object: StorageObjectWithPreview): Promise<void> {
   await storageStore.downloadObject(bucketName.value, object.name)
 }
 
-async function handleBulkDownload(): Promise<void> {
-  for (const objectName of storageStore.selectedObjects) {
-    await storageStore.downloadObject(bucketName.value, objectName)
-  }
-}
 
 function confirmBulkDelete(): void {
   deleteModal.value = {

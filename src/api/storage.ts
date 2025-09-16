@@ -383,6 +383,77 @@ export const storageApi = {
     return Promise.all(uploadPromises)
   },
 
+  // Download multiple objects as ZIP
+  async downloadObjectsAsZip(
+    bucketName: string,
+    objectNames: string[],
+    zipFileName?: string,
+    // eslint-disable-next-line no-unused-vars
+    onProgress?: (progress: { current: number; total: number; currentFile: string }) => void
+  ): Promise<Blob> {
+    // Dynamic import to avoid bundling JSZip in main chunk
+    const JSZip = (await import('jszip')).default
+
+    if (objectNames.length === 0) {
+      throw new Error('No objects selected for download')
+    }
+
+    const zip = new JSZip()
+
+    // Download each object and add to ZIP
+    for (let i = 0; i < objectNames.length; i++) {
+      const objectName = objectNames[i]
+
+      if (onProgress) {
+        onProgress({
+          current: i + 1,
+          total: objectNames.length,
+          currentFile: objectName
+        })
+      }
+
+      try {
+        // Download the object as blob
+        const blob = await this.downloadObject({
+          bucket: bucketName,
+          object: objectName
+        })
+
+        // Add to ZIP with proper folder structure
+        zip.file(objectName, blob)
+      } catch (error) {
+        console.warn(`Failed to download object ${objectName}:`, error)
+        // Continue with other files, don't fail the entire operation
+      }
+    }
+
+    // Generate ZIP file
+    return await zip.generateAsync({ type: 'blob' })
+  },
+
+  // Download entire bucket as ZIP
+  async downloadBucketAsZip(
+    bucketName: string,
+    // eslint-disable-next-line no-unused-vars
+    onProgress?: (progress: { current: number; total: number; currentFile: string }) => void
+  ): Promise<Blob> {
+    // Get all objects in the bucket
+    const objectsResponse = await this.listObjects({ bucket: bucketName, maxResults: 1000 })
+    const objects = objectsResponse.items || []
+
+    if (objects.length === 0) {
+      throw new Error('Bucket is empty or no objects found')
+    }
+
+    // Use the downloadObjectsAsZip method
+    return await this.downloadObjectsAsZip(
+      bucketName,
+      objects.map(obj => obj.name),
+      `${bucketName}.zip`,
+      onProgress
+    )
+  },
+
   // Health check for fake-gcs-server
   async healthCheck(): Promise<boolean> {
     try {
