@@ -459,7 +459,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   ArchiveBoxIcon,
@@ -679,10 +679,9 @@ async function downloadBucketAsZip(bucketName: string): Promise<void> {
 async function handleBucketFocus(): Promise<void> {
   const hash = route.hash.slice(1) // Remove the # prefix
   if (hash && storageStore.buckets.length > 0) {
-    // Wait a bit for the DOM to be ready
-    setTimeout(() => {
-      handleFocusTarget(hash, 'bucket')
-    }, 100)
+    // Wait for DOM to be ready
+    await nextTick()
+    handleFocusTarget(hash, 'bucket')
   }
 }
 
@@ -711,11 +710,11 @@ watch(() => route.hash, () => {
   handleBucketFocus()
 })
 
-// Watch for buckets changes to handle focus targeting when data loads
-watch(() => storageStore.buckets, () => {
+// Watch for buckets to be loaded to handle focus targeting when data loads
+watch(() => storageStore.buckets.length, () => {
   if (route.hash) {
     handleBucketFocus()
   }
-}, { deep: true })
+})
 
 </script>
