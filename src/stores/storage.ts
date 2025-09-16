@@ -21,6 +21,7 @@ import type {
 import { useProjectsStore } from './projects'
 import { useAppStore } from './app'
 import storageApi from '@/api/storage'
+import { getStorageErrorMessage } from '@/utils/errorHandling'
 
 export const useStorageStore = defineStore('storage', () => {
   const projectsStore = useProjectsStore()
@@ -208,13 +209,14 @@ export const useStorageStore = defineStore('storage', () => {
       }
     } catch (error: any) {
       console.error('Error creating bucket:', error)
-      state.value.error = error.message || 'Failed to create bucket'
+      const meaningfulMessage = getStorageErrorMessage(error, 'create bucket')
+      state.value.error = meaningfulMessage
 
       if (!silent) {
         appStore.showToast({
           type: 'error',
           title: 'Error Creating Bucket',
-          message: error.message || 'Failed to create bucket'
+          message: meaningfulMessage
         })
       }
       throw error

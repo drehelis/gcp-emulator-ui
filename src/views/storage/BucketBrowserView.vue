@@ -1466,6 +1466,8 @@ function closeUploadModal(): void {
 // Handle ESC key for upload modal
 const handleUploadModalEscKey = (event: KeyboardEvent) => {
   if (event.key === 'Escape' && showUploadModal.value && !isUploading.value) {
+    event.preventDefault()
+    event.stopPropagation()
     closeUploadModal()
   }
 }

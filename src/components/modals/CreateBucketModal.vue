@@ -116,6 +116,7 @@ import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import { storageApi } from '@/api/storage'
 import { useAppStore } from '@/stores/app'
+import { getStorageErrorMessage } from '@/utils/errorHandling'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
 
 interface Props {
@@ -227,7 +228,7 @@ const handleSubmit = async () => {
     appStore.showToast({
       type: 'error',
       title: 'Creation Failed',
-      message: err.message || 'Failed to create bucket'
+      message: getStorageErrorMessage(err, 'create bucket')
     })
   } finally {
     isSubmitting.value = false
@@ -262,10 +263,16 @@ const clearBucketError = (field: string) => {
 const handleEnterKey = (event: KeyboardEvent) => {
   // Only handle Enter key when modal is open
   if (event.key === 'Enter' && props.modelValue) {
-    // Only submit if the form is valid and not currently submitting
-    if (bucketForm.value.name.trim() && !isSubmitting.value) {
-      event.preventDefault()
-      handleSubmit()
+    const target = event.target as HTMLElement
+
+    // Only handle Enter if it's from a text input, not from buttons or other elements
+    if (target && target.tagName === 'INPUT' && (target as HTMLInputElement).type === 'text') {
+      // Only submit if the form is valid and not currently submitting
+      if (bucketForm.value.name.trim() && !isSubmitting.value) {
+        event.preventDefault()
+        event.stopPropagation()
+        handleSubmit()
+      }
     }
   }
 }
