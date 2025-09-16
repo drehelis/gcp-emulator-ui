@@ -149,55 +149,142 @@ const getSubscriptionDisplayName = (fullName: string): string => {
   return parts[parts.length - 1] || fullName
 }
 
-// Load data for search
+// Cache for loaded data with timestamps
+const dataCache = ref<{
+  topics: { data: PubSubTopic[], timestamp: number } | null
+  subscriptions: { data: PubSubSubscription[], timestamp: number } | null
+  templates: { data: MessageTemplate[], timestamp: number } | null
+  buckets: { data: StorageBucket[], timestamp: number } | null
+}>({
+  topics: null,
+  subscriptions: null,
+  templates: null,
+  buckets: null
+})
+
+const CACHE_TTL = 30000 // 30 seconds cache
+
+// Helper to check if cache is valid
+const isCacheValid = (cacheEntry: { timestamp: number } | null): boolean => {
+  if (!cacheEntry) return false
+  return Date.now() - cacheEntry.timestamp < CACHE_TTL
+}
+
+// Load basic data for search (no objects initially)
 const loadSearchData = async () => {
   if (!currentProjectId.value) return
 
-  // Load topics (PubSub)
-  try {
-    const topics = await topicsApi.getTopics(currentProjectId.value)
-    allTopics.value = topics || []
-  } catch (error) {
-    console.warn('Failed to load topics:', error)
-    allTopics.value = []
+  // Load topics (PubSub) with caching
+  if (!isCacheValid(dataCache.value.topics)) {
+    try {
+      const topics = await topicsApi.getTopics(currentProjectId.value)
+      dataCache.value.topics = { data: topics || [], timestamp: Date.now() }
+      allTopics.value = dataCache.value.topics.data
+    } catch (error) {
+      console.warn('Failed to load topics:', error)
+      allTopics.value = []
+    }
+  } else {
+    allTopics.value = dataCache.value.topics.data
   }
 
-  // Load subscriptions (PubSub)
-  try {
-    const subscriptions = await subscriptionsApi.getSubscriptions(currentProjectId.value)
-    allSubscriptions.value = Array.isArray(subscriptions) ? subscriptions : []
-  } catch (error) {
-    console.warn('Failed to load subscriptions:', error)
-    allSubscriptions.value = []
+  // Load subscriptions (PubSub) with caching
+  if (!isCacheValid(dataCache.value.subscriptions)) {
+    try {
+      const subscriptions = await subscriptionsApi.getSubscriptions(currentProjectId.value)
+      dataCache.value.subscriptions = { data: Array.isArray(subscriptions) ? subscriptions : [], timestamp: Date.now() }
+      allSubscriptions.value = dataCache.value.subscriptions.data
+    } catch (error) {
+      console.warn('Failed to load subscriptions:', error)
+      allSubscriptions.value = []
+    }
+  } else {
+    allSubscriptions.value = dataCache.value.subscriptions.data
   }
 
-  // Load message templates (local storage)
-  try {
-    await messageTemplatesStore.loadTemplates()
-    allTemplates.value = messageTemplatesStore.templates || []
-  } catch (error) {
-    console.warn('Failed to load templates:', error)
-    allTemplates.value = []
+  // Load message templates (local storage) with caching
+  if (!isCacheValid(dataCache.value.templates)) {
+    try {
+      await messageTemplatesStore.loadTemplates()
+      dataCache.value.templates = { data: messageTemplatesStore.templates || [], timestamp: Date.now() }
+      allTemplates.value = dataCache.value.templates.data
+    } catch (error) {
+      console.warn('Failed to load templates:', error)
+      allTemplates.value = []
+    }
+  } else {
+    allTemplates.value = dataCache.value.templates.data
   }
 
-  // Load storage buckets
-  try {
-    const bucketsResponse = await storageApi.listBuckets({
-      project: currentProjectId.value
-    })
-    allBuckets.value = bucketsResponse.items || []
-  } catch (error) {
-    console.warn('Failed to load storage buckets:', error)
-    allBuckets.value = []
+  // Load storage buckets with caching
+  if (!isCacheValid(dataCache.value.buckets)) {
+    try {
+      const bucketsResponse = await storageApi.listBuckets({
+        project: currentProjectId.value
+      })
+      dataCache.value.buckets = { data: bucketsResponse.items || [], timestamp: Date.now() }
+      allBuckets.value = dataCache.value.buckets.data
+    } catch (error) {
+      console.warn('Failed to load storage buckets:', error)
+      allBuckets.value = []
+    }
+  } else {
+    allBuckets.value = dataCache.value.buckets.data
   }
 
-  // Load objects from all buckets for search
-  const allObjectsTemp: StorageObjectWithPreview[] = []
-  for (const bucket of allBuckets.value) {
+  // DON'T load all objects immediately - only load when searching for objects
+}
+
+// Lazy load storage objects only when needed
+const loadObjectsForSearch = async (query: string): Promise<StorageObjectWithPreview[]> => {
+  const objects: StorageObjectWithPreview[] = []
+  const lowerQuery = query.toLowerCase()
+
+  // Only load objects from buckets that might match the search query
+  const relevantBuckets = allBuckets.value.filter(bucket => {
+    const bucketName = bucket.name || ''
+
+    // 1. If query contains bucket name, definitely search this bucket
+    if (bucketName.toLowerCase().includes(lowerQuery)) {
+      return true
+    }
+
+    // 2. If query looks like a path (contains '/'), check if bucket matches the first part
+    if (lowerQuery.includes('/')) {
+      const pathParts = lowerQuery.split('/')
+      const possibleBucket = pathParts[0]
+      if (bucketName.toLowerCase().includes(possibleBucket)) {
+        return true
+      }
+    }
+
+    // 3. For short queries (< 3 chars), don't search objects to avoid excessive requests
+    if (query.length < 3) {
+      return false
+    }
+
+    // 4. For longer queries, only search buckets with common prefixes or if user is on storage page
+    const isOnStoragePage = router.currentRoute.value.path.includes('/storage/')
+    if (isOnStoragePage && query.length >= 3) {
+      return true
+    }
+
+    // 5. Search buckets that match common patterns
+    const commonPrefixes = ['tmp', 'temp', 'data', 'files', 'uploads', 'assets']
+    return commonPrefixes.some(prefix =>
+      bucketName.toLowerCase().includes(prefix) && lowerQuery.includes(prefix)
+    )
+  })
+
+  // Limit to first 3 buckets to avoid excessive requests
+  const bucketsToSearch = relevantBuckets.slice(0, 3)
+
+  for (const bucket of bucketsToSearch) {
     try {
       const objectsResponse = await storageApi.listObjects({
         bucket: bucket.name,
-        maxResults: 100 // Limit objects per bucket for performance
+        maxResults: 50, // Reduced from 100
+        prefix: lowerQuery.includes('/') ? lowerQuery : undefined // Use query as prefix if it contains '/'
       })
 
       if (objectsResponse.items) {
@@ -208,13 +295,14 @@ const loadSearchData = async () => {
           downloadUrl: storageApi.getObjectDownloadUrl(bucket.name, obj.name)
         } as StorageObjectWithPreview))
 
-        allObjectsTemp.push(...objectsWithBucket)
+        objects.push(...objectsWithBucket)
       }
     } catch (error) {
       console.warn(`Failed to load objects from bucket ${bucket.name}:`, error)
     }
   }
-  allObjects.value = allObjectsTemp
+
+  return objects
 }
 
 // Real search function using actual data
@@ -225,19 +313,19 @@ const performSearch = async (query: string) => {
   }
 
   isLoading.value = true
-  
+
   // Simulate slight delay for better UX
   await new Promise(resolve => setTimeout(resolve, 100))
-  
+
   const results: SearchResult[] = []
   const lowerQuery = query.toLowerCase()
-  
+
   // Search through topics
   allTopics.value.forEach(topic => {
     const displayName = getTopicDisplayName(topic.name)
     const fullName = topic.name
-    
-    if (displayName.toLowerCase().includes(lowerQuery) || 
+
+    if (displayName.toLowerCase().includes(lowerQuery) ||
         fullName.toLowerCase().includes(lowerQuery)) {
       results.push({
         title: displayName,
@@ -249,14 +337,14 @@ const performSearch = async (query: string) => {
       })
     }
   })
-  
+
   // Search through subscriptions
   allSubscriptions.value.forEach(subscription => {
     const displayName = getSubscriptionDisplayName(subscription.name)
     const fullName = subscription.name
     const topicName = subscription.topic || subscription.topicName || 'unknown'
-    
-    if (displayName.toLowerCase().includes(lowerQuery) || 
+
+    if (displayName.toLowerCase().includes(lowerQuery) ||
         fullName.toLowerCase().includes(lowerQuery) ||
         topicName.toLowerCase().includes(lowerQuery)) {
       results.push({
@@ -269,7 +357,7 @@ const performSearch = async (query: string) => {
       })
     }
   })
-  
+
   // Search through message templates
   allTemplates.value.forEach(template => {
     const name = template.name || 'Untitled Template'
@@ -310,34 +398,40 @@ const performSearch = async (query: string) => {
     }
   })
 
-  // Search through storage objects
-  allObjects.value.forEach(obj => {
-    const objectName = obj.name || ''
-    const bucketName = obj.bucket || ''
-    const contentType = obj.contentType || ''
-    const fullPath = `${bucketName}/${objectName}`
+  // Search through storage objects (lazy loaded)
+  if (query.length >= 2) { // Only search objects for queries with 2+ characters
+    try {
+      const objectsToSearch = await loadObjectsForSearch(query)
+      objectsToSearch.forEach(obj => {
+        const objectName = obj.name || ''
+        const bucketName = obj.bucket || ''
+        const contentType = obj.contentType || ''
+        const fullPath = `${bucketName}/${objectName}`
 
-    if (objectName.toLowerCase().includes(lowerQuery) ||
-        bucketName.toLowerCase().includes(lowerQuery) ||
-        contentType.toLowerCase().includes(lowerQuery) ||
-        fullPath.toLowerCase().includes(lowerQuery)) {
+        if (objectName.toLowerCase().includes(lowerQuery) ||
+            contentType.toLowerCase().includes(lowerQuery) ||
+            fullPath.toLowerCase().includes(lowerQuery)) {
 
-      // Get just the filename for display
-      const fileName = objectName.split('/').pop() || objectName
+          // Get just the filename for display
+          const fileName = objectName.split('/').pop() || objectName
 
-      results.push({
-        title: fileName,
-        description: `Object in ${bucketName}${obj.isFolder ? ' (folder)' : ` (${contentType || 'unknown type'})`}`,
-        type: 'object',
-        icon: obj.isFolder ? ArchiveBoxIcon : DocumentIcon,
-        route: `/projects/${currentProjectId.value}/storage/buckets/${encodeURIComponent(bucketName)}/objects`,
-        focusTarget: objectName,
-        bucket: bucketName,
-        objectPath: objectName
+          results.push({
+            title: fileName,
+            description: `Object in ${bucketName}${obj.isFolder ? ' (folder)' : ` (${contentType || 'unknown type'})`}`,
+            type: 'object',
+            icon: obj.isFolder ? ArchiveBoxIcon : DocumentIcon,
+            route: `/projects/${currentProjectId.value}/storage/buckets/${encodeURIComponent(bucketName)}/objects`,
+            focusTarget: objectName,
+            bucket: bucketName,
+            objectPath: objectName
+          })
+        }
       })
+    } catch (error) {
+      console.warn('Failed to search storage objects:', error)
     }
-  })
-  
+  }
+
   // Sort results by relevance (exact matches first)
   results.sort((a, b) => {
     const aExact = a.title.toLowerCase() === lowerQuery
@@ -385,8 +479,19 @@ const groupedResults = computed(() => {
   return groups
 })
 
+// Debounce search to avoid excessive API calls
+let searchTimeout: ReturnType<typeof setTimeout> | null = null
+
 const handleSearch = () => {
-  performSearch(searchQuery.value)
+  // Clear previous timeout
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+  }
+
+  // Debounce search by 300ms
+  searchTimeout = setTimeout(() => {
+    performSearch(searchQuery.value)
+  }, 300)
 }
 
 const handleKeydown = (event: KeyboardEvent) => {
@@ -478,11 +583,23 @@ onUnmounted(() => {
   if (refreshInterval) {
     clearInterval(refreshInterval)
   }
+
+  // Clean up search timeout
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+  }
 })
 
 // Watch for project changes and reload data
 watch(currentProjectId, (newProjectId) => {
   if (newProjectId) {
+    // Invalidate cache for new project
+    dataCache.value = {
+      topics: null,
+      subscriptions: null,
+      templates: null,
+      buckets: null
+    }
     loadSearchData()
   } else {
     // Clear data when no project is selected
@@ -492,6 +609,13 @@ watch(currentProjectId, (newProjectId) => {
     allBuckets.value = []
     allObjects.value = []
     searchResults.value = []
+    // Clear cache
+    dataCache.value = {
+      topics: null,
+      subscriptions: null,
+      templates: null,
+      buckets: null
+    }
   }
 }, { immediate: true })
 
@@ -525,20 +649,26 @@ watch(() => messageTemplatesStore.templates, (newTemplates) => {
   }
 }, { deep: true })
 
-// Auto-refresh PubSub data when the search component is focused
-// This is a fallback since topics/subscriptions created via API calls don't update stores directly
+// Refresh PubSub data when search is opened (reduced frequency)
 let refreshInterval: ReturnType<typeof setInterval> | null = null
 watch(isOpen, (open) => {
   if (open && currentProjectId.value) {
-    // Refresh PubSub data when search is opened
-    refreshPubSubData()
+    // Only refresh if cache is stale
+    if (!isCacheValid(dataCache.value.topics) || !isCacheValid(dataCache.value.subscriptions)) {
+      refreshPubSubData()
+    }
 
-    // Set up periodic refresh while search is open
-    refreshInterval = setInterval(() => {
-      if (isOpen.value && currentProjectId.value) {
-        refreshPubSubData()
-      }
-    }, 5000) // Refresh every 5 seconds
+    // Set up less aggressive refresh while search is open
+    if (!refreshInterval) {
+      refreshInterval = setInterval(() => {
+        if (isOpen.value && currentProjectId.value) {
+          // Only refresh if cache is really stale (longer than cache TTL)
+          if (!isCacheValid(dataCache.value.topics) || !isCacheValid(dataCache.value.subscriptions)) {
+            refreshPubSubData()
+          }
+        }
+      }, 30000) // Refresh every 30 seconds (reduced from 5 seconds)
+    }
   } else if (refreshInterval) {
     // Clean up interval when search is closed
     clearInterval(refreshInterval)
