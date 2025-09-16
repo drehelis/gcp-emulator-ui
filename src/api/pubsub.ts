@@ -3,7 +3,7 @@
  * Handles all PubSub-related API calls to the backend service
  */
 
-import { getApiClient } from './client'
+import { getApiClient, createLongRunningRequest } from './client'
 import type {
   PubSubTopic as Topic,
   PubSubSubscription as Subscription,
@@ -280,7 +280,6 @@ export const subscriptionsApi = {
 
   async pullMessages(projectId: string, subscriptionName: string, request: PullRequest): Promise<PullResponse> {
     // Use long-running request client for pull operations (5 minute timeout)
-    const { createLongRunningRequest } = await import('./client')
     const longRunningApi = createLongRunningRequest(300000) // 5 minutes
     const response = await longRunningApi.post(`/v1/projects/${projectId}/subscriptions/${subscriptionName}:pull`, request)
     return response.data
