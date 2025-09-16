@@ -767,7 +767,7 @@ import { useTopicsStore } from '@/stores/topics'
 import { useToast } from 'vue-toastification'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
 import type { PubSubTopic, PubSubSubscription } from '@/types'
-import { getMeaningfulErrorMessage } from '@/utils/errorHandling'
+import { getMeaningfulErrorMessage } from '@/utils/errorMessages'
 
 interface Props {
   modelValue: boolean

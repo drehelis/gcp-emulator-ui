@@ -25,7 +25,7 @@ import GlobalComponents from './plugins/global-components'
 import { setupApiClient } from './api/client'
 
 // Import error handling
-import { setupErrorHandling } from './utils/error-handling'
+import { setupErrorHandling } from './utils/errorSetup'
 
 // Import stores
 import { useAppStore } from './stores/app'

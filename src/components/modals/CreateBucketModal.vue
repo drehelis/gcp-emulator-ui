@@ -116,7 +116,7 @@ import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import { storageApi } from '@/api/storage'
 import { useAppStore } from '@/stores/app'
-import { getStorageErrorMessage } from '@/utils/errorHandling'
+import { getStorageErrorMessage } from '@/utils/errorMessages'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
 
 interface Props {

@@ -21,7 +21,7 @@ import type {
 import { useProjectsStore } from './projects'
 import { useAppStore } from './app'
 import storageApi from '@/api/storage'
-import { getStorageErrorMessage } from '@/utils/errorHandling'
+import { getStorageErrorMessage } from '@/utils/errorMessages'
 
 export const useStorageStore = defineStore('storage', () => {
   const projectsStore = useProjectsStore()
