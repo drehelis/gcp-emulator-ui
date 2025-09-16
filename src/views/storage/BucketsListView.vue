@@ -34,18 +34,46 @@
     <div v-else-if="storageStore.buckets.length > 0" class="space-y-6">
       <!-- Header with Actions -->
       <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
-        <div class="px-6 py-4">
-          <div class="flex items-center justify-between mb-4">
+        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div class="flex items-center justify-between">
             <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
               Buckets
             </h2>
             <div class="flex items-center space-x-3">
+              <!-- View Mode Toggle -->
+              <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-md p-0.5">
+                <button
+                  @click="storageStore.setViewMode('list')"
+                  :class="[
+                    'p-1.5 rounded text-sm font-medium transition-colors',
+                    storageStore.viewMode === 'list'
+                      ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  ]"
+                  title="Table view"
+                >
+                  <Bars3Icon class="w-4 h-4" />
+                </button>
+                <button
+                  @click="storageStore.setViewMode('grid')"
+                  :class="[
+                    'p-1.5 rounded text-sm font-medium transition-colors',
+                    storageStore.viewMode === 'grid'
+                      ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                  ]"
+                  title="Grid view"
+                >
+                  <Squares2X2Icon class="w-4 h-4" />
+                </button>
+              </div>
+
               <button
                 @click="showCreateBucketModal = true"
                 class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
               >
                 <PlusIcon class="h-4 w-4 mr-2" />
-                Create
+                Create Bucket
               </button>
               <button
                 @click="refreshBuckets"
@@ -58,47 +86,6 @@
             </div>
           </div>
 
-          <!-- Filter Section -->
-          <div class="flex items-center space-x-4 mb-4">
-            <div class="flex items-center space-x-2">
-              <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Filter</span>
-              <div class="relative">
-                <input
-                  type="text"
-                  placeholder="Filter buckets"
-                  class="block w-64 pl-3 pr-10 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                >
-              </div>
-            </div>
-
-            <!-- View Mode Toggle -->
-            <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-md p-0.5">
-              <button
-                @click="storageStore.setViewMode('list')"
-                :class="[
-                  'p-1.5 rounded text-sm font-medium transition-colors',
-                  storageStore.viewMode === 'list'
-                    ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                ]"
-                title="Table view"
-              >
-                <Bars3Icon class="w-4 h-4" />
-              </button>
-              <button
-                @click="storageStore.setViewMode('grid')"
-                :class="[
-                  'p-1.5 rounded text-sm font-medium transition-colors',
-                  storageStore.viewMode === 'grid'
-                    ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
-                ]"
-                title="Grid view"
-              >
-                <Squares2X2Icon class="w-4 h-4" />
-              </button>
-            </div>
-          </div>
         </div>
       </div>
       
@@ -109,7 +96,7 @@
             <!-- Table Header -->
             <thead class="bg-gray-50 dark:bg-gray-700">
               <tr>
-                <th scope="col" class="w-4 px-3 py-3">
+                <th scope="col" class="w-4 px-3 py-2">
                   <input
                     type="checkbox"
                     class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:focus:ring-blue-400"
