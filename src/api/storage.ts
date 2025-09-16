@@ -14,7 +14,6 @@ import type {
   DownloadObjectRequest,
   ListObjectsRequest,
   DeleteObjectRequest,
-  UploadProgress
 } from '@/types'
 
 const storageClient = axios.create({
@@ -78,7 +77,7 @@ export const storageApi = {
       name,
       location: location || 'US',
       storageClass: storageClass || 'STANDARD',
-      iamConfiguration
+      ...(iamConfiguration && { iamConfiguration })
     }
 
     const response = await api.post('/storage/v1/b', bucketData, {
@@ -184,16 +183,9 @@ export const storageApi = {
             kmsKeyName: request.kmsKeyName,
             userProject: request.userProject
           },
-          onUploadProgress: (progressEvent) => {
-            if (onProgress && progressEvent.total) {
-              const progress: UploadProgress = {
-                loaded: progressEvent.loaded,
-                total: progressEvent.total,
-                percentage: Math.round((progressEvent.loaded * 100) / progressEvent.total),
-                file,
-                status: progressEvent.loaded === progressEvent.total ? 'completed' : 'uploading'
-              }
-              onProgress(progress)
+          onUploadProgress: () => {
+            if (onProgress) {
+              onProgress()
             }
           }
         }
@@ -234,16 +226,9 @@ export const storageApi = {
             kmsKeyName: request.kmsKeyName,
             userProject: request.userProject
           },
-          onUploadProgress: (progressEvent) => {
-            if (onProgress && progressEvent.total) {
-              const progress: UploadProgress = {
-                loaded: progressEvent.loaded,
-                total: progressEvent.total,
-                percentage: Math.round((progressEvent.loaded * 100) / progressEvent.total),
-                file,
-                status: progressEvent.loaded === progressEvent.total ? 'completed' : 'uploading'
-              }
-              onProgress(progress)
+          onUploadProgress: () => {
+            if (onProgress) {
+              onProgress()
             }
           }
         }
@@ -362,8 +347,6 @@ export const storageApi = {
     options: Omit<UploadObjectRequest, 'bucket' | 'name'> = {},
     onProgress?: () => void
   ): Promise<StorageObject[]> {
-    const progressMap = new Map<string, UploadProgress>()
-
     const uploadPromises = files.map(async (file) => {
       const request: UploadObjectRequest = {
         ...options,
@@ -372,10 +355,9 @@ export const storageApi = {
         contentType: file.type
       }
 
-      return this.uploadObject(file, request, (uploadProgress) => {
-        progressMap.set(file.name, uploadProgress)
+      return this.uploadObject(file, request, () => {
         if (onProgress) {
-          onProgress(Array.from(progressMap.values()))
+          onProgress()
         }
       })
     })
@@ -387,7 +369,6 @@ export const storageApi = {
   async downloadObjectsAsZip(
     bucketName: string,
     objectNames: string[],
-    zipFileName?: string,
     // eslint-disable-next-line no-unused-vars
     onProgress?: (progress: { current: number; total: number; currentFile: string }) => void
   ): Promise<Blob> {
@@ -404,7 +385,7 @@ export const storageApi = {
     for (let i = 0; i < objectNames.length; i++) {
       const objectName = objectNames[i]
 
-      if (onProgress) {
+      if (onProgress && objectName) {
         onProgress({
           current: i + 1,
           total: objectNames.length,
@@ -416,11 +397,13 @@ export const storageApi = {
         // Download the object as blob
         const blob = await this.downloadObject({
           bucket: bucketName,
-          object: objectName
+          object: objectName || ''
         })
 
         // Add to ZIP with proper folder structure
-        zip.file(objectName, blob)
+        if (objectName) {
+          zip.file(objectName, blob)
+        }
       } catch (error) {
         console.warn(`Failed to download object ${objectName}:`, error)
         // Continue with other files, don't fail the entire operation
@@ -437,8 +420,9 @@ export const storageApi = {
     // eslint-disable-next-line no-unused-vars
     onProgress?: (progress: { current: number; total: number; currentFile: string }) => void
   ): Promise<Blob> {
-    // Get all objects in the bucket
-    const objectsResponse = await this.listObjects({ bucket: bucketName, maxResults: 1000 })
+    // Get all objects in the bucket, maxResults is 0 for no limit untill fake-gcs support nextPageToken
+    // https://github.com/fsouza/fake-gcs-server/issues/1912
+    const objectsResponse = await this.listObjects({ bucket: bucketName, maxResults: 0 })
     const objects = objectsResponse.items || []
 
     if (objects.length === 0) {
@@ -449,7 +433,6 @@ export const storageApi = {
     return await this.downloadObjectsAsZip(
       bucketName,
       objects.map(obj => obj.name),
-      `${bucketName}.zip`,
       onProgress
     )
   },
