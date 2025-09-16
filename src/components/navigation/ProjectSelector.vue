@@ -75,7 +75,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useProjectsStore } from '@/stores/projects'
 import { FolderIcon, ChevronDownIcon, PlusIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import AddProjectModal from '@/components/modals/AddProjectModal.vue'
@@ -89,6 +89,7 @@ withDefaults(defineProps<Props>(), {
 })
 
 const router = useRouter()
+const route = useRoute()
 const projectsStore = useProjectsStore()
 const isOpen = ref(false)
 const showAddProjectModal = ref(false)
@@ -110,9 +111,19 @@ const dropdownStyles = computed(() => {
 const selectProject = async (project: string) => {
   projectsStore.selectProject(project)
   isOpen.value = false
-  
-  // Navigate to the project's service selection page
-  await router.push(`/projects/${project}`)
+
+  // Preserve the current route structure but change the project ID
+  const currentPath = route.path
+  const currentProjectId = route.params.projectId as string
+
+  if (currentProjectId && currentPath.includes(`/projects/${currentProjectId}`)) {
+    // Replace the current project ID with the new one in the path
+    const newPath = currentPath.replace(`/projects/${currentProjectId}`, `/projects/${project}`)
+    await router.push(newPath)
+  } else {
+    // Fallback to project root if we can't determine the current structure
+    await router.push(`/projects/${project}`)
+  }
 }
 
 const openAddProjectModal = () => {

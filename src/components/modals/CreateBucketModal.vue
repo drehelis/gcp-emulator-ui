@@ -112,10 +112,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, watch } from 'vue'
+import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import { storageApi } from '@/api/storage'
 import { useAppStore } from '@/stores/app'
+import { getStorageErrorMessage } from '@/utils/errorMessages'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
 
 interface Props {
@@ -227,7 +228,7 @@ const handleSubmit = async () => {
     appStore.showToast({
       type: 'error',
       title: 'Creation Failed',
-      message: err.message || 'Failed to create bucket'
+      message: getStorageErrorMessage(err, 'create bucket')
     })
   } finally {
     isSubmitting.value = false
@@ -258,6 +259,32 @@ const clearBucketError = (field: string) => {
     delete bucketErrors.value[field]
   }
 }
+
+const handleEnterKey = (event: KeyboardEvent) => {
+  // Only handle Enter key when modal is open
+  if (event.key === 'Enter' && props.modelValue) {
+    const target = event.target as HTMLElement
+
+    // Only handle Enter if it's from a text input, not from buttons or other elements
+    if (target && target.tagName === 'INPUT' && (target as HTMLInputElement).type === 'text') {
+      // Only submit if the form is valid and not currently submitting
+      if (bucketForm.value.name.trim() && !isSubmitting.value) {
+        event.preventDefault()
+        event.stopPropagation()
+        handleSubmit()
+      }
+    }
+  }
+}
+
+// Set up keyboard event listeners
+onMounted(() => {
+  document.addEventListener('keydown', handleEnterKey)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', handleEnterKey)
+})
 
 // Focus input when modal opens
 watch(() => props.modelValue, async (isOpen) => {

@@ -21,6 +21,7 @@ import type {
 import { useProjectsStore } from './projects'
 import { useAppStore } from './app'
 import storageApi from '@/api/storage'
+import { getStorageErrorMessage } from '@/utils/errorMessages'
 
 export const useStorageStore = defineStore('storage', () => {
   const projectsStore = useProjectsStore()
@@ -208,13 +209,14 @@ export const useStorageStore = defineStore('storage', () => {
       }
     } catch (error: any) {
       console.error('Error creating bucket:', error)
-      state.value.error = error.message || 'Failed to create bucket'
+      const meaningfulMessage = getStorageErrorMessage(error, 'create bucket')
+      state.value.error = meaningfulMessage
 
       if (!silent) {
         appStore.showToast({
           type: 'error',
           title: 'Error Creating Bucket',
-          message: error.message || 'Failed to create bucket'
+          message: meaningfulMessage
         })
       }
       throw error
@@ -254,12 +256,6 @@ export const useStorageStore = defineStore('storage', () => {
       // Delete all objects if any exist
       if (allObjects.length > 0) {
         await storageApi.deleteMultipleObjects(bucketName, allObjects)
-
-        appStore.showToast({
-          type: 'info',
-          title: 'Objects Deleted',
-          message: `Deleted ${allObjects.length} object${allObjects.length === 1 ? '' : 's'} from bucket`
-        })
       }
 
       // Now delete the empty bucket
@@ -666,6 +662,12 @@ export const useStorageStore = defineStore('storage', () => {
     selectedObjects.value = []
   }
 
+  function clearCurrentPath(): void {
+    currentPath.value = ''
+    breadcrumbs.value = []
+    selectedObjects.value = []
+  }
+
   function reset(): void {
     buckets.value = []
     currentBucket.value = null
@@ -724,6 +726,7 @@ export const useStorageStore = defineStore('storage', () => {
     selectObject,
     selectAllObjects,
     clearSelection,
+    clearCurrentPath,
     reset
   }
 })

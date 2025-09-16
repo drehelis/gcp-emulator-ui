@@ -90,3 +90,46 @@ export const getPubSubErrorMessage = (error: any, operation: string): string => 
   
   return baseMessage
 }
+
+/**
+ * Gets a user-friendly error message for Storage specific operations
+ * @param error - The error object
+ * @param operation - The operation that failed (e.g., 'create bucket', 'upload file')
+ * @returns A user-friendly error message
+ */
+export const getStorageErrorMessage = (error: any, operation: string): string => {
+  const baseMessage = getMeaningfulErrorMessage(error)
+
+  // Add context for specific Storage operations
+  if (baseMessage.includes('ALREADY_EXISTS')) {
+    if (operation.includes('bucket')) {
+      return 'A bucket with this name already exists. Bucket names must be globally unique. Please choose a different name.'
+    }
+    if (operation.includes('object') || operation.includes('file')) {
+      return 'A file with this name already exists in this location. Please choose a different name or delete the existing file first.'
+    }
+    return 'This resource already exists. Please choose a different name.'
+  }
+
+  if (baseMessage.includes('NOT_FOUND')) {
+    if (operation.includes('bucket')) {
+      return 'The bucket no longer exists. It may have been deleted by another process.'
+    }
+    if (operation.includes('object') || operation.includes('file')) {
+      return 'The file no longer exists. It may have been deleted or moved.'
+    }
+  }
+
+  if (baseMessage.includes('PERMISSION_DENIED')) {
+    return 'You do not have permission to perform this operation. Please check your access rights.'
+  }
+
+  if (baseMessage.includes('INVALID_REQUEST')) {
+    if (operation.includes('bucket')) {
+      return 'Invalid bucket configuration. Please check the bucket name and settings.'
+    }
+    return 'Invalid request. Please check your input and try again.'
+  }
+
+  return baseMessage
+}
