@@ -135,6 +135,18 @@ const allTemplates = ref<MessageTemplate[]>([])
 const allBuckets = ref<StorageBucket[]>([])
 const allObjects = ref<StorageObjectWithPreview[]>([])
 
+// Configuration constants
+const SEARCH_CONFIG = {
+  CACHE_TTL: 30000, // 30 seconds cache
+  DEBOUNCE_DELAY: 300, // 300ms search debounce
+  REFRESH_INTERVAL: 30000, // 30 seconds refresh interval
+  MIN_QUERY_LENGTH_FOR_OBJECTS: 2, // Minimum query length to search objects
+  MIN_QUERY_LENGTH_FOR_PATTERNS: 3, // Minimum query length for pattern matching
+  MAX_BUCKETS_TO_SEARCH: 3, // Maximum buckets to search per query
+  MAX_OBJECTS_PER_BUCKET: 50, // Maximum objects to fetch per bucket
+  COMMON_BUCKET_PREFIXES: ['tmp', 'temp', 'data', 'files', 'uploads', 'assets', 'logs', 'backup', 'cache']
+} as const
+
 // Get current project ID from route
 const currentProjectId = computed(() => route.params.projectId as string)
 
@@ -162,12 +174,10 @@ const dataCache = ref<{
   buckets: null
 })
 
-const CACHE_TTL = 30000 // 30 seconds cache
-
 // Helper to check if cache is valid
 const isCacheValid = (cacheEntry: { timestamp: number } | null): boolean => {
   if (!cacheEntry) return false
-  return Date.now() - cacheEntry.timestamp < CACHE_TTL
+  return Date.now() - cacheEntry.timestamp < SEARCH_CONFIG.CACHE_TTL
 }
 
 // Load basic data for search (no objects initially)
@@ -235,55 +245,80 @@ const loadSearchData = async () => {
   // DON'T load all objects immediately - only load when searching for objects
 }
 
+// Helper functions for bucket filtering logic
+const isDirectBucketMatch = (bucketName: string, query: string): boolean => {
+  return bucketName.toLowerCase().includes(query.toLowerCase())
+}
+
+const isPathBasedMatch = (bucketName: string, query: string): boolean => {
+  if (!query.includes('/')) return false
+
+  const pathParts = query.split('/')
+  const possibleBucket = pathParts[0]
+  return bucketName.toLowerCase().includes(possibleBucket.toLowerCase())
+}
+
+const isQueryTooShort = (query: string): boolean => {
+  return query.length < SEARCH_CONFIG.MIN_QUERY_LENGTH_FOR_PATTERNS
+}
+
+const isOnStoragePage = (): boolean => {
+  return router.currentRoute.value.path.includes('/storage/')
+}
+
+const hasCommonPatternMatch = (bucketName: string, query: string): boolean => {
+  const lowerBucket = bucketName.toLowerCase()
+  const lowerQuery = query.toLowerCase()
+
+  return SEARCH_CONFIG.COMMON_BUCKET_PREFIXES.some(prefix =>
+    lowerBucket.includes(prefix) && lowerQuery.includes(prefix)
+  )
+}
+
+const shouldSearchBucket = (bucket: StorageBucket, query: string): boolean => {
+  const bucketName = bucket.name || ''
+
+  // Direct bucket name match
+  if (isDirectBucketMatch(bucketName, query)) {
+    return true
+  }
+
+  // Path-based search (e.g., "mybucket/folder/file")
+  if (isPathBasedMatch(bucketName, query)) {
+    return true
+  }
+
+  // Skip object search for very short queries
+  if (isQueryTooShort(query)) {
+    return false
+  }
+
+  // Search all buckets when on storage page with meaningful query
+  if (isOnStoragePage() && query.length >= SEARCH_CONFIG.MIN_QUERY_LENGTH_FOR_PATTERNS) {
+    return true
+  }
+
+  // Pattern-based matching for common bucket naming conventions
+  return hasCommonPatternMatch(bucketName, query)
+}
+
+const getRelevantBuckets = (buckets: StorageBucket[], query: string): StorageBucket[] => {
+  return buckets
+    .filter(bucket => shouldSearchBucket(bucket, query))
+    .slice(0, SEARCH_CONFIG.MAX_BUCKETS_TO_SEARCH)
+}
+
 // Lazy load storage objects only when needed
 const loadObjectsForSearch = async (query: string): Promise<StorageObjectWithPreview[]> => {
   const objects: StorageObjectWithPreview[] = []
   const lowerQuery = query.toLowerCase()
-
-  // Only load objects from buckets that might match the search query
-  const relevantBuckets = allBuckets.value.filter(bucket => {
-    const bucketName = bucket.name || ''
-
-    // 1. If query contains bucket name, definitely search this bucket
-    if (bucketName.toLowerCase().includes(lowerQuery)) {
-      return true
-    }
-
-    // 2. If query looks like a path (contains '/'), check if bucket matches the first part
-    if (lowerQuery.includes('/')) {
-      const pathParts = lowerQuery.split('/')
-      const possibleBucket = pathParts[0]
-      if (bucketName.toLowerCase().includes(possibleBucket)) {
-        return true
-      }
-    }
-
-    // 3. For short queries (< 3 chars), don't search objects to avoid excessive requests
-    if (query.length < 3) {
-      return false
-    }
-
-    // 4. For longer queries, only search buckets with common prefixes or if user is on storage page
-    const isOnStoragePage = router.currentRoute.value.path.includes('/storage/')
-    if (isOnStoragePage && query.length >= 3) {
-      return true
-    }
-
-    // 5. Search buckets that match common patterns
-    const commonPrefixes = ['tmp', 'temp', 'data', 'files', 'uploads', 'assets']
-    return commonPrefixes.some(prefix =>
-      bucketName.toLowerCase().includes(prefix) && lowerQuery.includes(prefix)
-    )
-  })
-
-  // Limit to first 3 buckets to avoid excessive requests
-  const bucketsToSearch = relevantBuckets.slice(0, 3)
+  const bucketsToSearch = getRelevantBuckets(allBuckets.value, query)
 
   for (const bucket of bucketsToSearch) {
     try {
       const objectsResponse = await storageApi.listObjects({
         bucket: bucket.name,
-        maxResults: 50, // Reduced from 100
+        maxResults: SEARCH_CONFIG.MAX_OBJECTS_PER_BUCKET,
         prefix: lowerQuery.includes('/') ? lowerQuery : undefined // Use query as prefix if it contains '/'
       })
 
@@ -399,7 +434,7 @@ const performSearch = async (query: string) => {
   })
 
   // Search through storage objects (lazy loaded)
-  if (query.length >= 2) { // Only search objects for queries with 2+ characters
+  if (query.length >= SEARCH_CONFIG.MIN_QUERY_LENGTH_FOR_OBJECTS) { // Only search objects for queries with 2+ characters
     try {
       const objectsToSearch = await loadObjectsForSearch(query)
       objectsToSearch.forEach(obj => {
@@ -488,10 +523,10 @@ const handleSearch = () => {
     clearTimeout(searchTimeout)
   }
 
-  // Debounce search by 300ms
+  // Debounce search by configured delay
   searchTimeout = setTimeout(() => {
     performSearch(searchQuery.value)
-  }, 300)
+  }, SEARCH_CONFIG.DEBOUNCE_DELAY)
 }
 
 const handleKeydown = (event: KeyboardEvent) => {
@@ -667,7 +702,7 @@ watch(isOpen, (open) => {
             refreshPubSubData()
           }
         }
-      }, 30000) // Refresh every 30 seconds (reduced from 5 seconds)
+      }, SEARCH_CONFIG.REFRESH_INTERVAL) // Refresh every 30 seconds
     }
   } else if (refreshInterval) {
     // Clean up interval when search is closed
