@@ -86,8 +86,9 @@
     <!-- Main Content -->
     <div class="px-4 sm:px-6 lg:px-8 py-6">
       <!-- Breadcrumbs -->
-      <nav v-if="storageStore.breadcrumbs.length > 0" class="mb-6" aria-label="Breadcrumb">
+      <nav class="mb-6" aria-label="Breadcrumb">
         <ol class="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm">
+          <!-- Always show Home icon -->
           <li>
             <button
               @click="navigateToPath('')"
@@ -97,19 +98,23 @@
               <span class="sr-only">Home</span>
             </button>
           </li>
-          <li v-for="(breadcrumb, index) in storageStore.breadcrumbs" :key="index" class="flex items-baseline">
-            <ChevronRightIcon class="flex-shrink-0 h-4 w-4 text-gray-400 mx-2" />
-            <button
-              v-if="!breadcrumb.isLast"
-              @click="navigateToPath(breadcrumb.path)"
-              class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 truncate transition-colors duration-200"
-            >
-              {{ breadcrumb.name }}
-            </button>
-            <span v-else class="text-gray-500 dark:text-gray-400 truncate">
-              {{ breadcrumb.name }}
-            </span>
-          </li>
+
+          <!-- Show folder breadcrumbs only when in subfolders -->
+          <template v-if="storageStore.breadcrumbs.length > 0">
+            <li v-for="(breadcrumb, index) in storageStore.breadcrumbs" :key="index" class="flex items-baseline">
+              <ChevronRightIcon class="flex-shrink-0 h-4 w-4 text-gray-400 mx-2" />
+              <button
+                v-if="!breadcrumb.isLast"
+                @click="navigateToPath(breadcrumb.path)"
+                class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 truncate transition-colors duration-200"
+              >
+                {{ breadcrumb.name }}
+              </button>
+              <span v-else class="text-gray-500 dark:text-gray-400 truncate">
+                {{ breadcrumb.name }}
+              </span>
+            </li>
+          </template>
         </ol>
       </nav>
 
