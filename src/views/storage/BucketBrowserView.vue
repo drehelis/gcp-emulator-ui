@@ -1030,7 +1030,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 // TypeScript declarations for webkit File System API
@@ -1447,7 +1447,7 @@ async function handleUpload(): Promise<void> {
 }
 
 function handleUploadModalClose(): void {
-  // Prevent closing during upload
+  // Allow closing unless currently uploading
   if (!isUploading.value) {
     closeUploadModal()
   }
@@ -1460,6 +1460,13 @@ function closeUploadModal(): void {
   isDragOver.value = false
   if (modalFileInput.value) {
     modalFileInput.value.value = ''
+  }
+}
+
+// Handle ESC key for upload modal
+const handleUploadModalEscKey = (event: KeyboardEvent) => {
+  if (event.key === 'Escape' && showUploadModal.value && !isUploading.value) {
+    closeUploadModal()
   }
 }
 
@@ -1814,9 +1821,19 @@ async function uploadFiles(files: File[]): Promise<void> {
 
 // Lifecycle
 onMounted(async () => {
+  // Add ESC key listener for upload modal
+  document.addEventListener('keydown', handleUploadModalEscKey)
+
   if (bucketName.value) {
     try {
       await storageStore.fetchBucket(bucketName.value)
+
+      // Check if we're switching to a different bucket
+      if (storageStore.currentBucket?.name && storageStore.currentBucket.name !== bucketName.value) {
+        // Clear path when switching buckets
+        storageStore.clearCurrentPath()
+      }
+
       // Use existing currentPath from store, or default to root if none exists
       const pathToLoad = storageStore.currentPath || ''
       await storageStore.fetchObjects(bucketName.value, pathToLoad, true)
@@ -1824,5 +1841,10 @@ onMounted(async () => {
       console.error('Error loading bucket:', error)
     }
   }
+})
+
+onUnmounted(() => {
+  // Remove ESC key listener
+  document.removeEventListener('keydown', handleUploadModalEscKey)
 })
 </script>

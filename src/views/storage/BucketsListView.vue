@@ -579,6 +579,8 @@ async function refreshBuckets(): Promise<void> {
 }
 
 function navigateToBucket(bucketName: string): void {
+  // Clear the current path and breadcrumbs when navigating to a different bucket
+  storageStore.clearCurrentPath()
   router.push(`/projects/${currentProjectId.value}/storage/buckets/${encodeURIComponent(bucketName)}`)
 }
 

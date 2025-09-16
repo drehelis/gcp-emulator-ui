@@ -254,12 +254,6 @@ export const useStorageStore = defineStore('storage', () => {
       // Delete all objects if any exist
       if (allObjects.length > 0) {
         await storageApi.deleteMultipleObjects(bucketName, allObjects)
-
-        appStore.showToast({
-          type: 'info',
-          title: 'Objects Deleted',
-          message: `Deleted ${allObjects.length} object${allObjects.length === 1 ? '' : 's'} from bucket`
-        })
       }
 
       // Now delete the empty bucket
@@ -666,6 +660,12 @@ export const useStorageStore = defineStore('storage', () => {
     selectedObjects.value = []
   }
 
+  function clearCurrentPath(): void {
+    currentPath.value = ''
+    breadcrumbs.value = []
+    selectedObjects.value = []
+  }
+
   function reset(): void {
     buckets.value = []
     currentBucket.value = null
@@ -724,6 +724,7 @@ export const useStorageStore = defineStore('storage', () => {
     selectObject,
     selectAllObjects,
     clearSelection,
+    clearCurrentPath,
     reset
   }
 })
