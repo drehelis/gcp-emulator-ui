@@ -157,7 +157,6 @@ const loadSearchData = async () => {
   try {
     const topics = await topicsApi.getTopics(currentProjectId.value)
     allTopics.value = topics || []
-    console.log('Topics loaded:', allTopics.value.length)
   } catch (error) {
     console.warn('Failed to load topics:', error)
     allTopics.value = []
@@ -167,7 +166,6 @@ const loadSearchData = async () => {
   try {
     const subscriptions = await subscriptionsApi.getSubscriptions(currentProjectId.value)
     allSubscriptions.value = Array.isArray(subscriptions) ? subscriptions : []
-    console.log('Subscriptions loaded:', allSubscriptions.value.length)
   } catch (error) {
     console.warn('Failed to load subscriptions:', error)
     allSubscriptions.value = []
@@ -177,7 +175,6 @@ const loadSearchData = async () => {
   try {
     await messageTemplatesStore.loadTemplates()
     allTemplates.value = messageTemplatesStore.templates || []
-    console.log('Templates loaded:', allTemplates.value.length)
   } catch (error) {
     console.warn('Failed to load templates:', error)
     allTemplates.value = []
@@ -189,7 +186,6 @@ const loadSearchData = async () => {
       project: currentProjectId.value
     })
     allBuckets.value = bucketsResponse.items || []
-    console.log('Storage buckets loaded:', allBuckets.value.length)
   } catch (error) {
     console.warn('Failed to load storage buckets:', error)
     allBuckets.value = []
@@ -219,7 +215,6 @@ const loadSearchData = async () => {
     }
   }
   allObjects.value = allObjectsTemp
-  console.log('Storage objects loaded:', allObjects.value.length)
 }
 
 // Real search function using actual data
