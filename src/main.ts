@@ -18,9 +18,6 @@ import router from './router'
 import './assets/styles/main.css'
 import 'vue-toastification/dist/index.css'
 
-// Import PWA registration
-import { registerSW } from 'virtual:pwa-register'
-
 // Import global components
 import GlobalComponents from './plugins/global-components'
 
@@ -29,6 +26,10 @@ import { setupApiClient } from './api/client'
 
 // Import error handling
 import { setupErrorHandling } from './utils/error-handling'
+
+// Import stores
+import { useAppStore } from './stores/app'
+import { useProjectsStore } from './stores/projects'
 
 // Create app instance
 const app = createApp(App)
@@ -100,23 +101,6 @@ setupErrorHandling(app)
 // Setup API client
 setupApiClient()
 
-// Register service worker for PWA
-if ('serviceWorker' in navigator && import.meta.env.PROD) {
-  registerSW({
-    onNeedRefresh() {
-      console.log('New content available, please refresh!')
-      // You can show a toast notification here
-    },
-    onOfflineReady() {
-      console.log('App ready to work offline!')
-      // You can show a toast notification here
-    },
-    onRegisterError(error) {
-      console.error('SW registration error:', error)
-    }
-  })
-}
-
 // Global error handler
 app.config.errorHandler = (error, instance, info) => {
   console.error('Global error:', error, info)
@@ -143,7 +127,6 @@ async function initializeApp() {
 
   try {
     // Initialize app store first (this should always work)
-    const { useAppStore } = await import('./stores/app')
     const appStore = useAppStore()
     appStore.initializeApp()
 
@@ -164,7 +147,6 @@ async function initializeApp() {
     if (isApiConnected) {
       // Initialize projects store only if API is connected
       try {
-        const { useProjectsStore } = await import('./stores/projects')
         const projectsStore = useProjectsStore()
         projectsStore.initialize()
 
@@ -196,7 +178,6 @@ async function initializeApp() {
     if (appMounted) {
       // App is mounted, we can use Vue toast notifications
       try {
-        const { useAppStore } = await import('./stores/app')
         const appStore = useAppStore()
         appStore.showToast({
           type: 'error',
