@@ -47,38 +47,6 @@
             </div>
           </div>
 
-          <!-- Selection actions -->
-          <div v-if="storageStore.selectedObjects.length > 0 || downloadingZip" class="flex items-center justify-between mt-2">
-            <span class="text-sm text-gray-500 dark:text-gray-400">
-              {{ downloadContext?.count || storageStore.selectedObjects.length }} selected
-            </span>
-            <div class="flex items-center space-x-2">
-              <button
-                @click="downloadSelectedAsZip"
-                :disabled="downloadingZip"
-                class="inline-flex items-center px-2 sm:px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border border-transparent rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-              >
-                <ArrowDownTrayIcon :class="['w-4 h-4 sm:mr-2', downloadingZip ? 'animate-pulse' : '']" />
-                <span class="hidden sm:inline">{{ downloadingZip ? ((downloadContext?.count || storageStore.selectedObjects.length) === 1 ? 'Downloading...' : 'Creating ZIP...') : `Download (${downloadContext?.count || storageStore.selectedObjects.length})` }}</span>
-              </button>
-              <button
-                @click="confirmBulkDelete"
-                :disabled="storageStore.loading.delete"
-                class="inline-flex items-center px-2 sm:px-3 py-2 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 border border-transparent rounded-lg hover:bg-red-100 dark:hover:bg-red-900/30 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-              >
-                <TrashIcon class="w-4 h-4 sm:mr-2" />
-                <span class="hidden sm:inline">Delete</span>
-              </button>
-              <button
-                @click="storageStore.clearSelection"
-                :disabled="downloadingZip"
-                class="inline-flex items-center px-2 sm:px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 border border-transparent rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-              >
-                <XMarkIcon class="w-4 h-4 sm:mr-2" />
-                <span class="hidden sm:inline">Clear</span>
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -86,7 +54,7 @@
     <!-- Main Content -->
     <div class="px-4 sm:px-6 lg:px-8 py-6">
       <!-- Breadcrumbs -->
-      <nav class="mb-6" aria-label="Breadcrumb">
+      <nav class="mb-6 flex items-center justify-between" aria-label="Breadcrumb">
         <ol class="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm">
           <!-- Always show Home icon -->
           <li>
@@ -116,6 +84,34 @@
             </li>
           </template>
         </ol>
+
+        <!-- Selection actions -->
+        <div v-if="storageStore.selectedObjects.length > 0 || downloadingZip" class="flex items-center space-x-2">
+            <button
+              @click="downloadSelectedAsZip"
+              :disabled="downloadingZip"
+              class="inline-flex items-center px-1 sm:px-2 text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            >
+              <ArrowDownTrayIcon :class="['w-3 h-3 sm:w-4 sm:h-4 sm:mr-1', downloadingZip ? 'animate-pulse' : '']" />
+              <span class="hidden sm:inline">{{ downloadingZip ? ((downloadContext?.count || storageStore.selectedObjects.length) === 1 ? 'Downloading...' : 'Creating ZIP...') : `Download (${downloadContext?.count || storageStore.selectedObjects.length})` }}</span>
+            </button>
+            <button
+              @click="confirmBulkDelete"
+              :disabled="storageStore.loading.delete"
+              class="inline-flex items-center px-1 sm:px-2 text-xs sm:text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 rounded focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            >
+              <TrashIcon class="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
+              <span class="hidden sm:inline">Delete</span>
+            </button>
+            <button
+              @click="storageStore.clearSelection"
+              :disabled="downloadingZip"
+              class="inline-flex items-center px-1 sm:px-2 text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            >
+              <XMarkIcon class="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
+              <span class="hidden sm:inline">Clear</span>
+            </button>
+        </div>
       </nav>
 
       <!-- Loading State -->
