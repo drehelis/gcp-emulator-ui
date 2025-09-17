@@ -184,6 +184,81 @@
               </div>
             </div>
           </div>
+
+          <!-- Firestore Service -->
+          <div
+            class="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+            :class="{ 'opacity-75': !firestoreConnected }"
+            @click="navigateToService('firestore')"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-4">
+                <div
+                  class="w-10 h-10 rounded-lg flex items-center justify-center"
+                  :class="[
+                    firestoreConnected
+                      ? 'bg-amber-100 dark:bg-amber-900/30'
+                      : 'bg-gray-100 dark:bg-gray-700'
+                  ]"
+                >
+                  <!-- Firestore Icon -->
+                  <svg
+                    class="w-6 h-6"
+                    :class="[
+                      firestoreConnected
+                        ? 'text-amber-600 dark:text-amber-400'
+                        : 'text-gray-400 dark:text-gray-500'
+                    ]"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                  >
+                    <g>
+                      <path fill="currentColor" opacity="0.8" d="M21,13,12,9v4l9,4Zm0-7L12,2V6l9,4Z"/>
+                      <polygon fill="currentColor" opacity="0.6" points="3 6 12 2 12 6 3 10 3 6"/>
+                      <polygon fill="currentColor" opacity="0.6" points="3 13 12 9 12 13 3 17 3 13"/>
+                      <polygon fill="currentColor" points="12 18 15.37 16.5 19.88 18.5 12 22 12 18"/>
+                    </g>
+                  </svg>
+                </div>
+
+                <div>
+                  <h3
+                    class="text-sm font-medium"
+                    :class="[
+                      firestoreConnected
+                        ? 'text-gray-900 dark:text-white'
+                        : 'text-gray-500 dark:text-gray-400'
+                    ]"
+                  >
+                    Firestore
+                  </h3>
+                  <p
+                    class="text-xs"
+                    :class="[
+                      firestoreConnected
+                        ? 'text-gray-500 dark:text-gray-400'
+                        : 'text-gray-400 dark:text-gray-500'
+                    ]"
+                  >
+                    <span v-if="firestoreConnected">Collections and documents</span>
+                    <span v-else>Emulator not running</span>
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-center space-x-3">
+                <!-- Arrow -->
+                <ArrowTopRightOnSquareIcon
+                  v-if="firestoreConnected"
+                  class="w-4 h-4 text-gray-400 dark:text-gray-500"
+                />
+                <ExclamationTriangleIcon
+                  v-else
+                  class="w-4 h-4 text-red-600 dark:text-red-400"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -205,10 +280,11 @@ const route = useRoute()
 const router = useRouter()
 const appStore = useAppStore()
 const projectsStore = useProjectsStore()
-const { 
-  pubsubConnected, 
-  storageConnected, 
-  checkAllConnections 
+const {
+  pubsubConnected,
+  storageConnected,
+  firestoreConnected,
+  checkAllConnections
 } = useServiceConnections()
 
 // UI state
@@ -228,7 +304,7 @@ const checkAllConnectionsWithLoading = async () => {
   }
 }
 
-const navigateToService = (service: 'pubsub' | 'storage') => {
+const navigateToService = (service: 'pubsub' | 'storage' | 'firestore') => {
   // Don't navigate if service is disconnected
   if (service === 'pubsub' && !pubsubConnected.value) {
     appStore.showToast({
@@ -248,12 +324,23 @@ const navigateToService = (service: 'pubsub' | 'storage') => {
     return
   }
 
+  if (service === 'firestore' && !firestoreConnected.value) {
+    appStore.showToast({
+      type: 'error',
+      title: 'Service Unavailable',
+      message: 'Firestore emulator is not running or unreachable'
+    })
+    return
+  }
+
   const projectId = currentProjectId.value
 
   if (service === 'pubsub') {
     router.push(`/projects/${projectId}/pubsub/topics`)
   } else if (service === 'storage') {
     router.push(`/projects/${projectId}/storage/buckets`)
+  } else if (service === 'firestore') {
+    router.push(`/projects/${projectId}/firestore/collections`)
   }
 }
 

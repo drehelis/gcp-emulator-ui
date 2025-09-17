@@ -5,11 +5,13 @@ import { ref } from 'vue'
 export interface ServiceConnectionStatus {
     pubsub: boolean
     storage: boolean
+    firestore: boolean
 }
 
 // Reactive connection status
 const pubsubConnected = ref(false)
 const storageConnected = ref(false)
+const firestoreConnected = ref(false)
 
 /**
  * Composable for managing GCP emulator service connections
@@ -54,17 +56,38 @@ export function useServiceConnections() {
     }
 
     /**
+     * Check Firestore emulator connection
+     */
+    const checkFirestoreConnection = async (): Promise<boolean> => {
+        try {
+            const baseUrl = import.meta.env.VITE_FIRESTORE_BASE_URL || '/_firestore-hc'
+            const response = await fetch(`${baseUrl}/`, {
+                method: 'GET',
+                signal: AbortSignal.timeout(3000)
+            })
+            firestoreConnected.value = response.ok
+            return response.ok
+        } catch (error) {
+            console.warn('Firestore emulator connection check failed:', error)
+            firestoreConnected.value = false
+            return false
+        }
+    }
+
+    /**
      * Check all service connections
      */
     const checkAllConnections = async (): Promise<ServiceConnectionStatus> => {
-        const [pubsub, storage] = await Promise.all([
+        const [pubsub, storage, firestore] = await Promise.all([
             checkPubSubConnection(),
-            checkStorageConnection()
+            checkStorageConnection(),
+            checkFirestoreConnection()
         ])
 
         return {
             pubsub,
-            storage
+            storage,
+            firestore
         }
     }
 
@@ -72,10 +95,12 @@ export function useServiceConnections() {
         // Reactive status
         pubsubConnected,
         storageConnected,
+        firestoreConnected,
 
         // Methods
         checkPubSubConnection,
         checkStorageConnection,
+        checkFirestoreConnection,
         checkAllConnections
     }
 }
