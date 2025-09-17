@@ -177,7 +177,7 @@
           <!-- Map Field Name -->
           <div class="col-span-3">
             <input
-              :value="key"
+              :value="key.startsWith('_temp_') ? '' : key"
               @blur="renameMapField(key, ($event.target as HTMLInputElement).value)"
               @keydown.enter="($event.target as HTMLInputElement).blur()"
               type="text"
@@ -428,16 +428,11 @@ function getValueType(value: any): string {
 
 // Map methods
 function addMapField() {
-  // Generate a unique field name
-  let fieldName = 'field'
-  let counter = 1
-  while (mapData.value.hasOwnProperty(fieldName)) {
-    fieldName = `field${counter}`
-    counter++
-  }
+  // Generate a unique temporary key for internal tracking
+  let tempKey = `_temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
 
   const newMap = { ...mapData.value }
-  newMap[fieldName] = ''
+  newMap[tempKey] = ''
   mapData.value = newMap
 }
 
@@ -469,18 +464,16 @@ function updateMapFieldType(key: string, type: string) {
 function renameMapField(oldKey: string, newKey: string) {
   newKey = newKey.trim()
 
-  // If empty, generate a default name
+  // If empty, just delete the field
   if (!newKey) {
-    let counter = 1
-    newKey = 'field'
-    while (mapData.value.hasOwnProperty(newKey) && newKey !== oldKey) {
-      newKey = `field${counter}`
-      counter++
-    }
+    const newMap = { ...mapData.value }
+    delete newMap[oldKey]
+    mapData.value = newMap
+    return
   }
 
   // Only rename if different and not a duplicate
-  if (oldKey !== newKey && !mapData.value.hasOwnProperty(newKey)) {
+  if ((oldKey !== newKey || oldKey.startsWith('_temp_')) && !mapData.value.hasOwnProperty(newKey)) {
     const newMap = { ...mapData.value }
     newMap[newKey] = newMap[oldKey]
     delete newMap[oldKey]

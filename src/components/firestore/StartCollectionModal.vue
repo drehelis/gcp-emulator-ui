@@ -268,7 +268,10 @@ const buildFirestoreValue = (value: any): any => {
   if (typeof value === 'object') {
     const fields: Record<string, any> = {}
     for (const [key, val] of Object.entries(value)) {
-      fields[key] = buildFirestoreValue(val)
+      // Skip temporary keys (empty field names)
+      if (!key.startsWith('_temp_')) {
+        fields[key] = buildFirestoreValue(val)
+      }
     }
     return { mapValue: { fields } }
   }
