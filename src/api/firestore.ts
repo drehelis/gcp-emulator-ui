@@ -100,6 +100,12 @@ export const firestoreApi = {
     }
   },
 
+  // Update document
+  async updateDocument(documentPath: string, document: any): Promise<FirestoreDocument> {
+    const response = await firestoreClient.patch(`/v1/${documentPath}`, document)
+    return response.data
+  },
+
   // Delete collection (by deleting all documents)
   async deleteCollection(parent: string, collectionId: string): Promise<boolean> {
     try {
@@ -129,8 +135,5 @@ export const firestoreApi = {
   }
 }
 
-function generateDocumentId(): string {
-  return `doc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-}
 
 export default firestoreApi

@@ -209,7 +209,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { TrashIcon } from '@heroicons/vue/24/outline'
 
 interface Props {
@@ -338,8 +338,8 @@ function updateFieldName() {
 }
 
 function addMapField() {
-  const fieldName = prompt('Enter field name:')
-  if (fieldName && fieldName.trim() && !mapValue.value.hasOwnProperty(fieldName.trim())) {
+  const fieldName = 'newField'
+  if (fieldName && fieldName.trim() && !Object.prototype.hasOwnProperty.call(mapValue.value, fieldName.trim())) {
     mapValue.value[fieldName.trim()] = ''
     updateValue()
   }
@@ -354,7 +354,7 @@ function renameMapField({ oldPath, newPath }: { oldPath: string[], newPath: stri
   const oldKey = oldPath[oldPath.length - 1]
   const newKey = newPath[newPath.length - 1]
 
-  if (oldKey !== newKey && !mapValue.value.hasOwnProperty(newKey)) {
+  if (oldKey !== newKey && !Object.prototype.hasOwnProperty.call(mapValue.value, newKey)) {
     mapValue.value[newKey] = mapValue.value[oldKey]
     delete mapValue.value[oldKey]
     updateValue()

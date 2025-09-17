@@ -112,6 +112,24 @@ export const useFirestoreStore = defineStore('firestore', () => {
     }
   }
 
+  // Update document
+  const updateDocument = async (projectId: string, collectionId: string, documentId: string, document: any) => {
+    try {
+      loading.value = true
+      const databasePath = firestoreApi.getDefaultDatabasePath(projectId)
+      const documentPath = `${databasePath}/documents/${collectionId}/${documentId}`
+
+      await firestoreApi.updateDocument(documentPath, document)
+
+      return true
+    } catch (error) {
+      console.error('Failed to update document:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
   // Delete collection
   const deleteCollection = async (projectId: string, collectionId: string) => {
     try {
@@ -152,6 +170,7 @@ export const useFirestoreStore = defineStore('firestore', () => {
     loadCollections,
     createCollection,
     loadDocuments,
+    updateDocument,
     deleteCollection,
     healthCheck
   }
