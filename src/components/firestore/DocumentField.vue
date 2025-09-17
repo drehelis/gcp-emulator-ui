@@ -1,5 +1,7 @@
 <template>
-  <div class="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+  <div 
+    class="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors group relative"
+  >
     <div class="grid grid-cols-12 gap-3 items-start">
       <!-- Field Name -->
       <div class="col-span-4">
@@ -14,10 +16,24 @@
       </div>
 
       <!-- Field Type -->
-      <div class="col-span-2">
+      <div class="col-span-4">
+        <div v-if="!isEditingType" class="flex items-center justify-between">
+          <span class="px-3 py-2 text-sm text-gray-700 dark:text-gray-300 capitalize">
+            {{ localField.type }}
+          </span>
+          <button
+            @click="isEditingType = true"
+            class="ml-2 p-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-all duration-200"
+            title="Edit type"
+          >
+            <PencilIcon class="w-4 h-4" />
+          </button>
+        </div>
         <select
+          v-else
           v-model="localField.type"
           @change="handleTypeChange"
+          @blur="isEditingType = false"
           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
         >
           <option value="string">String</option>
@@ -33,7 +49,7 @@
       </div>
 
       <!-- Field Value -->
-      <div class="col-span-5">
+      <div class="col-span-3">
         <!-- String -->
         <textarea
           v-if="localField.type === 'string'"
@@ -141,10 +157,20 @@
       </div>
 
       <!-- Actions -->
-      <div class="col-span-1 flex justify-end">
+      <div class="col-span-1 flex justify-end items-center gap-1">
+        <!-- Edit button -->
+        <button
+          @click="handleEditField"
+          class="p-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-all duration-200"
+          title="Edit field"
+        >
+          <PencilIcon class="w-4 h-4" />
+        </button>
+        
+        <!-- Delete button -->
         <button
           @click="$emit('delete', field.id)"
-          class="p-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+          class="p-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all duration-200"
           title="Delete field"
         >
           <TrashIcon class="w-4 h-4" />
@@ -175,7 +201,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, watch, computed } from 'vue'
-import { TrashIcon, PlusIcon } from '@heroicons/vue/24/outline'
+import { TrashIcon, PlusIcon, PencilIcon } from '@heroicons/vue/24/outline'
 import NestedFieldRenderer from './NestedFieldRenderer.vue'
 
 interface Field {
@@ -200,6 +226,9 @@ const emit = defineEmits<Emits>()
 // Local reactive copy of the field
 const localField = reactive({ ...props.field })
 const geoPoint = ref({ latitude: 0, longitude: 0 })
+
+// UI state
+const isEditingType = ref(false)
 
 // Computed properties for complex types
 const mapData = computed({
@@ -263,6 +292,12 @@ function updateField() {
     type: localField.type,
     value: localField.value
   })
+}
+
+function handleEditField() {
+  // For now, this just triggers the type editor
+  // Could be expanded to make the entire field editable
+  isEditingType.value = true
 }
 
 function updateGeoPoint() {

@@ -3,8 +3,18 @@
     <div
       v-for="(nestedValue, nestedKey) in value"
       :key="`nested-${path.join('-')}-${nestedKey}`"
-      class="px-4 py-2"
+      class="px-4 py-2 relative"
     >
+      <!-- Delete button - positioned absolutely to align across all levels -->
+      <div class="absolute top-2 flex justify-center" :style="deleteButtonStyle">
+        <button
+          @click="deleteField(nestedKey)"
+          class="p-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+        >
+          <TrashIcon class="w-3 h-3" />
+        </button>
+      </div>
+
       <div class="grid grid-cols-12 gap-3 items-center text-sm">
         <!-- Tree indicator -->
         <div class="col-span-1 flex items-center">
@@ -94,15 +104,7 @@
           </div>
         </div>
 
-        <!-- Delete -->
-        <div class="col-span-1 flex justify-center">
-          <button
-            @click="deleteField(nestedKey)"
-            class="p-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
-          >
-            <TrashIcon class="w-3 h-3" />
-          </button>
-        </div>
+        <!-- Delete column removed - now positioned absolutely -->
       </div>
 
       <!-- Recursive nesting for maps and arrays -->
@@ -127,8 +129,18 @@
     <div
       v-for="(item, index) in value"
       :key="`array-${path.join('-')}-${index}`"
-      class="px-4 py-2"
+      class="px-4 py-2 relative"
     >
+      <!-- Delete button - positioned absolutely to align across all levels -->
+      <div class="absolute top-2 flex justify-center" :style="deleteButtonStyle">
+        <button
+          @click="deleteArrayItem(index)"
+          class="p-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+        >
+          <TrashIcon class="w-3 h-3" />
+        </button>
+      </div>
+
       <div class="grid grid-cols-12 gap-3 items-center text-sm">
         <!-- Tree indicator -->
         <div class="col-span-1 flex items-center">
@@ -206,15 +218,7 @@
           </div>
         </div>
 
-        <!-- Delete -->
-        <div class="col-span-1 flex justify-center">
-          <button
-            @click="deleteArrayItem(index)"
-            class="p-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
-          >
-            <TrashIcon class="w-3 h-3" />
-          </button>
-        </div>
+        <!-- Delete column removed - now positioned absolutely -->
       </div>
 
       <!-- Recursive nesting for array items -->
@@ -284,6 +288,14 @@ const inputClass = computed(() => {
 const selectClass = computed(() => {
   const color = currentColor.value
   return `w-full px-2 py-1 text-xs border border-${color}-200 dark:border-${color}-600 rounded focus:outline-none focus:ring-1 focus:ring-${color}-500 dark:bg-gray-700 dark:text-white bg-white dark:bg-gray-800`
+})
+
+const deleteButtonStyle = computed(() => {
+  const indentCompensation = props.depth * 16 // 16px per level (ml-4 = 1rem = 16px)
+  return {
+    right: '1rem', // right-4 = 1rem
+    transform: `translateX(${indentCompensation}px)`
+  }
 })
 
 function getValueType(value: any): string {
