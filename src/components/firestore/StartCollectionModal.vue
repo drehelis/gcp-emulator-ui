@@ -90,7 +90,40 @@
               Document Fields
             </label>
 
-            <DocumentFieldEditor v-model="fields" :min-fields="1" />
+            <!-- Fields Table -->
+            <div class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
+              <!-- Table Header -->
+              <div class="bg-gray-50 dark:bg-gray-700/50 px-4 py-3 border-b border-gray-200 dark:border-gray-600">
+                <div class="grid grid-cols-12 gap-3 text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wide">
+                  <div class="col-span-4">Field Name</div>
+                  <div class="col-span-2">Type</div>
+                  <div class="col-span-5">Value</div>
+                  <div class="col-span-1"></div>
+                </div>
+              </div>
+
+              <!-- Fields List -->
+              <div class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
+                <DocumentField
+                  v-for="field in fields"
+                  :key="field.id"
+                  :field="field"
+                  @update="updateFieldValue"
+                  @delete="removeField"
+                />
+              </div>
+
+              <!-- Add Field Button -->
+              <div class="bg-gray-50 dark:bg-gray-700/30 px-4 py-3 border-t border-gray-200 dark:border-gray-600">
+                <button
+                  @click="addField"
+                  class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <PlusIcon class="w-4 h-4 mr-2" />
+                  Add Another Field
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -99,12 +132,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
 import {
-  QuestionMarkCircleIcon
+  QuestionMarkCircleIcon,
+  PlusIcon
 } from '@heroicons/vue/24/outline'
-import DocumentFieldEditor from './DocumentFieldEditor.vue'
+import DocumentField from './DocumentField.vue'
 
 interface Field {
   id: string
@@ -169,6 +203,39 @@ const modalActions = computed<ModalAction[]>(() => [
 // Methods
 const generateFieldId = () => {
   return `field_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+}
+
+const addField = () => {
+  fields.value.push({
+    id: generateFieldId(),
+    name: '',
+    type: 'string',
+    value: ''
+  })
+}
+
+const updateFieldValue = (fieldId: string, updates: Partial<Field>) => {
+  const field = fields.value.find(f => f.id === fieldId)
+  if (field) {
+    Object.assign(field, updates)
+  }
+}
+
+const removeField = (fieldId: string) => {
+  const index = fields.value.findIndex(f => f.id === fieldId)
+  if (index > -1) {
+    fields.value.splice(index, 1)
+
+    // Ensure there's always at least one field
+    if (fields.value.length === 0) {
+      fields.value.push({
+        id: generateFieldId(),
+        name: '',
+        type: 'string',
+        value: ''
+      })
+    }
+  }
 }
 
 const buildFirestoreValue = (value: any): any => {

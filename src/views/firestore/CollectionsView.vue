@@ -16,6 +16,7 @@
 
               <div class="min-w-0 flex-1">
                 <div class="flex items-center space-x-2">
+                  <CircleStackIcon class="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                   <h1 class="text-sm sm:text-xl font-bold text-gray-900 dark:text-white truncate">
                     Firestore Database
                   </h1>
@@ -41,32 +42,23 @@
       </div>
     </div>
 
-    <!-- Breadcrumb Navigation -->
-    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-      <div class="px-4 sm:px-6 lg:px-8 py-3">
-        <div class="flex items-center text-xs text-gray-600 dark:text-gray-400 font-mono">
-          <span>/</span>
-          <template v-if="selectedCollection">
-            <ChevronRightIcon class="w-3 h-3 mx-1" />
-            <span class="text-blue-600 dark:text-blue-400">{{ selectedCollection.id }}</span>
-          </template>
-          <template v-if="selectedDocument">
-            <ChevronRightIcon class="w-3 h-3 mx-1" />
-            <span class="text-blue-600 dark:text-blue-400">{{ getDocumentId(selectedDocument.name) }}</span>
-          </template>
-        </div>
-      </div>
-    </div>
-
     <!-- Three Panel Layout -->
     <div class="flex h-screen-header">
       <!-- Left Panel - Collections List -->
       <div class="flex-1 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
         <div class="p-4">
-          <!-- Database Name -->
+          <!-- Breadcrumb Path -->
           <div class="mb-3">
             <div class="flex items-center text-xs text-gray-600 dark:text-gray-400 font-mono">
-              <span>(default)</span>
+              <span>/(default)</span>
+              <template v-if="selectedCollection">
+                <ChevronRightIcon class="w-3 h-3 mx-1" />
+                <span class="text-blue-600 dark:text-blue-400">{{ selectedCollection.id }}</span>
+              </template>
+              <template v-if="selectedDocument">
+                <ChevronRightIcon class="w-3 h-3 mx-1" />
+                <span class="text-blue-600 dark:text-blue-400">{{ getDocumentId(selectedDocument.name) }}</span>
+              </template>
             </div>
             <div class="border-b border-gray-200 dark:border-gray-600 mt-3"></div>
           </div>
@@ -74,7 +66,7 @@
           <div class="mb-4">
             <button
               @click="showCreateCollectionModal = true"
-              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200"
+              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors duration-200"
             >
               <PlusIcon class="w-3 h-3 mr-1" />
               Start collection
@@ -159,7 +151,7 @@
             <button
               v-if="selectedCollection"
               @click="showAddDocumentModal = true"
-              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200"
+              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors duration-200"
             >
               <PlusIcon class="w-3 h-3 mr-1" />
               Add document
@@ -231,7 +223,7 @@
           <div v-if="selectedCollection" class="mb-4">
             <button
               @click="showCreateCollectionModal = true"
-              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200"
+              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors duration-200"
             >
               <PlusIcon class="w-3 h-3 mr-1" />
               Start collection
@@ -242,7 +234,7 @@
             <div class="border-b border-gray-200 dark:border-gray-600 mb-3"></div>
             <button
               @click="showAddFieldModal = true"
-              class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-400 rounded-md hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200"
+              class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors duration-200"
             >
               <PlusIcon class="w-3 h-3 mr-1" />
               Add field
@@ -250,42 +242,14 @@
           </div>
 
           <!-- Document Fields -->
-          <div v-if="selectedDocument" class="space-y-1">
+          <div v-if="selectedDocument" class="space-y-2">
             <div
               v-for="(value, fieldName) in selectedDocument.fields"
               :key="fieldName"
-              class="group flex items-center justify-between text-sm hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 px-2 py-1 rounded-md"
+              class="flex items-center text-sm"
             >
-              <div class="flex items-center">
-                <span class="text-blue-600 dark:text-blue-400 font-mono mr-1">{{ fieldName }}:</span>
-                <span class="text-gray-900 dark:text-white font-mono">"{{ formatFieldValue(value) }}"</span>
-              </div>
-              
-              <!-- Hover Actions -->
-              <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <!-- Type indicator -->
-                <span class="text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded capitalize">
-                  {{ getFieldType(value) }}
-                </span>
-                
-                <!-- Edit button -->
-                <button
-                  @click="handleEditField(fieldName, value)"
-                  class="p-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
-                  title="Edit field"
-                >
-                  <PencilIcon class="w-4 h-4" />
-                </button>
-                
-                <!-- Delete button -->
-                <button
-                  @click="handleDeleteField(fieldName)"
-                  class="p-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                  title="Delete field"
-                >
-                  <TrashIcon class="w-4 h-4" />
-                </button>
-              </div>
+              <span class="text-blue-600 dark:text-blue-400 font-mono mr-1">{{ fieldName }}:</span>
+              <span class="text-gray-900 dark:text-white font-mono">"{{ formatFieldValue(value) }}"</span>
             </div>
           </div>
 
@@ -335,12 +299,6 @@
       @confirm="confirmDeleteCollection"
       @cancel="cancelDeleteCollection"
     />
-
-    <!-- Add Field Modal -->
-    <AddFieldModal
-      v-model="showAddFieldModal"
-      @add-field="handleAddField"
-    />
   </div>
 </template>
 
@@ -354,15 +312,12 @@ import {
   CircleStackIcon,
   DocumentIcon,
   EllipsisVerticalIcon,
-  PencilIcon,
-  PlusIcon,
-  TrashIcon
+  PlusIcon
 } from '@heroicons/vue/24/outline'
 
 import { useFirestoreStore } from '@/stores/firestore'
 import type { FirestoreDocument, FirestoreCollectionWithMetadata } from '@/types'
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
-import AddFieldModal from '@/components/modals/AddFieldModal.vue'
 
 const route = useRoute()
 const firestoreStore = useFirestoreStore()
@@ -447,34 +402,6 @@ const handleCollectionCreated = async (collectionId: string) => {
   }
 }
 
-const handleAddField = async (field: any) => {
-  if (!selectedDocument.value) return
-
-  try {
-    // Store the current document name for re-selection
-    const currentDocumentName = selectedDocument.value.name
-
-    // Add the field to the document
-    await firestoreStore.addFieldToDocument(
-      currentProjectId.value,
-      selectedCollection.value.id,
-      selectedDocument.value.name,
-      field
-    )
-
-    // Wait for reactivity to update the documents list
-    await nextTick()
-
-    // Find and select the updated document from the refreshed list
-    const updatedDocument = documents.value.find(doc => doc.name === currentDocumentName)
-    if (updatedDocument) {
-      selectedDocument.value = updatedDocument
-    }
-  } catch (error) {
-    console.error('Failed to add field:', error)
-  }
-}
-
 const handleDeleteCollection = () => {
   showCollectionMenu.value = false
   if (selectedCollection.value) {
@@ -538,60 +465,6 @@ const formatFieldValue = (value: any): string => {
   if (value.bytesValue !== undefined) return value.bytesValue
   if (value.nullValue !== undefined) return 'null'
   return JSON.stringify(value, null, 2)
-}
-
-const getFieldType = (value: any): string => {
-  if (value.stringValue !== undefined) return 'string'
-  if (value.integerValue !== undefined) return 'number'
-  if (value.booleanValue !== undefined) return 'boolean'
-  if (value.timestampValue !== undefined) return 'timestamp'
-  if (value.arrayValue !== undefined) return 'array'
-  if (value.mapValue !== undefined) return 'map'
-  if (value.referenceValue !== undefined) return 'reference'
-  if (value.geoPointValue !== undefined) return 'geopoint'
-  if (value.bytesValue !== undefined) return 'bytes'
-  if (value.nullValue !== undefined) return 'null'
-  return 'unknown'
-}
-
-const handleEditField = (fieldName: string, fieldValue: any) => {
-  // This will be used to open an edit modal or inline editing
-  console.log('Edit field:', fieldName, fieldValue)
-  // For now, we can add this functionality later
-}
-
-const handleDeleteField = async (fieldName: string) => {
-  if (!selectedDocument.value || !selectedCollection.value) return
-  
-  // Store the current document name for re-selection
-  const currentDocumentName = selectedDocument.value.name
-  
-  // Get the current document data
-  const currentData = { ...selectedDocument.value.fields }
-  
-  // Remove the field
-  delete currentData[fieldName]
-  
-  // Update the document
-  try {
-    await firestoreStore.updateDocument(
-      route.params.projectId as string,
-      selectedCollection.value.name,
-      getDocumentId(selectedDocument.value.name),
-      currentData
-    )
-    
-    // Wait for reactivity to update the documents list
-    await nextTick()
-    
-    // Find and select the updated document from the refreshed list
-    const updatedDocument = documents.value.find(doc => doc.name === currentDocumentName)
-    if (updatedDocument) {
-      selectedDocument.value = updatedDocument
-    }
-  } catch (error) {
-    console.error('Error deleting field:', error)
-  }
 }
 
 // Lifecycle

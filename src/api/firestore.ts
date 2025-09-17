@@ -122,18 +122,6 @@ export const firestoreApi = {
     }
   },
 
-  // Get a specific document
-  async getDocument(documentName: string): Promise<FirestoreDocument> {
-    const response = await firestoreClient.get(`/v1/${documentName}`)
-    return response.data
-  },
-
-  // Update a document
-  async updateDocument(documentName: string, document: any): Promise<FirestoreDocument> {
-    const response = await firestoreClient.patch(`/v1/${documentName}`, document)
-    return response.data
-  },
-
   // Helper to get database path
   getDefaultDatabasePath(projectId?: string): string {
     const project = projectId || import.meta.env.VITE_GOOGLE_CLOUD_PROJECT_ID || 'test-project'

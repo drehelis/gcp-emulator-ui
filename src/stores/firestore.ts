@@ -133,73 +133,12 @@ export const useFirestoreStore = defineStore('firestore', () => {
     }
   }
 
-  // Add field to document
-  const addFieldToDocument = async (projectId: string, collectionId: string, documentName: string, field: any) => {
-    try {
-      loading.value = true
-
-      // Get the current document
-      const currentDoc = await firestoreApi.getDocument(documentName)
-
-      // Add the new field to the document
-      const updatedFields = { ...currentDoc.fields }
-
-      // Convert field value to Firestore format
-      const firestoreValue = convertToFirestoreValue(field.value, field.type)
-      updatedFields[field.name] = firestoreValue
-
-      // Update the document
-      await firestoreApi.updateDocument(documentName, { fields: updatedFields })
-
-      // Refresh documents for this collection
-      await loadDocuments(projectId, collectionId)
-
-      return true
-    } catch (error) {
-      console.error('Failed to add field to document:', error)
-      throw error
-    } finally {
-      loading.value = false
-    }
-  }
-
-  // Helper function to convert values to Firestore format
-  const convertToFirestoreValue = (value: any, type: string) => {
-    switch (type) {
-      case 'string':
-        return { stringValue: value }
-      case 'number':
-        return { integerValue: value.toString() } // Firestore uses string for numbers
-      case 'boolean':
-        return { booleanValue: value }
-      case 'null':
-        return { nullValue: null }
-      case 'timestamp':
-        return { timestampValue: value }
-      case 'map':
-        return { mapValue: { fields: value } }
-      case 'array':
-        return { arrayValue: { values: value } }
-      case 'geopoint':
-        return {
-          geoPointValue: {
-            latitude: value.latitude,
-            longitude: value.longitude
-          }
-        }
-      case 'reference':
-        return { referenceValue: value }
-      default:
-        return { stringValue: value.toString() }
-    }
-  }
-
   // Health check
   const healthCheck = async () => {
     try {
       const projectsStore = useProjectsStore()
       const projectId = projectsStore.selectedProjectId
-      return await firestoreApi.healthCheck(projectId || undefined)
+      return await firestoreApi.healthCheck(projectId)
     } catch {
       return false
     }
@@ -214,7 +153,6 @@ export const useFirestoreStore = defineStore('firestore', () => {
     createCollection,
     loadDocuments,
     deleteCollection,
-    addFieldToDocument,
     healthCheck
   }
 })
