@@ -130,15 +130,6 @@
           <span class="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded">
             {{ arrayData.length }} item(s)
           </span>
-          <select
-            v-model="newArrayItemType"
-            class="text-xs px-2 py-1 border border-green-300 dark:border-green-600 rounded bg-white dark:bg-gray-700"
-          >
-            <option value="string">String</option>
-            <option value="number">Number</option>
-            <option value="boolean">Boolean</option>
-            <option value="null">Null</option>
-          </select>
           <button
             @click="addArrayItem"
             class="text-xs px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700 flex items-center gap-1"
@@ -162,168 +153,30 @@
     </div>
 
     <!-- Nested Map Fields -->
-    <div v-if="localField.type === 'map' && Object.keys(mapData).length > 0" class="bg-blue-50/30 dark:bg-blue-900/10">
-      <div
-        v-for="(value, key) in mapData"
-        :key="key"
-        class="px-4 py-2 border-l-2 border-blue-300 dark:border-blue-600 ml-8"
-      >
-        <div class="grid grid-cols-12 gap-3 items-center text-sm">
-          <!-- Nested indicator -->
-          <div class="col-span-1 flex items-center">
-            <span class="text-xs text-blue-600 dark:text-blue-400 font-mono">└─</span>
-          </div>
-
-          <!-- Map Field Name -->
-          <div class="col-span-3">
-            <input
-              :value="key.startsWith('_temp_') ? '' : key"
-              @blur="renameMapField(key, ($event.target as HTMLInputElement).value)"
-              @keydown.enter="($event.target as HTMLInputElement).blur()"
-              type="text"
-              placeholder="field name"
-              class="w-full px-2 py-1 text-xs border border-blue-200 dark:border-blue-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white bg-white dark:bg-gray-800 font-medium"
-            />
-          </div>
-
-          <!-- Map Field Type -->
-          <div class="col-span-2">
-            <select
-              :value="getValueType(value)"
-              @change="updateMapFieldType(key, ($event.target as HTMLSelectElement).value)"
-              class="w-full px-2 py-1 text-xs border border-blue-200 dark:border-blue-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white bg-white dark:bg-gray-800"
-            >
-              <option value="string">String</option>
-              <option value="number">Number</option>
-              <option value="boolean">Boolean</option>
-              <option value="null">Null</option>
-            </select>
-          </div>
-
-          <!-- Map Field Value -->
-          <div class="col-span-5">
-            <input
-              v-if="getValueType(value) === 'string'"
-              :value="value"
-              @input="updateMapFieldValue(key, ($event.target as HTMLInputElement).value)"
-              type="text"
-              placeholder="Value"
-              class="w-full px-2 py-1 text-xs border border-blue-200 dark:border-blue-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white bg-white dark:bg-gray-800"
-            />
-            <input
-              v-else-if="getValueType(value) === 'number'"
-              :value="value"
-              @input="updateMapFieldValue(key, Number(($event.target as HTMLInputElement).value))"
-              type="number"
-              step="any"
-              placeholder="0"
-              class="w-full px-2 py-1 text-xs border border-blue-200 dark:border-blue-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white bg-white dark:bg-gray-800"
-            />
-            <select
-              v-else-if="getValueType(value) === 'boolean'"
-              :value="value"
-              @change="updateMapFieldValue(key, ($event.target as HTMLSelectElement).value === 'true')"
-              class="w-full px-2 py-1 text-xs border border-blue-200 dark:border-blue-600 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 dark:bg-gray-700 dark:text-white bg-white dark:bg-gray-800"
-            >
-              <option :value="true">true</option>
-              <option :value="false">false</option>
-            </select>
-            <div v-else-if="getValueType(value) === 'null'" class="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 italic">
-              null
-            </div>
-          </div>
-
-          <!-- Delete -->
-          <div class="col-span-1 flex justify-center">
-            <button
-              @click="deleteMapField(key)"
-              class="p-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
-            >
-              <TrashIcon class="w-3 h-3" />
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <NestedFieldRenderer
+      v-if="localField.type === 'map'"
+      :value="mapData"
+      :path="[]"
+      :depth="0"
+      @update="handleNestedMapUpdate"
+    />
 
     <!-- Nested Array Items -->
-    <div v-if="localField.type === 'array' && arrayData.length > 0" class="bg-green-50/30 dark:bg-green-900/10">
-      <div
-        v-for="(item, index) in arrayData"
-        :key="index"
-        class="px-4 py-2 border-l-2 border-green-300 dark:border-green-600 ml-8"
-      >
-        <div class="grid grid-cols-12 gap-3 items-center text-sm">
-          <!-- Nested indicator + Index -->
-          <div class="col-span-1 flex items-center">
-            <span class="text-xs text-green-600 dark:text-green-400 font-mono">└─[{{ index }}]</span>
-          </div>
+    <NestedFieldRenderer
+      v-if="localField.type === 'array'"
+      :value="arrayData"
+      :path="[]"
+      :depth="0"
+      @update="handleNestedArrayUpdate"
+    />
 
-          <!-- Array Item Type -->
-          <div class="col-span-2">
-            <select
-              :value="getValueType(item)"
-              @change="updateArrayItemType(index, ($event.target as HTMLSelectElement).value)"
-              class="w-full px-2 py-1 text-xs border border-green-200 dark:border-green-600 rounded focus:outline-none focus:ring-1 focus:ring-green-500 dark:bg-gray-700 dark:text-white bg-white dark:bg-gray-800"
-            >
-              <option value="string">String</option>
-              <option value="number">Number</option>
-              <option value="boolean">Boolean</option>
-              <option value="null">Null</option>
-            </select>
-          </div>
-
-          <!-- Array Item Value -->
-          <div class="col-span-8">
-            <input
-              v-if="getValueType(item) === 'string'"
-              :value="item"
-              @input="updateArrayItem(index, ($event.target as HTMLInputElement).value)"
-              type="text"
-              placeholder="Value"
-              class="w-full px-2 py-1 text-xs border border-green-200 dark:border-green-600 rounded focus:outline-none focus:ring-1 focus:ring-green-500 dark:bg-gray-700 dark:text-white bg-white dark:bg-gray-800"
-            />
-            <input
-              v-else-if="getValueType(item) === 'number'"
-              :value="item"
-              @input="updateArrayItem(index, Number(($event.target as HTMLInputElement).value))"
-              type="number"
-              step="any"
-              placeholder="0"
-              class="w-full px-2 py-1 text-xs border border-green-200 dark:border-green-600 rounded focus:outline-none focus:ring-1 focus:ring-green-500 dark:bg-gray-700 dark:text-white bg-white dark:bg-gray-800"
-            />
-            <select
-              v-else-if="getValueType(item) === 'boolean'"
-              :value="item"
-              @change="updateArrayItem(index, ($event.target as HTMLSelectElement).value === 'true')"
-              class="w-full px-2 py-1 text-xs border border-green-200 dark:border-green-600 rounded focus:outline-none focus:ring-1 focus:ring-green-500 dark:bg-gray-700 dark:text-white bg-white dark:bg-gray-800"
-            >
-              <option :value="true">true</option>
-              <option :value="false">false</option>
-            </select>
-            <div v-else-if="getValueType(item) === 'null'" class="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 italic">
-              null
-            </div>
-          </div>
-
-          <!-- Delete -->
-          <div class="col-span-1 flex justify-center">
-            <button
-              @click="deleteArrayItem(index)"
-              class="p-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
-            >
-              <TrashIcon class="w-3 h-3" />
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, watch, computed } from 'vue'
 import { TrashIcon, PlusIcon } from '@heroicons/vue/24/outline'
+import NestedFieldRenderer from './NestedFieldRenderer.vue'
 
 interface Field {
   id: string
@@ -347,7 +200,6 @@ const emit = defineEmits<Emits>()
 // Local reactive copy of the field
 const localField = reactive({ ...props.field })
 const geoPoint = ref({ latitude: 0, longitude: 0 })
-const newArrayItemType = ref('string')
 
 // Computed properties for complex types
 const mapData = computed({
@@ -423,6 +275,8 @@ function getValueType(value: any): string {
   if (typeof value === 'string') return 'string'
   if (typeof value === 'number') return 'number'
   if (typeof value === 'boolean') return 'boolean'
+  if (Array.isArray(value)) return 'array'
+  if (typeof value === 'object') return 'map'
   return 'string'
 }
 
@@ -457,6 +311,12 @@ function updateMapFieldType(key: string, type: string) {
     case 'null':
       newMap[key] = null
       break
+    case 'map':
+      newMap[key] = {}
+      break
+    case 'array':
+      newMap[key] = []
+      break
   }
   mapData.value = newMap
 }
@@ -466,49 +326,45 @@ function renameMapField(oldKey: string, newKey: string) {
 
   // If empty, just delete the field
   if (!newKey) {
-    const newMap = { ...mapData.value }
-    delete newMap[oldKey]
+    const newMap: Record<string, any> = {}
+    Object.keys(mapData.value).forEach(key => {
+      if (key !== oldKey) {
+        newMap[key] = mapData.value[key]
+      }
+    })
     mapData.value = newMap
     return
   }
 
   // Only rename if different and not a duplicate
-  if ((oldKey !== newKey || oldKey.startsWith('_temp_')) && !mapData.value.hasOwnProperty(newKey)) {
-    const newMap = { ...mapData.value }
-    newMap[newKey] = newMap[oldKey]
-    delete newMap[oldKey]
+  if ((oldKey !== newKey || oldKey.startsWith('_temp_')) && !Object.prototype.hasOwnProperty.call(mapData.value, newKey)) {
+    const newMap: Record<string, any> = {}
+    Object.keys(mapData.value).forEach(key => {
+      if (key === oldKey) {
+        newMap[newKey] = mapData.value[oldKey]
+      } else {
+        newMap[key] = mapData.value[key]
+      }
+    })
     mapData.value = newMap
   }
 }
 
 function deleteMapField(key: string) {
-  const newMap = { ...mapData.value }
-  delete newMap[key]
+  const newMap: Record<string, any> = {}
+  Object.keys(mapData.value).forEach(k => {
+    if (k !== key) {
+      newMap[k] = mapData.value[k]
+    }
+  })
   mapData.value = newMap
 }
 
 // Array methods
 function addArrayItem() {
-  let defaultValue: any
-  switch (newArrayItemType.value) {
-    case 'string':
-      defaultValue = ''
-      break
-    case 'number':
-      defaultValue = 0
-      break
-    case 'boolean':
-      defaultValue = false
-      break
-    case 'null':
-      defaultValue = null
-      break
-    default:
-      defaultValue = ''
-  }
-
+  // Default to string type - users can change it after adding
   const newArray = [...arrayData.value]
-  newArray.push(defaultValue)
+  newArray.push('')
   arrayData.value = newArray
 }
 
@@ -533,6 +389,12 @@ function updateArrayItemType(index: number, type: string) {
     case 'null':
       newArray[index] = null
       break
+    case 'map':
+      newArray[index] = {}
+      break
+    case 'array':
+      newArray[index] = []
+      break
   }
   arrayData.value = newArray
 }
@@ -541,5 +403,289 @@ function deleteArrayItem(index: number) {
   const newArray = [...arrayData.value]
   newArray.splice(index, 1)
   arrayData.value = newArray
+}
+
+// Nested map methods
+function addNestedMapField(parentKey: string) {
+  const tempKey = `_temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  const newMap = { ...mapData.value }
+  if (!newMap[parentKey]) newMap[parentKey] = {}
+  newMap[parentKey][tempKey] = ''
+  mapData.value = newMap
+}
+
+function addNestedArrayItem(parentKey: string) {
+  const newMap = { ...mapData.value }
+  if (!Array.isArray(newMap[parentKey])) newMap[parentKey] = []
+
+  // Default to string type - users can change it after adding
+  newMap[parentKey].push('')
+  mapData.value = newMap
+}
+
+function updateNestedMapFieldValue(parentKey: string, childKey: string, value: any) {
+  const newMap = { ...mapData.value }
+  newMap[parentKey][childKey] = value
+  mapData.value = newMap
+}
+
+function updateNestedMapFieldType(parentKey: string, childKey: string, type: string) {
+  const newMap = { ...mapData.value }
+  switch (type) {
+    case 'string':
+      newMap[parentKey][childKey] = ''
+      break
+    case 'number':
+      newMap[parentKey][childKey] = 0
+      break
+    case 'boolean':
+      newMap[parentKey][childKey] = false
+      break
+    case 'null':
+      newMap[parentKey][childKey] = null
+      break
+    case 'map':
+      newMap[parentKey][childKey] = {}
+      break
+    case 'array':
+      newMap[parentKey][childKey] = []
+      break
+  }
+  mapData.value = newMap
+}
+
+function renameNestedMapField(parentKey: string, oldKey: string, newKey: string) {
+  newKey = newKey.trim()
+
+  if (!newKey) {
+    const newMap = { ...mapData.value }
+    const nestedObj: Record<string, any> = {}
+    Object.keys(newMap[parentKey]).forEach(key => {
+      if (key !== oldKey) {
+        nestedObj[key] = newMap[parentKey][key]
+      }
+    })
+    newMap[parentKey] = nestedObj
+    mapData.value = newMap
+    return
+  }
+
+  if ((oldKey !== newKey || oldKey.startsWith('_temp_')) && !Object.prototype.hasOwnProperty.call(mapData.value[parentKey], newKey)) {
+    const newMap = { ...mapData.value }
+    const nestedObj: Record<string, any> = {}
+    Object.keys(newMap[parentKey]).forEach(key => {
+      if (key === oldKey) {
+        nestedObj[newKey] = newMap[parentKey][oldKey]
+      } else {
+        nestedObj[key] = newMap[parentKey][key]
+      }
+    })
+    newMap[parentKey] = nestedObj
+    mapData.value = newMap
+  }
+}
+
+function deleteNestedMapField(parentKey: string, childKey: string) {
+  const newMap = { ...mapData.value }
+  delete newMap[parentKey][childKey]
+  mapData.value = newMap
+}
+
+function updateNestedArrayItem(parentKey: string, index: number, value: any) {
+  const newMap = { ...mapData.value }
+  newMap[parentKey][index] = value
+  mapData.value = newMap
+}
+
+function updateNestedArrayItemType(parentKey: string, index: number, type: string) {
+  const newMap = { ...mapData.value }
+  switch (type) {
+    case 'string':
+      newMap[parentKey][index] = ''
+      break
+    case 'number':
+      newMap[parentKey][index] = 0
+      break
+    case 'boolean':
+      newMap[parentKey][index] = false
+      break
+    case 'null':
+      newMap[parentKey][index] = null
+      break
+    case 'map':
+      newMap[parentKey][index] = {}
+      break
+    case 'array':
+      newMap[parentKey][index] = []
+      break
+  }
+  mapData.value = newMap
+}
+
+function deleteNestedArrayItem(parentKey: string, index: number) {
+  const newMap = { ...mapData.value }
+  newMap[parentKey].splice(index, 1)
+  mapData.value = newMap
+}
+
+// Method for deeply nested map operations
+function addDeeplyNestedMapField(parentKey: string, childKey: string) {
+  const tempKey = `_temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  const newMap = { ...mapData.value }
+  if (!newMap[parentKey][childKey]) newMap[parentKey][childKey] = {}
+  newMap[parentKey][childKey][tempKey] = ''
+  mapData.value = newMap
+}
+
+function addDeeplyNestedArrayItem(parentKey: string, childKey: string) {
+  // For now, just add to the nested array - can be expanded for deeper nesting
+  addNestedArrayItem(parentKey)
+}
+
+function addDeeplyNestedMapFieldToArray(parentKey: string, index: number) {
+  const tempKey = `_temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  const newMap = { ...mapData.value }
+  if (!newMap[parentKey][index]) newMap[parentKey][index] = {}
+  newMap[parentKey][index][tempKey] = ''
+  mapData.value = newMap
+}
+
+function addDeeplyNestedArrayItemToArray(parentKey: string, index: number) {
+  const newMap = { ...mapData.value }
+  if (!Array.isArray(newMap[parentKey][index])) newMap[parentKey][index] = []
+  newMap[parentKey][index].push('')
+  mapData.value = newMap
+}
+
+// Array within array methods
+function addArrayMapField(arrayIndex: number) {
+  const tempKey = `_temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  const newArray = [...arrayData.value]
+  if (!newArray[arrayIndex]) newArray[arrayIndex] = {}
+  newArray[arrayIndex][tempKey] = ''
+  arrayData.value = newArray
+}
+
+function addArrayArrayItem(arrayIndex: number) {
+  const newArray = [...arrayData.value]
+  if (!Array.isArray(newArray[arrayIndex])) newArray[arrayIndex] = []
+  newArray[arrayIndex].push('')
+  arrayData.value = newArray
+}
+
+// Methods for array map field operations
+function renameArrayMapField(arrayIndex: number, oldKey: string, newKey: string) {
+  newKey = newKey.trim()
+
+  if (!newKey) {
+    const newArray = [...arrayData.value]
+    const nestedObj: Record<string, any> = {}
+    Object.keys(newArray[arrayIndex]).forEach(key => {
+      if (key !== oldKey) {
+        nestedObj[key] = newArray[arrayIndex][key]
+      }
+    })
+    newArray[arrayIndex] = nestedObj
+    arrayData.value = newArray
+    return
+  }
+
+  if ((oldKey !== newKey || oldKey.startsWith('_temp_')) && !Object.prototype.hasOwnProperty.call(arrayData.value[arrayIndex], newKey)) {
+    const newArray = [...arrayData.value]
+    const nestedObj: Record<string, any> = {}
+    Object.keys(newArray[arrayIndex]).forEach(key => {
+      if (key === oldKey) {
+        nestedObj[newKey] = newArray[arrayIndex][oldKey]
+      } else {
+        nestedObj[key] = newArray[arrayIndex][key]
+      }
+    })
+    newArray[arrayIndex] = nestedObj
+    arrayData.value = newArray
+  }
+}
+
+function updateArrayMapFieldType(arrayIndex: number, key: string, type: string) {
+  const newArray = [...arrayData.value]
+  switch (type) {
+    case 'string':
+      newArray[arrayIndex][key] = ''
+      break
+    case 'number':
+      newArray[arrayIndex][key] = 0
+      break
+    case 'boolean':
+      newArray[arrayIndex][key] = false
+      break
+    case 'null':
+      newArray[arrayIndex][key] = null
+      break
+    case 'map':
+      newArray[arrayIndex][key] = {}
+      break
+    case 'array':
+      newArray[arrayIndex][key] = []
+      break
+  }
+  arrayData.value = newArray
+}
+
+function updateArrayMapFieldValue(arrayIndex: number, key: string, value: any) {
+  const newArray = [...arrayData.value]
+  newArray[arrayIndex][key] = value
+  arrayData.value = newArray
+}
+
+function deleteArrayMapField(arrayIndex: number, key: string) {
+  const newArray = [...arrayData.value]
+  delete newArray[arrayIndex][key]
+  arrayData.value = newArray
+}
+
+// Methods for array array item operations
+function updateArrayArrayItemType(arrayIndex: number, itemIndex: number, type: string) {
+  const newArray = [...arrayData.value]
+  switch (type) {
+    case 'string':
+      newArray[arrayIndex][itemIndex] = ''
+      break
+    case 'number':
+      newArray[arrayIndex][itemIndex] = 0
+      break
+    case 'boolean':
+      newArray[arrayIndex][itemIndex] = false
+      break
+    case 'null':
+      newArray[arrayIndex][itemIndex] = null
+      break
+    case 'map':
+      newArray[arrayIndex][itemIndex] = {}
+      break
+    case 'array':
+      newArray[arrayIndex][itemIndex] = []
+      break
+  }
+  arrayData.value = newArray
+}
+
+function updateArrayArrayItem(arrayIndex: number, itemIndex: number, value: any) {
+  const newArray = [...arrayData.value]
+  newArray[arrayIndex][itemIndex] = value
+  arrayData.value = newArray
+}
+
+function deleteArrayArrayItem(arrayIndex: number, itemIndex: number) {
+  const newArray = [...arrayData.value]
+  newArray[arrayIndex].splice(itemIndex, 1)
+  arrayData.value = newArray
+}
+
+// Handlers for recursive nested field updates
+function handleNestedMapUpdate(event: { path: (string | number)[], value: any }) {
+  mapData.value = event.value
+}
+
+function handleNestedArrayUpdate(event: { path: (string | number)[], value: any }) {
+  arrayData.value = event.value
 }
 </script>
