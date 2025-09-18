@@ -3,7 +3,7 @@
     <div class="flex items-start gap-3">
       <!-- Field Name -->
       <div class="flex-1 min-w-0">
-        <div class="flex items-center gap-2 mb-2">
+        <div v-if="!hideFieldName" class="flex items-center gap-2 mb-2">
           <span v-if="level > 0" class="text-xs text-gray-400 font-mono">{{ path.join('.') }}</span>
           <input
             v-if="canEditName"
@@ -19,7 +19,7 @@
         <!-- Field Value Editor -->
         <div class="space-y-3">
           <!-- Type Selector -->
-          <div class="flex items-center gap-2">
+          <div v-if="!hideTypeSelector" class="flex items-center gap-2">
             <label class="text-xs text-gray-500 dark:text-gray-400">Type:</label>
             <select
               v-model="fieldType"
@@ -117,10 +117,9 @@
             />
 
             <!-- Map (Object) -->
-            <div v-else-if="fieldType === 'map'" class="border border-gray-200 dark:border-gray-600 rounded-md">
+            <div v-else-if="fieldType === 'map'" :class="hideBorder ? '' : 'border border-gray-200 dark:border-gray-600 rounded-md'">
               <div class="p-3 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50">
-                <div class="flex items-center justify-between">
-                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Map Fields</span>
+                <div class="flex items-center justify-end">
                   <button
                     @click="addMapField"
                     class="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -132,24 +131,18 @@
               <div v-if="Object.keys(mapValue).length === 0" class="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
                 No fields in map
               </div>
-              <div v-else class="divide-y divide-gray-200 dark:divide-gray-600">
-                <FieldEditor
-                  v-for="(value, key) in mapValue"
-                  :key="key"
-                  :field-name="key"
-                  :field-value="value"
-                  :path="[...path, key]"
-                  :level="level + 1"
-                  :can-edit-name="true"
-                  @update="$emit('update', $event.path, $event.value)"
-                  @delete="deleteMapField(key)"
-                  @rename="renameMapField"
+              <div v-else>
+                <NestedFieldRenderer
+                  :value="mapValue"
+                  :path="path"
+                  :depth="level"
+                  @update="handleNestedUpdate"
                 />
               </div>
             </div>
 
             <!-- Array -->
-            <div v-else-if="fieldType === 'array'" class="border border-gray-200 dark:border-gray-600 rounded-md">
+            <div v-else-if="fieldType === 'array'" :class="hideBorder ? '' : 'border border-gray-200 dark:border-gray-600 rounded-md'">
               <div class="p-3 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50">
                 <div class="flex items-center justify-between">
                   <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Array Items</span>
@@ -176,17 +169,12 @@
               <div v-if="arrayValue.length === 0" class="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
                 No items in array
               </div>
-              <div v-else class="divide-y divide-gray-200 dark:divide-gray-600">
-                <FieldEditor
-                  v-for="(item, index) in arrayValue"
-                  :key="index"
-                  :field-name="index.toString()"
-                  :field-value="item"
-                  :path="[...path, index.toString()]"
-                  :level="level + 1"
-                  :can-edit-name="false"
-                  @update="$emit('update', $event.path, $event.value)"
-                  @delete="deleteArrayItem(index)"
+              <div v-else>
+                <NestedFieldRenderer
+                  :value="arrayValue"
+                  :path="path"
+                  :depth="level"
+                  @update="handleNestedUpdate"
                 />
               </div>
             </div>
@@ -195,7 +183,7 @@
       </div>
 
       <!-- Actions -->
-      <div class="flex items-center gap-1 pt-6">
+      <div v-if="!hideDeleteButton" class="flex items-center gap-1 pt-6">
         <button
           @click="$emit('delete', path)"
           class="p-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
@@ -211,6 +199,7 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { TrashIcon } from '@heroicons/vue/24/outline'
+import NestedFieldRenderer from './NestedFieldRenderer.vue'
 
 interface Props {
   fieldName: string
@@ -218,6 +207,11 @@ interface Props {
   path: string[]
   level: number
   canEditName?: boolean
+  hideTypeSelector?: boolean
+  forcedType?: string
+  hideDeleteButton?: boolean
+  hideBorder?: boolean
+  hideFieldName?: boolean
 }
 
 interface Emits {
@@ -227,14 +221,19 @@ interface Emits {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  canEditName: false
+  canEditName: false,
+  hideTypeSelector: false,
+  forcedType: undefined,
+  hideDeleteButton: false,
+  hideBorder: false,
+  hideFieldName: false
 })
 
 const emit = defineEmits<Emits>()
 
 // Local state
 const localFieldName = ref(props.fieldName)
-const fieldType = ref(getInitialType(props.fieldValue))
+const fieldType = ref(props.forcedType || getInitialType(props.fieldValue))
 const stringValue = ref('')
 const numberValue = ref(0)
 const booleanValue = ref(false)
@@ -294,6 +293,12 @@ function initializeValues() {
 // Initialize on mount and when props change
 initializeValues()
 watch(() => props.fieldValue, initializeValues, { deep: true })
+watch(() => props.forcedType, (newType) => {
+  if (newType) {
+    fieldType.value = newType
+    initializeValues()
+  }
+})
 
 function getCurrentValue() {
   switch (fieldType.value) {
@@ -338,26 +343,24 @@ function updateFieldName() {
 }
 
 function addMapField() {
-  const fieldName = 'newField'
-  if (fieldName && fieldName.trim() && !Object.prototype.hasOwnProperty.call(mapValue.value, fieldName.trim())) {
-    mapValue.value[fieldName.trim()] = ''
-    updateValue()
-  }
-}
-
-function deleteMapField(key: string) {
-  delete mapValue.value[key]
+  const tempKey = `_temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  mapValue.value[tempKey] = ''
   updateValue()
 }
 
-function renameMapField({ oldPath, newPath }: { oldPath: string[], newPath: string[] }) {
-  const oldKey = oldPath[oldPath.length - 1]
-  const newKey = newPath[newPath.length - 1]
-
-  if (oldKey !== newKey && !Object.prototype.hasOwnProperty.call(mapValue.value, newKey)) {
-    mapValue.value[newKey] = mapValue.value[oldKey]
-    delete mapValue.value[oldKey]
+function handleNestedUpdate(event: { path: (string | number)[], value: any }) {
+  if (event.path.length === props.path.length) {
+    // Direct update to this field's value
+    if (fieldType.value === 'map') {
+      mapValue.value = event.value
+    } else if (fieldType.value === 'array') {
+      arrayValue.value = event.value
+    }
     updateValue()
+  } else {
+    // This shouldn't happen as NestedFieldRenderer handles its own updates
+    // But we'll emit it up just in case
+    emit('update', { path: event.path, value: event.value })
   }
 }
 
@@ -384,11 +387,6 @@ function addArrayItem() {
   }
 
   arrayValue.value.push(defaultValue)
-  updateValue()
-}
-
-function deleteArrayItem(index: number) {
-  arrayValue.value.splice(index, 1)
   updateValue()
 }
 </script>

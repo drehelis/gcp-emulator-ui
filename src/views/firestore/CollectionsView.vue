@@ -325,7 +325,7 @@
                 class="ml-5 space-y-1 border-l border-gray-200 dark:border-gray-600 pl-3"
               >
                 <div
-                  v-for="(subValue, subFieldName) in value.mapValue.fields"
+                  v-for="(subValue, subFieldName) in (value.mapValue.fields || {})"
                   :key="`${fieldName}.${subFieldName}`"
                   class="group flex items-center justify-between text-sm p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                 >
@@ -360,7 +360,7 @@
                       v-else
                       class="text-gray-500 dark:text-gray-400 font-mono text-xs"
                     >
-                      {{ Object.keys(subValue.mapValue.fields).length }} fields
+                      {{ Object.keys(subValue.mapValue.fields || {}).length }} fields
                     </span>
                   </div>
 
@@ -395,7 +395,7 @@
 
                 <!-- Second level nested map expansion -->
                 <template
-                  v-for="(subValue, subFieldName) in value.mapValue.fields"
+                  v-for="(subValue, subFieldName) in (value.mapValue.fields || {})"
                   :key="`${fieldName}.${subFieldName}.nested`"
                 >
                   <div
@@ -592,130 +592,172 @@
       @cancel="cancelDeleteField"
     />
 
-    <!-- Simple Field Editor Modal -->
-    <div
-      v-if="showFieldEditor && fieldToEdit"
-      class="fixed inset-0 z-50 overflow-y-auto"
-      aria-labelledby="modal-title"
-      role="dialog"
-      aria-modal="true"
+    <!-- Advanced Field Editor Modal -->
+    <BaseModal
+      v-model="showFieldEditor"
+      :title="getModalTitle()"
+      size="3xl"
+      @close="cancelFieldEditor"
     >
-      <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 backdrop-blur-[2px] bg-white/5 dark:bg-black/5" aria-hidden="true" @click="cancelFieldEditor"></div>
-
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-        <div class="relative inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg px-6 pt-6 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-md sm:w-full">
-          <div>
-            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-6" id="modal-title">
-              {{ getModalTitle() }}
-            </h3>
-
-            <div class="space-y-4">
-              <!-- Field Name (only for new fields, not array items) -->
-              <div v-if="fieldToEdit.isNew && !isAddingToArray()">
-                <input
-                  v-model="editFieldName"
-                  type="text"
-                  placeholder="Field name"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                />
-              </div>
-
-              <!-- Field Type and Value in a row -->
-              <div class="flex gap-4">
-                <!-- Field Type -->
-                <div class="flex-shrink-0">
-                  <label class="block text-sm text-gray-500 dark:text-gray-400 mb-1">Field type</label>
-                  <select
-                    v-model="editFieldType"
-                    @change="handleTypeChange"
-                    class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-                  >
-                    <option value="string">string</option>
-                    <option value="number">number</option>
-                    <option value="boolean">boolean</option>
-                    <option value="null">null</option>
-                    <option value="timestamp">timestamp</option>
-                    <option value="map">map</option>
-                    <option value="array">array</option>
-                    <option value="geopoint">geopoint</option>
-                    <option value="reference">reference</option>
-                  </select>
-                </div>
-
-                <!-- Field Value -->
-                <div class="flex-1">
-                  <label class="block text-sm text-blue-500 dark:text-blue-400 mb-1">Field value</label>
-
-                  <!-- String/Text -->
-                  <input
-                    v-if="editFieldType === 'string'"
-                    v-model="editFieldValue"
-                    type="text"
-                    class="w-full px-3 py-2 border-2 border-blue-500 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  />
-
-                  <!-- Number -->
-                  <input
-                    v-else-if="editFieldType === 'number'"
-                    v-model.number="editFieldValue"
-                    type="number"
-                    step="any"
-                    class="w-full px-3 py-2 border-2 border-blue-500 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  />
-
-                  <!-- Boolean -->
-                  <select
-                    v-else-if="editFieldType === 'boolean'"
-                    v-model="editFieldValue"
-                    class="w-full px-3 py-2 border-2 border-blue-500 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  >
-                    <option :value="true">true</option>
-                    <option :value="false">false</option>
-                  </select>
-
-                  <!-- Null -->
-                  <div
-                    v-else-if="editFieldType === 'null'"
-                    class="w-full px-3 py-2 border-2 border-blue-500 rounded-md text-sm bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400"
-                  >
-                    null
-                  </div>
-
-                  <!-- Other types placeholder -->
-                  <input
-                    v-else
-                    v-model="editFieldValue"
-                    type="text"
-                    :placeholder="`Enter ${editFieldType} value`"
-                    class="w-full px-3 py-2 border-2 border-blue-500 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-                  />
-                </div>
-              </div>
-            </div>
+      <div v-if="fieldToEdit" class="space-y-4">
+        <!-- Horizontal Field Editor Layout -->
+        <div class="grid grid-cols-12 gap-4 items-start">
+          <!-- Field Name -->
+          <div class="col-span-4">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Field Name</label>
+            <input
+              v-if="fieldToEdit.isNew && !isAddingToArray()"
+              v-model="editFieldName"
+              type="text"
+              placeholder="Field name"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+            />
+            <input
+              v-else
+              :value="editFieldName || fieldToEdit.fieldName"
+              type="text"
+              readonly
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+            />
           </div>
 
-          <!-- Action Buttons -->
-          <div class="flex justify-end gap-3 mt-8">
-            <button
-              type="button"
-              @click="cancelFieldEditor"
-              class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+          <!-- Field Type Dropdown -->
+          <div class="col-span-3">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Field Type</label>
+            <select
+              v-model="editFieldType"
+              @change="handleTypeChange"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
             >
-              Cancel
-            </button>
-            <button
-              type="button"
-              @click="saveFieldEdit"
-              class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
+              <option value="string">String</option>
+              <option value="number">Number</option>
+              <option value="boolean">Boolean</option>
+              <option value="null">Null</option>
+              <option value="timestamp">Timestamp</option>
+              <option value="map">Map</option>
+              <option value="array">Array</option>
+              <option value="geopoint">GeoPoint</option>
+              <option value="reference">Reference</option>
+            </select>
+          </div>
+
+          <!-- Field Value Input (for simple types only) -->
+          <div v-if="editFieldType !== 'map' && editFieldType !== 'array'" class="col-span-5">
+            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Field Value</label>
+
+            <!-- String -->
+            <textarea
+              v-if="editFieldType === 'string'"
+              v-model="editFieldValue"
+              placeholder="Enter string value"
+              rows="2"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-vertical"
+            />
+
+            <!-- Number -->
+            <input
+              v-else-if="editFieldType === 'number'"
+              v-model.number="editFieldValue"
+              type="number"
+              step="any"
+              placeholder="Enter number"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+            />
+
+            <!-- Boolean -->
+            <select
+              v-else-if="editFieldType === 'boolean'"
+              v-model="editFieldValue"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
             >
-              Update
-            </button>
+              <option :value="true">true</option>
+              <option :value="false">false</option>
+            </select>
+
+            <!-- Timestamp -->
+            <input
+              v-else-if="editFieldType === 'timestamp'"
+              v-model="editFieldValue"
+              type="datetime-local"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+            />
+
+            <!-- Null -->
+            <div
+              v-else-if="editFieldType === 'null'"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400 italic"
+            >
+              null
+            </div>
+
+            <!-- GeoPoint -->
+            <div v-else-if="editFieldType === 'geopoint'" class="grid grid-cols-2 gap-2">
+              <input
+                v-model.number="geoPoint.latitude"
+                @input="updateGeoPoint"
+                type="number"
+                step="any"
+                placeholder="Latitude"
+                class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              />
+              <input
+                v-model.number="geoPoint.longitude"
+                @input="updateGeoPoint"
+                type="number"
+                step="any"
+                placeholder="Longitude"
+                class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              />
+            </div>
+
+            <!-- Reference -->
+            <input
+              v-else-if="editFieldType === 'reference'"
+              v-model="editFieldValue"
+              type="text"
+              placeholder="projects/PROJECT_ID/databases/(default)/documents/..."
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+            />
+          </div>
+        </div>
+        <!-- Complex Field Value (Map and Array) - Full Width Below -->
+        <div v-if="editFieldType === 'map' || editFieldType === 'array'" class="mt-4">
+          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Field Value</label>
+          <div class="border border-gray-200 dark:border-gray-600 rounded-md p-2">
+            <FieldEditor
+              :field-name="''"
+              :field-value="editFieldValue"
+              :path="[]"
+              :level="0"
+              :can-edit-name="false"
+              :hide-type-selector="true"
+              :forced-type="editFieldType"
+              :hide-delete-button="true"
+              :hide-border="true"
+              :hide-field-name="true"
+              @update="handleFieldEditorUpdate"
+            />
           </div>
         </div>
       </div>
-    </div>
+
+      <template #footer>
+        <button
+          type="button"
+          @click="cancelFieldEditor"
+          class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          @click="saveFieldEdit"
+          class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
+        >
+          Update
+        </button>
+      </template>
+    </BaseModal>
   </div>
 </template>
 
@@ -736,6 +778,8 @@ import {
 import { useFirestoreStore } from '@/stores/firestore'
 import type { FirestoreDocument, FirestoreCollectionWithMetadata } from '@/types'
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
+import FieldEditor from '@/components/firestore/FieldEditor.vue'
+import BaseModal from '@/components/ui/BaseModal.vue'
 
 const route = useRoute()
 const firestoreStore = useFirestoreStore()
@@ -1027,6 +1071,11 @@ const handleEditField = (fieldPath: string, fieldName: string, fieldValue: any) 
   editFieldType.value = getFieldType(fieldValue)
   editFieldValue.value = getEditableValue(fieldValue)
 
+  // Initialize geopoint if needed
+  if (editFieldType.value === 'geopoint' && typeof editFieldValue.value === 'object') {
+    geoPoint.value = { ...editFieldValue.value }
+  }
+
   showFieldEditor.value = true
 }
 
@@ -1078,6 +1127,12 @@ const handleKeyDown = (event: KeyboardEvent) => {
   }
 }
 
+const handleFieldEditorUpdate = (event: { path: string[], value: any }) => {
+  // The FieldEditor component handles its own nested editing,
+  // so we just need to update our editFieldValue with the root value
+  editFieldValue.value = event.value
+}
+
 const getEditableValue = (firestoreValue: any): any => {
   if (firestoreValue.stringValue !== undefined) return firestoreValue.stringValue
   if (firestoreValue.integerValue !== undefined) return Number(firestoreValue.integerValue)
@@ -1087,6 +1142,49 @@ const getEditableValue = (firestoreValue: any): any => {
   if (firestoreValue.nullValue !== undefined) return null
   if (firestoreValue.geoPointValue !== undefined) return `${firestoreValue.geoPointValue.latitude},${firestoreValue.geoPointValue.longitude}`
   return ''
+}
+
+// Legacy createFirestoreValue function - replaced by convertToFirestoreValue
+// const createFirestoreValue = (type: string, value: any): any => { ... }
+
+// Smart conversion that detects type from value - used with FieldEditor
+const convertToFirestoreValue = (value: any): any => {
+  if (value === null || value === undefined) {
+    return { nullValue: null }
+  }
+  if (typeof value === 'string') {
+    return { stringValue: value }
+  }
+  if (typeof value === 'number') {
+    return Number.isInteger(value) ? { integerValue: String(value) } : { doubleValue: value }
+  }
+  if (typeof value === 'boolean') {
+    return { booleanValue: value }
+  }
+  if (Array.isArray(value)) {
+    return {
+      arrayValue: {
+        values: value.map(item => convertToFirestoreValue(item))
+      }
+    }
+  }
+  if (typeof value === 'object') {
+    // Handle special objects like GeoPoint
+    if (value.latitude !== undefined && value.longitude !== undefined) {
+      return { geoPointValue: value }
+    }
+    // Handle regular maps
+    const fields: Record<string, any> = {}
+    for (const [key, val] of Object.entries(value)) {
+      // Skip temporary keys
+      if (!key.startsWith('_temp_')) {
+        fields[key] = convertToFirestoreValue(val)
+      }
+    }
+    return { mapValue: { fields } }
+  }
+  // Fallback to string
+  return { stringValue: String(value) }
 }
 
 const createFirestoreValue = (type: string, value: any): any => {
@@ -1104,8 +1202,8 @@ const createFirestoreValue = (type: string, value: any): any => {
     case 'reference':
       return { referenceValue: String(value) }
     case 'geopoint': {
-      const [lat, lng] = String(value).split(',').map(v => Number(v.trim()))
-      return { geoPointValue: { latitude: lat || 0, longitude: lng || 0 } }
+      const geoValue = typeof value === 'object' ? value : { latitude: 0, longitude: 0 }
+      return { geoPointValue: geoValue }
     }
     case 'map':
       return { mapValue: { fields: {} } }
@@ -1116,6 +1214,8 @@ const createFirestoreValue = (type: string, value: any): any => {
   }
 }
 
+const geoPoint = ref({ latitude: 0, longitude: 0 })
+
 const handleTypeChange = () => {
   // Reset value when type changes
   if (editFieldType.value === 'null') {
@@ -1124,9 +1224,16 @@ const handleTypeChange = () => {
     editFieldValue.value = false
   } else if (editFieldType.value === 'number') {
     editFieldValue.value = 0
+  } else if (editFieldType.value === 'geopoint') {
+    geoPoint.value = { latitude: 0, longitude: 0 }
+    editFieldValue.value = geoPoint.value
   } else {
     editFieldValue.value = ''
   }
+}
+
+const updateGeoPoint = () => {
+  editFieldValue.value = { ...geoPoint.value }
 }
 
 const isAddingToArray = (): boolean => {
@@ -1165,7 +1272,9 @@ const saveFieldEdit = async () => {
 
   try {
     const updatedFields = { ...selectedDocument.value.fields }
-    const firestoreValue = createFirestoreValue(editFieldType.value, editFieldValue.value)
+    const firestoreValue = editFieldType.value === 'map' || editFieldType.value === 'array'
+      ? convertToFirestoreValue(editFieldValue.value)
+      : createFirestoreValue(editFieldType.value, editFieldValue.value)
     const path = fieldToEdit.value.path
 
     if (fieldToEdit.value.isNew) {
