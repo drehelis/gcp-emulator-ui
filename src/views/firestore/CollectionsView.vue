@@ -65,7 +65,7 @@
           <div class="mb-4">
             <button
               @click="showCreateCollectionModal = true"
-              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors duration-200"
+              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <PlusIcon class="w-3 h-3 mr-1" />
               Start collection
@@ -150,7 +150,7 @@
             <button
               v-if="selectedCollection"
               @click="showAddDocumentModal = true"
-              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors duration-200"
+              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <PlusIcon class="w-3 h-3 mr-1" />
               Add document
@@ -215,6 +215,33 @@
           <div class="mb-3">
             <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 font-mono mb-3">
               <span class="text-gray-900 dark:text-white">{{ selectedDocument ? getDocumentId(selectedDocument.name) : 'Document' }}</span>
+              <div v-if="selectedDocument" class="relative" data-document-menu>
+                <button
+                  @click="showDocumentMenu = !showDocumentMenu"
+                  class="p-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+                >
+                  <EllipsisVerticalIcon class="w-3 h-3" />
+                </button>
+                <!-- Dropdown Menu -->
+                <div
+                  v-if="showDocumentMenu"
+                  class="absolute right-0 top-8 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl min-w-[160px]"
+                  @click.stop
+                >
+                  <button
+                    @click="handleDeleteAllFields"
+                    class="w-full px-3 py-2 text-left text-sm font-sans font-normal text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 rounded-lg"
+                  >
+                    Delete all fields in document
+                  </button>
+                  <button
+                    @click="handleDeleteDocument"
+                    class="w-full px-3 py-2 text-left text-sm font-sans font-normal text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 rounded-lg"
+                  >
+                    Delete document
+                  </button>
+                </div>
+              </div>
             </div>
             <div class="border-b border-gray-200 dark:border-gray-600"></div>
           </div>
@@ -222,7 +249,7 @@
           <div v-if="selectedCollection" class="mb-4">
             <button
               @click="showCreateCollectionModal = true"
-              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors duration-200"
+              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <PlusIcon class="w-3 h-3 mr-1" />
               Start collection
@@ -233,7 +260,7 @@
             <div class="border-b border-gray-200 dark:border-gray-600 mb-3"></div>
             <button
               @click="handleShowAddFieldModal"
-              class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors duration-200"
+              class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <PlusIcon class="w-3 h-3 mr-1" />
               Add field
@@ -497,6 +524,14 @@
       @created="handleCollectionCreated"
     />
 
+    <!-- Add Document Modal -->
+    <AddDocumentModal
+      v-model="showAddDocumentModal"
+      :project-id="currentProjectId"
+      :collection-id="selectedCollection?.id || ''"
+      @created="handleDocumentCreated"
+    />
+
     <!-- Delete Collection Confirmation Modal -->
     <ConfirmationModal
       v-model="showDeleteCollectionModal"
@@ -510,6 +545,36 @@
       }"
       @confirm="confirmDeleteCollection"
       @cancel="cancelDeleteCollection"
+    />
+
+    <!-- Delete Document Confirmation Modal -->
+    <ConfirmationModal
+      v-model="showDeleteDocumentModal"
+      title="Delete Document"
+      :message="`Are you sure you want to delete document '${documentToDelete ? getDocumentId(documentToDelete.name) : ''}'?`"
+      confirm-label="Delete Document"
+      :is-loading="isDeletingDocument"
+      :details="{
+        title: 'What will happen:',
+        description: 'The document will be permanently deleted. This action cannot be undone.'
+      }"
+      @confirm="confirmDeleteDocument"
+      @cancel="cancelDeleteDocument"
+    />
+
+    <!-- Delete All Fields Confirmation Modal -->
+    <ConfirmationModal
+      v-model="showDeleteAllFieldsModal"
+      title="Delete All Fields"
+      :message="`Are you sure you want to delete all fields from document '${selectedDocument ? getDocumentId(selectedDocument.name) : ''}'?`"
+      confirm-label="Delete All Fields"
+      :is-loading="isDeletingAllFields"
+      :details="{
+        title: 'What will happen:',
+        description: 'All fields in the document will be deleted, leaving an empty document. This action cannot be undone.'
+      }"
+      @confirm="confirmDeleteAllFields"
+      @cancel="cancelDeleteAllFields"
     />
 
     <!-- Delete Field Confirmation Modal -->
@@ -562,6 +627,7 @@ import type { FirestoreDocument, FirestoreCollectionWithMetadata } from '@/types
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
 import FieldModal from '@/components/firestore/FieldModal.vue'
 import StartCollectionModal from '@/components/firestore/StartCollectionModal.vue'
+import AddDocumentModal from '@/components/firestore/AddDocumentModal.vue'
 import RecursiveFieldViewer from '@/components/firestore/RecursiveFieldViewer.vue'
 import { createFirestoreValue } from '@/utils/fieldUtils'
 
@@ -575,6 +641,12 @@ const showCollectionMenu = ref(false)
 const showDeleteCollectionModal = ref(false)
 const isDeletingCollection = ref(false)
 const collectionToDelete = ref<FirestoreCollectionWithMetadata | null>(null)
+const showDocumentMenu = ref(false)
+const showDeleteDocumentModal = ref(false)
+const isDeletingDocument = ref(false)
+const documentToDelete = ref<FirestoreDocument | null>(null)
+const showDeleteAllFieldsModal = ref(false)
+const isDeletingAllFields = ref(false)
 const selectedCollection = ref<FirestoreCollectionWithMetadata | null>(null)
 const selectedDocument = ref<FirestoreDocument | null>(null)
 const expandedMapFields = ref<Set<string>>(new Set())
@@ -668,6 +740,21 @@ const handleCollectionCreated = async (collectionId: string) => {
   }
 }
 
+const handleDocumentCreated = async (documentId: string) => {
+  // Refresh documents in the current collection
+  if (selectedCollection.value) {
+    await firestoreStore.loadDocuments(currentProjectId.value, selectedCollection.value.id)
+    // Wait for reactivity to update documents
+    await nextTick()
+    // Auto-select the newly created document
+    const docs = documents.value
+    const newDocument = docs.find(doc => getDocumentId(doc.name) === documentId)
+    if (newDocument) {
+      selectDocument(newDocument)
+    }
+  }
+}
+
 const handleDeleteCollection = () => {
   showCollectionMenu.value = false
   if (selectedCollection.value) {
@@ -706,11 +793,102 @@ const cancelDeleteCollection = () => {
   collectionToDelete.value = null
 }
 
-// Click outside handler for collection menu
+// Document deletion handlers
+const handleDeleteDocument = () => {
+  showDocumentMenu.value = false
+  if (selectedDocument.value) {
+    documentToDelete.value = selectedDocument.value
+    showDeleteDocumentModal.value = true
+  }
+}
+
+const confirmDeleteDocument = async () => {
+  if (!documentToDelete.value || !selectedCollection.value) return
+
+  try {
+    isDeletingDocument.value = true
+
+    // Delete the document using store method
+    const documentPath = documentToDelete.value.name
+    await firestoreStore.deleteDocument(documentPath, selectedCollection.value.id)
+
+    // Clear selection if we deleted the currently selected document
+    if (selectedDocument.value?.name === documentToDelete.value.name) {
+      selectedDocument.value = null
+    }
+
+    showDeleteDocumentModal.value = false
+    documentToDelete.value = null
+  } catch (error) {
+    console.error('Failed to delete document:', error)
+  } finally {
+    isDeletingDocument.value = false
+  }
+}
+
+const cancelDeleteDocument = () => {
+  showDeleteDocumentModal.value = false
+  documentToDelete.value = null
+}
+
+// Delete all fields handlers
+const handleDeleteAllFields = () => {
+  showDocumentMenu.value = false
+  if (selectedDocument.value) {
+    showDeleteAllFieldsModal.value = true
+  }
+}
+
+const confirmDeleteAllFields = async () => {
+  if (!selectedDocument.value || !selectedCollection.value) return
+
+  try {
+    isDeletingAllFields.value = true
+
+    const documentPath = selectedDocument.value.name
+    const documentId = getDocumentId(documentPath)
+
+    // Delete the document and recreate it empty
+    await firestoreStore.deleteDocument(documentPath, selectedCollection.value.id)
+
+    // Create a new empty document with the same ID
+    await firestoreStore.createDocument(
+      currentProjectId.value,
+      selectedCollection.value.id,
+      { fields: {} },
+      documentId
+    )
+
+    // Refresh documents list and reselect the document
+    await firestoreStore.loadDocuments(currentProjectId.value, selectedCollection.value.id)
+
+    // Reselect the document to show it's now empty
+    const documents = firestoreStore.getDocumentsByCollection(selectedCollection.value.id)
+    const recreatedDoc = documents.find(doc => getDocumentId(doc.name) === documentId)
+    if (recreatedDoc) {
+      selectedDocument.value = recreatedDoc
+    }
+
+    showDeleteAllFieldsModal.value = false
+  } catch (error) {
+    console.error('Failed to delete all fields:', error)
+  } finally {
+    isDeletingAllFields.value = false
+  }
+}
+
+const cancelDeleteAllFields = () => {
+  showDeleteAllFieldsModal.value = false
+}
+
+// Click outside handler for menus
 const handleClickOutside = (event: Event) => {
   const target = event.target as HTMLElement
   if (!target.closest('[data-collection-menu]')) {
     showCollectionMenu.value = false
+  }
+  if (!target.closest('[data-document-menu]')) {
+    showDocumentMenu.value = false
   }
 }
 

@@ -106,6 +106,17 @@ export const firestoreApi = {
     return response.data
   },
 
+  // Delete document
+  async deleteDocument(documentPath: string): Promise<boolean> {
+    try {
+      await firestoreClient.delete(`/v1/${documentPath}`)
+      return true
+    } catch (error) {
+      console.error('Failed to delete document:', error)
+      throw error
+    }
+  },
+
   // Delete collection (by deleting all documents)
   async deleteCollection(parent: string, collectionId: string): Promise<boolean> {
     try {

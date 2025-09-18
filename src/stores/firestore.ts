@@ -91,6 +91,40 @@ export const useFirestoreStore = defineStore('firestore', () => {
     }
   }
 
+  // Create document in existing collection
+  const createDocument = async (projectId: string, collectionId: string, document: any, documentId?: string) => {
+    try {
+      loading.value = true
+      const databasePath = firestoreApi.getDefaultDatabasePath(projectId)
+
+      const request: CreateDocumentRequest = {
+        parent: databasePath,
+        collectionId,
+        documentId,
+        document
+      }
+
+      const createdDocument = await firestoreApi.createDocument(request)
+
+      // Update local documents cache
+      const currentDocs = documents.value.get(collectionId) || []
+      documents.value.set(collectionId, [...currentDocs, createdDocument])
+
+      // Update collection document count
+      const collection = collections.value.find(c => c.id === collectionId)
+      if (collection) {
+        collection.documentCount = currentDocs.length + 1
+      }
+
+      return createdDocument
+    } catch (error) {
+      console.error('Failed to create document:', error)
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
   // Load documents
   const loadDocuments = async (projectId: string, collectionId: string) => {
     try {
@@ -124,6 +158,34 @@ export const useFirestoreStore = defineStore('firestore', () => {
       return true
     } catch (error) {
       console.error('Failed to update document:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Delete document
+  const deleteDocument = async (documentPath: string, collectionId?: string) => {
+    try {
+      loading.value = true
+      await firestoreApi.deleteDocument(documentPath)
+
+      // Update local documents cache if collectionId is provided
+      if (collectionId) {
+        const currentDocs = documents.value.get(collectionId) || []
+        const updatedDocs = currentDocs.filter(doc => doc.name !== documentPath)
+        documents.value.set(collectionId, updatedDocs)
+
+        // Update collection document count
+        const collection = collections.value.find(c => c.id === collectionId)
+        if (collection) {
+          collection.documentCount = updatedDocs.length
+        }
+      }
+
+      return true
+    } catch (error) {
+      console.error('Failed to delete document:', error)
       throw error
     } finally {
       loading.value = false
@@ -174,8 +236,10 @@ export const useFirestoreStore = defineStore('firestore', () => {
     getDocumentsByCollection,
     loadCollections,
     createCollection,
+    createDocument,
     loadDocuments,
     updateDocument,
+    deleteDocument,
     deleteCollection,
     healthCheck,
     clearData

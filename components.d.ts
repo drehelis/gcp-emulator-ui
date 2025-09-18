@@ -8,12 +8,14 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    AddDocumentModal: typeof import('./src/components/firestore/AddDocumentModal.vue')['default']
     AddProjectModal: typeof import('./src/components/modals/AddProjectModal.vue')['default']
     BaseModal: typeof import('./src/components/ui/BaseModal.vue')['default']
     ConfirmationModal: typeof import('./src/components/modals/ConfirmationModal.vue')['default']
     ConnectionWarning: typeof import('./src/components/ConnectionWarning.vue')['default']
     CreateBucketModal: typeof import('./src/components/modals/CreateBucketModal.vue')['default']
     CreateTopicModal: typeof import('./src/components/modals/CreateTopicModal.vue')['default']
+    DocumentEditor: typeof import('./src/components/firestore/DocumentEditor.vue')['default']
     DocumentField: typeof import('./src/components/firestore/DocumentField.vue')['default']
     FieldEditor: typeof import('./src/components/firestore/FieldEditor.vue')['default']
     FieldFormComponent: typeof import('./src/components/firestore/FieldFormComponent.vue')['default']

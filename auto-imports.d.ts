@@ -172,6 +172,7 @@ declare global {
   const useDevicePixelRatio: typeof import('@vueuse/core')['useDevicePixelRatio']
   const useDevicesList: typeof import('@vueuse/core')['useDevicesList']
   const useDisplayMedia: typeof import('@vueuse/core')['useDisplayMedia']
+  const useDocumentForm: typeof import('./src/composables/useDocumentForm')['useDocumentForm']
   const useDocumentVisibility: typeof import('@vueuse/core')['useDocumentVisibility']
   const useDraggable: typeof import('@vueuse/core')['useDraggable']
   const useDropZone: typeof import('@vueuse/core')['useDropZone']
@@ -332,6 +333,9 @@ declare global {
   // @ts-ignore
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, ShallowRef, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
+  // @ts-ignore
+  export type { Field } from './src/composables/useDocumentForm'
+  import('./src/composables/useDocumentForm')
   // @ts-ignore
   export type { ServiceConnectionStatus } from './src/composables/useServiceConnections'
   import('./src/composables/useServiceConnections')

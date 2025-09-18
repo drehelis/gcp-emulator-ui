@@ -1,53 +1,33 @@
 <template>
   <BaseModal
     v-model="isOpen"
-    title="Start Collection"
+    title="Add Document"
     size="5xl"
     :actions="modalActions"
     @close="handleClose"
   >
     <div class="space-y-6">
-      <!-- Collection Configuration -->
+      <!-- Collection Information -->
       <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
-        <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-4">Collection Configuration</h3>
+        <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-4">Collection Information</h3>
 
         <div class="space-y-4">
-          <!-- Parent Path -->
+          <!-- Collection Path -->
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Parent Path
+              Collection Path
             </label>
             <div class="px-3 py-2 bg-gray-100 dark:bg-gray-600 rounded-md text-sm font-mono text-gray-900 dark:text-white">
-              /
+              {{ collectionPath }}
             </div>
-          </div>
-
-          <!-- Collection ID -->
-          <div>
-            <label for="collection-id" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Collection ID *
-            </label>
-            <input
-              id="collection-id"
-              ref="collectionIdInput"
-              v-model="collectionId"
-              type="text"
-              placeholder="Enter collection ID (e.g., users, posts)"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-              :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-500': !collectionId.trim() && hasValidationError }"
-            />
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Choose an ID that describes the documents you'll add to this collection.
-              <a href="https://cloud.google.com/firestore/native/docs/data-model" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline">Learn more</a>
-            </p>
           </div>
         </div>
       </div>
 
-      <!-- First Document Configuration -->
+      <!-- Document Editor -->
       <DocumentEditor
-        title="First Document"
-        help-text="A collection must contain at least one document. Documents are Firestore's unit of storage and contain your data as fields."
+        title="New Document"
+        help-text="Create a new document to add to this collection. Documents are Firestore's unit of storage and contain your data as fields."
         :document-id="documentForm.documentId.value"
         :fields="documentForm.fields.value"
         @update:document-id="documentForm.documentId.value = $event"
@@ -69,11 +49,12 @@ import { useDocumentForm } from '@/composables/useDocumentForm'
 interface Props {
   modelValue: boolean
   projectId: string
+  collectionId: string
 }
 
 interface Emits {
   'update:modelValue': [value: boolean]
-  'created': [collectionId: string]
+  'created': [documentId: string]
 }
 
 const props = defineProps<Props>()
@@ -82,19 +63,19 @@ const emit = defineEmits<Emits>()
 // Use document form composable
 const documentForm = useDocumentForm()
 
-// Local form state
-const collectionIdInput = ref<HTMLInputElement>()
-const collectionId = ref('')
-const hasValidationError = ref(false)
-
 // Computed
 const isOpen = computed({
   get: () => props.modelValue,
   set: (value: boolean) => emit('update:modelValue', value)
 })
 
+const collectionPath = computed(() => {
+  return `projects/${props.projectId}/databases/(default)/documents/${props.collectionId}`
+})
+
 const isFormValid = computed(() => {
-  return collectionId.value.trim() !== ''
+  // No specific validation required - empty documents are allowed
+  return true
 })
 
 const modalActions = computed<ModalAction[]>(() => [
@@ -120,15 +101,10 @@ const modalActions = computed<ModalAction[]>(() => [
 
 // Methods
 const resetForm = () => {
-  collectionId.value = ''
   documentForm.resetForm()
-  hasValidationError.value = false
 }
 
 const handleSave = async () => {
-  hasValidationError.value = true
-  if (!isFormValid.value) return
-
   try {
     documentForm.loading.value = true
 
@@ -138,10 +114,10 @@ const handleSave = async () => {
 
     const documentFields = documentForm.buildDocumentFields()
 
-    // Create collection with first document
-    const success = await firestoreStore.createCollection(
+    // Create document in existing collection
+    const success = await firestoreStore.createDocument(
       props.projectId,
-      collectionId.value,
+      props.collectionId,
       {
         fields: documentFields
       },
@@ -149,12 +125,13 @@ const handleSave = async () => {
     )
 
     if (success) {
-      emit('created', collectionId.value)
+      const finalDocumentId = documentForm.documentId.value || success.name.split('/').pop() || 'unknown'
+      emit('created', finalDocumentId)
       isOpen.value = false
       resetForm()
     }
   } catch (error) {
-    console.error('Failed to create collection:', error)
+    console.error('Failed to create document:', error)
   } finally {
     documentForm.loading.value = false
   }
@@ -175,12 +152,11 @@ const handleCancel = () => {
   resetForm()
 }
 
-// Watch for modelValue prop changes to reset form and focus input
+// Watch for modelValue prop changes to reset form
 watch(() => props.modelValue, async (newValue) => {
   if (newValue) {
     resetForm()
     await nextTick()
-    collectionIdInput.value?.focus()
   }
 })
 </script>
