@@ -98,14 +98,31 @@ const modalTitle = computed(() => {
 })
 
 const isFormValid = computed(() => {
+  // Check field name for add mode (except array items)
   if (props.mode === 'add') {
     // Array items don't need field names
-    if (props.fieldPath?.includes('[new]')) {
-      return true
+    if (!props.fieldPath?.includes('[new]')) {
+      if (fieldName.value.trim() === '') {
+        return false
+      }
     }
-    return fieldName.value.trim() !== ''
   }
-  return true // Edit mode is always valid
+
+  // Check geopoint values
+  if (fieldType.value === 'geopoint' && fieldValue.value) {
+    const geo = fieldValue.value
+    if (typeof geo === 'object' && geo.latitude !== undefined && geo.longitude !== undefined) {
+      const lat = Number(geo.latitude)
+      const lng = Number(geo.longitude)
+
+      // Validate latitude and longitude ranges
+      if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+        return false
+      }
+    }
+  }
+
+  return true
 })
 
 // Reset form when modal opens

@@ -93,23 +93,38 @@
         </div>
 
         <!-- GeoPoint -->
-        <div v-else-if="localFieldType === 'geopoint'" class="grid grid-cols-2 gap-2">
-          <input
-            v-model.number="localGeoPoint.latitude"
-            @input="updateGeoPoint"
-            type="number"
-            step="any"
-            placeholder="Latitude"
-            class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-          />
-          <input
-            v-model.number="localGeoPoint.longitude"
-            @input="updateGeoPoint"
-            type="number"
-            step="any"
-            placeholder="Longitude"
-            class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-          />
+        <div v-else-if="localFieldType === 'geopoint'" class="space-y-2">
+          <div class="grid grid-cols-2 gap-2">
+            <input
+              v-model.number="localGeoPoint.latitude"
+              @input="updateGeoPoint"
+              type="number"
+              step="any"
+              min="-90"
+              max="90"
+              placeholder="Latitude (-90 to 90)"
+              :class="[
+                'px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:border-blue-500 dark:bg-gray-700 dark:text-white',
+                isValidLatitude ? 'border-gray-300 dark:border-gray-600 focus:ring-blue-500' : 'border-red-300 dark:border-red-600 focus:ring-red-500'
+              ]"
+            />
+            <input
+              v-model.number="localGeoPoint.longitude"
+              @input="updateGeoPoint"
+              type="number"
+              step="any"
+              min="-180"
+              max="180"
+              placeholder="Longitude (-180 to 180)"
+              :class="[
+                'px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:border-blue-500 dark:bg-gray-700 dark:text-white',
+                isValidLongitude ? 'border-gray-300 dark:border-gray-600 focus:ring-blue-500' : 'border-red-300 dark:border-red-600 focus:ring-red-500'
+              ]"
+            />
+          </div>
+          <div v-if="!isValidGeoPoint" class="text-xs text-red-600 dark:text-red-400">
+            Invalid coordinates: Latitude must be between -90 and 90, Longitude must be between -180 and 180
+          </div>
         </div>
 
         <!-- Reference -->
@@ -176,6 +191,21 @@ const emit = defineEmits<Emits>()
 // Computed properties
 const isArrayItem = computed(() => {
   return props.mode === 'add' && props.fieldPath?.includes('[new]')
+})
+
+// Validation for geopoint
+const isValidLatitude = computed(() => {
+  const lat = localGeoPoint.value.latitude
+  return typeof lat === 'number' && !isNaN(lat) && lat >= -90 && lat <= 90
+})
+
+const isValidLongitude = computed(() => {
+  const lng = localGeoPoint.value.longitude
+  return typeof lng === 'number' && !isNaN(lng) && lng >= -180 && lng <= 180
+})
+
+const isValidGeoPoint = computed(() => {
+  return isValidLatitude.value && isValidLongitude.value
 })
 
 // Local reactive state

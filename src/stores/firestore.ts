@@ -162,6 +162,11 @@ export const useFirestoreStore = defineStore('firestore', () => {
     }
   }
 
+  const clearData = () => {
+    collections.value = []
+    documents.value.clear()
+  }
+
   return {
     loading,
     collections,
@@ -172,6 +177,7 @@ export const useFirestoreStore = defineStore('firestore', () => {
     loadDocuments,
     updateDocument,
     deleteCollection,
-    healthCheck
+    healthCheck,
+    clearData
   }
 })

@@ -278,7 +278,7 @@
                     v-else-if="getFieldType(value) === 'map'"
                     class="text-gray-500 dark:text-gray-400 font-mono text-xs"
                   >
-                    {{ Object.keys(value.mapValue.fields).length }} fields
+                    {{ Object.keys(value.mapValue.fields || {}).length }} fields
                   </span>
 
                   <!-- For array fields, show array indicator -->
@@ -544,7 +544,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import {
   ArrowPathIcon,
@@ -782,40 +782,41 @@ const confirmDeleteField = async () => {
     // Create a copy of the document fields
     const updatedFields = { ...selectedDocument.value.fields }
 
-    // Handle different types of field deletion
+    // Handle field deletion using enhanced navigation
     const fieldPath = fieldToDelete.value.path
 
-    // Check if it's an array item deletion (contains [index])
-    const arrayMatch = fieldPath.match(/^([^[]+)\[(\d+)\]$/)
-    if (arrayMatch) {
-      const [, arrayFieldName, indexStr] = arrayMatch
-      const index = parseInt(indexStr)
+    try {
+      if (fieldPath.includes('.') || fieldPath.includes('[')) {
+        // Complex path (nested field or array item)
+        const { parent, lastPart } = navigateToParentPath(updatedFields, fieldPath)
 
-      if (updatedFields[arrayFieldName]?.arrayValue?.values) {
-        const newArray = JSON.parse(JSON.stringify(updatedFields[arrayFieldName]))
-        newArray.arrayValue.values.splice(index, 1) // Remove item at index
-        updatedFields[arrayFieldName] = newArray
-      } else {
-        throw new Error('Array field not found or invalid')
-      }
-    } else {
-      // Handle regular field deletion
-      const pathParts = fieldPath.split('.')
-      if (pathParts.length === 1) {
-        // Root level field
-        delete updatedFields[pathParts[0]]
-      } else {
-        // Nested field - navigate to the parent and delete the child
-        let current = updatedFields
-        for (let i = 0; i < pathParts.length - 1; i++) {
-          if (current[pathParts[i]]?.mapValue?.fields) {
-            current = current[pathParts[i]].mapValue.fields
+        if (lastPart.startsWith('[') && lastPart.endsWith(']')) {
+          // Array item deletion
+          const index = parseInt(lastPart.substring(1, lastPart.length - 1))
+          if (parent.arrayValue?.values) {
+            parent.arrayValue.values.splice(index, 1) // Remove item at index
           } else {
-            throw new Error('Invalid field path')
+            throw new Error(`Expected array at parent for deletion of "${fieldPath}"`)
+          }
+        } else {
+          // Map field deletion
+          if (parent.mapValue?.fields) {
+            delete parent.mapValue.fields[lastPart]
+          } else {
+            throw new Error(`Expected map at parent for deletion of "${fieldPath}"`)
           }
         }
-        delete current[pathParts[pathParts.length - 1]]
+      } else {
+        // Root level field
+        delete updatedFields[fieldPath]
       }
+    } catch (navigationError) {
+      console.error('Navigation error during field deletion:', {
+        fieldPath,
+        error: navigationError.message,
+        availableFields: Object.keys(updatedFields)
+      })
+      throw new Error(`Failed to navigate to field for deletion: ${navigationError.message}`)
     }
 
     // Update the document with the new fields
@@ -920,6 +921,206 @@ const getEditableValue = (firestoreValue: any): any => {
   return ''
 }
 
+// Enhanced helper function to parse complex paths with unlimited nesting
+const parseFieldPath = (path: string): string[] => {
+  const pathParts = []
+  let current = path
+
+  while (current.length > 0) {
+    const dotIndex = current.indexOf('.')
+    const bracketIndex = current.indexOf('[')
+
+    if (dotIndex === -1 && bracketIndex === -1) {
+      // No more separators, add the rest
+      if (current) pathParts.push(current)
+      break
+    } else if (bracketIndex !== -1 && (dotIndex === -1 || bracketIndex < dotIndex)) {
+      // Array index comes first
+      const fieldName = current.substring(0, bracketIndex)
+      const closingBracket = current.indexOf(']', bracketIndex)
+
+      if (closingBracket === -1) {
+        throw new Error(`Malformed path: missing closing bracket in "${path}"`)
+      }
+
+      const arrayIndex = current.substring(bracketIndex + 1, closingBracket)
+
+      if (fieldName) pathParts.push(fieldName)
+      pathParts.push(`[${arrayIndex}]`)
+
+      current = current.substring(closingBracket + 1)
+      if (current.startsWith('.')) current = current.substring(1)
+    } else {
+      // Dot comes first
+      const fieldName = current.substring(0, dotIndex)
+      if (fieldName) pathParts.push(fieldName)
+      current = current.substring(dotIndex + 1)
+    }
+  }
+
+  return pathParts
+}
+
+// Recursive helper function to navigate through deeply nested structures
+const navigateToFieldPath = (fields: any, path: string) => {
+  const pathParts = parseFieldPath(path)
+  return navigateWithParts(fields, pathParts, path)
+}
+
+const navigateWithParts = (currentRef: any, pathParts: string[], originalPath: string) => {
+  if (pathParts.length === 0) {
+    return currentRef
+  }
+
+  const [currentPart, ...remainingParts] = pathParts
+
+  if (currentPart.startsWith('[') && currentPart.endsWith(']')) {
+    // Array index
+    const index = parseInt(currentPart.substring(1, currentPart.length - 1))
+
+    if (isNaN(index)) {
+      throw new Error(`Invalid array index "${currentPart}" in path "${originalPath}"`)
+    }
+
+    if (!currentRef?.arrayValue?.values) {
+      throw new Error(`Expected array at path part "${currentPart}" in "${originalPath}", but found: ${typeof currentRef}`)
+    }
+
+    if (index < 0 || index >= currentRef.arrayValue.values.length) {
+      throw new Error(`Array index ${index} out of bounds in path "${originalPath}"`)
+    }
+
+    const arrayItem = currentRef.arrayValue.values[index]
+    return navigateWithParts(arrayItem, remainingParts, originalPath)
+  } else {
+    // Object field
+    let nextRef
+
+    if (currentRef?.mapValue?.fields) {
+      // We're in a map structure
+      nextRef = currentRef.mapValue.fields[currentPart]
+    } else if (currentRef && typeof currentRef === 'object' && currentPart in currentRef) {
+      // We're in a root-level fields object
+      nextRef = currentRef[currentPart]
+    } else {
+      throw new Error(`Field "${currentPart}" not found in path "${originalPath}". Available fields: ${currentRef?.mapValue?.fields ? Object.keys(currentRef.mapValue.fields).join(', ') : Object.keys(currentRef || {}).join(', ')}`)
+    }
+
+    if (nextRef === undefined) {
+      throw new Error(`Field "${currentPart}" is undefined in path "${originalPath}"`)
+    }
+
+    return navigateWithParts(nextRef, remainingParts, originalPath)
+  }
+}
+
+// Enhanced helper function to navigate to parent with unlimited nesting support
+const navigateToParentPath = (fields: any, path: string) => {
+  const pathParts = parseFieldPath(path)
+
+  if (pathParts.length === 0) {
+    throw new Error('Cannot navigate to parent of empty path')
+  }
+
+  if (pathParts.length === 1) {
+    // Root level field - parent is the fields object itself
+    return {
+      parent: fields,
+      lastPart: pathParts[0]
+    }
+  }
+
+  // Navigate to the parent (all parts except the last one)
+  const parentParts = pathParts.slice(0, -1)
+  const lastPart = pathParts[pathParts.length - 1]
+
+  const parent = navigateWithParts(fields, parentParts, path)
+
+  return {
+    parent,
+    lastPart
+  }
+}
+
+// Enhanced helper function to navigate and ensure map structure exists
+const navigateToParentAndEnsureMap = (fields: any, path: string) => {
+  const pathParts = parseFieldPath(path)
+
+  if (pathParts.length === 0) {
+    throw new Error('Cannot navigate to parent of empty path')
+  }
+
+  if (pathParts.length === 1) {
+    // Root level field - parent is the fields object itself
+    return {
+      parent: fields,
+      lastPart: pathParts[0]
+    }
+  }
+
+  // Navigate to the parent, creating map structures as needed
+  const parentParts = pathParts.slice(0, -1)
+  const lastPart = pathParts[pathParts.length - 1]
+
+  const parent = navigateWithPartsAndEnsure(fields, parentParts, path)
+
+  return {
+    parent,
+    lastPart
+  }
+}
+
+const navigateWithPartsAndEnsure = (currentRef: any, pathParts: string[], originalPath: string) => {
+  if (pathParts.length === 0) {
+    return currentRef
+  }
+
+  const [currentPart, ...remainingParts] = pathParts
+
+  if (currentPart.startsWith('[') && currentPart.endsWith(']')) {
+    // Array index
+    const index = parseInt(currentPart.substring(1, currentPart.length - 1))
+
+    if (isNaN(index)) {
+      throw new Error(`Invalid array index "${currentPart}" in path "${originalPath}"`)
+    }
+
+    if (!currentRef?.arrayValue?.values) {
+      throw new Error(`Expected array at path part "${currentPart}" in "${originalPath}"`)
+    }
+
+    if (index < 0 || index >= currentRef.arrayValue.values.length) {
+      throw new Error(`Array index ${index} out of bounds in path "${originalPath}"`)
+    }
+
+    const arrayItem = currentRef.arrayValue.values[index]
+    return navigateWithPartsAndEnsure(arrayItem, remainingParts, originalPath)
+  } else {
+    // Object field
+    let nextRef
+
+    if (currentRef?.mapValue?.fields) {
+      // We're in a map structure
+      if (!currentRef.mapValue.fields[currentPart]) {
+        throw new Error(`Field "${currentPart}" not found in path "${originalPath}"`)
+      }
+      nextRef = currentRef.mapValue.fields[currentPart]
+    } else if (currentRef && typeof currentRef === 'object' && currentPart in currentRef) {
+      // We're in a root-level fields object
+      nextRef = currentRef[currentPart]
+    } else {
+      throw new Error(`Field "${currentPart}" not found in path "${originalPath}"`)
+    }
+
+    // For the next level, if it's a map and we have more parts, ensure it has fields
+    if (remainingParts.length > 0 && nextRef?.mapValue && !nextRef.mapValue.fields) {
+      nextRef.mapValue.fields = {}
+    }
+
+    return navigateWithPartsAndEnsure(nextRef, remainingParts, originalPath)
+  }
+}
+
 // Lifecycle
 
 // Unified Field Modal handlers
@@ -950,48 +1151,78 @@ const handleFieldModalSave = async (data: {
     if (fieldModalMode.value === 'add') {
       // Handle add field
       const firestoreValue = createFirestoreValue(data.fieldType, data.fieldValue)
+
+
       const updatedFields = { ...selectedDocument.value.fields }
 
       if (data.parentPath) {
         // Check if adding to an array or map
         if (data.fieldPath?.includes('[new]')) {
           // Adding to an array
-          const pathParts = data.parentPath.split('.')
-          let current = updatedFields
+          try {
+            const arrayContainer = navigateToFieldPath(updatedFields, data.parentPath)
 
-          // Navigate to the array
-          for (let i = 0; i < pathParts.length - 1; i++) {
-            if (current[pathParts[i]]?.mapValue?.fields) {
-              current = current[pathParts[i]].mapValue.fields
+            if (arrayContainer?.arrayValue?.values) {
+              // Add the new item to the array
+              const newArray = JSON.parse(JSON.stringify(arrayContainer))
+              newArray.arrayValue.values.push(firestoreValue)
+
+              // Navigate to parent and update the array
+              const { parent, lastPart } = navigateToParentPath(updatedFields, data.parentPath)
+
+              if (lastPart.startsWith('[') && lastPart.endsWith(']')) {
+                // Array item within another structure
+                const index = parseInt(lastPart.substring(1, lastPart.length - 1))
+                if (parent.arrayValue?.values) {
+                  parent.arrayValue.values[index] = newArray
+                }
+              } else {
+                // Array field in a map
+                if (parent.mapValue?.fields) {
+                  parent.mapValue.fields[lastPart] = newArray
+                } else if (parent[lastPart]) {
+                  parent[lastPart] = newArray
+                }
+              }
             }
-          }
-
-          const arrayFieldName = pathParts[pathParts.length - 1]
-          if (current[arrayFieldName]?.arrayValue?.values) {
-            // Add the new item to the array
-            const newArray = JSON.parse(JSON.stringify(current[arrayFieldName]))
-            newArray.arrayValue.values.push(firestoreValue)
-            current[arrayFieldName] = newArray
+          } catch (error) {
+            console.error('Error navigating to array path:', {
+              parentPath: data.parentPath,
+              fieldPath: data.fieldPath,
+              error: error.message,
+              availableFields: Object.keys(updatedFields)
+            })
+            throw new Error(`Failed to add item to array at path "${data.parentPath}": ${error.message}`)
           }
         } else {
           // Adding to a nested map
-          const pathParts = data.parentPath.split('.')
-          let current = updatedFields
+          try {
+            // Navigate directly to the target map (not its parent)
+            const targetMap = navigateToFieldPath(updatedFields, data.parentPath)
 
-          // Navigate to the target map
-          for (const part of pathParts) {
-            if (current[part]?.mapValue?.fields) {
-              current = current[part].mapValue.fields
+            // Ensure the target is a map with fields
+            if (targetMap?.mapValue) {
+              if (!targetMap.mapValue.fields) {
+                targetMap.mapValue.fields = {}
+              }
+              targetMap.mapValue.fields[data.fieldName] = firestoreValue
+            } else {
+              throw new Error(`Target is not a map at path "${data.parentPath}". Found: ${JSON.stringify(targetMap)}`)
             }
+          } catch (error) {
+            console.error('Error navigating to target map for field addition:', {
+              parentPath: data.parentPath,
+              fieldName: data.fieldName,
+              error: error.message
+            })
+            throw new Error(`Failed to add field to map at path "${data.parentPath}": ${error.message}`)
           }
-
-          // Add the new field to the map
-          current[data.fieldName] = firestoreValue
         }
       } else {
         // Adding to root document
         updatedFields[data.fieldName] = firestoreValue
       }
+
 
       await firestoreStore.updateDocument(
         currentProjectId.value,
@@ -1006,35 +1237,29 @@ const handleFieldModalSave = async (data: {
       const fieldPath = data.fieldPath!
 
       // Handle different field path types
-      if (fieldPath.includes('[') && fieldPath.includes(']')) {
-        // Array item editing
-        const match = fieldPath.match(/^([^[]+)\[(\d+)\]$/)
-        if (match) {
-          const [, arrayFieldName, indexStr] = match
-          const index = parseInt(indexStr)
+      if (fieldPath.includes('.') || fieldPath.includes('[')) {
+        // Complex path (nested field or array item)
+        try {
+          const { parent, lastPart } = navigateToParentPath(updatedFields, fieldPath)
 
-          if (updatedFields[arrayFieldName]?.arrayValue?.values) {
-            // Deep clone the array
-            const newArray = JSON.parse(JSON.stringify(updatedFields[arrayFieldName]))
-            newArray.arrayValue.values[index] = firestoreValue
-            updatedFields[arrayFieldName] = newArray
+          if (lastPart.startsWith('[') && lastPart.endsWith(']')) {
+            // Array item editing
+            const index = parseInt(lastPart.substring(1, lastPart.length - 1))
+            if (parent.arrayValue?.values) {
+              parent.arrayValue.values[index] = firestoreValue
+            }
+          } else {
+            // Map field editing
+            if (parent.mapValue?.fields) {
+              parent.mapValue.fields[lastPart] = firestoreValue
+            } else {
+              throw new Error('Parent is not a map')
+            }
           }
+        } catch (error) {
+          console.error('Error navigating to field path for editing:', error)
+          throw error
         }
-      } else if (fieldPath.includes('.')) {
-        // Nested field editing (for maps)
-        const pathParts = fieldPath.split('.')
-        let current = updatedFields
-
-        // Navigate to parent
-        for (let i = 0; i < pathParts.length - 1; i++) {
-          if (current[pathParts[i]]?.mapValue?.fields) {
-            current = current[pathParts[i]].mapValue.fields
-          }
-        }
-
-        // Update the field
-        const finalKey = pathParts[pathParts.length - 1]
-        current[finalKey] = firestoreValue
       } else {
         // Root level field
         updatedFields[fieldPath] = firestoreValue
@@ -1050,6 +1275,11 @@ const handleFieldModalSave = async (data: {
 
     // Save expanded state before refresh
     const expandedFieldsCopy = new Set(expandedMapFields.value)
+
+    // If we're adding a field to a map, ensure the parent map is expanded
+    if (fieldModalMode.value === 'add' && data.parentPath) {
+      expandedFieldsCopy.add(data.parentPath)
+    }
 
     // Refresh document
     await firestoreStore.loadDocuments(currentProjectId.value, selectedCollection.value.id)
@@ -1071,6 +1301,22 @@ const handleFieldModalSave = async (data: {
 const handleFieldModalClose = () => {
   showFieldModal.value = false
 }
+
+// Watch for project changes and clear data
+watch(currentProjectId, async (newProjectId, oldProjectId) => {
+  if (newProjectId !== oldProjectId && oldProjectId) {
+    // Clear Firestore data when project changes
+    firestoreStore.clearData()
+    selectedCollection.value = null
+    selectedDocument.value = null
+    expandedMapFields.value.clear()
+
+    // Load collections for the new project
+    if (newProjectId) {
+      await refreshCollections()
+    }
+  }
+}, { immediate: false })
 
 onMounted(async () => {
   await refreshCollections()
