@@ -29,6 +29,7 @@ declare module 'vue' {
     NestedFieldRenderer: typeof import('./src/components/firestore/NestedFieldRenderer.vue')['default']
     ProjectSelector: typeof import('./src/components/navigation/ProjectSelector.vue')['default']
     PublishMessageModal: typeof import('./src/components/modals/PublishMessageModal.vue')['default']
+    RecursiveFieldViewer: typeof import('./src/components/firestore/RecursiveFieldViewer.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     StartCollectionModal: typeof import('./src/components/firestore/StartCollectionModal.vue')['default']

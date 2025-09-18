@@ -58,7 +58,7 @@ export const createFirestoreValue = (type: string, value: any): any => {
       // If value is from datetime-local input (YYYY-MM-DDTHH:mm), convert to full ISO
       if (value && typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/)) {
         // Add seconds and timezone to make it a valid ISO string
-        isoString = value + ':00.000Z'
+        isoString = `${value  }:00.000Z`
       } else if (value && typeof value === 'string' && !value.endsWith('Z')) {
         // If it's a datetime string but missing timezone, add it
         const date = new Date(value)

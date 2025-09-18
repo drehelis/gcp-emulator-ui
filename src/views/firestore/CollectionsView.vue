@@ -324,302 +324,143 @@
                 v-if="getFieldType(value) === 'map' && isMapFieldExpanded(fieldName)"
                 class="ml-5 space-y-1 border-l border-gray-200 dark:border-gray-600 pl-3"
               >
-                <div
+                <template
                   v-for="(subValue, subFieldName) in (value.mapValue.fields || {})"
                   :key="`${fieldName}.${subFieldName}`"
-                  class="group flex items-center justify-between text-sm p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                 >
-                  <div class="flex items-center min-w-0 flex-1">
-                    <!-- Nested map and array support -->
-                    <button
-                      v-if="getFieldType(subValue) === 'map' || getFieldType(subValue) === 'array'"
-                      @click="toggleMapField(`${fieldName}.${subFieldName}`)"
-                      class="p-0.5 mr-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-150"
-                    >
-                      <ChevronRightIcon
-                        :class="[
-                          'w-3 h-3 transition-transform duration-200',
-                          isMapFieldExpanded(`${fieldName}.${subFieldName}`) ? 'rotate-90' : ''
-                        ]"
+                  <!-- Main sub-field -->
+                  <div class="group flex items-center justify-between text-sm p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200">
+                    <div class="flex items-center min-w-0 flex-1">
+                      <!-- Nested map and array support -->
+                      <button
+                        v-if="getFieldType(subValue) === 'map' || getFieldType(subValue) === 'array'"
+                        @click="toggleMapField(`${fieldName}.${subFieldName}`)"
+                        class="p-0.5 mr-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-150"
+                      >
+                        <ChevronRightIcon
+                          :class="[
+                            'w-3 h-3 transition-transform duration-200',
+                            isMapFieldExpanded(`${fieldName}.${subFieldName}`) ? 'rotate-90' : ''
+                          ]"
+                        />
+                      </button>
+                      <div v-else class="w-4 mr-1"></div>
+
+                      <span class="text-blue-600 dark:text-blue-400 font-mono mr-1">{{ subFieldName }}:</span>
+
+                      <!-- For non-map/array fields, show the value -->
+                      <span
+                        v-if="getFieldType(subValue) !== 'map' && getFieldType(subValue) !== 'array'"
+                        class="text-gray-900 dark:text-white font-mono truncate"
+                      >
+                        "{{ formatFieldValue(subValue) }}"
+                      </span>
+
+                      <!-- For map fields, show map indicator -->
+                      <span
+                        v-else-if="getFieldType(subValue) === 'map'"
+                        class="text-gray-500 dark:text-gray-400 font-mono text-xs"
+                      >
+                        {{ Object.keys(subValue.mapValue.fields || {}).length }} fields
+                      </span>
+
+                      <!-- For array fields, show array indicator -->
+                      <span
+                        v-else-if="getFieldType(subValue) === 'array'"
+                        class="text-gray-500 dark:text-gray-400 font-mono text-xs"
+                      >
+                        {{ (subValue.arrayValue.values || []).length }} items
+                      </span>
+                    </div>
+
+                    <!-- Hover Actions for nested fields -->
+                    <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <span class="text-xs text-gray-500 dark:text-gray-400 font-mono">{{ getFieldType(subValue) }}</span>
+                      <button
+                        v-if="getFieldType(subValue) === 'map' || getFieldType(subValue) === 'array'"
+                        @click="getFieldType(subValue) === 'map' ? handleAddToMap(`${fieldName}.${subFieldName}`) : handleAddToArray(`${fieldName}.${subFieldName}`)"
+                        class="p-1 text-gray-400 hover:text-green-600 dark:hover:text-green-400 rounded transition-colors duration-150"
+                        :title="getFieldType(subValue) === 'map' ? 'Add field to map' : 'Add item to array'"
+                      >
+                        <PlusIcon class="w-3 h-3" />
+                      </button>
+                      <button
+                        v-else
+                        @click="handleEditField(`${fieldName}.${subFieldName}`, subFieldName, subValue)"
+                        class="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded transition-colors duration-150"
+                        title="Edit field"
+                      >
+                        <PencilIcon class="w-3 h-3" />
+                      </button>
+                      <button
+                        @click="handleDeleteField(`${fieldName}.${subFieldName}`, `${fieldName}.${subFieldName}`)"
+                        class="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded transition-colors duration-150"
+                        title="Delete field"
+                      >
+                        <TrashIcon class="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Nested map expansion for this specific sub-field -->
+                  <!-- Recursive nested content for second level maps and arrays -->
+                  <div
+                    v-if="(getFieldType(subValue) === 'map' || getFieldType(subValue) === 'array') && isMapFieldExpanded(`${fieldName}.${subFieldName}`)"
+                    class="ml-5 space-y-1 border-l border-gray-200 dark:border-gray-600 pl-3"
+                  >
+                    <template v-if="getFieldType(subValue) === 'map'">
+                      <RecursiveFieldViewer
+                        v-for="(nestedValue, nestedFieldName) in subValue.mapValue.fields"
+                        :key="nestedFieldName"
+                        :field-name="nestedFieldName"
+                        :field-value="nestedValue"
+                        :field-path="`${fieldName}.${subFieldName}.${nestedFieldName}`"
+                        :expanded-fields="expandedMapFields"
+                        @toggle-field="toggleMapField"
+                        @edit-field="(data) => handleEditField(data.path, data.fieldName, data.fieldValue)"
+                        @delete-field="(data) => handleDeleteField(data.path, data.displayName)"
+                        @add-to-map="handleAddToMap"
+                        @add-to-array="handleAddToArray"
                       />
-                    </button>
-                    <div v-else class="w-4 mr-1"></div>
-
-                    <span class="text-blue-600 dark:text-blue-400 font-mono mr-1">{{ subFieldName }}:</span>
-
-                    <!-- For non-map/array fields, show the value -->
-                    <span
-                      v-if="getFieldType(subValue) !== 'map' && getFieldType(subValue) !== 'array'"
-                      class="text-gray-900 dark:text-white font-mono truncate"
-                    >
-                      "{{ formatFieldValue(subValue) }}"
-                    </span>
-
-                    <!-- For map fields, show map indicator -->
-                    <span
-                      v-else-if="getFieldType(subValue) === 'map'"
-                      class="text-gray-500 dark:text-gray-400 font-mono text-xs"
-                    >
-                      {{ Object.keys(subValue.mapValue.fields || {}).length }} fields
-                    </span>
-
-                    <!-- For array fields, show array indicator -->
-                    <span
-                      v-else-if="getFieldType(subValue) === 'array'"
-                      class="text-gray-500 dark:text-gray-400 font-mono text-xs"
-                    >
-                      {{ (subValue.arrayValue.values || []).length }} items
-                    </span>
+                    </template>
+                    <template v-else-if="getFieldType(subValue) === 'array'">
+                      <RecursiveFieldViewer
+                        v-for="(arrayItem, arrayIndex) in subValue.arrayValue.values"
+                        :key="arrayIndex"
+                        :field-name="`[${arrayIndex}]`"
+                        :field-value="arrayItem"
+                        :field-path="`${fieldName}.${subFieldName}[${arrayIndex}]`"
+                        :expanded-fields="expandedMapFields"
+                        @toggle-field="toggleMapField"
+                        @edit-field="(data) => handleEditField(data.path, data.fieldName, data.fieldValue)"
+                        @delete-field="(data) => handleDeleteField(data.path, data.displayName)"
+                        @add-to-map="handleAddToMap"
+                        @add-to-array="handleAddToArray"
+                      />
+                    </template>
                   </div>
 
-                  <!-- Hover Actions for nested fields -->
-                  <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <span class="text-xs text-gray-500 dark:text-gray-400 font-mono">{{ getFieldType(subValue) }}</span>
-                    <button
-                      v-if="getFieldType(subValue) === 'map' || getFieldType(subValue) === 'array'"
-                      @click="getFieldType(subValue) === 'map' ? handleAddToMap(`${fieldName}.${subFieldName}`) : handleAddToArray(`${fieldName}.${subFieldName}`)"
-                      class="p-1 text-gray-400 hover:text-green-600 dark:hover:text-green-400 rounded transition-colors duration-150"
-                      :title="getFieldType(subValue) === 'map' ? 'Add field to map' : 'Add item to array'"
-                    >
-                      <PlusIcon class="w-3 h-3" />
-                    </button>
-                    <button
-                      v-else
-                      @click="handleEditField(`${fieldName}.${subFieldName}`, subFieldName, subValue)"
-                      class="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded transition-colors duration-150"
-                      title="Edit field"
-                    >
-                      <PencilIcon class="w-3 h-3" />
-                    </button>
-                    <button
-                      @click="handleDeleteField(`${fieldName}.${subFieldName}`, `${fieldName}.${subFieldName}`)"
-                      class="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded transition-colors duration-150"
-                      title="Delete field"
-                    >
-                      <TrashIcon class="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Second level nested map expansion -->
-                <template
-                  v-for="(subValue, subFieldName) in (value.mapValue.fields || {})"
-                  :key="`${fieldName}.${subFieldName}.nested`"
-                >
-                  <div
-                    v-if="getFieldType(subValue) === 'map' && isMapFieldExpanded(`${fieldName}.${subFieldName}`)"
-                    class="ml-5 space-y-1 border-l border-gray-200 dark:border-gray-600 pl-3"
-                  >
-                    <div
-                      v-for="(nestedValue, nestedFieldName) in subValue.mapValue.fields"
-                      :key="`${fieldName}.${subFieldName}.${nestedFieldName}`"
-                      class="group flex items-center justify-between text-sm p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-                    >
-                      <div class="flex items-center min-w-0 flex-1">
-                        <div class="w-4 mr-1"></div>
-                        <span class="text-blue-600 dark:text-blue-400 font-mono mr-1">{{ nestedFieldName }}:</span>
-                        <span class="text-gray-900 dark:text-white font-mono truncate">"{{ formatFieldValue(nestedValue) }}"</span>
-                      </div>
-
-                      <!-- Hover Actions for double-nested fields -->
-                      <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                        <span class="text-xs text-gray-500 dark:text-gray-400 font-mono">{{ getFieldType(nestedValue) }}</span>
-                        <button
-                          v-if="getFieldType(nestedValue) === 'map' || getFieldType(nestedValue) === 'array'"
-                          @click="getFieldType(nestedValue) === 'map' ? handleAddToMap(`${fieldName}.${subFieldName}.${nestedFieldName}`) : handleAddToArray(`${fieldName}.${subFieldName}.${nestedFieldName}`)"
-                          class="p-1 text-gray-400 hover:text-green-600 dark:hover:text-green-400 rounded transition-colors duration-150"
-                          :title="getFieldType(nestedValue) === 'map' ? 'Add field to map' : 'Add item to array'"
-                        >
-                          <PlusIcon class="w-3 h-3" />
-                        </button>
-                        <button
-                          v-else
-                          @click="handleEditField(`${fieldName}.${subFieldName}.${nestedFieldName}`, nestedFieldName, nestedValue)"
-                          class="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded transition-colors duration-150"
-                          title="Edit field"
-                        >
-                          <PencilIcon class="w-3 h-3" />
-                        </button>
-                        <button
-                          @click="handleDeleteField(`${fieldName}.${subFieldName}.${nestedFieldName}`, `${fieldName}.${subFieldName}.${nestedFieldName}`)"
-                          class="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded transition-colors duration-150"
-                          title="Delete field"
-                        >
-                          <TrashIcon class="w-3 h-3" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </template>
-
-                <!-- Second level nested array expansion -->
-                <template
-                  v-for="(subValue, subFieldName) in (value.mapValue.fields || {})"
-                  :key="`${fieldName}.${subFieldName}.array`"
-                >
-                  <div
-                    v-if="getFieldType(subValue) === 'array' && isMapFieldExpanded(`${fieldName}.${subFieldName}`)"
-                    class="ml-5 space-y-1 border-l border-gray-200 dark:border-gray-600 pl-3"
-                  >
-                    <div
-                      v-for="(arrayItem, arrayIndex) in (subValue.arrayValue.values || [])"
-                      :key="`${fieldName}.${subFieldName}[${arrayIndex}]`"
-                      class="group flex items-center justify-between text-sm p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-                    >
-                      <div class="flex items-center min-w-0 flex-1">
-                        <!-- Toggle button for nested maps/arrays in array -->
-                        <button
-                          v-if="getFieldType(arrayItem) === 'map' || getFieldType(arrayItem) === 'array'"
-                          @click="toggleMapField(`${fieldName}.${subFieldName}[${arrayIndex}]`)"
-                          class="p-0.5 mr-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-150"
-                        >
-                          <ChevronRightIcon
-                            :class="[
-                              'w-3 h-3 transition-transform duration-200',
-                              isMapFieldExpanded(`${fieldName}.${subFieldName}[${arrayIndex}]`) ? 'rotate-90' : ''
-                            ]"
-                          />
-                        </button>
-                        <div v-else class="w-4 mr-1"></div>
-
-                        <span class="text-purple-600 dark:text-purple-400 font-mono mr-1">[{{ arrayIndex }}]:</span>
-
-                        <!-- For non-map/array items, show the value -->
-                        <span
-                          v-if="getFieldType(arrayItem) !== 'map' && getFieldType(arrayItem) !== 'array'"
-                          class="text-gray-900 dark:text-white font-mono truncate"
-                        >
-                          "{{ formatFieldValue(arrayItem) }}"
-                        </span>
-
-                        <!-- For map items, show map indicator -->
-                        <span
-                          v-else-if="getFieldType(arrayItem) === 'map'"
-                          class="text-gray-500 dark:text-gray-400 font-mono text-xs"
-                        >
-                          {{ Object.keys(arrayItem.mapValue.fields).length }} fields
-                        </span>
-
-                        <!-- For nested array items, show array indicator -->
-                        <span
-                          v-else-if="getFieldType(arrayItem) === 'array'"
-                          class="text-gray-500 dark:text-gray-400 font-mono text-xs"
-                        >
-                          {{ (arrayItem.arrayValue.values || []).length }} items
-                        </span>
-                      </div>
-
-                      <!-- Hover Actions for nested array items -->
-                      <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                        <button
-                          v-if="getFieldType(arrayItem) === 'map' || getFieldType(arrayItem) === 'array'"
-                          @click="getFieldType(arrayItem) === 'map' ? handleAddToMap(`${fieldName}.${subFieldName}[${arrayIndex}]`) : handleAddToArray(`${fieldName}.${subFieldName}[${arrayIndex}]`)"
-                          class="p-1 text-gray-400 hover:text-green-600 dark:hover:text-green-400 rounded transition-colors duration-150"
-                          :title="getFieldType(arrayItem) === 'map' ? 'Add field to map' : 'Add item to array'"
-                        >
-                          <PlusIcon class="w-3 h-3" />
-                        </button>
-                        <button
-                          v-else
-                          @click="handleEditField(`${fieldName}.${subFieldName}[${arrayIndex}]`, `[${arrayIndex}]`, arrayItem)"
-                          class="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded transition-colors duration-150"
-                          title="Edit item"
-                        >
-                          <PencilIcon class="w-3 h-3" />
-                        </button>
-                        <button
-                          @click="handleDeleteField(`${fieldName}.${subFieldName}[${arrayIndex}]`, `${fieldName}.${subFieldName}[${arrayIndex}]`)"
-                          class="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded transition-colors duration-150"
-                          title="Delete item"
-                        >
-                          <TrashIcon class="w-3 h-3" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
                 </template>
               </div>
 
-              <!-- Expanded array fields -->
+              <!-- Recursive array field expansion -->
               <div
                 v-if="getFieldType(value) === 'array' && isMapFieldExpanded(fieldName)"
                 class="ml-5 space-y-1 border-l border-gray-200 dark:border-gray-600 pl-3"
               >
-                <div
+                <RecursiveFieldViewer
                   v-for="(arrayItem, arrayIndex) in (value.arrayValue.values || [])"
-                  :key="`${fieldName}[${arrayIndex}]`"
-                  class="group flex items-center justify-between text-sm p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-                >
-                  <div class="flex items-center min-w-0 flex-1">
-                    <!-- Toggle button for nested maps/arrays in array -->
-                    <button
-                      v-if="getFieldType(arrayItem) === 'map' || getFieldType(arrayItem) === 'array'"
-                      @click="toggleMapField(`${fieldName}[${arrayIndex}]`)"
-                      class="p-0.5 mr-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-150"
-                    >
-                      <ChevronRightIcon
-                        :class="[
-                          'w-3 h-3 transition-transform duration-200',
-                          isMapFieldExpanded(`${fieldName}[${arrayIndex}]`) ? 'rotate-90' : ''
-                        ]"
-                      />
-                    </button>
-                    <div v-else class="w-4 mr-1"></div>
-
-                    <span class="text-purple-600 dark:text-purple-400 font-mono mr-1">[{{ arrayIndex }}]:</span>
-
-                    <!-- For non-map/array items, show the value -->
-                    <span
-                      v-if="getFieldType(arrayItem) !== 'map' && getFieldType(arrayItem) !== 'array'"
-                      class="text-gray-900 dark:text-white font-mono truncate"
-                    >
-                      "{{ formatFieldValue(arrayItem) }}"
-                    </span>
-
-                    <!-- For map items, show map indicator -->
-                    <span
-                      v-else-if="getFieldType(arrayItem) === 'map'"
-                      class="text-gray-500 dark:text-gray-400 font-mono text-xs"
-                    >
-                      {{ Object.keys(arrayItem.mapValue.fields).length }} fields
-                    </span>
-
-                    <!-- For nested array items, show array indicator -->
-                    <span
-                      v-else-if="getFieldType(arrayItem) === 'array'"
-                      class="text-gray-500 dark:text-gray-400 font-mono text-xs"
-                    >
-                      {{ (arrayItem.arrayValue.values || []).length }} items
-                    </span>
-                  </div>
-
-                  <!-- Hover Actions for array items -->
-                  <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <button
-                      v-if="getFieldType(arrayItem) === 'map' || getFieldType(arrayItem) === 'array'"
-                      @click="getFieldType(arrayItem) === 'map' ? handleAddToMap(`${fieldName}[${arrayIndex}]`) : handleAddToArray(`${fieldName}[${arrayIndex}]`)"
-                      class="p-1 text-gray-400 hover:text-green-600 dark:hover:text-green-400 rounded transition-colors duration-150"
-                      :title="getFieldType(arrayItem) === 'map' ? 'Add field to map' : 'Add item to array'"
-                    >
-                      <PlusIcon class="w-3 h-3" />
-                    </button>
-                    <button
-                      v-else
-                      @click="handleEditField(`${fieldName}[${arrayIndex}]`, `[${arrayIndex}]`, arrayItem)"
-                      class="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded transition-colors duration-150"
-                      title="Edit item"
-                    >
-                      <PencilIcon class="w-3 h-3" />
-                    </button>
-                    <button
-                      @click="handleDeleteField(`${fieldName}[${arrayIndex}]`, `${fieldName}[${arrayIndex}]`)"
-                      class="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded transition-colors duration-150"
-                      title="Delete item"
-                    >
-                      <TrashIcon class="w-3 h-3" />
-                    </button>
-                  </div>
-                </div>
+                  :key="arrayIndex"
+                  :field-name="`[${arrayIndex}]`"
+                  :field-value="arrayItem"
+                  :field-path="`${fieldName}[${arrayIndex}]`"
+                  :expanded-fields="expandedMapFields"
+                  @toggle-field="toggleMapField"
+                  @edit-field="(data) => handleEditField(data.path, data.fieldName, data.fieldValue)"
+                  @delete-field="(data) => handleDeleteField(data.path, data.displayName)"
+                  @add-to-map="handleAddToMap"
+                  @add-to-array="handleAddToArray"
+                />
               </div>
             </template>
           </div>
@@ -721,6 +562,7 @@ import type { FirestoreDocument, FirestoreCollectionWithMetadata } from '@/types
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
 import FieldModal from '@/components/firestore/FieldModal.vue'
 import StartCollectionModal from '@/components/firestore/StartCollectionModal.vue'
+import RecursiveFieldViewer from '@/components/firestore/RecursiveFieldViewer.vue'
 import { createFirestoreValue } from '@/utils/fieldUtils'
 
 const route = useRoute()
@@ -755,9 +597,6 @@ const fieldModalData = ref({
 // Legacy field editor state (still needed for some functions)
 const showFieldEditor = ref(false)
 const fieldToEdit = ref<{ path: string; fieldName: string; fieldValue: any; isNew: boolean; parentPath?: string } | null>(null)
-const editFieldName = ref('')
-const editFieldType = ref('string')
-const editFieldValue = ref<any>('')
 
 // Computed properties
 const currentProjectId = computed(() => route.params.projectId as string)
@@ -890,7 +729,11 @@ const formatFieldValue = (value: any): string => {
     const items = value.arrayValue.values || []
     return `${items.length} items`
   }
-  if (value.mapValue !== undefined) return JSON.stringify(value.mapValue.fields, null, 2)
+  if (value.mapValue !== undefined) {
+    // Maps should not be formatted as string values - they should use the structured view
+    const fields = Object.keys(value.mapValue.fields || {})
+    return `${fields.length} fields`
+  }
   if (value.referenceValue !== undefined) return value.referenceValue
   if (value.geoPointValue !== undefined) return `${value.geoPointValue.latitude}, ${value.geoPointValue.longitude}`
   if (value.bytesValue !== undefined) return value.bytesValue
