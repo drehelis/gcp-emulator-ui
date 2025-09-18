@@ -232,7 +232,7 @@
           <div v-if="selectedDocument" class="mb-4">
             <div class="border-b border-gray-200 dark:border-gray-600 mb-3"></div>
             <button
-              @click="showAddFieldModal = true"
+              @click="handleShowAddFieldModal"
               class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors duration-200"
             >
               <PlusIcon class="w-3 h-3 mr-1" />
@@ -330,9 +330,9 @@
                   class="group flex items-center justify-between text-sm p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                 >
                   <div class="flex items-center min-w-0 flex-1">
-                    <!-- Nested map support -->
+                    <!-- Nested map and array support -->
                     <button
-                      v-if="getFieldType(subValue) === 'map'"
+                      v-if="getFieldType(subValue) === 'map' || getFieldType(subValue) === 'array'"
                       @click="toggleMapField(`${fieldName}.${subFieldName}`)"
                       class="p-0.5 mr-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-150"
                     >
@@ -347,9 +347,9 @@
 
                     <span class="text-blue-600 dark:text-blue-400 font-mono mr-1">{{ subFieldName }}:</span>
 
-                    <!-- For non-map fields, show the value -->
+                    <!-- For non-map/array fields, show the value -->
                     <span
-                      v-if="getFieldType(subValue) !== 'map'"
+                      v-if="getFieldType(subValue) !== 'map' && getFieldType(subValue) !== 'array'"
                       class="text-gray-900 dark:text-white font-mono truncate"
                     >
                       "{{ formatFieldValue(subValue) }}"
@@ -357,10 +357,18 @@
 
                     <!-- For map fields, show map indicator -->
                     <span
-                      v-else
+                      v-else-if="getFieldType(subValue) === 'map'"
                       class="text-gray-500 dark:text-gray-400 font-mono text-xs"
                     >
                       {{ Object.keys(subValue.mapValue.fields || {}).length }} fields
+                    </span>
+
+                    <!-- For array fields, show array indicator -->
+                    <span
+                      v-else-if="getFieldType(subValue) === 'array'"
+                      class="text-gray-500 dark:text-gray-400 font-mono text-xs"
+                    >
+                      {{ (subValue.arrayValue.values || []).length }} items
                     </span>
                   </div>
 
@@ -443,6 +451,93 @@
                     </div>
                   </div>
                 </template>
+
+                <!-- Second level nested array expansion -->
+                <template
+                  v-for="(subValue, subFieldName) in (value.mapValue.fields || {})"
+                  :key="`${fieldName}.${subFieldName}.array`"
+                >
+                  <div
+                    v-if="getFieldType(subValue) === 'array' && isMapFieldExpanded(`${fieldName}.${subFieldName}`)"
+                    class="ml-5 space-y-1 border-l border-gray-200 dark:border-gray-600 pl-3"
+                  >
+                    <div
+                      v-for="(arrayItem, arrayIndex) in (subValue.arrayValue.values || [])"
+                      :key="`${fieldName}.${subFieldName}[${arrayIndex}]`"
+                      class="group flex items-center justify-between text-sm p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                    >
+                      <div class="flex items-center min-w-0 flex-1">
+                        <!-- Toggle button for nested maps/arrays in array -->
+                        <button
+                          v-if="getFieldType(arrayItem) === 'map' || getFieldType(arrayItem) === 'array'"
+                          @click="toggleMapField(`${fieldName}.${subFieldName}[${arrayIndex}]`)"
+                          class="p-0.5 mr-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-150"
+                        >
+                          <ChevronRightIcon
+                            :class="[
+                              'w-3 h-3 transition-transform duration-200',
+                              isMapFieldExpanded(`${fieldName}.${subFieldName}[${arrayIndex}]`) ? 'rotate-90' : ''
+                            ]"
+                          />
+                        </button>
+                        <div v-else class="w-4 mr-1"></div>
+
+                        <span class="text-purple-600 dark:text-purple-400 font-mono mr-1">[{{ arrayIndex }}]:</span>
+
+                        <!-- For non-map/array items, show the value -->
+                        <span
+                          v-if="getFieldType(arrayItem) !== 'map' && getFieldType(arrayItem) !== 'array'"
+                          class="text-gray-900 dark:text-white font-mono truncate"
+                        >
+                          "{{ formatFieldValue(arrayItem) }}"
+                        </span>
+
+                        <!-- For map items, show map indicator -->
+                        <span
+                          v-else-if="getFieldType(arrayItem) === 'map'"
+                          class="text-gray-500 dark:text-gray-400 font-mono text-xs"
+                        >
+                          {{ Object.keys(arrayItem.mapValue.fields).length }} fields
+                        </span>
+
+                        <!-- For nested array items, show array indicator -->
+                        <span
+                          v-else-if="getFieldType(arrayItem) === 'array'"
+                          class="text-gray-500 dark:text-gray-400 font-mono text-xs"
+                        >
+                          {{ (arrayItem.arrayValue.values || []).length }} items
+                        </span>
+                      </div>
+
+                      <!-- Hover Actions for nested array items -->
+                      <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <button
+                          v-if="getFieldType(arrayItem) === 'map' || getFieldType(arrayItem) === 'array'"
+                          @click="getFieldType(arrayItem) === 'map' ? handleAddToMap(`${fieldName}.${subFieldName}[${arrayIndex}]`) : handleAddToArray(`${fieldName}.${subFieldName}[${arrayIndex}]`)"
+                          class="p-1 text-gray-400 hover:text-green-600 dark:hover:text-green-400 rounded transition-colors duration-150"
+                          :title="getFieldType(arrayItem) === 'map' ? 'Add field to map' : 'Add item to array'"
+                        >
+                          <PlusIcon class="w-3 h-3" />
+                        </button>
+                        <button
+                          v-else
+                          @click="handleEditField(`${fieldName}.${subFieldName}[${arrayIndex}]`, `[${arrayIndex}]`, arrayItem)"
+                          class="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded transition-colors duration-150"
+                          title="Edit item"
+                        >
+                          <PencilIcon class="w-3 h-3" />
+                        </button>
+                        <button
+                          @click="handleDeleteField(`${fieldName}.${subFieldName}[${arrayIndex}]`, `${fieldName}.${subFieldName}[${arrayIndex}]`)"
+                          class="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded transition-colors duration-150"
+                          title="Delete item"
+                        >
+                          <TrashIcon class="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </template>
               </div>
 
               <!-- Expanded array fields -->
@@ -500,7 +595,6 @@
 
                   <!-- Hover Actions for array items -->
                   <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <span class="text-xs text-gray-500 dark:text-gray-400 font-mono">{{ getFieldType(arrayItem) }}</span>
                     <button
                       v-if="getFieldType(arrayItem) === 'map' || getFieldType(arrayItem) === 'array'"
                       @click="getFieldType(arrayItem) === 'map' ? handleAddToMap(`${fieldName}[${arrayIndex}]`) : handleAddToArray(`${fieldName}[${arrayIndex}]`)"
@@ -592,172 +686,19 @@
       @cancel="cancelDeleteField"
     />
 
-    <!-- Advanced Field Editor Modal -->
-    <BaseModal
-      v-model="showFieldEditor"
-      :title="getModalTitle()"
-      size="3xl"
-      @close="cancelFieldEditor"
-    >
-      <div v-if="fieldToEdit" class="space-y-4">
-        <!-- Horizontal Field Editor Layout -->
-        <div class="grid grid-cols-12 gap-4 items-start">
-          <!-- Field Name -->
-          <div class="col-span-4">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Field Name</label>
-            <input
-              v-if="fieldToEdit.isNew && !isAddingToArray()"
-              v-model="editFieldName"
-              type="text"
-              placeholder="Field name"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-            />
-            <input
-              v-else
-              :value="editFieldName || fieldToEdit.fieldName"
-              type="text"
-              readonly
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-            />
-          </div>
-
-          <!-- Field Type Dropdown -->
-          <div class="col-span-3">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Field Type</label>
-            <select
-              v-model="editFieldType"
-              @change="handleTypeChange"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-            >
-              <option value="string">String</option>
-              <option value="number">Number</option>
-              <option value="boolean">Boolean</option>
-              <option value="null">Null</option>
-              <option value="timestamp">Timestamp</option>
-              <option value="map">Map</option>
-              <option value="array">Array</option>
-              <option value="geopoint">GeoPoint</option>
-              <option value="reference">Reference</option>
-            </select>
-          </div>
-
-          <!-- Field Value Input (for simple types only) -->
-          <div v-if="editFieldType !== 'map' && editFieldType !== 'array'" class="col-span-5">
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Field Value</label>
-
-            <!-- String -->
-            <textarea
-              v-if="editFieldType === 'string'"
-              v-model="editFieldValue"
-              placeholder="Enter string value"
-              rows="2"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-vertical"
-            />
-
-            <!-- Number -->
-            <input
-              v-else-if="editFieldType === 'number'"
-              v-model.number="editFieldValue"
-              type="number"
-              step="any"
-              placeholder="Enter number"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-            />
-
-            <!-- Boolean -->
-            <select
-              v-else-if="editFieldType === 'boolean'"
-              v-model="editFieldValue"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-            >
-              <option :value="true">true</option>
-              <option :value="false">false</option>
-            </select>
-
-            <!-- Timestamp -->
-            <input
-              v-else-if="editFieldType === 'timestamp'"
-              v-model="editFieldValue"
-              type="datetime-local"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-            />
-
-            <!-- Null -->
-            <div
-              v-else-if="editFieldType === 'null'"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm bg-gray-100 dark:bg-gray-600 text-gray-500 dark:text-gray-400 italic"
-            >
-              null
-            </div>
-
-            <!-- GeoPoint -->
-            <div v-else-if="editFieldType === 'geopoint'" class="grid grid-cols-2 gap-2">
-              <input
-                v-model.number="geoPoint.latitude"
-                @input="updateGeoPoint"
-                type="number"
-                step="any"
-                placeholder="Latitude"
-                class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-              />
-              <input
-                v-model.number="geoPoint.longitude"
-                @input="updateGeoPoint"
-                type="number"
-                step="any"
-                placeholder="Longitude"
-                class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-              />
-            </div>
-
-            <!-- Reference -->
-            <input
-              v-else-if="editFieldType === 'reference'"
-              v-model="editFieldValue"
-              type="text"
-              placeholder="projects/PROJECT_ID/databases/(default)/documents/..."
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
-            />
-          </div>
-        </div>
-        <!-- Complex Field Value (Map and Array) - Full Width Below -->
-        <div v-if="editFieldType === 'map' || editFieldType === 'array'" class="mt-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Field Value</label>
-          <div class="border border-gray-200 dark:border-gray-600 rounded-md p-2">
-            <FieldEditor
-              :field-name="''"
-              :field-value="editFieldValue"
-              :path="[]"
-              :level="0"
-              :can-edit-name="false"
-              :hide-type-selector="true"
-              :forced-type="editFieldType"
-              :hide-delete-button="true"
-              :hide-border="true"
-              :hide-field-name="true"
-              @update="handleFieldEditorUpdate"
-            />
-          </div>
-        </div>
-      </div>
-
-      <template #footer>
-        <button
-          type="button"
-          @click="cancelFieldEditor"
-          class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          @click="saveFieldEdit"
-          class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors"
-        >
-          Update
-        </button>
-      </template>
-    </BaseModal>
+    <!-- Unified Field Modal -->
+    <FieldModal
+      v-model="showFieldModal"
+      :mode="fieldModalMode"
+      :initial-field-name="fieldModalData.fieldName"
+      :initial-field-type="fieldModalData.fieldType"
+      :initial-field-value="fieldModalData.fieldValue"
+      :field-path="fieldModalData.fieldPath"
+      :is-new-field="fieldModalData.isNew"
+      :parent-path="fieldModalData.parentPath"
+      @save="handleFieldModalSave"
+      @close="handleFieldModalClose"
+    />
   </div>
 </template>
 
@@ -778,8 +719,9 @@ import {
 import { useFirestoreStore } from '@/stores/firestore'
 import type { FirestoreDocument, FirestoreCollectionWithMetadata } from '@/types'
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
-import FieldEditor from '@/components/firestore/FieldEditor.vue'
-import BaseModal from '@/components/ui/BaseModal.vue'
+import FieldModal from '@/components/firestore/FieldModal.vue'
+import StartCollectionModal from '@/components/firestore/StartCollectionModal.vue'
+import { createFirestoreValue } from '@/utils/fieldUtils'
 
 const route = useRoute()
 const firestoreStore = useFirestoreStore()
@@ -787,7 +729,6 @@ const firestoreStore = useFirestoreStore()
 // Reactive state
 const showCreateCollectionModal = ref(false)
 const showAddDocumentModal = ref(false)
-const showAddFieldModal = ref(false)
 const showCollectionMenu = ref(false)
 const showDeleteCollectionModal = ref(false)
 const isDeletingCollection = ref(false)
@@ -798,6 +739,20 @@ const expandedMapFields = ref<Set<string>>(new Set())
 const showDeleteFieldModal = ref(false)
 const isDeletingField = ref(false)
 const fieldToDelete = ref<{ path: string; displayName: string } | null>(null)
+
+// Unified field modal state
+const showFieldModal = ref(false)
+const fieldModalMode = ref<'add' | 'edit'>('add')
+const fieldModalData = ref({
+  fieldName: '',
+  fieldType: 'string',
+  fieldValue: '',
+  fieldPath: '',
+  isNew: false,
+  parentPath: ''
+})
+
+// Legacy field editor state (still needed for some functions)
 const showFieldEditor = ref(false)
 const fieldToEdit = ref<{ path: string; fieldName: string; fieldValue: any; isNew: boolean; parentPath?: string } | null>(null)
 const editFieldName = ref('')
@@ -931,9 +886,9 @@ const formatFieldValue = (value: any): string => {
   if (value.booleanValue !== undefined) return value.booleanValue.toString()
   if (value.timestampValue !== undefined) return value.timestampValue
   if (value.arrayValue !== undefined) {
-    // For arrays, we'll show them in structured view, not as JSON
+    // Arrays should not be formatted as string values - they should use the structured view
     const items = value.arrayValue.values || []
-    return `Array (${items.length} items)`
+    return `${items.length} items`
   }
   if (value.mapValue !== undefined) return JSON.stringify(value.mapValue.fields, null, 2)
   if (value.referenceValue !== undefined) return value.referenceValue
@@ -1059,58 +1014,42 @@ const cancelDeleteField = () => {
 }
 
 const handleEditField = (fieldPath: string, fieldName: string, fieldValue: any) => {
-  fieldToEdit.value = {
-    path: fieldPath,
+  fieldModalMode.value = 'edit'
+  fieldModalData.value = {
     fieldName,
-    fieldValue,
-    isNew: false
+    fieldType: getFieldType(fieldValue),
+    fieldValue: getEditableValue(fieldValue),
+    fieldPath,
+    isNew: false,
+    parentPath: ''
   }
-
-  // Initialize edit form with current values
-  editFieldName.value = fieldName
-  editFieldType.value = getFieldType(fieldValue)
-  editFieldValue.value = getEditableValue(fieldValue)
-
-  // Initialize geopoint if needed
-  if (editFieldType.value === 'geopoint' && typeof editFieldValue.value === 'object') {
-    geoPoint.value = { ...editFieldValue.value }
-  }
-
-  showFieldEditor.value = true
+  showFieldModal.value = true
 }
 
 const handleAddToMap = (fieldPath: string) => {
-  fieldToEdit.value = {
-    path: `${fieldPath}.newField`,
-    fieldName: 'newField',
-    fieldValue: { stringValue: '' },
+  fieldModalMode.value = 'add'
+  fieldModalData.value = {
+    fieldName: '',
+    fieldType: 'string',
+    fieldValue: '',
+    fieldPath: `${fieldPath}.newField`,
     isNew: true,
     parentPath: fieldPath
   }
-
-  // Initialize edit form for new field
-  editFieldName.value = 'newField'
-  editFieldType.value = 'string'
-  editFieldValue.value = ''
-
-  showFieldEditor.value = true
+  showFieldModal.value = true
 }
 
 const handleAddToArray = (fieldPath: string) => {
-  fieldToEdit.value = {
-    path: `${fieldPath}[new]`,
-    fieldName: 'newItem',
-    fieldValue: { stringValue: '' },
+  fieldModalMode.value = 'add'
+  fieldModalData.value = {
+    fieldName: '', // Array items don't need field names
+    fieldType: 'string',
+    fieldValue: '',
+    fieldPath: `${fieldPath}[new]`,
     isNew: true,
     parentPath: fieldPath
   }
-
-  // Initialize edit form for new array item
-  editFieldName.value = 'newItem' // This won't be shown since we're adding to array
-  editFieldType.value = 'string'
-  editFieldValue.value = ''
-
-  showFieldEditor.value = true
+  showFieldModal.value = true
 }
 
 
@@ -1127,12 +1066,6 @@ const handleKeyDown = (event: KeyboardEvent) => {
   }
 }
 
-const handleFieldEditorUpdate = (event: { path: string[], value: any }) => {
-  // The FieldEditor component handles its own nested editing,
-  // so we just need to update our editFieldValue with the root value
-  editFieldValue.value = event.value
-}
-
 const getEditableValue = (firestoreValue: any): any => {
   if (firestoreValue.stringValue !== undefined) return firestoreValue.stringValue
   if (firestoreValue.integerValue !== undefined) return Number(firestoreValue.integerValue)
@@ -1144,150 +1077,62 @@ const getEditableValue = (firestoreValue: any): any => {
   return ''
 }
 
-// Legacy createFirestoreValue function - replaced by convertToFirestoreValue
-// const createFirestoreValue = (type: string, value: any): any => { ... }
+// Lifecycle
 
-// Smart conversion that detects type from value - used with FieldEditor
-const convertToFirestoreValue = (value: any): any => {
-  if (value === null || value === undefined) {
-    return { nullValue: null }
+// Unified Field Modal handlers
+const handleShowAddFieldModal = () => {
+  fieldModalMode.value = 'add'
+  fieldModalData.value = {
+    fieldName: '',
+    fieldType: 'string',
+    fieldValue: '',
+    fieldPath: '',
+    isNew: true,
+    parentPath: ''
   }
-  if (typeof value === 'string') {
-    return { stringValue: value }
-  }
-  if (typeof value === 'number') {
-    return Number.isInteger(value) ? { integerValue: String(value) } : { doubleValue: value }
-  }
-  if (typeof value === 'boolean') {
-    return { booleanValue: value }
-  }
-  if (Array.isArray(value)) {
-    return {
-      arrayValue: {
-        values: value.map(item => convertToFirestoreValue(item))
-      }
-    }
-  }
-  if (typeof value === 'object') {
-    // Handle special objects like GeoPoint
-    if (value.latitude !== undefined && value.longitude !== undefined) {
-      return { geoPointValue: value }
-    }
-    // Handle regular maps
-    const fields: Record<string, any> = {}
-    for (const [key, val] of Object.entries(value)) {
-      // Skip temporary keys
-      if (!key.startsWith('_temp_')) {
-        fields[key] = convertToFirestoreValue(val)
-      }
-    }
-    return { mapValue: { fields } }
-  }
-  // Fallback to string
-  return { stringValue: String(value) }
+  showFieldModal.value = true
 }
 
-const createFirestoreValue = (type: string, value: any): any => {
-  switch (type) {
-    case 'string':
-      return { stringValue: String(value) }
-    case 'number':
-      return { integerValue: String(Number(value)) }
-    case 'boolean':
-      return { booleanValue: Boolean(value) }
-    case 'null':
-      return { nullValue: null }
-    case 'timestamp':
-      return { timestampValue: value }
-    case 'reference':
-      return { referenceValue: String(value) }
-    case 'geopoint': {
-      const geoValue = typeof value === 'object' ? value : { latitude: 0, longitude: 0 }
-      return { geoPointValue: geoValue }
-    }
-    case 'map':
-      return { mapValue: { fields: {} } }
-    case 'array':
-      return { arrayValue: { values: [] } }
-    default:
-      return { stringValue: String(value) }
-  }
-}
-
-const geoPoint = ref({ latitude: 0, longitude: 0 })
-
-const handleTypeChange = () => {
-  // Reset value when type changes
-  if (editFieldType.value === 'null') {
-    editFieldValue.value = null
-  } else if (editFieldType.value === 'boolean') {
-    editFieldValue.value = false
-  } else if (editFieldType.value === 'number') {
-    editFieldValue.value = 0
-  } else if (editFieldType.value === 'geopoint') {
-    geoPoint.value = { latitude: 0, longitude: 0 }
-    editFieldValue.value = geoPoint.value
-  } else {
-    editFieldValue.value = ''
-  }
-}
-
-const updateGeoPoint = () => {
-  editFieldValue.value = { ...geoPoint.value }
-}
-
-const isAddingToArray = (): boolean => {
-  if (!fieldToEdit.value?.parentPath) return false
-
-  // Check if we're adding to an array by looking at the parent field type
-  const parentPath = fieldToEdit.value.parentPath
-  if (!selectedDocument.value?.fields) return false
-
-  // For root level arrays
-  if (!parentPath.includes('.') && !parentPath.includes('[')) {
-    const parentField = selectedDocument.value.fields[parentPath]
-    return parentField?.arrayValue !== undefined
-  }
-
-  // For nested arrays (basic check)
-  return parentPath.includes('[') || false
-}
-
-const getModalTitle = (): string => {
-  if (!fieldToEdit.value) return 'Edit field'
-
-  if (fieldToEdit.value.isNew) {
-    if (isAddingToArray()) {
-      return 'Add item to array'
-    } else {
-      return 'Add field'
-    }
-  } else {
-    return 'Edit field'
-  }
-}
-
-const saveFieldEdit = async () => {
-  if (!fieldToEdit.value || !selectedDocument.value || !selectedCollection.value) return
+const handleFieldModalSave = async (data: {
+  fieldName: string
+  fieldType: string
+  fieldValue: any
+  fieldPath?: string
+  isNewField?: boolean
+  parentPath?: string
+}) => {
+  if (!selectedDocument.value || !selectedCollection.value) return
 
   try {
-    const updatedFields = { ...selectedDocument.value.fields }
-    const firestoreValue = editFieldType.value === 'map' || editFieldType.value === 'array'
-      ? convertToFirestoreValue(editFieldValue.value)
-      : createFirestoreValue(editFieldType.value, editFieldValue.value)
-    const path = fieldToEdit.value.path
+    if (fieldModalMode.value === 'add') {
+      // Handle add field
+      const firestoreValue = createFirestoreValue(data.fieldType, data.fieldValue)
+      const updatedFields = { ...selectedDocument.value.fields }
 
-    if (fieldToEdit.value.isNew) {
-      // Handle adding new field
-      if (fieldToEdit.value.parentPath) {
-        const parentPath = fieldToEdit.value.parentPath
+      if (data.parentPath) {
+        // Check if adding to an array or map
+        if (data.fieldPath?.includes('[new]')) {
+          // Adding to an array
+          const pathParts = data.parentPath.split('.')
+          let current = updatedFields
 
-        if (parentPath.includes('[') && parentPath.includes(']')) {
-          // Adding to a nested array (not implemented yet)
-          console.log('Adding to nested array not fully implemented')
-        } else if (parentPath.includes('.')) {
-          // Adding to a nested map field
-          const pathParts = parentPath.split('.')
+          // Navigate to the array
+          for (let i = 0; i < pathParts.length - 1; i++) {
+            if (current[pathParts[i]]?.mapValue?.fields) {
+              current = current[pathParts[i]].mapValue.fields
+            }
+          }
+
+          const arrayFieldName = pathParts[pathParts.length - 1]
+          if (current[arrayFieldName]?.arrayValue?.values) {
+            // Add the new item to the array
+            const newArray = JSON.parse(JSON.stringify(current[arrayFieldName]))
+            newArray.arrayValue.values.push(firestoreValue)
+            current[arrayFieldName] = newArray
+          }
+        } else {
+          // Adding to a nested map
+          const pathParts = data.parentPath.split('.')
           let current = updatedFields
 
           // Navigate to the target map
@@ -1298,30 +1143,29 @@ const saveFieldEdit = async () => {
           }
 
           // Add the new field to the map
-          current[editFieldName.value] = firestoreValue
-        } else {
-          // Adding to root level array or map
-          if (updatedFields[parentPath]?.arrayValue?.values) {
-            // Adding to array - append new item
-            const newArray = JSON.parse(JSON.stringify(updatedFields[parentPath]))
-            newArray.arrayValue.values.push(firestoreValue)
-            updatedFields[parentPath] = newArray
-          } else if (updatedFields[parentPath]?.mapValue?.fields) {
-            // Adding to map - add new field
-            const newMap = JSON.parse(JSON.stringify(updatedFields[parentPath]))
-            newMap.mapValue.fields[editFieldName.value] = firestoreValue
-            updatedFields[parentPath] = newMap
-          }
+          current[data.fieldName] = firestoreValue
         }
       } else {
-        // Adding to root level
-        updatedFields[editFieldName.value] = firestoreValue
+        // Adding to root document
+        updatedFields[data.fieldName] = firestoreValue
       }
+
+      await firestoreStore.updateDocument(
+        currentProjectId.value,
+        selectedCollection.value.id,
+        getDocumentId(selectedDocument.value.name),
+        { fields: updatedFields }
+      )
     } else {
-      // Handle editing existing field
-      if (path.includes('[') && path.includes(']')) {
+      // Handle edit field
+      const firestoreValue = createFirestoreValue(data.fieldType, data.fieldValue)
+      const updatedFields = { ...selectedDocument.value.fields }
+      const fieldPath = data.fieldPath!
+
+      // Handle different field path types
+      if (fieldPath.includes('[') && fieldPath.includes(']')) {
         // Array item editing
-        const match = path.match(/^([^[]+)\[(\d+)\]$/)
+        const match = fieldPath.match(/^([^[]+)\[(\d+)\]$/)
         if (match) {
           const [, arrayFieldName, indexStr] = match
           const index = parseInt(indexStr)
@@ -1333,9 +1177,9 @@ const saveFieldEdit = async () => {
             updatedFields[arrayFieldName] = newArray
           }
         }
-      } else if (path.includes('.')) {
+      } else if (fieldPath.includes('.')) {
         // Nested field editing (for maps)
-        const pathParts = path.split('.')
+        const pathParts = fieldPath.split('.')
         let current = updatedFields
 
         // Navigate to parent
@@ -1350,40 +1194,41 @@ const saveFieldEdit = async () => {
         current[finalKey] = firestoreValue
       } else {
         // Root level field
-        updatedFields[path] = firestoreValue
+        updatedFields[fieldPath] = firestoreValue
       }
-    }
 
-    // Update the document
-    await firestoreStore.updateDocument(
-      currentProjectId.value,
-      selectedCollection.value.id,
-      getDocumentId(selectedDocument.value.name),
-      { fields: updatedFields }
-    )
+      await firestoreStore.updateDocument(
+        currentProjectId.value,
+        selectedCollection.value.id,
+        getDocumentId(selectedDocument.value.name),
+        { fields: updatedFields }
+      )
+    }
 
     // Save expanded state before refresh
     const expandedFieldsCopy = new Set(expandedMapFields.value)
 
-    // Refresh and reselect document
+    // Refresh document
     await firestoreStore.loadDocuments(currentProjectId.value, selectedCollection.value.id)
     const docs = documents.value
     const currentDocId = getDocumentId(selectedDocument.value.name)
     const foundDoc = docs.find(doc => getDocumentId(doc.name) === currentDocId)
     if (foundDoc) {
       selectDocument(foundDoc)
-      // Restore expanded state after editing/adding
+      // Restore expanded state after refresh
       expandedMapFields.value = expandedFieldsCopy
     }
 
-    showFieldEditor.value = false
-    fieldToEdit.value = null
+    showFieldModal.value = false
   } catch (error) {
     console.error('Failed to save field:', error)
   }
 }
 
-// Lifecycle
+const handleFieldModalClose = () => {
+  showFieldModal.value = false
+}
+
 onMounted(async () => {
   await refreshCollections()
   document.addEventListener('click', handleClickOutside)

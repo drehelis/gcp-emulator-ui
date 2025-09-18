@@ -46,7 +46,7 @@
               v-model="stringValue"
               @input="updateValue"
               placeholder="Enter string value"
-              rows="2"
+              rows="1"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-vertical"
             />
 
@@ -119,13 +119,16 @@
             <!-- Map (Object) -->
             <div v-else-if="fieldType === 'map'" :class="hideBorder ? '' : 'border border-gray-200 dark:border-gray-600 rounded-md'">
               <div class="p-3 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50">
-                <div class="flex items-center justify-end">
-                  <button
-                    @click="addMapField"
-                    class="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-                  >
-                    Add Field
-                  </button>
+                <div class="flex items-center justify-between">
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Map Fields</span>
+                  <div class="flex gap-2">
+                    <button
+                      @click="addMapField"
+                      class="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                      Add Field
+                    </button>
+                  </div>
                 </div>
               </div>
               <div v-if="Object.keys(mapValue).length === 0" class="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
@@ -147,16 +150,6 @@
                 <div class="flex items-center justify-between">
                   <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Array Items</span>
                   <div class="flex gap-2">
-                    <select
-                      v-model="newArrayItemType"
-                      class="text-xs border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-700"
-                    >
-                      <option value="string">String</option>
-                      <option value="number">Number</option>
-                      <option value="boolean">Boolean</option>
-                      <option value="map">Map</option>
-                      <option value="null">Null</option>
-                    </select>
                     <button
                       @click="addArrayItem"
                       class="text-xs px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -242,7 +235,6 @@ const referenceValue = ref('')
 const mapValue = ref<Record<string, any>>({})
 const arrayValue = ref<any[]>([])
 const geoPoint = ref({ latitude: 0, longitude: 0 })
-const newArrayItemType = ref('string')
 
 // Initialize values based on field type
 function getInitialType(value: any): string {
@@ -365,26 +357,8 @@ function handleNestedUpdate(event: { path: (string | number)[], value: any }) {
 }
 
 function addArrayItem() {
-  let defaultValue: any
-  switch (newArrayItemType.value) {
-    case 'string':
-      defaultValue = ''
-      break
-    case 'number':
-      defaultValue = 0
-      break
-    case 'boolean':
-      defaultValue = false
-      break
-    case 'map':
-      defaultValue = {}
-      break
-    case 'null':
-      defaultValue = null
-      break
-    default:
-      defaultValue = ''
-  }
+  // Default to adding a string item
+  const defaultValue = ''
 
   arrayValue.value.push(defaultValue)
   updateValue()

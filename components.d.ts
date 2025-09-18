@@ -16,6 +16,8 @@ declare module 'vue' {
     CreateTopicModal: typeof import('./src/components/modals/CreateTopicModal.vue')['default']
     DocumentField: typeof import('./src/components/firestore/DocumentField.vue')['default']
     FieldEditor: typeof import('./src/components/firestore/FieldEditor.vue')['default']
+    FieldFormComponent: typeof import('./src/components/firestore/FieldFormComponent.vue')['default']
+    FieldModal: typeof import('./src/components/firestore/FieldModal.vue')['default']
     FieldRenderer: typeof import('./src/components/firestore/FieldRenderer.vue')['default']
     GlobalSearch: typeof import('./src/components/search/GlobalSearch.vue')['default']
     ImportComponent: typeof import('./src/components/import-export/ImportComponent.vue')['default']
