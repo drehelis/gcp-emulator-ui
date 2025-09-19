@@ -44,6 +44,13 @@
         </div>
       </div>
 
+      <!-- Success Notification -->
+      <SuccessNotification
+        :show="!!saveAndAddAnother.lastSavedId.value"
+        :message="saveAndAddAnother.lastSavedId.value ? saveAndAddAnother.getSuccessMessage('collection', saveAndAddAnother.lastSavedId.value) : ''"
+        @clear="handleClearFields"
+      />
+
       <!-- First Document Configuration -->
       <DocumentEditor
         title="First Document"
@@ -64,7 +71,9 @@
 import { ref, computed, watch, nextTick } from 'vue'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
 import DocumentEditor from './DocumentEditor.vue'
+import SuccessNotification from '@/components/ui/SuccessNotification.vue'
 import { useDocumentForm } from '@/composables/useDocumentForm'
+import { useSaveAndAddAnother } from '@/composables/useSaveAndAddAnother'
 
 interface Props {
   modelValue: boolean
@@ -81,6 +90,9 @@ const emit = defineEmits<Emits>()
 
 // Use document form composable
 const documentForm = useDocumentForm()
+
+// Use save and add another composable
+const saveAndAddAnother = useSaveAndAddAnother()
 
 // Local form state
 const collectionIdInput = ref<HTMLInputElement>()
@@ -123,6 +135,12 @@ const resetForm = () => {
   collectionId.value = ''
   documentForm.resetForm()
   hasValidationError.value = false
+  saveAndAddAnother.clearNotification()
+}
+
+const handleClearFields = () => {
+  documentForm.resetForm()
+  saveAndAddAnother.clearNotification()
 }
 
 const handleSave = async () => {
@@ -161,9 +179,46 @@ const handleSave = async () => {
 }
 
 const handleSaveAndAddAnother = async () => {
-  await handleSave()
-  // If save was successful, the modal will be closed and then reopened
-  // This would be handled by the parent component
+  hasValidationError.value = true
+  if (!isFormValid.value) return
+
+  try {
+    documentForm.loading.value = true
+
+    // Import the store dynamically to avoid circular dependency
+    const { useFirestoreStore } = await import('@/stores/firestore')
+    const firestoreStore = useFirestoreStore()
+
+    const documentFields = documentForm.buildDocumentFields()
+
+    // Create collection with first document
+    const success = await firestoreStore.createCollection(
+      props.projectId,
+      collectionId.value,
+      {
+        fields: documentFields
+      },
+      documentForm.documentId.value || undefined
+    )
+
+    if (success) {
+      const savedCollectionId = collectionId.value
+
+      // Set the notification for the saved collection
+      saveAndAddAnother.setLastSaved(savedCollectionId)
+
+      // Clear collection ID and document ID, but keep field values
+      collectionId.value = ''
+      documentForm.documentId.value = ''
+
+      // Emit created event but DON'T close the modal
+      emit('created', savedCollectionId)
+    }
+  } catch (error) {
+    console.error('Failed to create collection:', error)
+  } finally {
+    documentForm.loading.value = false
+  }
 }
 
 const handleClose = () => {

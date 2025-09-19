@@ -36,6 +36,7 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     StartCollectionModal: typeof import('./src/components/firestore/StartCollectionModal.vue')['default']
     SubscriptionMessagesModal: typeof import('./src/components/modals/SubscriptionMessagesModal.vue')['default']
+    SuccessNotification: typeof import('./src/components/ui/SuccessNotification.vue')['default']
     TemplateVariableInput: typeof import('./src/components/ui/TemplateVariableInput.vue')['default']
     TopicDetailsModal: typeof import('./src/components/modals/TopicDetailsModal.vue')['default']
   }

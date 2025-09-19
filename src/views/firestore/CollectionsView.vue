@@ -229,10 +229,16 @@
                   @click.stop
                 >
                   <button
+                    @click="handleAddSimilarDocument"
+                    class="w-full px-3 py-2 text-left text-sm font-sans font-normal text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 rounded-lg"
+                  >
+                    Clone document
+                  </button>
+                  <button
                     @click="handleDeleteAllFields"
                     class="w-full px-3 py-2 text-left text-sm font-sans font-normal text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 rounded-lg"
                   >
-                    Delete all fields in document
+                    Clear all fields
                   </button>
                   <button
                     @click="handleDeleteDocument"
@@ -529,7 +535,9 @@
       v-model="showAddDocumentModal"
       :project-id="currentProjectId"
       :collection-id="selectedCollection?.id || ''"
+      :clone-document="cloneDocumentData"
       @created="handleDocumentCreated"
+      @close="cloneDocumentData = null"
     />
 
     <!-- Delete Collection Confirmation Modal -->
@@ -637,6 +645,7 @@ const firestoreStore = useFirestoreStore()
 // Reactive state
 const showCreateCollectionModal = ref(false)
 const showAddDocumentModal = ref(false)
+const cloneDocumentData = ref<FirestoreDocument | null>(null)
 const showCollectionMenu = ref(false)
 const showDeleteCollectionModal = ref(false)
 const isDeletingCollection = ref(false)
@@ -793,7 +802,15 @@ const cancelDeleteCollection = () => {
   collectionToDelete.value = null
 }
 
-// Document deletion handlers
+// Document handlers
+const handleAddSimilarDocument = () => {
+  showDocumentMenu.value = false
+  if (selectedDocument.value) {
+    cloneDocumentData.value = selectedDocument.value
+    showAddDocumentModal.value = true
+  }
+}
+
 const handleDeleteDocument = () => {
   showDocumentMenu.value = false
   if (selectedDocument.value) {

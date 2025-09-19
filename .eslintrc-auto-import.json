@@ -271,6 +271,7 @@
     "useRoute": true,
     "useRouter": true,
     "useSSRWidth": true,
+    "useSaveAndAddAnother": true,
     "useScreenOrientation": true,
     "useScreenSafeArea": true,
     "useScriptTag": true,

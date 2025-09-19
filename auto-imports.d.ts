@@ -257,6 +257,7 @@ declare global {
   const useRoute: typeof import('vue-router')['useRoute']
   const useRouter: typeof import('vue-router')['useRouter']
   const useSSRWidth: typeof import('@vueuse/core')['useSSRWidth']
+  const useSaveAndAddAnother: typeof import('./src/composables/useSaveAndAddAnother')['useSaveAndAddAnother']
   const useScreenOrientation: typeof import('@vueuse/core')['useScreenOrientation']
   const useScreenSafeArea: typeof import('@vueuse/core')['useScreenSafeArea']
   const useScriptTag: typeof import('@vueuse/core')['useScriptTag']

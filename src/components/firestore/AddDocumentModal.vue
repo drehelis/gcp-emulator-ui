@@ -24,6 +24,13 @@
         </div>
       </div>
 
+      <!-- Success Notification -->
+      <SuccessNotification
+        :show="!!saveAndAddAnother.lastSavedId.value"
+        :message="saveAndAddAnother.lastSavedId.value ? saveAndAddAnother.getSuccessMessage('document', saveAndAddAnother.lastSavedId.value) : ''"
+        @clear="handleClearFields"
+      />
+
       <!-- Document Editor -->
       <DocumentEditor
         title="New Document"
@@ -43,13 +50,17 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
+import type { FirestoreDocument } from '@/types'
 import DocumentEditor from './DocumentEditor.vue'
+import SuccessNotification from '@/components/ui/SuccessNotification.vue'
 import { useDocumentForm } from '@/composables/useDocumentForm'
+import { useSaveAndAddAnother } from '@/composables/useSaveAndAddAnother'
 
 interface Props {
   modelValue: boolean
   projectId: string
   collectionId: string
+  cloneDocument?: FirestoreDocument | null
 }
 
 interface Emits {
@@ -62,6 +73,9 @@ const emit = defineEmits<Emits>()
 
 // Use document form composable
 const documentForm = useDocumentForm()
+
+// Use save and add another composable
+const saveAndAddAnother = useSaveAndAddAnother()
 
 // Computed
 const isOpen = computed({
@@ -102,6 +116,12 @@ const modalActions = computed<ModalAction[]>(() => [
 // Methods
 const resetForm = () => {
   documentForm.resetForm()
+  saveAndAddAnother.clearNotification()
+}
+
+const handleClearFields = () => {
+  documentForm.resetForm()
+  saveAndAddAnother.clearNotification()
 }
 
 const handleSave = async () => {
@@ -138,9 +158,42 @@ const handleSave = async () => {
 }
 
 const handleSaveAndAddAnother = async () => {
-  await handleSave()
-  // If save was successful, the modal will be closed and then reopened
-  // This would be handled by the parent component
+  try {
+    documentForm.loading.value = true
+
+    // Import the store dynamically to avoid circular dependency
+    const { useFirestoreStore } = await import('@/stores/firestore')
+    const firestoreStore = useFirestoreStore()
+
+    const documentFields = documentForm.buildDocumentFields()
+
+    // Create document in existing collection
+    const success = await firestoreStore.createDocument(
+      props.projectId,
+      props.collectionId,
+      {
+        fields: documentFields
+      },
+      documentForm.documentId.value || undefined
+    )
+
+    if (success) {
+      const finalDocumentId = documentForm.documentId.value || success.name.split('/').pop() || 'unknown'
+
+      // Set the notification for the saved document
+      saveAndAddAnother.setLastSaved(finalDocumentId)
+
+      // Clear only the document ID, keep the field values
+      documentForm.documentId.value = ''
+
+      // Emit created event but DON'T close the modal
+      emit('created', finalDocumentId)
+    }
+  } catch (error) {
+    console.error('Failed to create document:', error)
+  } finally {
+    documentForm.loading.value = false
+  }
 }
 
 const handleClose = () => {
@@ -152,10 +205,66 @@ const handleCancel = () => {
   resetForm()
 }
 
-// Watch for modelValue prop changes to reset form
+// Helper function to convert Firestore document fields to form fields
+const convertFirestoreFieldsToFormFields = (firestoreFields: any): any[] => {
+  const fields: any[] = []
+
+  Object.entries(firestoreFields || {}).forEach(([fieldName, fieldValue]: [string, any]) => {
+    // Determine the field type and value from Firestore format
+    let type = 'string'
+    let value = ''
+
+    if (fieldValue.stringValue !== undefined) {
+      type = 'string'
+      value = fieldValue.stringValue
+    } else if (fieldValue.integerValue !== undefined) {
+      type = 'number'
+      value = fieldValue.integerValue
+    } else if (fieldValue.doubleValue !== undefined) {
+      type = 'number'
+      value = fieldValue.doubleValue
+    } else if (fieldValue.booleanValue !== undefined) {
+      type = 'boolean'
+      value = fieldValue.booleanValue
+    } else if (fieldValue.nullValue !== undefined) {
+      type = 'null'
+      value = null
+    } else if (fieldValue.timestampValue !== undefined) {
+      type = 'timestamp'
+      value = fieldValue.timestampValue
+    } else if (fieldValue.arrayValue !== undefined) {
+      type = 'array'
+      value = JSON.stringify(fieldValue.arrayValue.values || [])
+    } else if (fieldValue.mapValue !== undefined) {
+      type = 'map'
+      value = JSON.stringify(fieldValue.mapValue.fields || {})
+    }
+
+    fields.push({
+      id: `field_${Date.now()}_${Math.random()}`,
+      name: fieldName,
+      type,
+      value
+    })
+  })
+
+  return fields
+}
+
+// Watch for modelValue prop changes to reset form or populate from clone
 watch(() => props.modelValue, async (newValue) => {
   if (newValue) {
-    resetForm()
+    if (props.cloneDocument) {
+      // Populate form with cloned document data
+      documentForm.resetForm()
+      documentForm.documentId.value = '' // Clear document ID for new document
+
+      // Convert Firestore fields to form fields format
+      const formFields = convertFirestoreFieldsToFormFields(props.cloneDocument.fields)
+      documentForm.fields.value = formFields
+    } else {
+      resetForm()
+    }
     await nextTick()
   }
 })
