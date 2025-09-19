@@ -1,7 +1,7 @@
 <template>
   <BaseModal
     v-model="isOpen"
-    title="Start Collection"
+    :title="props.parentDocumentPath ? 'Start Subcollection' : 'Start Collection'"
     size="5xl"
     :actions="modalActions"
     @close="handleClose"
@@ -18,8 +18,11 @@
               Parent Path
             </label>
             <div class="px-3 py-2 bg-gray-100 dark:bg-gray-600 rounded-md text-sm font-mono text-gray-900 dark:text-white">
-              /
+              {{ props.parentDocumentPath ? props.parentDocumentPath : '/' }}
             </div>
+            <p v-if="props.parentDocumentPath" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              This subcollection will be created inside the selected document.
+            </p>
           </div>
 
           <!-- Collection ID -->
@@ -78,6 +81,8 @@ import { useSaveAndAddAnother } from '@/composables/useSaveAndAddAnother'
 interface Props {
   modelValue: boolean
   projectId: string
+  parentDocumentPath?: string
+  navigationPath?: Array<{type: 'collection' | 'document', id: string, name: string}>
 }
 
 interface Emits {
@@ -156,15 +161,28 @@ const handleSave = async () => {
 
     const documentFields = documentForm.buildDocumentFields()
 
-    // Create collection with first document
-    const success = await firestoreStore.createCollection(
-      props.projectId,
-      collectionId.value,
-      {
-        fields: documentFields
-      },
-      documentForm.documentId.value || undefined
-    )
+    let success
+    if (props.parentDocumentPath) {
+      // Create subcollection
+      success = await firestoreStore.createSubcollection(
+        props.parentDocumentPath,
+        collectionId.value,
+        {
+          fields: documentFields
+        },
+        documentForm.documentId.value || undefined
+      )
+    } else {
+      // Create root-level collection
+      success = await firestoreStore.createCollection(
+        props.projectId,
+        collectionId.value,
+        {
+          fields: documentFields
+        },
+        documentForm.documentId.value || undefined
+      )
+    }
 
     if (success) {
       emit('created', collectionId.value)
@@ -191,15 +209,28 @@ const handleSaveAndAddAnother = async () => {
 
     const documentFields = documentForm.buildDocumentFields()
 
-    // Create collection with first document
-    const success = await firestoreStore.createCollection(
-      props.projectId,
-      collectionId.value,
-      {
-        fields: documentFields
-      },
-      documentForm.documentId.value || undefined
-    )
+    let success
+    if (props.parentDocumentPath) {
+      // Create subcollection
+      success = await firestoreStore.createSubcollection(
+        props.parentDocumentPath,
+        collectionId.value,
+        {
+          fields: documentFields
+        },
+        documentForm.documentId.value || undefined
+      )
+    } else {
+      // Create root-level collection
+      success = await firestoreStore.createCollection(
+        props.projectId,
+        collectionId.value,
+        {
+          fields: documentFields
+        },
+        documentForm.documentId.value || undefined
+      )
+    }
 
     if (success) {
       const savedCollectionId = collectionId.value

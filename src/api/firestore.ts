@@ -50,9 +50,57 @@ export const firestoreApi = {
     }
   },
 
+  // Create subcollection (document inside a subcollection path)
+  async createSubcollection(
+    parentDocumentPath: string,
+    collectionId: string,
+    document: any,
+    documentId?: string
+  ): Promise<FirestoreDocument> {
+    console.log('Creating subcollection:', {
+      parentDocumentPath,
+      collectionId,
+      documentId,
+      document
+    })
+
+    if (documentId) {
+      // Create document with specific ID using POST with documentId parameter
+      const path = `/v1/${parentDocumentPath}/${collectionId}`
+      console.log('Subcollection API call path:', path)
+      const response = await firestoreClient.post(path, {
+        fields: document.fields
+      }, {
+        params: { documentId }
+      })
+      console.log('Subcollection created successfully:', response.data)
+      return response.data
+    } else {
+      // Auto-generate document ID - use POST without documentId
+      const path = `/v1/${parentDocumentPath}/${collectionId}`
+      console.log('Subcollection API call path:', path)
+      const response = await firestoreClient.post(path, {
+        fields: document.fields
+      })
+      console.log('Subcollection created successfully:', response.data)
+      return response.data
+    }
+  },
+
   // List documents in a collection
   async listDocuments(parent: string, collectionId: string): Promise<ListDocumentsResponse> {
     const response = await firestoreClient.get(`/v1/${parent}/documents/${collectionId}`)
+    return {
+      documents: response.data.documents || [],
+      nextPageToken: response.data.nextPageToken
+    }
+  },
+
+  // List documents in a subcollection
+  async listSubcollectionDocuments(parentDocumentPath: string, collectionId: string): Promise<ListDocumentsResponse> {
+    console.log('Listing subcollection documents:', parentDocumentPath, collectionId)
+    const response = await firestoreClient.get(`/v1/${parentDocumentPath}/${collectionId}`)
+    console.log('Subcollection documents response:', response.data)
     return {
       documents: response.data.documents || [],
       nextPageToken: response.data.nextPageToken
@@ -84,6 +132,44 @@ export const firestoreApi = {
       return { collections, nextPageToken: undefined }
     } catch (error) {
       console.warn('Failed to discover collections:', error)
+      return { collections: [], nextPageToken: undefined }
+    }
+  },
+
+  // List subcollections for a specific document
+  // Uses document listing endpoint to discover subcollections
+  async listSubcollections(documentPath: string): Promise<ListCollectionsResponse> {
+    try {
+      console.log('Listing subcollections for document:', documentPath)
+
+      // List all documents under the document path to discover subcollections
+      // This endpoint returns all nested collections and documents
+      const response = await firestoreClient.get(`/v1/${documentPath}/`)
+      console.log('Subcollections response:', response.data)
+
+      const documents = response.data.documents || []
+
+      // Extract unique subcollection names from the nested document paths
+      const subcollectionNames = new Set<string>()
+      documents.forEach((doc: any) => {
+        const pathParts = doc.name.split('/')
+        // Find the index of our document in the path
+        const documentIndex = pathParts.findIndex(part => documentPath.endsWith(part))
+        // The next part after our document would be a subcollection
+        if (documentIndex !== -1 && pathParts.length > documentIndex + 1) {
+          subcollectionNames.add(pathParts[documentIndex + 1])
+        }
+      })
+
+      const collections = Array.from(subcollectionNames).map(name => ({
+        name: `${documentPath}/${name}`,
+        collectionId: name
+      }))
+
+      console.log('Discovered subcollections:', collections)
+      return { collections, nextPageToken: undefined }
+    } catch (error) {
+      console.warn('Failed to list subcollections for document:', documentPath, error)
       return { collections: [], nextPageToken: undefined }
     }
   },

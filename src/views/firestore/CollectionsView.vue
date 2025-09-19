@@ -37,22 +37,50 @@
     <!-- Breadcrumb Navigator -->
     <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 lg:px-8 py-2">
       <div class="flex items-center text-xs text-gray-600 dark:text-gray-400 font-mono">
-        <span>/</span>
-        <template v-if="selectedCollection">
-          <ChevronRightIcon class="w-3 h-3 mx-1" />
-          <span class="text-blue-600 dark:text-blue-400">{{ selectedCollection.id }}</span>
+        <button @click="navigateToRoot" class="text-blue-600 dark:text-blue-400 hover:underline">/</button>
+
+        <!-- Show navigation path for subcollections -->
+        <template v-if="isInSubcollectionMode">
+          <template v-for="(segment, index) in navigationPath" :key="`${segment.type}-${segment.id}-${index}`">
+            <ChevronRightIcon class="w-3 h-3 mx-1" />
+            <button
+              @click="navigateToSegment(index)"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              {{ segment.name }}
+            </button>
+          </template>
+          <!-- Show current subcollection document if selected -->
+          <template v-if="selectedSubcollectionDocument">
+            <ChevronRightIcon class="w-3 h-3 mx-1" />
+            <span class="text-blue-600 dark:text-blue-400 font-semibold">{{ getDocumentId(selectedSubcollectionDocument.name) }}</span>
+          </template>
         </template>
-        <template v-if="selectedDocument">
-          <ChevronRightIcon class="w-3 h-3 mx-1" />
-          <span class="text-blue-600 dark:text-blue-400">{{ getDocumentId(selectedDocument.name) }}</span>
+
+        <!-- Show current selection for root mode -->
+        <template v-else>
+          <template v-if="selectedCollection">
+            <ChevronRightIcon class="w-3 h-3 mx-1" />
+            <span class="text-blue-600 dark:text-blue-400">{{ selectedCollection.id }}</span>
+          </template>
+          <template v-if="selectedDocument">
+            <ChevronRightIcon class="w-3 h-3 mx-1" />
+            <span class="text-blue-600 dark:text-blue-400">{{ getDocumentId(selectedDocument.name) }}</span>
+          </template>
         </template>
       </div>
     </div>
 
-    <!-- Three Panel Layout -->
-    <div class="flex h-screen-header">
-      <!-- Left Panel - Collections List -->
-      <div class="flex-1 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+    <!-- Sliding Panel Layout -->
+    <div class="h-screen-header overflow-hidden">
+      <div
+        class="flex transition-transform duration-300 ease-in-out"
+        :style="{ transform: `translateX(${slideOffset}%)` }"
+      >
+        <!-- Root Level (Level 0) -->
+        <div class="flex-shrink-0 w-full flex">
+          <!-- Root Collections -->
+          <div class="w-1/3 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
         <div class="p-4">
           <!-- Database Name -->
           <div class="mb-3">
@@ -113,8 +141,8 @@
         </div>
       </div>
 
-      <!-- Center Panel - Documents List -->
-      <div class="flex-1 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+          <!-- Root Documents -->
+          <div class="w-1/3 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
         <div class="p-4">
           <!-- Collection Header with Breadcrumb Style -->
           <div class="mb-3">
@@ -208,8 +236,8 @@
         </div>
       </div>
 
-      <!-- Right Panel - Document Editor -->
-      <div class="flex-1 bg-white dark:bg-gray-800 overflow-y-auto">
+          <!-- Root Document Editor -->
+          <div class="w-1/3 bg-white dark:bg-gray-800 overflow-y-auto">
         <div class="p-4">
           <!-- Document Header -->
           <div class="mb-3">
@@ -254,12 +282,30 @@
 
           <div v-if="selectedCollection" class="mb-4">
             <button
-              @click="showCreateCollectionModal = true"
+              @click="handleStartSubcollection"
               class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <PlusIcon class="w-3 h-3 mr-1" />
               Start collection
             </button>
+
+            <!-- Display subcollections for current document -->
+            <div v-if="selectedDocument && currentDocumentSubcollections.length > 0" class="mt-3 space-y-1">
+              <div
+                v-for="subcollection in currentDocumentSubcollections"
+                :key="subcollection.id"
+                class="group"
+              >
+                <button
+                  @click="navigateToSubcollection(subcollection)"
+                  class="flex items-center w-full px-2 py-1.5 text-sm rounded-md cursor-pointer transition-colors duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                >
+                  <ChevronRightIcon class="w-4 h-4 mr-1 flex-shrink-0" />
+                  <CircleStackIcon class="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span class="truncate">{{ subcollection.id }}</span>
+                </button>
+              </div>
+            </div>
           </div>
 
           <div v-if="selectedDocument" class="mb-4">
@@ -520,6 +566,281 @@
             </div>
           </div>
         </div>
+          </div>
+        </div>
+
+        <!-- Subcollection Level (Level 1) -->
+        <div class="flex-shrink-0 w-full flex">
+          <!-- Subcollection Details (was 3rd pane) -->
+          <div class="w-1/3 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+            <div class="p-4">
+              <!-- Parent Document Header -->
+              <div class="mb-3">
+                <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 font-mono mb-3">
+                  <span class="text-gray-900 dark:text-white">{{ selectedDocument ? getDocumentId(selectedDocument.name) : 'Parent Document' }}</span>
+                </div>
+                <div class="border-b border-gray-200 dark:border-gray-600"></div>
+              </div>
+
+              <!-- Start Collection Button -->
+              <div v-if="selectedSubcollection" class="mb-4">
+                <button
+                  @click="handleStartSubcollection"
+                  class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <PlusIcon class="w-3 h-3 mr-1" />
+                  Start collection
+                </button>
+              </div>
+
+              <!-- Add Field Button -->
+              <div v-if="selectedSubcollectionDocument" class="mb-4">
+                <div class="border-b border-gray-200 dark:border-gray-600 mb-3"></div>
+                <button
+                  @click="handleShowAddFieldModal"
+                  class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <PlusIcon class="w-3 h-3 mr-1" />
+                  Add field
+                </button>
+              </div>
+
+              <!-- Subcollection Document Fields -->
+              <div v-if="selectedSubcollectionDocument" class="space-y-1">
+                <!-- Fields would be displayed here -->
+              </div>
+
+              <!-- No subcollection selected state -->
+              <div v-if="!selectedSubcollection" class="text-center py-16">
+                <CircleStackIcon class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  Subcollection details will be shown here
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Subcollection Documents (middle pane) -->
+          <div class="w-1/3 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+            <div class="p-4">
+              <div class="mb-3">
+                <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 font-mono">
+                  <span class="text-gray-900 dark:text-white">{{ selectedSubcollection ? selectedSubcollection.id : 'Select a subcollection' }}</span>
+                </div>
+                <div class="border-b border-gray-200 dark:border-gray-600 mt-3"></div>
+              </div>
+
+              <!-- Add Document Button -->
+              <div v-if="selectedSubcollection" class="mb-4">
+                <button
+                  @click="showAddDocumentModal = true"
+                  class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <PlusIcon class="w-3 h-3 mr-1" />
+                  Add document
+                </button>
+              </div>
+
+              <!-- Subcollection Documents List -->
+              <div v-if="selectedSubcollection && subcollectionDocuments.length > 0" class="space-y-1">
+                <div
+                  v-for="document in subcollectionDocuments"
+                  :key="document.name"
+                  :class="[
+                    'flex items-center px-3 py-2 text-sm rounded-md cursor-pointer transition-colors duration-200',
+                    selectedSubcollectionDocument?.name === document.name
+                      ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  ]"
+                  @click="selectSubcollectionDocument(document)"
+                >
+                  <span class="truncate">{{ getDocumentId(document.name) }}</span>
+                </div>
+              </div>
+
+              <!-- Empty subcollection documents state -->
+              <div
+                v-else-if="selectedSubcollection && subcollectionDocuments.length === 0"
+                class="text-center py-8"
+              >
+                <DocumentIcon class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                  No documents in this subcollection
+                </p>
+                <button
+                  @click="showAddDocumentModal = true"
+                  class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors duration-200"
+                >
+                  <PlusIcon class="w-4 h-4 mr-2" />
+                  Add your first document
+                </button>
+              </div>
+
+              <!-- No subcollection selected placeholder -->
+              <div
+                v-else
+                class="text-center py-16"
+              >
+                <DocumentIcon class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  Select a subcollection to view its documents
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- New Document Editor (3rd pane) -->
+          <div class="w-1/3 bg-white dark:bg-gray-800 overflow-y-auto">
+            <div class="p-4">
+              <!-- Subcollection Document Header -->
+              <div class="mb-3">
+                <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 font-mono mb-3">
+                  <span class="text-gray-900 dark:text-white">{{ selectedSubcollectionDocument ? getDocumentId(selectedSubcollectionDocument.name) : 'Select a document' }}</span>
+                </div>
+                <div class="border-b border-gray-200 dark:border-gray-600"></div>
+              </div>
+
+              <!-- Start Collection Button -->
+              <div v-if="selectedSubcollectionDocument" class="mb-4">
+                <button
+                  @click="handleStartSubcollection"
+                  class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <PlusIcon class="w-3 h-3 mr-1" />
+                  Start collection
+                </button>
+              </div>
+
+              <!-- Add Field Button -->
+              <div v-if="selectedSubcollectionDocument" class="mb-4">
+                <div class="border-b border-gray-200 dark:border-gray-600 mb-3"></div>
+                <button
+                  @click="handleShowAddFieldModal"
+                  class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <PlusIcon class="w-3 h-3 mr-1" />
+                  Add field
+                </button>
+              </div>
+
+              <!-- Subcollection Document Fields -->
+              <div v-if="selectedSubcollectionDocument" class="space-y-1">
+                <template v-for="(value, fieldName) in selectedSubcollectionDocument.fields" :key="fieldName">
+                  <!-- Root level field -->
+                  <div
+                    class="group flex items-center justify-between text-sm p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                  >
+                    <div class="flex items-center min-w-0 flex-1">
+                      <!-- Toggle button for map and array fields -->
+                      <button
+                        v-if="getFieldType(value) === 'map' || getFieldType(value) === 'array'"
+                        @click="toggleMapField(fieldName)"
+                        class="p-0.5 mr-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-150"
+                      >
+                        <ChevronRightIcon
+                          :class="[
+                            'w-3 h-3 transition-transform duration-200',
+                            isMapFieldExpanded(fieldName) ? 'rotate-90' : ''
+                          ]"
+                        />
+                      </button>
+                      <div v-else class="w-4 mr-1"></div>
+
+                      <span class="text-blue-600 dark:text-blue-400 font-mono mr-1">{{ fieldName }}:</span>
+
+                      <!-- For non-map/array fields, show the value -->
+                      <span
+                        v-if="getFieldType(value) !== 'map' && getFieldType(value) !== 'array'"
+                        class="text-gray-900 dark:text-white font-mono truncate"
+                      >
+                        "{{ formatFieldValue(value) }}"
+                      </span>
+
+                      <!-- For map fields, show map indicator -->
+                      <span
+                        v-else-if="getFieldType(value) === 'map'"
+                        class="text-gray-500 dark:text-gray-400 font-mono text-xs"
+                      >
+                        {{ Object.keys(value.mapValue.fields || {}).length }} fields
+                      </span>
+
+                      <!-- For array fields, show array indicator -->
+                      <span
+                        v-else-if="getFieldType(value) === 'array'"
+                        class="text-gray-500 dark:text-gray-400 font-mono text-xs"
+                      >
+                        {{ (value.arrayValue.values || []).length }} items
+                      </span>
+                    </div>
+
+                    <!-- Hover Actions -->
+                    <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <span class="text-xs text-gray-500 dark:text-gray-400 font-mono">{{ getFieldType(value) }}</span>
+                      <button
+                        v-if="getFieldType(value) === 'map' || getFieldType(value) === 'array'"
+                        @click="getFieldType(value) === 'map' ? handleAddToMap(fieldName) : handleAddToArray(fieldName)"
+                        class="p-1 text-gray-400 hover:text-green-600 dark:hover:text-green-400 rounded transition-colors duration-150"
+                        :title="getFieldType(value) === 'map' ? 'Add field to map' : 'Add item to array'"
+                      >
+                        <PlusIcon class="w-3 h-3" />
+                      </button>
+                      <button
+                        v-else
+                        @click="handleEditField(fieldName, fieldName, value)"
+                        class="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded transition-colors duration-150"
+                        title="Edit field"
+                      >
+                        <PencilIcon class="w-3 h-3" />
+                      </button>
+                      <button
+                        @click="handleDeleteField(fieldName, fieldName)"
+                        class="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded transition-colors duration-150"
+                        title="Delete field"
+                      >
+                        <TrashIcon class="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Expanded fields (maps/arrays) for subcollection documents -->
+                  <div
+                    v-if="getFieldType(value) === 'map' && isMapFieldExpanded(fieldName)"
+                    class="ml-5 space-y-1 border-l border-gray-200 dark:border-gray-600 pl-3"
+                  >
+                    <template
+                      v-for="(subValue, subFieldName) in (value.mapValue.fields || {})"
+                      :key="`${fieldName}.${subFieldName}`"
+                    >
+                      <div class="group flex items-center justify-between text-sm p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200">
+                        <div class="flex items-center min-w-0 flex-1">
+                          <div class="w-4 mr-1"></div>
+                          <span class="text-blue-600 dark:text-blue-400 font-mono mr-1">{{ subFieldName }}:</span>
+                          <span class="text-gray-900 dark:text-white font-mono truncate">
+                            "{{ formatFieldValue(subValue) }}"
+                          </span>
+                        </div>
+                        <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          <span class="text-xs text-gray-500 dark:text-gray-400 font-mono">{{ getFieldType(subValue) }}</span>
+                        </div>
+                      </div>
+                    </template>
+                  </div>
+                </template>
+              </div>
+
+              <!-- No subcollection document selected state -->
+              <div
+                v-else
+                class="text-center py-16"
+              >
+                <PencilIcon class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                  Select a subcollection document to view its fields
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -527,6 +848,7 @@
     <StartCollectionModal
       v-model="showCreateCollectionModal"
       :project-id="currentProjectId"
+      :parent-document-path="currentDocumentPath"
       @created="handleCollectionCreated"
     />
 
@@ -631,6 +953,7 @@ import {
 } from '@heroicons/vue/24/outline'
 
 import { useFirestoreStore } from '@/stores/firestore'
+import firestoreApi from '@/api/firestore'
 import type { FirestoreDocument, FirestoreCollectionWithMetadata } from '@/types'
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
 import FieldModal from '@/components/firestore/FieldModal.vue'
@@ -663,6 +986,16 @@ const showDeleteFieldModal = ref(false)
 const isDeletingField = ref(false)
 const fieldToDelete = ref<{ path: string; displayName: string } | null>(null)
 
+// Subcollection navigation state
+const slideOffset = ref(0)
+const navigationPath = ref<Array<{type: 'collection' | 'document', id: string, name: string}>>([])
+const currentSubcollections = ref<FirestoreCollectionWithMetadata[]>([])
+const selectedSubcollection = ref<FirestoreCollectionWithMetadata | null>(null)
+const selectedSubcollectionDocument = ref<FirestoreDocument | null>(null)
+const subcollectionDocuments = ref<FirestoreDocument[]>([])
+// Track subcollections by document path
+const documentSubcollections = ref<Map<string, FirestoreCollectionWithMetadata[]>>(new Map())
+
 // Unified field modal state
 const showFieldModal = ref(false)
 const fieldModalMode = ref<'add' | 'edit'>('add')
@@ -686,6 +1019,21 @@ const collections = computed(() => firestoreStore.collections)
 const documents = computed(() => {
   if (!selectedCollection.value) return []
   return firestoreStore.getDocumentsByCollection(selectedCollection.value.id)
+})
+
+const currentDocumentPath = computed(() => {
+  if (!selectedDocument.value || !selectedCollection.value) return undefined
+  const databasePath = `projects/${currentProjectId.value}/databases/(default)`
+  return `${databasePath}/documents/${selectedCollection.value.id}/${getDocumentId(selectedDocument.value.name)}`
+})
+
+const isInSubcollectionMode = computed(() => {
+  return navigationPath.value.length > 0
+})
+
+const currentDocumentSubcollections = computed(() => {
+  if (!selectedDocument.value || !currentDocumentPath.value) return []
+  return documentSubcollections.value.get(currentDocumentPath.value) || []
 })
 
 // Methods
@@ -724,27 +1072,93 @@ const selectCollection = async (collection: FirestoreCollectionWithMetadata) => 
   }
 }
 
-const selectDocument = (document: FirestoreDocument) => {
+const selectDocument = async (document: FirestoreDocument) => {
   selectedDocument.value = document
   expandedMapFields.value.clear()
+
+  // Load subcollections for the selected document
+  await loadDocumentSubcollections(document)
+}
+
+// Load subcollections for a specific document from the API
+const loadDocumentSubcollections = async (document: FirestoreDocument) => {
+  if (!currentDocumentPath.value) return
+
+  try {
+    console.log('Loading subcollections for document:', document.name)
+    const subcollections = await firestoreStore.loadSubcollections(document.name)
+
+    // Update local state with fetched subcollections
+    documentSubcollections.value.set(currentDocumentPath.value, subcollections)
+
+    console.log('Loaded subcollections for document:', subcollections)
+  } catch (error) {
+    console.error('Failed to load subcollections for document:', error)
+    // Set empty array on error
+    documentSubcollections.value.set(currentDocumentPath.value, [])
+  }
 }
 
 const handleCollectionCreated = async (collectionId: string) => {
-  // Refresh collections list
-  await refreshCollections()
+  // Check if we're creating a subcollection (when we have a selected document)
+  if (selectedDocument.value && selectedCollection.value) {
+    // This is a subcollection creation
+    console.log('Creating subcollection:', collectionId)
 
-  // Auto-select the newly created collection
-  const newCollection = collections.value.find(c => c.id === collectionId)
-  if (newCollection) {
-    await selectCollection(newCollection)
+    // Set up navigation path to track where we are
+    navigationPath.value = [
+      { type: 'collection', id: selectedCollection.value.id, name: selectedCollection.value.id },
+      { type: 'document', id: getDocumentId(selectedDocument.value.name), name: getDocumentId(selectedDocument.value.name) }
+    ]
 
-    // Wait for reactivity to update documents
-    await nextTick()
+    // Add the subcollection to our local state
+    const newSubcollection: FirestoreCollectionWithMetadata = {
+      id: collectionId,
+      name: `${currentDocumentPath.value}/${collectionId}`,
+      path: `${currentDocumentPath.value}/${collectionId}`,
+      documentCount: 1,
+      isExpanded: false,
+      statistics: {
+        name: `${currentDocumentPath.value}/${collectionId}`,
+        documentCount: 1,
+        totalSize: 0,
+        lastModified: new Date()
+      }
+    }
 
-    // Auto-select the first document to show its fields
-    const docs = documents.value
-    if (docs.length > 0) {
-      selectDocument(docs[0])
+    currentSubcollections.value = [newSubcollection]
+
+    // Refresh subcollections list from the API after creation
+    if (selectedDocument.value) {
+      await loadDocumentSubcollections(selectedDocument.value)
+    }
+
+    // Auto-select the newly created subcollection
+    selectedSubcollection.value = newSubcollection
+
+    // Load documents for the newly created subcollection
+    await loadSubcollectionDocuments(newSubcollection.path)
+
+    // Trigger slide to subcollection view
+    slideToSubcollectionLevel()
+
+  } else {
+    // This is a root-level collection creation
+    await refreshCollections()
+
+    // Auto-select the newly created collection
+    const newCollection = collections.value.find(c => c.id === collectionId)
+    if (newCollection) {
+      await selectCollection(newCollection)
+
+      // Wait for reactivity to update documents
+      await nextTick()
+
+      // Auto-select the first document to show its fields
+      const docs = documents.value
+      if (docs.length > 0) {
+        selectDocument(docs[0])
+      }
     }
   }
 }
@@ -802,6 +1216,120 @@ const cancelDeleteCollection = () => {
   collectionToDelete.value = null
 }
 
+// Sliding navigation functions
+const slideToSubcollectionLevel = () => {
+  slideOffset.value = -100 // Slide one full width to the left (in percentage)
+}
+
+const slideToRootLevel = () => {
+  slideOffset.value = 0
+}
+
+const navigateToRoot = () => {
+  navigationPath.value = []
+  currentSubcollections.value = []
+  selectedSubcollection.value = null
+  selectedSubcollectionDocument.value = null
+  subcollectionDocuments.value = []
+  // Don't clear documentSubcollections - we want to preserve them when navigating
+  slideToRootLevel()
+}
+
+const navigateToSegment = async (segmentIndex: number) => {
+  const segment = navigationPath.value[segmentIndex]
+
+  if (segment.type === 'collection') {
+    // Navigate back to root level and select the collection
+    navigateToRoot()
+
+    // Find and select the collection
+    const collection = collections.value.find(c => c.id === segment.id)
+    if (collection) {
+      await selectCollection(collection)
+    }
+  } else if (segment.type === 'document') {
+    // Navigate back to root level and select collection + document
+    navigateToRoot()
+
+    // Find the parent collection (previous segment should be a collection)
+    const collectionSegment = navigationPath.value[segmentIndex - 1]
+    if (collectionSegment && collectionSegment.type === 'collection') {
+      const collection = collections.value.find(c => c.id === collectionSegment.id)
+      if (collection) {
+        await selectCollection(collection)
+
+        // Wait for documents to load and select the document
+        await nextTick()
+        const docs = documents.value
+        const document = docs.find(doc => getDocumentId(doc.name) === segment.id)
+        if (document) {
+          selectDocument(document)
+        }
+      }
+    }
+  }
+}
+
+// Subcollection document management
+const loadSubcollectionDocuments = async (subcollectionPath: string) => {
+  try {
+    console.log('Loading documents for subcollection:', subcollectionPath)
+
+    // Extract collection ID from path (last part after the last slash)
+    const pathParts = subcollectionPath.split('/')
+    const collectionId = pathParts[pathParts.length - 1]
+
+    // For subcollections, we need to construct the parent path differently
+    // The subcollectionPath is like: projects/x/databases/(default)/documents/collection-1/doc-id/subcollection-id
+    // We need to remove the subcollection-id and call the API with: projects/x/databases/(default)/documents/collection-1/doc-id
+    const parentDocumentPath = pathParts.slice(0, -1).join('/')
+
+    console.log('Subcollection parent document path:', parentDocumentPath, 'Collection ID:', collectionId)
+
+    // Use the dedicated API method for subcollection documents
+    const response = await firestoreApi.listSubcollectionDocuments(parentDocumentPath, collectionId)
+    subcollectionDocuments.value = response.documents
+
+    console.log('Loaded subcollection documents:', response.documents)
+
+    // Auto-select the first document
+    if (subcollectionDocuments.value.length > 0) {
+      selectedSubcollectionDocument.value = subcollectionDocuments.value[0]
+    } else {
+      selectedSubcollectionDocument.value = null
+    }
+  } catch (error) {
+    console.error('Failed to load subcollection documents:', error)
+    subcollectionDocuments.value = []
+    selectedSubcollectionDocument.value = null
+  }
+}
+
+const selectSubcollectionDocument = (document: FirestoreDocument) => {
+  selectedSubcollectionDocument.value = document
+}
+
+const navigateToSubcollection = async (subcollection: FirestoreCollectionWithMetadata) => {
+  // Update navigation path to include the subcollection
+  if (selectedCollection.value && selectedDocument.value) {
+    navigationPath.value = [
+      { type: 'collection', id: selectedCollection.value.id, name: selectedCollection.value.id },
+      { type: 'document', id: getDocumentId(selectedDocument.value.name), name: getDocumentId(selectedDocument.value.name) },
+      { type: 'collection', id: subcollection.id, name: subcollection.id }
+    ]
+  }
+
+  // Set up the subcollection navigation
+  selectedSubcollection.value = subcollection
+  currentSubcollections.value = [subcollection]
+
+  // Load documents for the subcollection
+  await loadSubcollectionDocuments(subcollection.path)
+
+  // Trigger slide to subcollection view
+  slideToSubcollectionLevel()
+}
+
 // Document handlers
 const handleAddSimilarDocument = () => {
   showDocumentMenu.value = false
@@ -809,6 +1337,10 @@ const handleAddSimilarDocument = () => {
     cloneDocumentData.value = selectedDocument.value
     showAddDocumentModal.value = true
   }
+}
+
+const handleStartSubcollection = () => {
+  showCreateCollectionModal.value = true
 }
 
 const handleDeleteDocument = () => {

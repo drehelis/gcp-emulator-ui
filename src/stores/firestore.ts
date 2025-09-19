@@ -91,6 +91,34 @@ export const useFirestoreStore = defineStore('firestore', () => {
     }
   }
 
+  // Create subcollection
+  const createSubcollection = async (
+    parentDocumentPath: string,
+    collectionId: string,
+    initialDocument?: any,
+    documentId?: string
+  ) => {
+    try {
+      loading.value = true
+
+      const document = initialDocument || { fields: { placeholder: { stringValue: 'Initial document' } } }
+
+      await firestoreApi.createSubcollection(
+        parentDocumentPath,
+        collectionId,
+        document,
+        documentId
+      )
+
+      return true
+    } catch (error) {
+      console.error('Failed to create subcollection:', error)
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
   // Create document in existing collection
   const createDocument = async (projectId: string, collectionId: string, document: any, documentId?: string) => {
     try {
@@ -224,6 +252,30 @@ export const useFirestoreStore = defineStore('firestore', () => {
     }
   }
 
+  // Load subcollections for a document
+  const loadSubcollections = async (documentPath: string) => {
+    try {
+      const response = await firestoreApi.listSubcollections(documentPath)
+
+      return response.collections.map(collection => ({
+        id: collection.collectionId,
+        name: collection.name,
+        path: collection.name,
+        documentCount: 0,
+        isExpanded: false,
+        statistics: {
+          name: collection.name,
+          documentCount: 0,
+          totalSize: 0,
+          lastModified: new Date()
+        }
+      }))
+    } catch (error) {
+      console.error('Failed to load subcollections:', error)
+      return []
+    }
+  }
+
   const clearData = () => {
     collections.value = []
     documents.value.clear()
@@ -235,7 +287,9 @@ export const useFirestoreStore = defineStore('firestore', () => {
     documents,
     getDocumentsByCollection,
     loadCollections,
+    loadSubcollections,
     createCollection,
+    createSubcollection,
     createDocument,
     loadDocuments,
     updateDocument,
