@@ -3,12 +3,12 @@ import { ref } from 'vue'
 interface SaveAndAddAnotherConfig<T extends Record<string, any>> {
   entityType: 'document' | 'collection'
   validateForm: () => boolean
-  setValidationError: (hasError: boolean) => void
+  setValidationError: (_: boolean) => void
   buildPayload: () => any
-  saveEntity: (payload: any) => Promise<any>
+  saveEntity: (_: any) => Promise<any>
   clearForm: () => void
-  onSuccess: (savedId: string) => void
-  getEntityId: (result: any) => string
+  onSuccess: (_: string) => void
+  getEntityId: (_: any) => string
   formState: T
 }
 

@@ -1286,38 +1286,91 @@ const navigateToSegment = async (segmentIndex: number) => {
   const segment = navigationPath.value[segmentIndex]
 
   if (segment.type === 'collection') {
-    // Clear subcollection state but keep root level state
-    navigationPath.value = []
-    currentSubcollections.value = []
-    selectedSubcollection.value = null
-    selectedSubcollectionDocument.value = null
-    subcollectionDocuments.value = []
-    selectedDocument.value = null // Clear document to make right pane blank
-    slideToRootLevel()
+    // If clicking on the root collection (index 0), go to root level
+    if (segmentIndex === 0) {
+      // Clear subcollection state but keep root level state
+      navigationPath.value = []
+      currentSubcollections.value = []
+      selectedSubcollection.value = null
+      selectedSubcollectionDocument.value = null
+      subcollectionDocuments.value = []
+      selectedDocument.value = null // Clear document to make right pane blank
+      slideToRootLevel()
 
-    // Find and select the collection
-    const collection = collections.value.find(c => c.id === segment.id)
-    if (collection) {
-      await selectCollection(collection)
-    }
-  } else if (segment.type === 'document') {
-    // Navigate back to root level and select collection + document
-    navigateToRoot()
-
-    // Find the parent collection (previous segment should be a collection)
-    const collectionSegment = navigationPath.value[segmentIndex - 1]
-    if (collectionSegment && collectionSegment.type === 'collection') {
-      const collection = collections.value.find(c => c.id === collectionSegment.id)
+      // Find and select the collection
+      const collection = collections.value.find(c => c.id === segment.id)
       if (collection) {
         await selectCollection(collection)
+      }
+    } else {
+      // For subcollections, navigate to that specific level
+      // Truncate navigation path to the clicked segment
+      navigationPath.value = navigationPath.value.slice(0, segmentIndex + 1)
 
-        // Wait for documents to load and select the document
-        await nextTick()
-        const docs = documents.value
-        const document = docs.find(doc => getDocumentId(doc.name) === segment.id)
-        if (document) {
-          selectDocument(document)
+      // Clear state beyond this level
+      selectedSubcollectionDocument.value = null
+
+      // Load the subcollection at this level
+      const parentDocument = navigationPath.value[segmentIndex - 1]
+      if (parentDocument && parentDocument.type === 'document') {
+        // Build the subcollection path up to this point
+        let subcollectionPath = `projects/${firestoreStore.projectId}/databases/(default)/documents`
+        for (let i = 0; i < segmentIndex; i += 2) {
+          const col = navigationPath.value[i]
+          const doc = navigationPath.value[i + 1]
+          if (col && doc) {
+            subcollectionPath += `/${col.id}/${doc.id}`
+          }
         }
+        subcollectionPath += `/${segment.id}`
+
+        // Load documents for this subcollection
+        await loadSubcollectionDocuments(subcollectionPath)
+        selectedSubcollection.value = { id: segment.id, path: subcollectionPath }
+      }
+    }
+  } else if (segment.type === 'document') {
+    // Truncate navigation path to include this document
+    navigationPath.value = navigationPath.value.slice(0, segmentIndex + 1)
+
+    // Clear state beyond this level
+    selectedSubcollectionDocument.value = null
+    currentSubcollections.value = []
+    selectedSubcollection.value = null
+
+    // If this is a root-level document
+    if (segmentIndex === 1) {
+      const collectionSegment = navigationPath.value[0]
+      if (collectionSegment && collectionSegment.type === 'collection') {
+        const collection = collections.value.find(c => c.id === collectionSegment.id)
+        if (collection) {
+          await selectCollection(collection)
+          await nextTick()
+          const docs = documents.value
+          const document = docs.find(doc => getDocumentId(doc.name) === segment.id)
+          if (document) {
+            selectDocument(document)
+          }
+        }
+      }
+    } else {
+      // For subcollection documents, load the document and its subcollections
+      const parentCollectionSegment = navigationPath.value[segmentIndex - 1]
+      if (parentCollectionSegment && parentCollectionSegment.type === 'collection') {
+        // Build document path
+        let documentPath = `projects/${firestoreStore.projectId}/databases/(default)/documents`
+        for (let i = 0; i < segmentIndex; i += 2) {
+          const col = navigationPath.value[i]
+          const doc = navigationPath.value[i + 1]
+          if (col && doc) {
+            documentPath += `/${col.id}/${doc.id}`
+          }
+        }
+
+        // Load subcollections for this document
+        const subcollections = await firestoreStore.loadSubcollections(documentPath)
+        currentSubcollections.value = subcollections
+        selectedSubcollectionDocument.value = { id: segment.id, path: documentPath }
       }
     }
   }
@@ -1822,84 +1875,7 @@ const navigateToParentPath = (fields: any, path: string) => {
   }
 }
 
-// Enhanced helper function to navigate and ensure map structure exists
-const navigateToParentAndEnsureMap = (fields: any, path: string) => {
-  const pathParts = parseFieldPath(path)
 
-  if (pathParts.length === 0) {
-    throw new Error('Cannot navigate to parent of empty path')
-  }
-
-  if (pathParts.length === 1) {
-    // Root level field - parent is the fields object itself
-    return {
-      parent: fields,
-      lastPart: pathParts[0]
-    }
-  }
-
-  // Navigate to the parent, creating map structures as needed
-  const parentParts = pathParts.slice(0, -1)
-  const lastPart = pathParts[pathParts.length - 1]
-
-  const parent = navigateWithPartsAndEnsure(fields, parentParts, path)
-
-  return {
-    parent,
-    lastPart
-  }
-}
-
-const navigateWithPartsAndEnsure = (currentRef: any, pathParts: string[], originalPath: string) => {
-  if (pathParts.length === 0) {
-    return currentRef
-  }
-
-  const [currentPart, ...remainingParts] = pathParts
-
-  if (currentPart.startsWith('[') && currentPart.endsWith(']')) {
-    // Array index
-    const index = parseInt(currentPart.substring(1, currentPart.length - 1))
-
-    if (isNaN(index)) {
-      throw new Error(`Invalid array index "${currentPart}" in path "${originalPath}"`)
-    }
-
-    if (!currentRef?.arrayValue?.values) {
-      throw new Error(`Expected array at path part "${currentPart}" in "${originalPath}"`)
-    }
-
-    if (index < 0 || index >= currentRef.arrayValue.values.length) {
-      throw new Error(`Array index ${index} out of bounds in path "${originalPath}"`)
-    }
-
-    const arrayItem = currentRef.arrayValue.values[index]
-    return navigateWithPartsAndEnsure(arrayItem, remainingParts, originalPath)
-  } else {
-    // Object field
-    let nextRef
-
-    if (currentRef?.mapValue?.fields) {
-      // We're in a map structure
-      if (!currentRef.mapValue.fields[currentPart]) {
-        throw new Error(`Field "${currentPart}" not found in path "${originalPath}"`)
-      }
-      nextRef = currentRef.mapValue.fields[currentPart]
-    } else if (currentRef && typeof currentRef === 'object' && currentPart in currentRef) {
-      // We're in a root-level fields object
-      nextRef = currentRef[currentPart]
-    } else {
-      throw new Error(`Field "${currentPart}" not found in path "${originalPath}"`)
-    }
-
-    // For the next level, if it's a map and we have more parts, ensure it has fields
-    if (remainingParts.length > 0 && nextRef?.mapValue && !nextRef.mapValue.fields) {
-      nextRef.mapValue.fields = {}
-    }
-
-    return navigateWithPartsAndEnsure(nextRef, remainingParts, originalPath)
-  }
-}
 
 // Lifecycle
 

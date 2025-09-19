@@ -204,6 +204,7 @@
     "useFetch": true,
     "useFileDialog": true,
     "useFileSystemAccess": true,
+    "useFirestoreNavigation": true,
     "useFirestoreStore": true,
     "useFocus": true,
     "useFocusWithin": true,

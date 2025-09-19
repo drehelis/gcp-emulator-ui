@@ -108,7 +108,7 @@ interface Emits {
   'removeField': [fieldId: string]
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   title: 'Document',
   helpText: 'A collection must contain at least one document. Documents are Firestore\'s unit of storage and contain your data as fields.'
 })

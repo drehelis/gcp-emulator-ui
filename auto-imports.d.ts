@@ -189,6 +189,7 @@ declare global {
   const useFetch: typeof import('@vueuse/core')['useFetch']
   const useFileDialog: typeof import('@vueuse/core')['useFileDialog']
   const useFileSystemAccess: typeof import('@vueuse/core')['useFileSystemAccess']
+  const useFirestoreNavigation: typeof import('./src/composables/useFirestoreNavigation')['useFirestoreNavigation']
   const useFirestoreStore: typeof import('./src/stores/firestore')['useFirestoreStore']
   const useFocus: typeof import('@vueuse/core')['useFocus']
   const useFocusWithin: typeof import('@vueuse/core')['useFocusWithin']

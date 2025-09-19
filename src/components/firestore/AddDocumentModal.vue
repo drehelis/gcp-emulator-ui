@@ -48,7 +48,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { computed, watch, nextTick } from 'vue'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
 import type { FirestoreDocument } from '@/types'
 import DocumentEditor from './DocumentEditor.vue'

@@ -40,7 +40,7 @@ interface Emits {
   clear: []
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   showClearButton: true,
   clearButtonLabel: 'Clear field values'
 })
