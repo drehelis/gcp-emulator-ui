@@ -61,11 +61,16 @@
         <template v-else>
           <template v-if="selectedCollection">
             <ChevronRightIcon class="w-3 h-3 mx-1" />
-            <span class="text-blue-600 dark:text-blue-400">{{ selectedCollection.id }}</span>
+            <button
+              @click="navigateToCollection"
+              class="text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              {{ selectedCollection.id }}
+            </button>
           </template>
           <template v-if="selectedDocument">
             <ChevronRightIcon class="w-3 h-3 mx-1" />
-            <span class="text-blue-600 dark:text-blue-400">{{ getDocumentId(selectedDocument.name) }}</span>
+            <span class="text-blue-600 dark:text-blue-400 font-semibold">{{ getDocumentId(selectedDocument.name) }}</span>
           </template>
         </template>
       </div>
@@ -142,7 +147,10 @@
       </div>
 
           <!-- Root Documents -->
-          <div class="w-1/3 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+          <div :class="[
+            'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto',
+            selectedDocument ? 'w-1/3' : 'w-2/3'
+          ]">
         <div class="p-4">
           <!-- Collection Header with Breadcrumb Style -->
           <div class="mb-3">
@@ -237,7 +245,7 @@
       </div>
 
           <!-- Root Document Editor -->
-          <div class="w-1/3 bg-white dark:bg-gray-800 overflow-y-auto">
+          <div v-if="selectedDocument" class="w-1/3 bg-white dark:bg-gray-800 overflow-y-auto">
         <div class="p-4">
           <!-- Document Header -->
           <div class="mb-3">
@@ -583,7 +591,7 @@
               </div>
 
               <!-- Start Collection Button -->
-              <div v-if="selectedSubcollection" class="mb-4">
+              <div v-if="selectedDocument" class="mb-4">
                 <button
                   @click="handleStartSubcollection"
                   class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -591,6 +599,30 @@
                   <PlusIcon class="w-3 h-3 mr-1" />
                   Start collection
                 </button>
+              </div>
+
+              <!-- Display subcollections for current parent document -->
+              <div v-if="selectedDocument && currentDocumentSubcollections.length > 0" class="mt-3 space-y-1">
+                <div class="border-b border-gray-200 dark:border-gray-600 mb-3"></div>
+                <div
+                  v-for="subcollection in currentDocumentSubcollections"
+                  :key="subcollection.id"
+                  class="group"
+                >
+                  <button
+                    @click="navigateToSubcollection(subcollection)"
+                    :class="[
+                      'flex items-center w-full px-2 py-1.5 text-sm rounded-md cursor-pointer transition-colors duration-200',
+                      selectedSubcollection?.id === subcollection.id
+                        ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    ]"
+                  >
+                    <ChevronRightIcon class="w-4 h-4 mr-1 flex-shrink-0" />
+                    <CircleStackIcon class="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span class="truncate">{{ subcollection.id }}</span>
+                  </button>
+                </div>
               </div>
 
               <!-- Add Field Button -->
@@ -1231,7 +1263,22 @@ const navigateToRoot = () => {
   selectedSubcollection.value = null
   selectedSubcollectionDocument.value = null
   subcollectionDocuments.value = []
+  // Clear collection and document selections to make middle and right panes blank
+  selectedCollection.value = null
+  selectedDocument.value = null
   // Don't clear documentSubcollections - we want to preserve them when navigating
+  slideToRootLevel()
+}
+
+const navigateToCollection = () => {
+  // Clear document selection to show only collection (2 panes)
+  selectedDocument.value = null
+  // Clear subcollection state
+  navigationPath.value = []
+  currentSubcollections.value = []
+  selectedSubcollection.value = null
+  selectedSubcollectionDocument.value = null
+  subcollectionDocuments.value = []
   slideToRootLevel()
 }
 
@@ -1239,8 +1286,14 @@ const navigateToSegment = async (segmentIndex: number) => {
   const segment = navigationPath.value[segmentIndex]
 
   if (segment.type === 'collection') {
-    // Navigate back to root level and select the collection
-    navigateToRoot()
+    // Clear subcollection state but keep root level state
+    navigationPath.value = []
+    currentSubcollections.value = []
+    selectedSubcollection.value = null
+    selectedSubcollectionDocument.value = null
+    subcollectionDocuments.value = []
+    selectedDocument.value = null // Clear document to make right pane blank
+    slideToRootLevel()
 
     // Find and select the collection
     const collection = collections.value.find(c => c.id === segment.id)
