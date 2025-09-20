@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import type { FirestoreDocument, FirestoreCollectionWithMetadata } from '@/types'
+import firestoreApi from '@/api/firestore'
 
 export function useFirestoreNavigation() {
   // Navigation state
@@ -32,7 +33,7 @@ export function useFirestoreNavigation() {
 
   // Navigation functions
   const slideToSubcollectionLevel = () => {
-    slideOffset.value = -100 // Slide one full width to the left (in percentage)
+    slideOffset.value = -100 // Slide to show Level 2 (subcollection layout)
   }
 
   const slideToRootLevel = () => {
@@ -63,6 +64,37 @@ export function useFirestoreNavigation() {
     slideToRootLevel()
   }
 
+  const loadSubcollectionDocuments = async (subcollectionPath: string) => {
+    try {
+      // Extract collection ID from path (last part after the last slash)
+      const pathParts = subcollectionPath.split('/')
+      const collectionId = pathParts[pathParts.length - 1]
+      // For subcollections, we need to construct the parent path differently
+      // The subcollectionPath is like: projects/x/databases/(default)/documents/collection-1/doc-id/subcollection-id
+      // We need to remove the subcollection-id and call the API with: projects/x/databases/(default)/documents/collection-1/doc-id
+      const parentDocumentPath = pathParts.slice(0, -1).join('/')
+
+      // Use the dedicated API method for subcollection documents
+      const response = await firestoreApi.listSubcollectionDocuments(parentDocumentPath, collectionId)
+      subcollectionDocuments.value = response.documents
+
+      // Auto-select the first document
+      if (subcollectionDocuments.value.length > 0) {
+        selectedSubcollectionDocument.value = subcollectionDocuments.value[0]
+      } else {
+        selectedSubcollectionDocument.value = null
+      }
+    } catch (error) {
+      console.error('Failed to load subcollection documents:', error)
+      subcollectionDocuments.value = []
+      selectedSubcollectionDocument.value = null
+    }
+  }
+
+  const selectSubcollectionDocument = (document: FirestoreDocument) => {
+    selectedSubcollectionDocument.value = document
+  }
+
   const navigateToSubcollection = async (subcollection: FirestoreCollectionWithMetadata) => {
     // Update navigation path to include the subcollection
     if (selectedCollection.value && selectedDocument.value) {
@@ -77,7 +109,10 @@ export function useFirestoreNavigation() {
     selectedSubcollection.value = subcollection
     currentSubcollections.value = [subcollection]
 
-    // Trigger slide to subcollection view
+    // Load documents for the subcollection
+    await loadSubcollectionDocuments(subcollection.path)
+
+    // Slide the layout to show subcollection level - middle and right panes slide left together
     slideToSubcollectionLevel()
   }
 
@@ -122,6 +157,8 @@ export function useFirestoreNavigation() {
     navigateToRoot,
     navigateToCollection,
     navigateToSubcollection,
+    loadSubcollectionDocuments,
+    selectSubcollectionDocument,
     getDocumentId,
     clearData
   }

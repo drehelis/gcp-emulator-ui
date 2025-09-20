@@ -14,11 +14,6 @@
             {{ segment.name }}
           </button>
         </template>
-        <!-- Show current subcollection document if selected -->
-        <template v-if="selectedSubcollectionDocument">
-          <ChevronRightIcon class="w-3 h-3 mx-1" />
-          <span class="text-blue-600 dark:text-blue-400 font-semibold">{{ getDocumentId(selectedSubcollectionDocument.name) }}</span>
-        </template>
       </template>
 
       <!-- Show current selection for root mode -->

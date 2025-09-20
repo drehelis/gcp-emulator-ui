@@ -210,26 +210,6 @@ export const convertFromFirestoreValue = (firestoreValue: any): any => {
   return firestoreValue
 }
 
-/**
- * Get field type from Firestore value
- */
-export const getFieldType = (firestoreValue: any): string => {
-  if (!firestoreValue || typeof firestoreValue !== 'object') {
-    return 'string'
-  }
-
-  if ('stringValue' in firestoreValue) return 'string'
-  if ('integerValue' in firestoreValue || 'doubleValue' in firestoreValue) return 'number'
-  if ('booleanValue' in firestoreValue) return 'boolean'
-  if ('nullValue' in firestoreValue) return 'null'
-  if ('timestampValue' in firestoreValue) return 'timestamp'
-  if ('geoPointValue' in firestoreValue) return 'geopoint'
-  if ('referenceValue' in firestoreValue) return 'reference'
-  if ('mapValue' in firestoreValue) return 'map'
-  if ('arrayValue' in firestoreValue) return 'array'
-
-  return 'string'
-}
 
 /**
  * Validate field name

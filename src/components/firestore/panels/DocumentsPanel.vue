@@ -7,7 +7,10 @@
       <!-- Collection Header with Breadcrumb Style -->
       <div class="mb-3">
         <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 font-mono">
-          <span class="text-gray-900 dark:text-white">{{ selectedCollection ? selectedCollection.id : 'Select a collection' }}</span>
+          <span class="text-gray-900 dark:text-white">{{
+            selectedCollection ? selectedCollection.id :
+            'Select a collection'
+          }}</span>
           <div v-if="selectedCollection" class="relative" data-collection-menu>
             <button
               @click="showCollectionMenu = !showCollectionMenu"
@@ -45,23 +48,25 @@
         </button>
       </div>
 
-      <!-- Documents List -->
-      <div v-if="selectedCollection" class="space-y-1">
-        <div
-          v-for="document in documents"
-          :key="document.name"
-          :class="[
-            'flex items-center px-3 py-2 text-sm rounded-md cursor-pointer transition-colors duration-200',
-            selectedDocument?.name === document.name
-              ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-          ]"
-          @click="$emit('select-document', document)"
-        >
-          <span class="truncate">{{ getDocumentId(document.name) }}</span>
+      <!-- Documents List - only collection documents -->
+      <div v-if="selectedCollection">
+        <div class="space-y-1">
+          <div
+            v-for="document in documents"
+            :key="document.name"
+            :class="[
+              'flex items-center px-3 py-2 text-sm rounded-md cursor-pointer transition-colors duration-200',
+              selectedDocument?.name === document.name
+                ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+            ]"
+            @click="$emit('select-document', document)"
+          >
+            <span class="truncate">{{ getDocumentId(document.name) }}</span>
+          </div>
         </div>
 
-        <!-- Empty documents state -->
+        <!-- Empty collection state -->
         <div
           v-if="documents.length === 0 && !loading"
           class="text-center py-8"
@@ -125,3 +130,20 @@ const handleDeleteCollection = () => {
   emit('delete-collection')
 }
 </script>
+
+<style scoped>
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+</style>

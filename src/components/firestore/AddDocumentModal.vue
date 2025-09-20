@@ -60,6 +60,7 @@ interface Props {
   modelValue: boolean
   projectId: string
   collectionId: string
+  collectionPath?: string | null
   cloneDocument?: FirestoreDocument | null
 }
 
@@ -84,6 +85,11 @@ const isOpen = computed({
 })
 
 const collectionPath = computed(() => {
+  // If collectionPath is provided (for subcollections), use it directly
+  if (props.collectionPath) {
+    return props.collectionPath
+  }
+  // Otherwise, construct from collectionId (for root collections)
   return `projects/${props.projectId}/databases/(default)/documents/${props.collectionId}`
 })
 
@@ -134,15 +140,32 @@ const handleSave = async () => {
 
     const documentFields = documentForm.buildDocumentFields()
 
-    // Create document in existing collection
-    const success = await firestoreStore.createDocument(
-      props.projectId,
-      props.collectionId,
-      {
-        fields: documentFields
-      },
-      documentForm.documentId.value || undefined
-    )
+    let success
+    if (props.collectionPath) {
+      // Creating document in subcollection - extract parent path and collection ID
+      const pathParts = props.collectionPath.split('/')
+      const collectionId = pathParts[pathParts.length - 1]
+      const parentDocumentPath = pathParts.slice(0, -1).join('/')
+
+      success = await firestoreStore.createSubcollectionDocument(
+        parentDocumentPath,
+        collectionId,
+        {
+          fields: documentFields
+        },
+        documentForm.documentId.value || undefined
+      )
+    } else {
+      // Creating document in root collection
+      success = await firestoreStore.createDocument(
+        props.projectId,
+        props.collectionId,
+        {
+          fields: documentFields
+        },
+        documentForm.documentId.value || undefined
+      )
+    }
 
     if (success) {
       const finalDocumentId = documentForm.documentId.value || success.name.split('/').pop() || 'unknown'
@@ -167,15 +190,32 @@ const handleSaveAndAddAnother = async () => {
 
     const documentFields = documentForm.buildDocumentFields()
 
-    // Create document in existing collection
-    const success = await firestoreStore.createDocument(
-      props.projectId,
-      props.collectionId,
-      {
-        fields: documentFields
-      },
-      documentForm.documentId.value || undefined
-    )
+    let success
+    if (props.collectionPath) {
+      // Creating document in subcollection - extract parent path and collection ID
+      const pathParts = props.collectionPath.split('/')
+      const collectionId = pathParts[pathParts.length - 1]
+      const parentDocumentPath = pathParts.slice(0, -1).join('/')
+
+      success = await firestoreStore.createSubcollectionDocument(
+        parentDocumentPath,
+        collectionId,
+        {
+          fields: documentFields
+        },
+        documentForm.documentId.value || undefined
+      )
+    } else {
+      // Creating document in root collection
+      success = await firestoreStore.createDocument(
+        props.projectId,
+        props.collectionId,
+        {
+          fields: documentFields
+        },
+        documentForm.documentId.value || undefined
+      )
+    }
 
     if (success) {
       const finalDocumentId = documentForm.documentId.value || success.name.split('/').pop() || 'unknown'

@@ -191,6 +191,7 @@ declare global {
   const useFieldOperations: typeof import('./src/composables/useFieldOperations')['useFieldOperations']
   const useFileDialog: typeof import('@vueuse/core')['useFileDialog']
   const useFileSystemAccess: typeof import('@vueuse/core')['useFileSystemAccess']
+  const useFirestoreActions: typeof import('./src/composables/useFirestoreActions')['useFirestoreActions']
   const useFirestoreNavigation: typeof import('./src/composables/useFirestoreNavigation')['useFirestoreNavigation']
   const useFirestoreStore: typeof import('./src/stores/firestore')['useFirestoreStore']
   const useFocus: typeof import('@vueuse/core')['useFocus']
@@ -222,6 +223,7 @@ declare global {
   const useMessagePublisher: typeof import('./src/composables/useMessagePublisher')['useMessagePublisher']
   const useMessageTemplatesStore: typeof import('./src/stores/messageTemplates')['useMessageTemplatesStore']
   const useMetricsStore: typeof import('./src/stores/metrics')['useMetricsStore']
+  const useModalManager: typeof import('./src/composables/useModalManager')['useModalManager']
   const useModel: typeof import('vue')['useModel']
   const useMounted: typeof import('@vueuse/core')['useMounted']
   const useMouse: typeof import('@vueuse/core')['useMouse']
@@ -255,6 +257,8 @@ declare global {
   const useQuery: typeof import('@tanstack/vue-query')['useQuery']
   const useQueryClient: typeof import('@tanstack/vue-query')['useQueryClient']
   const useRafFn: typeof import('@vueuse/core')['useRafFn']
+  const useRecursiveFirestoreNavigation: typeof import('./src/composables/useRecursiveFirestoreNavigation')['useRecursiveFirestoreNavigation']
+  const useRecursiveNavigation: typeof import('./src/composables/useRecursiveNavigation')['useRecursiveNavigation']
   const useRefHistory: typeof import('@vueuse/core')['useRefHistory']
   const useResizeObserver: typeof import('@vueuse/core')['useResizeObserver']
   const useRoute: typeof import('vue-router')['useRoute']
@@ -340,6 +344,9 @@ declare global {
   // @ts-ignore
   export type { Field } from './src/composables/useDocumentForm'
   import('./src/composables/useDocumentForm')
+  // @ts-ignore
+  export type { NavigationItem, NavigationLevel } from './src/composables/useRecursiveNavigation'
+  import('./src/composables/useRecursiveNavigation')
   // @ts-ignore
   export type { ServiceConnectionStatus } from './src/composables/useServiceConnections'
   import('./src/composables/useServiceConnections')

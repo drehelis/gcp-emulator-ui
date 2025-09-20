@@ -1,5 +1,5 @@
 <template>
-  <div v-if="selectedDocument" class="w-1/3 bg-white dark:bg-gray-800 overflow-y-auto">
+  <div v-if="selectedDocument" class="w-1/3 h-full bg-white dark:bg-gray-800 overflow-y-auto">
     <div class="p-4">
       <!-- Document Header -->
       <div class="mb-3">
@@ -61,7 +61,12 @@
           >
             <button
               @click="$emit('navigate-to-subcollection', subcollection)"
-              class="flex items-center w-full px-2 py-1.5 text-sm rounded-md cursor-pointer transition-colors duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+              :class="[
+                'flex items-center w-full px-2 py-1.5 text-sm rounded-md cursor-pointer transition-colors duration-200',
+                selectedSubcollection?.id === subcollection.id
+                  ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+              ]"
             >
               <ChevronRightIcon class="w-4 h-4 mr-1 flex-shrink-0" />
               <CircleStackIcon class="w-4 h-4 mr-2 flex-shrink-0" />
@@ -97,24 +102,11 @@
     </div>
   </div>
 
-  <!-- No document selected state -->
-  <div
-    v-else
-    class="text-center py-16"
-  >
-    <DocumentIcon class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-    <p class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-      Select a document
-    </p>
-    <p class="text-sm text-gray-500 dark:text-gray-400">
-      Choose a document from the center panel to view its fields
-    </p>
-  </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { PlusIcon, EllipsisVerticalIcon, DocumentIcon, ChevronRightIcon, CircleStackIcon } from '@heroicons/vue/24/outline'
+import { PlusIcon, EllipsisVerticalIcon, ChevronRightIcon, CircleStackIcon } from '@heroicons/vue/24/outline'
 import { getDocumentId } from '@/utils/firestoreHelpers'
 import FieldList from '@/components/firestore/fields/FieldList.vue'
 import type { FirestoreDocument, FirestoreCollectionWithMetadata } from '@/types'
@@ -122,6 +114,7 @@ import type { FirestoreDocument, FirestoreCollectionWithMetadata } from '@/types
 interface Props {
   selectedDocument?: FirestoreDocument | null
   subcollections?: FirestoreCollectionWithMetadata[]
+  selectedSubcollection?: FirestoreCollectionWithMetadata | null
   expandedFields?: Set<string>
 }
 

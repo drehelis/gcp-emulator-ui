@@ -153,6 +153,28 @@ export const useFirestoreStore = defineStore('firestore', () => {
     }
   }
 
+  // Create document in subcollection
+  const createSubcollectionDocument = async (parentDocumentPath: string, collectionId: string, document: any, documentId?: string) => {
+    try {
+      loading.value = true
+
+      const request: CreateDocumentRequest = {
+        parent: parentDocumentPath,
+        collectionId,
+        documentId,
+        document
+      }
+
+      const createdDocument = await firestoreApi.createDocument(request)
+      return createdDocument
+    } catch (error) {
+      console.error('Failed to create subcollection document:', error)
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
   // Load documents
   const loadDocuments = async (projectId: string, collectionId: string) => {
     try {
@@ -291,6 +313,7 @@ export const useFirestoreStore = defineStore('firestore', () => {
     createCollection,
     createSubcollection,
     createDocument,
+    createSubcollectionDocument,
     loadDocuments,
     updateDocument,
     deleteDocument,

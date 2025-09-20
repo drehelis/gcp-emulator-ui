@@ -1,208 +1,186 @@
 <template>
   <div class="min-h-full bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
     <!-- Page Header -->
-    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-      <div class="px-4 sm:px-6 lg:px-8">
-        <div class="py-4">
-          <!-- Navigation and Title -->
-          <div class="flex items-center justify-between gap-2">
-            <div class="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center space-x-2">
-                  <h1 class="text-lg font-medium text-gray-900 dark:text-white truncate">
-                    Collections ({{ collections.length }})
-                  </h1>
-                </div>
-              </div>
-            </div>
-
-            <!-- Action buttons -->
-            <div class="flex items-center gap-2 flex-shrink-0">
-              <button
-                @click="refreshCollections"
-                :disabled="firestoreStore.loading"
-                class="inline-flex items-center px-2 sm:px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-              >
-                <ArrowPathIcon
-                  :class="['w-4 h-4', firestoreStore.loading ? 'animate-spin' : '', 'sm:mr-2']"
-                />
-                <span class="hidden sm:inline">Refresh</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <PageHeader
+      :collections-count="collections.length"
+      :loading="firestoreStore.loading"
+      @refresh="refreshCollections"
+    />
 
     <!-- Breadcrumb Navigator -->
     <NavigationBreadcrumb
-      :navigation-path="navigationPath"
-      :selected-collection="selectedCollection"
-      :selected-document="selectedDocument"
-      :selected-subcollection-document="selectedSubcollectionDocument"
-      :is-in-subcollection-mode="isInSubcollectionMode"
-      @navigate-to-root="navigateToRoot"
-      @navigate-to-collection="navigateToCollection"
-      @navigate-to-segment="navigateToSegment"
+      :navigation-path="navigation.breadcrumbPath.value"
+      :selected-collection="null"
+      :selected-document="null"
+      :selected-subcollection-document="null"
+      :is-in-subcollection-mode="!navigation.isAtRoot.value"
+      @navigate-to-root="navigation.navigateToRoot"
+      @navigate-to-collection="() => {}"
+      @navigate-to-segment="handleBreadcrumbClick"
     />
 
-    <!-- Sliding Panel Layout -->
-    <SlidingContainer :slide-offset="slideOffset">
-      <!-- Root Level (Level 0) -->
-      <div class="flex-shrink-0 w-full flex">
-        <!-- Collections Panel -->
-        <CollectionsPanel
-          :collections="collections"
-          :selected-collection="selectedCollection"
+    <!-- Sliding Layout -->
+    <SlidingContainer :slide-offset="navigation.slideOffset.value">
+      <!-- Render each navigation level -->
+      <div
+        v-for="(level, levelIndex) in navigation.navigationStack.value"
+        :key="`level-${levelIndex}`"
+        class="flex-shrink-0 w-full flex h-full"
+      >
+        <!-- Column 1: Previous level items or collections -->
+        <ColumnOne
+          :header="getColumnOneHeader(levelIndex)"
+          :items="getColumnOneItems(levelIndex)"
+          :selected-item="getColumnOneSelectedItem(levelIndex)"
+          :show-add-button="getColumnOneShowAddButton(levelIndex)"
+          :add-button-text="getColumnOneAddButtonText(levelIndex)"
+          :empty-state-text="getColumnOneEmptyStateText(levelIndex)"
           :loading="firestoreStore.loading"
-          @create-collection="showCreateCollectionModal = true"
-          @select-collection="selectCollection"
+          @add-item="handleColumnOneAddItem(levelIndex)"
+          @select-item="handleColumnOneSelectItem(levelIndex, $event)"
         />
 
-        <!-- Documents Panel -->
-        <DocumentsPanel
-          :selected-collection="selectedCollection"
-          :selected-document="selectedDocument"
-          :documents="documents"
-          :loading="firestoreStore.loading"
-          @add-document="showAddDocumentModal = true"
-          @select-document="selectDocument"
-          @delete-collection="handleDeleteCollection"
-        />
-
-        <!-- Document Editor -->
-        <DocumentEditor
-          v-if="selectedDocument"
-          :selected-document="selectedDocument"
-          :subcollections="currentDocumentSubcollections"
-          :expanded-fields="expandedMapFields"
-          @start-subcollection="handleStartSubcollection"
-          @navigate-to-subcollection="navigateToSubcollection"
-          @add-field="handleShowAddFieldModal"
-          @toggle-field="toggleMapField"
-          @edit-field="handleEditField"
-          @delete-field="handleDeleteField"
-          @add-to-map="handleAddToMap"
-          @add-to-array="handleAddToArray"
-          @clone-document="handleAddSimilarDocument"
-          @delete-all-fields="handleDeleteAllFields"
-          @delete-document="handleDeleteDocument"
-        />
-      </div>
-
-      <!-- Subcollection Level (Level 1) - Simplified for now -->
-      <div class="flex-shrink-0 w-full flex">
-        <div class="w-full bg-white dark:bg-gray-800 p-8 text-center">
-          <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-2">Subcollection View</h2>
-          <p class="text-sm text-gray-500 dark:text-gray-400">Subcollection navigation will be implemented here</p>
+        <!-- At root level with no collection selected: show merged columns 2+3 as empty state -->
+        <div v-if="levelIndex === 0 && !level.selectedItem" class="w-2/3 h-full bg-white dark:bg-gray-800">
         </div>
+
+        <!-- Normal 3-column layout for deeper levels or when collection is selected -->
+        <template v-else>
+          <!-- Column 2: Current level items -->
+          <ColumnTwo
+            :header="level.header"
+            :items="level.items"
+            :selected-item="level.selectedItem"
+            :show-add-button="getColumnTwoShowAddButton(levelIndex)"
+            :add-button-text="getColumnTwoAddButtonText(levelIndex)"
+            :empty-state-text="getColumnTwoEmptyStateText(levelIndex)"
+            :show-selection-prompt="false"
+            :show-collection-menu="getColumnTwoShowCollectionMenu(levelIndex)"
+            :loading="firestoreStore.loading"
+            @add-item="handleColumnTwoAddItem(levelIndex)"
+            @select-item="handleColumnTwoSelectItem(levelIndex, $event)"
+            @delete-collection="handleColumnTwoDeleteCollection(levelIndex)"
+          />
+
+          <!-- Column 3: Document Editor or empty state -->
+          <DocumentEditor
+            v-if="getColumnThreeDocument(levelIndex)"
+            :selected-document="getColumnThreeDocument(levelIndex)"
+            :subcollections="getColumnThreeSubcollections(levelIndex)"
+            :selected-subcollection="getColumnThreeSelectedSubcollection(levelIndex)"
+            :expanded-fields="expandedMapFields"
+            @start-subcollection="handleStartSubcollection(levelIndex)"
+            @navigate-to-subcollection="handleNavigateToSubcollection(levelIndex, $event)"
+            @add-field="modalManager.openAddFieldModal"
+            @toggle-field="toggleMapField"
+            @edit-field="handleEditField"
+            @delete-field="modalManager.openDeleteFieldModal"
+            @add-to-map="modalManager.openAddToMapModal"
+            @add-to-array="modalManager.openAddToArrayModal"
+            @clone-document="handleCloneDocument"
+            @delete-all-fields="modalManager.openDeleteAllFieldsModal"
+            @delete-document="handleDeleteDocument"
+          />
+
+          <!-- Column 3: Empty state when no document selected -->
+          <div v-else class="w-1/3 h-full bg-white dark:bg-gray-800">
+          </div>
+        </template>
       </div>
     </SlidingContainer>
 
     <!-- Modals -->
     <StartCollectionModal
-      v-model="showCreateCollectionModal"
+      v-model="modalManager.showCreateCollectionModal.value"
       :project-id="currentProjectId"
-      :parent-document-path="currentDocumentPath"
+      :parent-document-path="getModalParentDocumentPath()"
       @created="handleCollectionCreated"
     />
 
     <AddDocumentModal
-      v-model="showAddDocumentModal"
+      v-model="modalManager.showAddDocumentModal.value"
       :project-id="currentProjectId"
-      :collection-id="selectedCollection?.id || ''"
-      :clone-document="cloneDocumentData"
+      :collection-id="getModalCollectionId()"
+      :collection-path="getModalCollectionPath()"
+      :clone-document="modalManager.cloneDocumentData.value"
       @created="handleDocumentCreated"
-      @close="cloneDocumentData = null"
+      @close="modalManager.closeAddDocumentModal"
     />
 
     <!-- Confirmation Modals -->
     <ConfirmationModal
-      v-model="showDeleteCollectionModal"
+      v-model="modalManager.showDeleteCollectionModal.value"
       title="Delete Collection"
-      :message="`Are you sure you want to delete collection '${collectionToDelete ? collectionToDelete.id : ''}'?`"
+      :message="`Are you sure you want to delete collection '${modalManager.collectionToDelete.value?.id || ''}'?`"
       confirm-label="Delete Collection"
-      :is-loading="isDeletingCollection"
-      :details="{
-        title: 'What will happen:',
-        description: 'The collection and all its documents will be permanently deleted. This action cannot be undone.'
-      }"
+      :is-loading="modalManager.isDeletingCollection.value"
+      :details="{ title: 'What will happen:', description: 'The collection and all its documents will be permanently deleted. This action cannot be undone.' }"
       @confirm="confirmDeleteCollection"
-      @cancel="cancelDeleteCollection"
+      @cancel="modalManager.closeDeleteCollectionModal"
     />
 
     <ConfirmationModal
-      v-model="showDeleteDocumentModal"
+      v-model="modalManager.showDeleteDocumentModal.value"
       title="Delete Document"
-      :message="`Are you sure you want to delete document '${documentToDelete ? getDocumentId(documentToDelete.name) : ''}'?`"
+      :message="`Are you sure you want to delete document '${modalManager.documentToDelete.value ? getDocumentId(modalManager.documentToDelete.value.name) : ''}'?`"
       confirm-label="Delete Document"
-      :is-loading="isDeletingDocument"
-      :details="{
-        title: 'What will happen:',
-        description: 'The document will be permanently deleted. This action cannot be undone.'
-      }"
+      :is-loading="modalManager.isDeletingDocument.value"
+      :details="{ title: 'What will happen:', description: 'The document will be permanently deleted. This action cannot be undone.' }"
       @confirm="confirmDeleteDocument"
-      @cancel="cancelDeleteDocument"
+      @cancel="modalManager.closeDeleteDocumentModal"
     />
 
     <ConfirmationModal
-      v-model="showDeleteAllFieldsModal"
+      v-model="modalManager.showDeleteAllFieldsModal.value"
       title="Delete All Fields"
-      :message="`Are you sure you want to delete all fields from document '${selectedDocument ? getDocumentId(selectedDocument.name) : ''}'?`"
+      :message="`Are you sure you want to delete all fields from document '${getSelectedDocumentId()}'?`"
       confirm-label="Delete All Fields"
-      :is-loading="isDeletingAllFields"
-      :details="{
-        title: 'What will happen:',
-        description: 'All fields in the document will be deleted, leaving an empty document. This action cannot be undone.'
-      }"
+      :is-loading="modalManager.isDeletingAllFields.value"
+      :details="{ title: 'What will happen:', description: 'All fields in the document will be deleted, leaving an empty document. This action cannot be undone.' }"
       @confirm="confirmDeleteAllFields"
-      @cancel="cancelDeleteAllFields"
+      @cancel="modalManager.closeDeleteAllFieldsModal"
     />
 
     <ConfirmationModal
-      v-model="showDeleteFieldModal"
+      v-model="modalManager.showDeleteFieldModal.value"
       title="Delete Field"
-      :message="`Are you sure you want to delete field '${fieldToDelete ? fieldToDelete.displayName : ''}'?`"
+      :message="`Are you sure you want to delete field '${modalManager.fieldToDelete.value?.displayName || ''}'?`"
       confirm-label="Delete Field"
-      :is-loading="isDeletingField"
-      :details="{
-        title: 'What will happen:',
-        description: 'The field will be permanently removed from this document. This action cannot be undone.'
-      }"
+      :is-loading="modalManager.isDeletingField.value"
+      :details="{ title: 'What will happen:', description: 'The field will be permanently removed from this document. This action cannot be undone.' }"
       @confirm="confirmDeleteField"
-      @cancel="cancelDeleteField"
+      @cancel="modalManager.closeDeleteFieldModal"
     />
 
     <FieldModal
-      v-model="showFieldModal"
-      :mode="fieldModalMode"
-      :initial-field-name="fieldModalData.fieldName"
-      :initial-field-type="fieldModalData.fieldType"
-      :initial-field-value="fieldModalData.fieldValue"
-      :field-path="fieldModalData.fieldPath"
-      :is-new-field="fieldModalData.isNew"
-      :parent-path="fieldModalData.parentPath"
+      v-model="modalManager.showFieldModal.value"
+      :mode="modalManager.fieldModalMode.value"
+      :initial-field-name="modalManager.fieldModalData.value.fieldName"
+      :initial-field-type="modalManager.fieldModalData.value.fieldType"
+      :initial-field-value="modalManager.fieldModalData.value.fieldValue"
+      :field-path="modalManager.fieldModalData.value.fieldPath"
+      :is-new-field="modalManager.fieldModalData.value.isNew"
+      :parent-path="modalManager.fieldModalData.value.parentPath"
       @save="handleFieldModalSave"
-      @close="handleFieldModalClose"
+      @close="modalManager.closeFieldModal"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { ArrowPathIcon } from '@heroicons/vue/24/outline'
 
 // Store and API
 import { useFirestoreStore } from '@/stores/firestore'
-import firestoreApi from '@/api/firestore'
 import type { FirestoreDocument, FirestoreCollectionWithMetadata } from '@/types'
 
 // Components
+import PageHeader from '@/components/firestore/layout/PageHeader.vue'
 import NavigationBreadcrumb from '@/components/firestore/navigation/NavigationBreadcrumb.vue'
 import SlidingContainer from '@/components/firestore/navigation/SlidingContainer.vue'
-import CollectionsPanel from '@/components/firestore/panels/CollectionsPanel.vue'
-import DocumentsPanel from '@/components/firestore/panels/DocumentsPanel.vue'
+import ColumnOne from '@/components/firestore/columns/ColumnOne.vue'
+import ColumnTwo from '@/components/firestore/columns/ColumnTwo.vue'
 import DocumentEditor from '@/components/firestore/panels/DocumentEditor.vue'
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
 import FieldModal from '@/components/firestore/FieldModal.vue'
@@ -210,555 +188,612 @@ import StartCollectionModal from '@/components/firestore/StartCollectionModal.vu
 import AddDocumentModal from '@/components/firestore/AddDocumentModal.vue'
 
 // Composables
-import { useFieldNavigation } from '@/composables/useFieldNavigation'
 import { useFieldOperations } from '@/composables/useFieldOperations'
-import { useFirestoreNavigation } from '@/composables/useFirestoreNavigation'
+import { useRecursiveNavigation, type NavigationItem } from '@/composables/useRecursiveNavigation'
+import { useModalManager } from '@/composables/useModalManager'
+import { useDocumentForm } from '@/composables/useDocumentForm'
 
 // Utils
-import { getDocumentId } from '@/utils/firestoreHelpers'
-import { createFirestoreValue } from '@/utils/fieldUtils'
+import { getDocumentId, getFieldType, getEditableValue } from '@/utils/firestoreHelpers'
 
 const route = useRoute()
 const firestoreStore = useFirestoreStore()
 
 // Composables
-const { navigateToFieldPath, navigateToParentPath } = useFieldNavigation()
 const {
   expandedMapFields,
   toggleMapField,
-  clearExpandedFields,
-  restoreExpandedFields,
-  formatFieldValue,
-  getFieldType,
-  getEditableValue
+  clearExpandedFields
 } = useFieldOperations()
-const {
-  slideOffset,
-  navigationPath,
-  selectedCollection,
-  selectedDocument,
-  selectedSubcollection,
-  selectedSubcollectionDocument,
-  currentSubcollections,
-  subcollectionDocuments,
-  documentSubcollections,
-  isInSubcollectionMode,
-  currentDocumentPath,
-  currentDocumentSubcollections,
-  slideToSubcollectionLevel,
-  slideToRootLevel,
-  navigateToRoot,
-  navigateToCollection,
-  navigateToSubcollection,
-  clearData
-} = useFirestoreNavigation()
 
-// Modal states
-const showCreateCollectionModal = ref(false)
-const showAddDocumentModal = ref(false)
-const cloneDocumentData = ref<FirestoreDocument | null>(null)
-const showDeleteCollectionModal = ref(false)
-const isDeletingCollection = ref(false)
-const collectionToDelete = ref<FirestoreCollectionWithMetadata | null>(null)
-const showDeleteDocumentModal = ref(false)
-const isDeletingDocument = ref(false)
-const documentToDelete = ref<FirestoreDocument | null>(null)
-const showDeleteAllFieldsModal = ref(false)
-const isDeletingAllFields = ref(false)
-const showDeleteFieldModal = ref(false)
-const isDeletingField = ref(false)
-const fieldToDelete = ref<{ path: string; displayName: string } | null>(null)
+const navigation = useRecursiveNavigation()
+const { navigationStack } = navigation
+const modalManager = useModalManager()
+const { buildFirestoreValue } = useDocumentForm()
 
-// Field modal state
-const showFieldModal = ref(false)
-const fieldModalMode = ref<'add' | 'edit'>('add')
-const fieldModalData = ref({
-  fieldName: '',
-  fieldType: 'string',
-  fieldValue: '',
-  fieldPath: '',
-  isNew: false,
-  parentPath: ''
-})
+// Local state for caching subcollections
+const documentSubcollections = ref<Map<string, FirestoreCollectionWithMetadata[]>>(new Map())
 
 // Computed properties
 const currentProjectId = computed(() => route.params.projectId as string)
 const collections = computed(() => firestoreStore.collections)
-const documents = computed(() => {
-  if (!selectedCollection.value) return []
-  return firestoreStore.getDocumentsByCollection(selectedCollection.value.id)
-})
 
-// Methods
-const refreshCollections = async () => {
-  await firestoreStore.loadCollections(currentProjectId.value)
 
-  if (selectedCollection.value) {
-    await firestoreStore.loadDocuments(currentProjectId.value, selectedCollection.value.id)
-    await nextTick()
-    if (selectedDocument.value) {
-      const docs = documents.value
-      const currentDocId = getDocumentId(selectedDocument.value.name)
-      const foundDoc = docs.find(doc => getDocumentId(doc.name) === currentDocId)
-      if (foundDoc) {
-        selectDocument(foundDoc)
-      } else if (docs.length > 0) {
-        selectDocument(docs[0])
+// Helper functions for column configuration
+const getColumnOneHeader = (levelIndex: number): string => {
+  if (levelIndex === 0) return '(default)'
+  if (levelIndex === 1) return '(default)' // Column 1 still shows collections from root
+
+  const prevLevel = navigation.navigationStack.value[levelIndex - 1]
+  return prevLevel?.selectedItem ? getItemDisplayName(prevLevel.selectedItem) : 'Previous'
+}
+
+const getColumnOneItems = (levelIndex: number): NavigationItem[] => {
+  if (levelIndex === 0) return collections.value
+
+  const prevLevel = navigation.navigationStack.value[levelIndex - 1]
+  return prevLevel?.items || []
+}
+
+const getColumnOneSelectedItem = (levelIndex: number): NavigationItem | null => {
+  if (levelIndex === 0) return null
+
+  const prevLevel = navigation.navigationStack.value[levelIndex - 1]
+  return prevLevel?.selectedItem || null
+}
+
+const getColumnOneShowAddButton = (levelIndex: number): boolean => {
+  return levelIndex === 0 || levelIndex === 1 // Show "Start collection" when Column 1 shows collections
+}
+
+const getColumnOneAddButtonText = (levelIndex: number): string => {
+  return (levelIndex === 0 || levelIndex === 1) ? 'Start collection' : 'Add document'
+}
+
+const getColumnOneEmptyStateText = (levelIndex: number): string => {
+  return levelIndex === 0
+    ? 'No collections found. Create your first collection to get started.'
+    : 'No items in the previous level.'
+}
+
+const getColumnTwoShowAddButton = (levelIndex: number): boolean => {
+  const level = navigation.navigationStack.value[levelIndex]
+  return level?.type === 'collection' || level?.type === 'subcollection'
+}
+
+const getColumnTwoAddButtonText = (_levelIndex: number): string => {
+  return 'Add document'
+}
+
+const getColumnTwoEmptyStateText = (levelIndex: number): string => {
+  const level = navigation.navigationStack.value[levelIndex]
+  if (level?.type === 'collection') {
+    return 'No documents in this collection'
+  } else if (level?.type === 'subcollection') {
+    return 'No documents in this subcollection'
+  }
+  return 'No items found'
+}
+
+const getColumnTwoShowCollectionMenu = (levelIndex: number): boolean => {
+  const level = navigation.navigationStack.value[levelIndex]
+  // Show collection menu when we're viewing a collection's documents
+  return level?.type === 'collection'
+}
+
+const getColumnThreeDocument = (levelIndex: number): FirestoreDocument | null => {
+  const level = navigation.navigationStack.value[levelIndex]
+  const selectedItem = level?.selectedItem
+
+  if (selectedItem && 'name' in selectedItem) {
+    return selectedItem as FirestoreDocument
+  }
+  return null
+}
+
+const getColumnThreeSubcollections = (levelIndex: number): FirestoreCollectionWithMetadata[] => {
+  const level = navigation.navigationStack.value[levelIndex]
+  const selectedDocument = level?.selectedItem
+
+  if (selectedDocument && 'name' in selectedDocument) {
+    // Get subcollections from document cache in the navigation composable
+    // These are loaded when the document is selected
+    const subcollections = documentSubcollections.value.get(selectedDocument.name)
+    // Ensure we always return an array, even if the cached value is malformed
+    return Array.isArray(subcollections) ? subcollections : []
+  }
+  return []
+}
+
+const getColumnThreeSelectedSubcollection = (levelIndex: number): FirestoreCollectionWithMetadata | null => {
+  // Check if there's a next level in the navigation stack that's a subcollection
+  const nextLevel = navigation.navigationStack.value[levelIndex + 1]
+  if (nextLevel && (nextLevel.type === 'subcollection')) {
+    // Find the subcollection that matches the next level's collectionId
+    const subcollections = getColumnThreeSubcollections(levelIndex)
+    return subcollections.find(sub => sub.id === nextLevel.collectionId) || null
+  }
+  return null
+}
+
+// Event handlers
+const handleColumnOneAddItem = async (levelIndex: number) => {
+  if (levelIndex === 0 || levelIndex === 1) {
+    // Root level or collection level - create collection (Column 1 shows collections)
+    modalManager.openCreateRootCollectionModal()
+  }
+}
+
+const handleColumnOneSelectItem = async (levelIndex: number, item: NavigationItem) => {
+  if (levelIndex === 0 || levelIndex === 1) {
+    // Check if this collection is already selected at the root level
+    if ('id' in item && navigation.navigationStack.value[0]?.selectedItem &&
+        'id' in navigation.navigationStack.value[0].selectedItem &&
+        navigation.navigationStack.value[0].selectedItem.id === item.id) {
+      // Already viewing this collection, do nothing
+      return
+    }
+
+    if ('id' in item) {
+      // When switching collections, reset to root and then navigate to the new collection
+      if (levelIndex === 1) {
+        // Reset the navigation stack to root level first
+        navigation.navigateToRoot()
+      }
+
+      // Selected a collection - navigate to it
+      const documents = await loadDocumentsForCollection(item.id)
+      await navigation.navigateToCollection(item, documents)
+
+      // If there are documents, auto-select the first one
+      if (documents.length > 0) {
+        const firstDocument = documents[0]
+        navigation.selectItem(firstDocument)
+
+        // Load subcollections for the first document
+        const subcollections = await navigation.loadSubcollections(firstDocument.name)
+        documentSubcollections.value.set(firstDocument.name, subcollections)
       }
     }
   }
+  // For other levels, this shouldn't normally happen since Column 1 shows previous level items
 }
 
-const selectCollection = async (collection: FirestoreCollectionWithMetadata) => {
-  selectedCollection.value = collection
-  selectedDocument.value = null
-  await firestoreStore.loadDocuments(currentProjectId.value, collection.id)
+const handleColumnTwoAddItem = async (levelIndex: number) => {
+  const level = navigation.navigationStack.value[levelIndex]
 
-  await nextTick()
-  const docs = documents.value
-  if (docs.length > 0) {
-    selectDocument(docs[0])
+  if (level?.type === 'subcollection') {
+    // Adding document to subcollection
+    modalManager.openAddSubcollectionDocumentModal(getSubcollectionPath(levelIndex))
+  } else {
+    // Adding document to regular collection
+    modalManager.openAddDocumentModal()
   }
 }
 
-const selectDocument = async (document: FirestoreDocument) => {
-  selectedDocument.value = document
-  clearExpandedFields()
-  await loadDocumentSubcollections(document)
-}
+const handleColumnTwoSelectItem = async (levelIndex: number, item: NavigationItem) => {
+  navigation.selectItem(item)
 
-const loadDocumentSubcollections = async (document: FirestoreDocument) => {
-  if (!currentDocumentPath.value) return
+  if ('id' in item) {
+    // Selected a collection - navigate to it
+    const documents = await loadDocumentsForCollection(item.id)
+    await navigation.navigateToCollection(item, documents)
+  } else {
+    // Selected a document - load its subcollections and cache them
+    const subcollections = await navigation.loadSubcollections(item.name)
 
-  try {
-    const subcollections = await firestoreStore.loadSubcollections(document.name)
-    documentSubcollections.value.set(currentDocumentPath.value, subcollections)
-  } catch (error) {
-    console.error('Failed to load subcollections for document:', error)
-    documentSubcollections.value.set(currentDocumentPath.value, [])
+    // Cache the subcollections for this document
+    documentSubcollections.value.set(item.name, subcollections)
+
+    await navigation.navigateToDocument(item, subcollections)
   }
 }
 
-// Navigation handlers
-const navigateToSegment = async (segmentIndex: number) => {
-  // Implement segment navigation logic
-  console.log('Navigate to segment:', segmentIndex)
-}
+const handleColumnTwoDeleteCollection = (levelIndex: number) => {
+  const level = navigation.navigationStack.value[levelIndex]
 
-// Collection handlers
-const handleDeleteCollection = () => {
-  if (selectedCollection.value) {
-    collectionToDelete.value = selectedCollection.value
-    showDeleteCollectionModal.value = true
+  if (level?.type === 'collection') {
+    // For a collection level, we need to get the collection from the previous level's selectedItem
+    const previousLevel = navigation.navigationStack.value[levelIndex - 1]
+    if (previousLevel?.selectedItem && 'id' in previousLevel.selectedItem) {
+      modalManager.openDeleteCollectionModal(previousLevel.selectedItem as FirestoreCollectionWithMetadata)
+    }
   }
 }
 
+const handleStartSubcollection = (_levelIndex: number) => {
+  modalManager.openCreateCollectionModal()
+}
+
+const handleNavigateToSubcollection = async (levelIndex: number, subcollection: FirestoreCollectionWithMetadata) => {
+  const documents = await navigation.loadSubcollectionDocuments(
+    subcollection.path.split('/').slice(0, -1).join('/'),
+    subcollection.id
+  )
+  await navigation.navigateToSubcollection(subcollection, documents)
+}
+
+const handleBreadcrumbClick = (index: number) => {
+  // Map breadcrumb index to navigation stack index
+  // Breadcrumb path only includes selected items, so we need to find the corresponding stack level
+  const targetStackIndex = index + 1 // Breadcrumb index 0 = stack index 1, etc.
+
+  // If we're already at the target level, we need to clear the selection at that level
+  // to show the correct UI state (e.g., hide document editor when clicking collection)
+  if (navigation.currentStackIndex.value === targetStackIndex) {
+    if (navigation.navigationStack.value[targetStackIndex]) {
+      navigation.navigationStack.value[targetStackIndex].selectedItem = null
+    }
+  }
+
+  // Clear the selection of levels deeper than the target level
+  // This ensures we show the correct UI state for the clicked level
+  for (let i = targetStackIndex + 1; i < navigation.navigationStack.value.length; i++) {
+    if (navigation.navigationStack.value[i]) {
+      navigation.navigationStack.value[i].selectedItem = null
+    }
+  }
+
+  navigation.navigateToLevel(targetStackIndex)
+}
+
+// Utility functions
+const getItemDisplayName = (item: NavigationItem): string => {
+  if ('id' in item) {
+    return item.id
+  } else {
+    return getDocumentId(item.name)
+  }
+}
+
+const loadDocumentsForCollection = async (collectionId: string): Promise<FirestoreDocument[]> => {
+  await firestoreStore.loadDocuments(currentProjectId.value, collectionId)
+  return firestoreStore.getDocumentsByCollection(collectionId)
+}
+
+const getSubcollectionPath = (levelIndex: number): string => {
+  const level = navigation.navigationStack.value[levelIndex]
+  return level?.parentPath ? `${level.parentPath}/${level.collectionId}` : ''
+}
+
+// Modal helper functions
+const getModalParentDocumentPath = (): string | null => {
+  // If we're explicitly creating a root collection, always return null
+  if (modalManager.isCreatingRootCollection.value) {
+    return null
+  }
+
+  const currentDoc = getColumnThreeDocument(navigation.currentStackIndex.value)
+  return currentDoc?.name || null
+}
+
+const getModalCollectionId = (): string => {
+  const currentLevel = navigation.currentLevel.value
+  return currentLevel?.collectionId || ''
+}
+
+const getModalCollectionPath = (): string | null => {
+  return modalManager.subcollectionPath.value
+}
+
+const getSelectedDocumentId = (): string => {
+  const currentDoc = getColumnThreeDocument(navigation.currentStackIndex.value)
+  return currentDoc ? getDocumentId(currentDoc.name) : ''
+}
+
+// Core methods
+const refreshCollections = async () => {
+  await firestoreStore.loadCollections(currentProjectId.value)
+  navigation.initializeWithCollections(collections.value)
+}
+
+// Event handlers (copied from original implementation)
+const handleCloneDocument = () => {
+  const currentDoc = getColumnThreeDocument(navigation.currentStackIndex.value)
+  if (currentDoc) {
+    modalManager.openCloneDocumentModal(currentDoc)
+  }
+}
+
+const handleDeleteDocument = () => {
+  const currentDoc = getColumnThreeDocument(navigation.currentStackIndex.value)
+  if (currentDoc) {
+    modalManager.openDeleteDocumentModal(currentDoc)
+  }
+}
+
+const handleEditField = (data: { path: string; fieldName: string; fieldValue: any }) => {
+  modalManager.openEditFieldModal({
+    path: data.path,
+    fieldName: data.fieldName,
+    fieldValue: data.fieldValue,
+    fieldType: getFieldType(data.fieldValue),
+    editableValue: getEditableValue(data.fieldValue)
+  })
+}
+
+// Confirmation handlers (simplified versions - implement full logic as needed)
 const confirmDeleteCollection = async () => {
-  if (!collectionToDelete.value) return
+  if (!modalManager.collectionToDelete.value) return
 
   try {
-    isDeletingCollection.value = true
-    await firestoreStore.deleteCollection(currentProjectId.value, collectionToDelete.value.id)
+    modalManager.isDeletingCollection.value = true
+    await firestoreStore.deleteCollection(currentProjectId.value, modalManager.collectionToDelete.value.id)
 
-    if (selectedCollection.value?.id === collectionToDelete.value.id) {
-      selectedCollection.value = null
-      selectedDocument.value = null
+    // Navigate back if we deleted a currently selected collection
+    const currentLevel = navigation.currentLevel.value
+    if (currentLevel?.selectedItem && 'id' in currentLevel.selectedItem &&
+        currentLevel.selectedItem.id === modalManager.collectionToDelete.value.id) {
+      navigation.navigateToRoot()
     }
 
-    showDeleteCollectionModal.value = false
-    collectionToDelete.value = null
+    // Refresh collections
     await refreshCollections()
   } catch (error) {
     console.error('Failed to delete collection:', error)
   } finally {
-    isDeletingCollection.value = false
+    modalManager.isDeletingCollection.value = false
+    modalManager.closeDeleteCollectionModal()
   }
 }
 
-const cancelDeleteCollection = () => {
-  showDeleteCollectionModal.value = false
-  collectionToDelete.value = null
+const confirmDeleteDocument = async () => {
+  if (!modalManager.documentToDelete.value) return
+
+  try {
+    modalManager.isDeletingDocument.value = true
+    const documentPath = modalManager.documentToDelete.value.name
+
+    // Determine the collection ID for cache update
+    let collectionId = ''
+    const currentLevel = navigation.currentLevel.value
+    if (currentLevel?.type === 'collection') {
+      collectionId = currentLevel.collectionId || ''
+    } else if (currentLevel?.type === 'subcollection') {
+      collectionId = currentLevel.collectionId || ''
+    }
+
+    await firestoreStore.deleteDocument(documentPath, collectionId)
+
+    // Clear selection and refresh documents if we deleted the currently selected document
+    if (currentLevel?.selectedItem && 'name' in currentLevel.selectedItem &&
+        currentLevel.selectedItem.name === documentPath) {
+      // Clear the selection to show empty third column
+      navigation.selectItem(null as any)
+
+      // Refresh the documents in the current collection
+      if (collectionId) {
+        await firestoreStore.loadDocuments(currentProjectId.value, collectionId)
+
+        // Update the navigation stack with refreshed documents
+        const refreshedDocuments = firestoreStore.getDocumentsByCollection(collectionId)
+        if (navigationStack.value[navigation.currentStackIndex.value]) {
+          navigationStack.value[navigation.currentStackIndex.value].items = refreshedDocuments
+        }
+      }
+    }
+
+  } catch (error) {
+    console.error('Failed to delete document:', error)
+  } finally {
+    modalManager.isDeletingDocument.value = false
+    modalManager.closeDeleteDocumentModal()
+  }
 }
 
-// Document handlers
+const confirmDeleteAllFields = async () => {
+  const currentDoc = getColumnThreeDocument(navigation.currentStackIndex.value)
+  if (!currentDoc) return
+
+  try {
+    modalManager.isDeletingAllFields.value = true
+    const documentPath = currentDoc.name
+    const documentId = getDocumentId(documentPath)
+
+    // Get collection ID from the document path or current level
+    const pathParts = documentPath.split('/')
+    const collectionId = pathParts[pathParts.length - 2]
+
+    // Update the document with empty fields (keeping the document in place)
+    await firestoreStore.updateDocument(currentProjectId.value, collectionId, documentId, { fields: {} })
+
+    // Refresh the specific collection's documents without resetting navigation
+    await firestoreStore.loadDocuments(currentProjectId.value, collectionId)
+
+    // Update the navigation stack with the refreshed document data
+    const refreshedDocuments = firestoreStore.getDocumentsByCollection(collectionId)
+    const refreshedDocument = refreshedDocuments.find(doc => getDocumentId(doc.name) === documentId)
+    if (refreshedDocument) {
+      navigation.selectItem(refreshedDocument)
+    }
+
+  } catch (error) {
+    console.error('Failed to delete all fields:', error)
+  } finally {
+    modalManager.isDeletingAllFields.value = false
+    modalManager.closeDeleteAllFieldsModal()
+  }
+}
+
+const confirmDeleteField = async () => {
+  if (!modalManager.fieldToDelete.value) return
+
+  const currentDoc = getColumnThreeDocument(navigation.currentStackIndex.value)
+  if (!currentDoc) return
+
+  try {
+    modalManager.isDeletingField.value = true
+
+    // Create a copy of the document fields
+    const updatedFields = { ...currentDoc.fields }
+    const fieldPath = modalManager.fieldToDelete.value.path
+
+    // Handle field deletion using path navigation
+    const pathParts = fieldPath.split('.')
+    let targetObject = updatedFields
+
+    // Navigate to the parent object
+    for (let i = 0; i < pathParts.length - 1; i++) {
+      const part = pathParts[i]
+      if (targetObject[part]?.mapValue?.fields) {
+        targetObject = targetObject[part].mapValue.fields
+      }
+    }
+
+    // Delete the field
+    const fieldToDeleteName = pathParts[pathParts.length - 1]
+    delete targetObject[fieldToDeleteName]
+
+    // Update the document
+    const documentPath = currentDoc.name
+    const pathSegments = documentPath.split('/')
+    const collectionId = pathSegments[pathSegments.length - 2]
+    const documentId = pathSegments[pathSegments.length - 1]
+
+    await firestoreStore.updateDocument(currentProjectId.value, collectionId, documentId, { fields: updatedFields })
+
+    // Refresh the specific collection's documents without resetting navigation
+    await firestoreStore.loadDocuments(currentProjectId.value, collectionId)
+
+    // Update the navigation stack with the refreshed document data
+    const refreshedDocuments = firestoreStore.getDocumentsByCollection(collectionId)
+    const refreshedDocument = refreshedDocuments.find(doc => getDocumentId(doc.name) === documentId)
+    if (refreshedDocument) {
+      navigation.selectItem(refreshedDocument)
+    }
+
+  } catch (error) {
+    console.error('Failed to delete field:', error)
+  } finally {
+    modalManager.isDeletingField.value = false
+    modalManager.closeDeleteFieldModal()
+  }
+}
+
 const handleCollectionCreated = async (collectionId: string) => {
-  if (selectedDocument.value && selectedCollection.value) {
-    // Handle subcollection creation
-    await loadDocumentSubcollections(selectedDocument.value)
-  } else {
-    // Handle root collection creation
-    await refreshCollections()
+  await refreshCollections()
+
+  // Navigate to the newly created collection if we're at the root level
+  if (navigation.isAtRoot.value) {
     const newCollection = collections.value.find(c => c.id === collectionId)
     if (newCollection) {
-      await selectCollection(newCollection)
-      await nextTick()
-      const docs = documents.value
-      if (docs.length > 0) {
-        selectDocument(docs[0])
+      const documents = await loadDocumentsForCollection(collectionId)
+      await navigation.navigateToCollection(newCollection, documents)
+
+      // Auto-select the first document if any exist
+      if (documents.length > 0) {
+        const firstDocument = documents[0]
+        navigation.selectItem(firstDocument)
+
+        // Load subcollections for the first document
+        const subcollections = await navigation.loadSubcollections(firstDocument.name)
+        documentSubcollections.value.set(firstDocument.name, subcollections)
       }
     }
   }
 }
 
 const handleDocumentCreated = async (documentId: string) => {
-  if (selectedCollection.value) {
-    await firestoreStore.loadDocuments(currentProjectId.value, selectedCollection.value.id)
-    await nextTick()
-    const docs = documents.value
-    const newDocument = docs.find(doc => getDocumentId(doc.name) === documentId)
-    if (newDocument) {
-      selectDocument(newDocument)
-    }
-  }
-}
+  // Refresh the current level to show the new document
+  const currentLevel = navigation.currentLevel.value
+  if (currentLevel) {
+    if (currentLevel.type === 'collection') {
+      // Refresh documents for the current collection
+      const documents = await loadDocumentsForCollection(currentLevel.collectionId || '')
+      currentLevel.items = documents
 
-const handleStartSubcollection = () => {
-  showCreateCollectionModal.value = true
-}
-
-const handleAddSimilarDocument = () => {
-  if (selectedDocument.value) {
-    cloneDocumentData.value = selectedDocument.value
-    showAddDocumentModal.value = true
-  }
-}
-
-const handleDeleteDocument = () => {
-  if (selectedDocument.value) {
-    documentToDelete.value = selectedDocument.value
-    showDeleteDocumentModal.value = true
-  }
-}
-
-const confirmDeleteDocument = async () => {
-  if (!documentToDelete.value || !selectedCollection.value) return
-
-  try {
-    isDeletingDocument.value = true
-    const documentPath = documentToDelete.value.name
-    await firestoreStore.deleteDocument(documentPath, selectedCollection.value.id)
-
-    if (selectedDocument.value?.name === documentToDelete.value.name) {
-      selectedDocument.value = null
-    }
-
-    showDeleteDocumentModal.value = false
-    documentToDelete.value = null
-  } catch (error) {
-    console.error('Failed to delete document:', error)
-  } finally {
-    isDeletingDocument.value = false
-  }
-}
-
-const cancelDeleteDocument = () => {
-  showDeleteDocumentModal.value = false
-  documentToDelete.value = null
-}
-
-const handleDeleteAllFields = () => {
-  if (selectedDocument.value) {
-    showDeleteAllFieldsModal.value = true
-  }
-}
-
-const confirmDeleteAllFields = async () => {
-  if (!selectedDocument.value || !selectedCollection.value) return
-
-  try {
-    isDeletingAllFields.value = true
-    const documentPath = selectedDocument.value.name
-    const documentId = getDocumentId(documentPath)
-
-    await firestoreStore.deleteDocument(documentPath, selectedCollection.value.id)
-    await firestoreStore.createDocument(
-      currentProjectId.value,
-      selectedCollection.value.id,
-      { fields: {} },
-      documentId
-    )
-
-    await firestoreStore.loadDocuments(currentProjectId.value, selectedCollection.value.id)
-    const documents = firestoreStore.getDocumentsByCollection(selectedCollection.value.id)
-    const recreatedDoc = documents.find(doc => getDocumentId(doc.name) === documentId)
-    if (recreatedDoc) {
-      selectedDocument.value = recreatedDoc
-    }
-
-    showDeleteAllFieldsModal.value = false
-  } catch (error) {
-    console.error('Failed to delete all fields:', error)
-  } finally {
-    isDeletingAllFields.value = false
-  }
-}
-
-const cancelDeleteAllFields = () => {
-  showDeleteAllFieldsModal.value = false
-}
-
-// Field handlers
-const handleShowAddFieldModal = () => {
-  fieldModalMode.value = 'add'
-  fieldModalData.value = {
-    fieldName: '',
-    fieldType: 'string',
-    fieldValue: '',
-    fieldPath: '',
-    isNew: true,
-    parentPath: ''
-  }
-  showFieldModal.value = true
-}
-
-const handleEditField = (data: { path: string; fieldName: string; fieldValue: any }) => {
-  fieldModalMode.value = 'edit'
-  fieldModalData.value = {
-    fieldName: data.fieldName,
-    fieldType: getFieldType(data.fieldValue),
-    fieldValue: getEditableValue(data.fieldValue),
-    fieldPath: data.path,
-    isNew: false,
-    parentPath: ''
-  }
-  showFieldModal.value = true
-}
-
-const handleDeleteField = (data: { path: string; displayName: string }) => {
-  fieldToDelete.value = data
-  showDeleteFieldModal.value = true
-}
-
-const confirmDeleteField = async () => {
-  if (!fieldToDelete.value || !selectedDocument.value || !selectedCollection.value) return
-
-  try {
-    isDeletingField.value = true
-    const updatedFields = { ...selectedDocument.value.fields }
-    const fieldPath = fieldToDelete.value.path
-
-    try {
-      if (fieldPath.includes('.') || fieldPath.includes('[')) {
-        const { parent, lastPart } = navigateToParentPath(updatedFields, fieldPath)
-
-        if (lastPart.startsWith('[') && lastPart.endsWith(']')) {
-          const index = parseInt(lastPart.substring(1, lastPart.length - 1))
-          if (parent.arrayValue?.values) {
-            parent.arrayValue.values.splice(index, 1)
-          }
-        } else {
-          if (parent.mapValue?.fields) {
-            delete parent.mapValue.fields[lastPart]
-          }
-        }
-      } else {
-        delete updatedFields[fieldPath]
+      // Auto-select the new document
+      const newDocument = documents.find(doc => getDocumentId(doc.name) === documentId)
+      if (newDocument) {
+        navigation.selectItem(newDocument)
+        // Load subcollections for the new document
+        const subcollections = await navigation.loadSubcollections(newDocument.name)
+        documentSubcollections.value.set(newDocument.name, subcollections)
       }
-    } catch (navigationError) {
-      console.error('Navigation error during field deletion:', navigationError)
-      throw new Error(`Failed to navigate to field for deletion: ${navigationError.message}`)
-    }
-
-    await firestoreStore.updateDocument(
-      currentProjectId.value,
-      selectedCollection.value.id,
-      getDocumentId(selectedDocument.value.name),
-      { fields: updatedFields }
-    )
-
-    const expandedFieldsCopy = new Set(expandedMapFields.value)
-    await firestoreStore.loadDocuments(currentProjectId.value, selectedCollection.value.id)
-
-    const docs = documents.value
-    const currentDocId = getDocumentId(selectedDocument.value.name)
-    const foundDoc = docs.find(doc => getDocumentId(doc.name) === currentDocId)
-    if (foundDoc) {
-      selectDocument(foundDoc)
-      restoreExpandedFields(expandedFieldsCopy)
-    }
-
-    showDeleteFieldModal.value = false
-    fieldToDelete.value = null
-  } catch (error) {
-    console.error('Failed to delete field:', error)
-  } finally {
-    isDeletingField.value = false
-  }
-}
-
-const cancelDeleteField = () => {
-  showDeleteFieldModal.value = false
-  fieldToDelete.value = null
-}
-
-const handleAddToMap = (fieldPath: string) => {
-  fieldModalMode.value = 'add'
-  fieldModalData.value = {
-    fieldName: '',
-    fieldType: 'string',
-    fieldValue: '',
-    fieldPath: `${fieldPath}.newField`,
-    isNew: true,
-    parentPath: fieldPath
-  }
-  showFieldModal.value = true
-}
-
-const handleAddToArray = (fieldPath: string) => {
-  fieldModalMode.value = 'add'
-  fieldModalData.value = {
-    fieldName: '',
-    fieldType: 'string',
-    fieldValue: '',
-    fieldPath: `${fieldPath}[new]`,
-    isNew: true,
-    parentPath: fieldPath
-  }
-  showFieldModal.value = true
-}
-
-const handleFieldModalSave = async (data: {
-  fieldName: string
-  fieldType: string
-  fieldValue: any
-  fieldPath?: string
-  isNewField?: boolean
-  parentPath?: string
-}) => {
-  if (!selectedDocument.value || !selectedCollection.value) return
-
-  try {
-    if (fieldModalMode.value === 'add') {
-      const firestoreValue = createFirestoreValue(data.fieldType, data.fieldValue)
-      const updatedFields = { ...selectedDocument.value.fields }
-
-      if (data.parentPath) {
-        if (data.fieldPath?.includes('[new]')) {
-          try {
-            const arrayContainer = navigateToFieldPath(updatedFields, data.parentPath)
-            if (arrayContainer?.arrayValue?.values) {
-              const newArray = JSON.parse(JSON.stringify(arrayContainer))
-              newArray.arrayValue.values.push(firestoreValue)
-              const { parent, lastPart } = navigateToParentPath(updatedFields, data.parentPath)
-
-              if (lastPart.startsWith('[') && lastPart.endsWith(']')) {
-                const index = parseInt(lastPart.substring(1, lastPart.length - 1))
-                if (parent.arrayValue?.values) {
-                  parent.arrayValue.values[index] = newArray
-                }
-              } else {
-                if (parent.mapValue?.fields) {
-                  parent.mapValue.fields[lastPart] = newArray
-                } else if (parent[lastPart]) {
-                  parent[lastPart] = newArray
-                }
-              }
-            }
-          } catch (error) {
-            throw new Error(`Failed to add item to array at path "${data.parentPath}": ${error.message}`)
-          }
-        } else {
-          try {
-            const targetMap = navigateToFieldPath(updatedFields, data.parentPath)
-            if (targetMap?.mapValue) {
-              if (!targetMap.mapValue.fields) {
-                targetMap.mapValue.fields = {}
-              }
-              targetMap.mapValue.fields[data.fieldName] = firestoreValue
-            }
-          } catch (error) {
-            throw new Error(`Failed to add field to map at path "${data.parentPath}": ${error.message}`)
-          }
-        }
-      } else {
-        updatedFields[data.fieldName] = firestoreValue
-      }
-
-      await firestoreStore.updateDocument(
-        currentProjectId.value,
-        selectedCollection.value.id,
-        getDocumentId(selectedDocument.value.name),
-        { fields: updatedFields }
+    } else if (currentLevel.type === 'subcollection') {
+      // Refresh subcollection documents
+      const documents = await navigation.loadSubcollectionDocuments(
+        currentLevel.parentPath || '',
+        currentLevel.collectionId || ''
       )
-    } else {
-      // Handle edit field
-      const firestoreValue = createFirestoreValue(data.fieldType, data.fieldValue)
-      const updatedFields = { ...selectedDocument.value.fields }
-      const fieldPath = data.fieldPath!
+      currentLevel.items = documents
 
-      if (fieldPath.includes('.') || fieldPath.includes('[')) {
-        try {
-          const { parent, lastPart } = navigateToParentPath(updatedFields, fieldPath)
-
-          if (lastPart.startsWith('[') && lastPart.endsWith(']')) {
-            const index = parseInt(lastPart.substring(1, lastPart.length - 1))
-            if (parent.arrayValue?.values) {
-              parent.arrayValue.values[index] = firestoreValue
-            }
-          } else {
-            if (parent.mapValue?.fields) {
-              parent.mapValue.fields[lastPart] = firestoreValue
-            }
-          }
-        } catch (error) {
-          console.error('Error navigating to field path for editing:', error)
-          throw error
-        }
-      } else {
-        updatedFields[fieldPath] = firestoreValue
+      // Auto-select the new document
+      const newDocument = documents.find(doc => getDocumentId(doc.name) === documentId)
+      if (newDocument) {
+        navigation.selectItem(newDocument)
       }
+    }
+  }
+}
 
-      await firestoreStore.updateDocument(
-        currentProjectId.value,
-        selectedCollection.value.id,
-        getDocumentId(selectedDocument.value.name),
-        { fields: updatedFields }
-      )
+const handleFieldModalSave = async (data: any) => {
+  const currentDoc = getColumnThreeDocument(navigation.currentStackIndex.value)
+  if (!currentDoc) return
+
+  try {
+    // Update the document with the new/modified field
+    const updatedFields = { ...currentDoc.fields }
+
+    // Handle field path navigation for nested fields
+    const fieldPath = data.fieldPath || data.fieldName
+    const pathParts = fieldPath.split('.')
+    let targetObject = updatedFields
+
+    // Navigate to the parent object
+    for (let i = 0; i < pathParts.length - 1; i++) {
+      const part = pathParts[i]
+      if (!targetObject[part]) {
+        targetObject[part] = { mapValue: { fields: {} } }
+      }
+      if (targetObject[part]?.mapValue?.fields) {
+        targetObject = targetObject[part].mapValue.fields
+      }
     }
 
-    const expandedFieldsCopy = new Set(expandedMapFields.value)
-    if (fieldModalMode.value === 'add' && data.parentPath) {
-      expandedFieldsCopy.add(data.parentPath)
+    // Set the field value - convert to proper Firestore format
+    const fieldName = pathParts[pathParts.length - 1]
+    targetObject[fieldName] = buildFirestoreValue(data.fieldValue)
+
+    // Update the document
+    const documentPath = currentDoc.name
+    const pathSegments = documentPath.split('/')
+    const collectionId = pathSegments[pathSegments.length - 2]
+    const documentId = pathSegments[pathSegments.length - 1]
+
+    await firestoreStore.updateDocument(currentProjectId.value, collectionId, documentId, { fields: updatedFields })
+
+    // Refresh the specific collection's documents without resetting navigation
+    await firestoreStore.loadDocuments(currentProjectId.value, collectionId)
+
+    // Update the navigation stack with the refreshed document data
+    const refreshedDocuments = firestoreStore.getDocumentsByCollection(collectionId)
+    const refreshedDocument = refreshedDocuments.find(doc => getDocumentId(doc.name) === documentId)
+    if (refreshedDocument) {
+      navigation.selectItem(refreshedDocument)
     }
 
-    await firestoreStore.loadDocuments(currentProjectId.value, selectedCollection.value.id)
-    const docs = documents.value
-    const currentDocId = getDocumentId(selectedDocument.value.name)
-    const foundDoc = docs.find(doc => getDocumentId(doc.name) === currentDocId)
-    if (foundDoc) {
-      selectDocument(foundDoc)
-      restoreExpandedFields(expandedFieldsCopy)
-    }
-
-    showFieldModal.value = false
   } catch (error) {
     console.error('Failed to save field:', error)
+  } finally {
+    modalManager.closeFieldModal()
   }
 }
 
-const handleFieldModalClose = () => {
-  showFieldModal.value = false
-}
-
-// Click outside handler for menus
-const handleClickOutside = (event: Event) => {
-  // Implement if needed for menu interactions
-}
-
+// Event handlers
 const handleKeyDown = (event: KeyboardEvent) => {
-  if (event.key === 'Escape') {
-    if (showFieldModal.value) {
-      showFieldModal.value = false
-    }
+  if (event.key === 'Escape' && modalManager.showFieldModal.value) {
+    modalManager.closeFieldModal()
   }
 }
 
-// Watch for project changes
+// Lifecycle
 watch(currentProjectId, async (newProjectId, oldProjectId) => {
   if (newProjectId !== oldProjectId && oldProjectId) {
     firestoreStore.clearData()
-    clearData()
+    navigation.clearNavigation()
     clearExpandedFields()
+    documentSubcollections.value.clear()
 
     if (newProjectId) {
       await refreshCollections()
@@ -768,18 +803,10 @@ watch(currentProjectId, async (newProjectId, oldProjectId) => {
 
 onMounted(async () => {
   await refreshCollections()
-  document.addEventListener('click', handleClickOutside)
   document.addEventListener('keydown', handleKeyDown)
 })
 
 onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
   document.removeEventListener('keydown', handleKeyDown)
 })
 </script>
-
-<style scoped>
-.h-screen-header {
-  height: calc(100vh - 130px);
-}
-</style>
