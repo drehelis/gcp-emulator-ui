@@ -27,8 +27,6 @@ declare module 'vue' {
     FieldRenderer: typeof import('./src/components/firestore/FieldRenderer.vue')['default']
     GlobalSearch: typeof import('./src/components/search/GlobalSearch.vue')['default']
     ImportComponent: typeof import('./src/components/import-export/ImportComponent.vue')['default']
-    JsonFieldEditor: typeof import('./src/components/firestore/JsonFieldEditor.vue')['default']
-    JsonNode: typeof import('./src/components/firestore/JsonNode.vue')['default']
     KeyValueInput: typeof import('./src/components/ui/KeyValueInput.vue')['default']
     MessageAttributeInput: typeof import('./src/components/ui/MessageAttributeInput.vue')['default']
     NavItem: typeof import('./src/components/navigation/NavItem.vue')['default']

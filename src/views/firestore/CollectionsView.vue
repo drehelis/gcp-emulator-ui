@@ -98,9 +98,9 @@
           <div class="mb-4">
             <button
               @click="showCreateCollectionModal = true"
-              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <PlusIcon class="w-3 h-3 mr-1" />
+              <PlusIcon class="w-4 h-4 mr-2" />
               Start collection
             </button>
           </div>
@@ -186,9 +186,9 @@
             <button
               v-if="selectedCollection"
               @click="showAddDocumentModal = true"
-              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <PlusIcon class="w-3 h-3 mr-1" />
+              <PlusIcon class="w-4 h-4 mr-2" />
               Add document
             </button>
           </div>
@@ -291,9 +291,9 @@
           <div v-if="selectedCollection" class="mb-4">
             <button
               @click="handleStartSubcollection"
-              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <PlusIcon class="w-3 h-3 mr-1" />
+              <PlusIcon class="w-4 h-4 mr-2" />
               Start collection
             </button>
 
@@ -320,9 +320,9 @@
             <div class="border-b border-gray-200 dark:border-gray-600 mb-3"></div>
             <button
               @click="handleShowAddFieldModal"
-              class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <PlusIcon class="w-3 h-3 mr-1" />
+              <PlusIcon class="w-4 h-4 mr-2" />
               Add field
             </button>
           </div>
@@ -594,9 +594,9 @@
               <div v-if="selectedDocument" class="mb-4">
                 <button
                   @click="handleStartSubcollection"
-                  class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <PlusIcon class="w-3 h-3 mr-1" />
+                  <PlusIcon class="w-4 h-4 mr-2" />
                   Start collection
                 </button>
               </div>
@@ -630,9 +630,9 @@
                 <div class="border-b border-gray-200 dark:border-gray-600 mb-3"></div>
                 <button
                   @click="handleShowAddFieldModal"
-                  class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <PlusIcon class="w-3 h-3 mr-1" />
+                  <PlusIcon class="w-4 h-4 mr-2" />
                   Add field
                 </button>
               </div>
@@ -666,9 +666,9 @@
               <div v-if="selectedSubcollection" class="mb-4">
                 <button
                   @click="showAddDocumentModal = true"
-                  class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <PlusIcon class="w-3 h-3 mr-1" />
+                  <PlusIcon class="w-4 h-4 mr-2" />
                   Add document
                 </button>
               </div>
@@ -736,9 +736,9 @@
               <div v-if="selectedSubcollectionDocument" class="mb-4">
                 <button
                   @click="handleStartSubcollection"
-                  class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <PlusIcon class="w-3 h-3 mr-1" />
+                  <PlusIcon class="w-4 h-4 mr-2" />
                   Start collection
                 </button>
               </div>
@@ -748,9 +748,9 @@
                 <div class="border-b border-gray-200 dark:border-gray-600 mb-3"></div>
                 <button
                   @click="handleShowAddFieldModal"
-                  class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                  <PlusIcon class="w-3 h-3 mr-1" />
+                  <PlusIcon class="w-4 h-4 mr-2" />
                   Add field
                 </button>
               </div>
@@ -1040,10 +1040,6 @@ const fieldModalData = ref({
   parentPath: ''
 })
 
-// Legacy field editor state (still needed for some functions)
-const showFieldEditor = ref(false)
-const fieldToEdit = ref<{ path: string; fieldName: string; fieldValue: any; isNew: boolean; parentPath?: string } | null>(null)
-
 // Computed properties
 const currentProjectId = computed(() => route.params.projectId as string)
 
@@ -1117,13 +1113,10 @@ const loadDocumentSubcollections = async (document: FirestoreDocument) => {
   if (!currentDocumentPath.value) return
 
   try {
-    console.log('Loading subcollections for document:', document.name)
     const subcollections = await firestoreStore.loadSubcollections(document.name)
 
     // Update local state with fetched subcollections
     documentSubcollections.value.set(currentDocumentPath.value, subcollections)
-
-    console.log('Loaded subcollections for document:', subcollections)
   } catch (error) {
     console.error('Failed to load subcollections for document:', error)
     // Set empty array on error
@@ -1135,7 +1128,6 @@ const handleCollectionCreated = async (collectionId: string) => {
   // Check if we're creating a subcollection (when we have a selected document)
   if (selectedDocument.value && selectedCollection.value) {
     // This is a subcollection creation
-    console.log('Creating subcollection:', collectionId)
 
     // Set up navigation path to track where we are
     navigationPath.value = [
@@ -1379,8 +1371,6 @@ const navigateToSegment = async (segmentIndex: number) => {
 // Subcollection document management
 const loadSubcollectionDocuments = async (subcollectionPath: string) => {
   try {
-    console.log('Loading documents for subcollection:', subcollectionPath)
-
     // Extract collection ID from path (last part after the last slash)
     const pathParts = subcollectionPath.split('/')
     const collectionId = pathParts[pathParts.length - 1]
@@ -1390,13 +1380,9 @@ const loadSubcollectionDocuments = async (subcollectionPath: string) => {
     // We need to remove the subcollection-id and call the API with: projects/x/databases/(default)/documents/collection-1/doc-id
     const parentDocumentPath = pathParts.slice(0, -1).join('/')
 
-    console.log('Subcollection parent document path:', parentDocumentPath, 'Collection ID:', collectionId)
-
     // Use the dedicated API method for subcollection documents
     const response = await firestoreApi.listSubcollectionDocuments(parentDocumentPath, collectionId)
     subcollectionDocuments.value = response.documents
-
-    console.log('Loaded subcollection documents:', response.documents)
 
     // Auto-select the first document
     if (subcollectionDocuments.value.length > 0) {
@@ -1730,15 +1716,11 @@ const handleAddToArray = (fieldPath: string) => {
 }
 
 
-const cancelFieldEditor = () => {
-  showFieldEditor.value = false
-  fieldToEdit.value = null
-}
 
 const handleKeyDown = (event: KeyboardEvent) => {
   if (event.key === 'Escape') {
-    if (showFieldEditor.value) {
-      cancelFieldEditor()
+    if (showFieldModal.value) {
+      showFieldModal.value = false
     }
   }
 }
