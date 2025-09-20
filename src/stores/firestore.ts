@@ -158,14 +158,12 @@ export const useFirestoreStore = defineStore('firestore', () => {
     try {
       loading.value = true
 
-      const request: CreateDocumentRequest = {
-        parent: parentDocumentPath,
+      const createdDocument = await firestoreApi.createSubcollection(
+        parentDocumentPath,
         collectionId,
-        documentId,
-        document
-      }
-
-      const createdDocument = await firestoreApi.createDocument(request)
+        document,
+        documentId
+      )
       return createdDocument
     } catch (error) {
       console.error('Failed to create subcollection document:', error)

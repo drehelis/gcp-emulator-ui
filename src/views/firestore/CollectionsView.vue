@@ -291,6 +291,18 @@ const getColumnThreeDocument = (levelIndex: number): FirestoreDocument | null =>
   return null
 }
 
+// Get the current document for subcollection creation regardless of navigation depth
+const getCurrentDocumentForSubcollectionCreation = (): FirestoreDocument | null => {
+  // The current document is always the selected item at the current navigation level
+  const currentLevel = navigation.navigationStack.value[navigation.currentStackIndex.value]
+  const selectedItem = currentLevel?.selectedItem
+
+  if (selectedItem && 'name' in selectedItem) {
+    return selectedItem as FirestoreDocument
+  }
+  return null
+}
+
 const getColumnThreeSubcollections = (levelIndex: number): FirestoreCollectionWithMetadata[] => {
   const level = navigation.navigationStack.value[levelIndex]
   const selectedDocument = level?.selectedItem
@@ -489,7 +501,7 @@ const getModalParentDocumentPath = (): string | null => {
     return null
   }
 
-  const currentDoc = getColumnThreeDocument(navigation.currentStackIndex.value)
+  const currentDoc = getCurrentDocumentForSubcollectionCreation()
   return currentDoc?.name || null
 }
 
@@ -697,7 +709,11 @@ const confirmDeleteField = async () => {
 }
 
 const handleCollectionCreated = async (collectionId: string) => {
-  await refreshCollections()
+  // Only refresh collections if we're at the root level (creating a root collection)
+  // If we're not at root, we're creating a subcollection and shouldn't reset navigation
+  if (navigation.isAtRoot.value) {
+    await refreshCollections()
+  }
 
   // Navigate to the newly created collection if we're at the root level
   if (navigation.isAtRoot.value) {
@@ -718,11 +734,12 @@ const handleCollectionCreated = async (collectionId: string) => {
     }
   } else {
     // Handle subcollection creation - we're not at root, so this is a subcollection
-    const currentDocument = getColumnThreeDocument(navigation.currentStackIndex.value)
+    // Get the current document that should be the parent of the new subcollection
+    const currentDocument = getCurrentDocumentForSubcollectionCreation()
     if (currentDocument) {
       // Reload subcollections for the current document
       const subcollectionsResponse = await navigation.loadSubcollections(currentDocument.name)
-      const subcollections = subcollectionsResponse || []
+      const subcollections = Array.isArray(subcollectionsResponse) ? subcollectionsResponse : (subcollectionsResponse?.collections || [])
       documentSubcollections.value.set(currentDocument.name, subcollections)
 
       // Find the newly created subcollection and navigate to it
