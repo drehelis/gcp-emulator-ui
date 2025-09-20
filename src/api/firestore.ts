@@ -163,7 +163,8 @@ export const firestoreApi = {
 
       const collections = Array.from(subcollectionNames).map(name => ({
         name: `${documentPath}/${name}`,
-        collectionId: name
+        id: name,
+        path: `${documentPath}/${name}`
       }))
 
       console.log('Discovered subcollections:', collections)

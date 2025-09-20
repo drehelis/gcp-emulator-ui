@@ -298,9 +298,16 @@ const getColumnThreeSubcollections = (levelIndex: number): FirestoreCollectionWi
   if (selectedDocument && 'name' in selectedDocument) {
     // Get subcollections from document cache in the navigation composable
     // These are loaded when the document is selected
-    const subcollections = documentSubcollections.value.get(selectedDocument.name)
-    // Ensure we always return an array, even if the cached value is malformed
-    return Array.isArray(subcollections) ? subcollections : []
+    const subcollectionsResponse = documentSubcollections.value.get(selectedDocument.name)
+
+    // Handle both array format (legacy) and response object format
+    if (Array.isArray(subcollectionsResponse)) {
+      return subcollectionsResponse
+    } else if (subcollectionsResponse?.collections && Array.isArray(subcollectionsResponse.collections)) {
+      return subcollectionsResponse.collections
+    }
+
+    return []
   }
   return []
 }
@@ -351,7 +358,8 @@ const handleColumnOneSelectItem = async (levelIndex: number, item: NavigationIte
         navigation.selectItem(firstDocument)
 
         // Load subcollections for the first document
-        const subcollections = await navigation.loadSubcollections(firstDocument.name)
+        const subcollectionsResponse = await navigation.loadSubcollections(firstDocument.name)
+        const subcollections = subcollectionsResponse || []
         documentSubcollections.value.set(firstDocument.name, subcollections)
       }
     }
@@ -380,9 +388,10 @@ const handleColumnTwoSelectItem = async (levelIndex: number, item: NavigationIte
     await navigation.navigateToCollection(item, documents)
   } else {
     // Selected a document - load its subcollections and cache them
-    const subcollections = await navigation.loadSubcollections(item.name)
+    const subcollectionsResponse = await navigation.loadSubcollections(item.name)
 
-    // Cache the subcollections for this document
+    // Cache just the collections array for this document
+    const subcollections = subcollectionsResponse || []
     documentSubcollections.value.set(item.name, subcollections)
 
     await navigation.navigateToDocument(item, subcollections)
@@ -406,11 +415,28 @@ const handleStartSubcollection = (_levelIndex: number) => {
 }
 
 const handleNavigateToSubcollection = async (levelIndex: number, subcollection: FirestoreCollectionWithMetadata) => {
+  // Extract parent document path from subcollection path
+  // subcollection.path is like: "projects/.../documents/collection-1/doc-id/subcollection-id"
+  // We need to remove the last part (subcollection-id) to get the parent document path
+  const parentDocumentPath = subcollection.path.split('/').slice(0, -1).join('/')
+
   const documents = await navigation.loadSubcollectionDocuments(
-    subcollection.path.split('/').slice(0, -1).join('/'),
+    parentDocumentPath,
     subcollection.id
   )
+
   await navigation.navigateToSubcollection(subcollection, documents)
+
+  // Auto-select the first document if any exist in the subcollection
+  if (documents.length > 0) {
+    const firstDocument = documents[0]
+    navigation.selectItem(firstDocument)
+
+    // Load subcollections for the first document in the subcollection
+    const nestedSubcollectionsResponse = await navigation.loadSubcollections(firstDocument.name)
+    const nestedSubcollections = nestedSubcollectionsResponse || []
+    documentSubcollections.value.set(firstDocument.name, nestedSubcollections)
+  }
 }
 
 const handleBreadcrumbClick = (index: number) => {
@@ -690,6 +716,33 @@ const handleCollectionCreated = async (collectionId: string) => {
         documentSubcollections.value.set(firstDocument.name, subcollections)
       }
     }
+  } else {
+    // Handle subcollection creation - we're not at root, so this is a subcollection
+    const currentDocument = getColumnThreeDocument(navigation.currentStackIndex.value)
+    if (currentDocument) {
+      // Reload subcollections for the current document
+      const subcollectionsResponse = await navigation.loadSubcollections(currentDocument.name)
+      const subcollections = subcollectionsResponse || []
+      documentSubcollections.value.set(currentDocument.name, subcollections)
+
+      // Find the newly created subcollection and navigate to it
+      const newSubcollection = subcollections.find(sc => sc.id === collectionId)
+      if (newSubcollection) {
+        const documents = await navigation.loadSubcollectionDocuments(currentDocument.name, collectionId)
+        await navigation.navigateToSubcollection(newSubcollection, documents)
+
+        // Auto-select the first document if any exist
+        if (documents.length > 0) {
+          const firstDocument = documents[0]
+          navigation.selectItem(firstDocument)
+
+          // Load subcollections for the first document of the subcollection
+          const nestedSubcollectionsResponse = await navigation.loadSubcollections(firstDocument.name)
+          const nestedSubcollections = nestedSubcollectionsResponse || []
+          documentSubcollections.value.set(firstDocument.name, nestedSubcollections)
+        }
+      }
+    }
   }
 }
 
@@ -707,7 +760,8 @@ const handleDocumentCreated = async (documentId: string) => {
       if (newDocument) {
         navigation.selectItem(newDocument)
         // Load subcollections for the new document
-        const subcollections = await navigation.loadSubcollections(newDocument.name)
+        const subcollectionsResponse = await navigation.loadSubcollections(newDocument.name)
+        const subcollections = subcollectionsResponse || []
         documentSubcollections.value.set(newDocument.name, subcollections)
       }
     } else if (currentLevel.type === 'subcollection') {

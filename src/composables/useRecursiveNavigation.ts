@@ -31,7 +31,26 @@ export function useRecursiveNavigation() {
 
     for (let i = 0; i <= currentStackIndex.value; i++) {
       const level = navigationStack.value[i]
-      if (level && level.selectedItem) {
+
+      // Handle subcollection levels specially
+      if (level && level.type === 'subcollection') {
+        // Add the subcollection to the breadcrumb
+        path.push({
+          type: 'collection',
+          id: level.collectionId || level.header,
+          name: level.collectionId || level.header
+        })
+
+        // If there's a selected document in the subcollection, add it too
+        if (level.selectedItem && 'name' in level.selectedItem) {
+          const documentId = level.selectedItem.name.split('/').pop() || 'unknown'
+          path.push({
+            type: 'document',
+            id: documentId,
+            name: documentId
+          })
+        }
+      } else if (level && level.selectedItem) {
         if ('id' in level.selectedItem) {
           // Collection
           path.push({
