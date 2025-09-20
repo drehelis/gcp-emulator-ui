@@ -187,6 +187,8 @@ declare global {
   const useEyeDropper: typeof import('@vueuse/core')['useEyeDropper']
   const useFavicon: typeof import('@vueuse/core')['useFavicon']
   const useFetch: typeof import('@vueuse/core')['useFetch']
+  const useFieldNavigation: typeof import('./src/composables/useFieldNavigation')['useFieldNavigation']
+  const useFieldOperations: typeof import('./src/composables/useFieldOperations')['useFieldOperations']
   const useFileDialog: typeof import('@vueuse/core')['useFileDialog']
   const useFileSystemAccess: typeof import('@vueuse/core')['useFileSystemAccess']
   const useFirestoreNavigation: typeof import('./src/composables/useFirestoreNavigation')['useFirestoreNavigation']

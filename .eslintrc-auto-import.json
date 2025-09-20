@@ -202,6 +202,8 @@
     "useEyeDropper": true,
     "useFavicon": true,
     "useFetch": true,
+    "useFieldNavigation": true,
+    "useFieldOperations": true,
     "useFileDialog": true,
     "useFileSystemAccess": true,
     "useFirestoreNavigation": true,
