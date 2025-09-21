@@ -236,6 +236,137 @@ export function useRecursiveNavigation() {
     }
   }
 
+  // Navigate to a specific path by parsing path string
+  const navigateToPath = async (pathString: string, firestoreStore: any, currentProjectId: string, documentSubcollections: any) => {
+    // Parse the path string: "/ > collection-1 > doc-id > sub-collection > doc-id2"
+    const pathSegments = pathString
+      .split('>')
+      .map(s => s.trim())
+      .filter(s => s && s !== '/')
+
+    if (pathSegments.length === 0) {
+      navigateToRoot()
+      return
+    }
+
+    try {
+      // Start from root
+      navigateToRoot()
+
+      // Wait a bit for root navigation to complete
+      await new Promise(resolve => setTimeout(resolve, 100))
+
+      // Navigate through the path segments step by step
+      for (let i = 0; i < pathSegments.length; i++) {
+        const segment = pathSegments[i]
+        const currentItems = getCurrentItems()
+
+        // Try to find as collection first
+        const collection = currentItems.find((item: any) => 'id' in item && item.id === segment)
+
+        if (collection) {
+          // Load documents for this collection
+          await firestoreStore.loadDocuments(currentProjectId, segment)
+          const documents = firestoreStore.getDocumentsByCollection(segment)
+          await navigateToCollection(collection, documents || [])
+
+          // Wait a bit for navigation to complete
+          await new Promise(resolve => setTimeout(resolve, 100))
+        } else {
+          // Try to find as document
+          const document = currentItems.find((item: any) =>
+            'name' in item && (item.name.includes(segment) || item.name.split('/').pop() === segment)
+          )
+
+          if (document) {
+            await navigateToDocument(document)
+
+            // Load subcollections for this document
+            const subcollectionsResult = await loadSubcollections(document.name)
+            const subcollections = subcollectionsResult?.collections || []
+            documentSubcollections.value.set(document.name, subcollections)
+
+            // Check if next segment is a subcollection
+            if (i + 1 < pathSegments.length) {
+              const nextSegment = pathSegments[i + 1]
+              const subcollection = subcollections.find(sub => sub.id === nextSegment)
+
+              if (subcollection) {
+                // Load documents for this subcollection
+                const subcollectionDocs = await loadSubcollectionDocuments(document.name, subcollection.id)
+                await navigateToSubcollection(subcollection, subcollectionDocs)
+
+                // Skip the subcollection segment since we handled it
+                i += 1
+              }
+            }
+
+            // Wait a bit for navigation to complete
+            await new Promise(resolve => setTimeout(resolve, 100))
+          } else {
+            console.warn(`Segment "${segment}" not found at current level`)
+            break
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error navigating to path:', error)
+    }
+  }
+
+  // Handle breadcrumb navigation clicks
+  const navigateToBreadcrumbIndex = (index: number) => {
+    console.log('Breadcrumb click - index:', index, 'breadcrumbPath:', breadcrumbPath.value)
+
+    // Build a mapping between breadcrumb indices and navigation stack levels
+    const breadcrumbToStackMapping: number[] = []
+
+    for (let stackLevel = 0; stackLevel <= currentStackIndex.value; stackLevel++) {
+      const level = navigationStack.value[stackLevel]
+
+      if (level && level.type === 'subcollection') {
+        // Subcollection adds itself to breadcrumb
+        breadcrumbToStackMapping.push(stackLevel)
+
+        // If there's a selected document in the subcollection, it also adds to breadcrumb
+        if (level.selectedItem && 'name' in level.selectedItem) {
+          breadcrumbToStackMapping.push(stackLevel)
+        }
+      } else if (level && level.selectedItem) {
+        // Regular collection or document adds itself to breadcrumb
+        breadcrumbToStackMapping.push(stackLevel)
+      }
+    }
+
+    console.log('Breadcrumb to stack mapping:', breadcrumbToStackMapping)
+
+    if (index >= breadcrumbToStackMapping.length) {
+      console.warn('Invalid breadcrumb index:', index, 'max:', breadcrumbToStackMapping.length - 1)
+      return
+    }
+
+    const targetStackIndex = breadcrumbToStackMapping[index]
+    console.log('Target stack index:', targetStackIndex)
+
+    // If we're already at the target level, we need to clear the selection at that level
+    // to show the correct UI state (e.g., hide document editor when clicking collection)
+    if (currentStackIndex.value === targetStackIndex) {
+      if (navigationStack.value[targetStackIndex]) {
+        navigationStack.value[targetStackIndex].selectedItem = null
+      }
+    }
+
+    // Clear the selection of levels deeper than the target level
+    // This ensures we show the correct UI state for the clicked level
+    for (let i = targetStackIndex + 1; i < navigationStack.value.length; i++) {
+      if (navigationStack.value[i]) {
+        navigationStack.value[i].selectedItem = null
+      }
+    }
+
+    navigateToLevel(targetStackIndex)
+  }
+
   return {
     // State
     navigationStack,
@@ -264,6 +395,8 @@ export function useRecursiveNavigation() {
     isItemSelected,
     clearNavigation,
     loadSubcollections,
-    loadSubcollectionDocuments
+    loadSubcollectionDocuments,
+    navigateToPath,
+    navigateToBreadcrumbIndex
   }
 }

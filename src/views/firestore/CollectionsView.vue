@@ -16,7 +16,8 @@
       :is-in-subcollection-mode="!navigation.isAtRoot.value"
       @navigate-to-root="navigation.navigateToRoot"
       @navigate-to-collection="() => {}"
-      @navigate-to-segment="handleBreadcrumbClick"
+      @navigate-to-segment="navigation.navigateToBreadcrumbIndex"
+      @navigate-to-path="handleNavigateToPath"
     />
 
     <!-- Sliding Layout -->
@@ -475,28 +476,9 @@ const handleNavigateToSubcollection = async (levelIndex: number, subcollection: 
   }
 }
 
-const handleBreadcrumbClick = (index: number) => {
-  // Map breadcrumb index to navigation stack index
-  // Breadcrumb path only includes selected items, so we need to find the corresponding stack level
-  const targetStackIndex = index + 1 // Breadcrumb index 0 = stack index 1, etc.
-
-  // If we're already at the target level, we need to clear the selection at that level
-  // to show the correct UI state (e.g., hide document editor when clicking collection)
-  if (navigation.currentStackIndex.value === targetStackIndex) {
-    if (navigation.navigationStack.value[targetStackIndex]) {
-      navigation.navigationStack.value[targetStackIndex].selectedItem = null
-    }
-  }
-
-  // Clear the selection of levels deeper than the target level
-  // This ensures we show the correct UI state for the clicked level
-  for (let i = targetStackIndex + 1; i < navigation.navigationStack.value.length; i++) {
-    if (navigation.navigationStack.value[i]) {
-      navigation.navigationStack.value[i].selectedItem = null
-    }
-  }
-
-  navigation.navigateToLevel(targetStackIndex)
+// Path-based navigation handler
+const handleNavigateToPath = async (pathString: string) => {
+  await navigation.navigateToPath(pathString, firestoreStore, currentProjectId.value, documentSubcollections)
 }
 
 // Utility functions
@@ -624,14 +606,28 @@ const confirmDeleteDocument = async () => {
       // Clear the selection to show empty third column
       navigation.selectItem(null as any)
 
-      // Refresh the documents in the current collection
+      // Refresh the documents in the current collection/subcollection
       if (collectionId) {
-        await firestoreStore.loadDocuments(currentProjectId.value, collectionId)
-
-        // Update the navigation stack with refreshed documents
-        const refreshedDocuments = firestoreStore.getDocumentsByCollection(collectionId)
-        if (navigationStack.value[navigation.currentStackIndex.value]) {
-          navigationStack.value[navigation.currentStackIndex.value].items = refreshedDocuments
+        if (currentLevel.type === 'subcollection' && currentLevel.parentPath) {
+          // For subcollections, reload the subcollection documents
+          const subcollectionDocs = await navigation.loadSubcollectionDocuments(
+            currentLevel.parentPath,
+            collectionId
+          )
+          // Update the current level items properly
+          const currentNavLevel = navigation.navigationStack.value[navigation.currentStackIndex.value]
+          if (currentNavLevel) {
+            currentNavLevel.items = subcollectionDocs
+          }
+        } else {
+          // For regular collections, reload the collection documents
+          await firestoreStore.loadDocuments(currentProjectId.value, collectionId)
+          const refreshedDocuments = firestoreStore.getDocumentsByCollection(collectionId)
+          // Update the current level items properly
+          const currentNavLevel = navigation.navigationStack.value[navigation.currentStackIndex.value]
+          if (currentNavLevel) {
+            currentNavLevel.items = refreshedDocuments
+          }
         }
       }
     }

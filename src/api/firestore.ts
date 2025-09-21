@@ -98,9 +98,7 @@ export const firestoreApi = {
 
   // List documents in a subcollection
   async listSubcollectionDocuments(parentDocumentPath: string, collectionId: string): Promise<ListDocumentsResponse> {
-    console.log('Listing subcollection documents:', parentDocumentPath, collectionId)
     const response = await firestoreClient.get(`/v1/${parentDocumentPath}/${collectionId}`)
-    console.log('Subcollection documents response:', response.data)
     return {
       documents: response.data.documents || [],
       nextPageToken: response.data.nextPageToken
@@ -140,12 +138,9 @@ export const firestoreApi = {
   // Uses document listing endpoint to discover subcollections
   async listSubcollections(documentPath: string): Promise<ListCollectionsResponse> {
     try {
-      console.log('Listing subcollections for document:', documentPath)
-
       // List all documents under the document path to discover subcollections
       // This endpoint returns all nested collections and documents
       const response = await firestoreClient.get(`/v1/${documentPath}/`)
-      console.log('Subcollections response:', response.data)
 
       const documents = response.data.documents || []
 
@@ -167,7 +162,6 @@ export const firestoreApi = {
         path: `${documentPath}/${name}`
       }))
 
-      console.log('Discovered subcollections:', collections)
       return { collections, nextPageToken: undefined }
     } catch (error) {
       console.warn('Failed to list subcollections for document:', documentPath, error)
