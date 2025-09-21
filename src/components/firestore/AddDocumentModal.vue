@@ -55,6 +55,7 @@ import DocumentEditor from './DocumentEditor.vue'
 import SuccessNotification from '@/components/ui/SuccessNotification.vue'
 import { useDocumentForm } from '@/composables/useDocumentForm'
 import { useSaveAndAddAnother } from '@/composables/useSaveAndAddAnother'
+import { useFirestoreStore } from '@/stores/firestore'
 
 interface Props {
   modelValue: boolean
@@ -90,7 +91,8 @@ const collectionPath = computed(() => {
     return props.collectionPath
   }
   // Otherwise, construct from collectionId (for root collections)
-  return `projects/${props.projectId}/databases/(default)/documents/${props.collectionId}`
+  const firestoreStore = useFirestoreStore()
+  return `projects/${props.projectId}/databases/${firestoreStore.selectedDatabase}/documents/${props.collectionId}`
 })
 
 const isFormValid = computed(() => {

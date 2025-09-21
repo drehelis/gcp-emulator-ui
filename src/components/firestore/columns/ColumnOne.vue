@@ -1,9 +1,9 @@
 <template>
   <div :class="[
-    'w-1/3 h-full bg-white dark:bg-gray-800 overflow-y-auto',
+    'w-full lg:w-1/3 h-full bg-white dark:bg-gray-800 overflow-y-auto',
     { 'border-r border-gray-200 dark:border-gray-700': props.showRightBorder }
   ]">
-    <div class="p-4">
+    <div class="p-3 sm:p-4">
       <!-- Header -->
       <div class="mb-3">
         <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 font-mono mb-3">
@@ -16,7 +16,7 @@
       <div v-if="showAddButton" class="mb-4">
         <button
           @click="$emit('add-item')"
-          class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto justify-center sm:justify-start"
         >
           <PlusIcon class="w-4 h-4 mr-2" />
           {{ addButtonText }}
@@ -29,7 +29,7 @@
           v-for="item in items"
           :key="getItemKey(item)"
           :class="[
-            'flex items-center px-3 py-2 text-sm rounded-md cursor-pointer transition-colors duration-200',
+            'flex items-center px-3 py-3 sm:py-2 text-sm rounded-md cursor-pointer transition-colors duration-200 min-h-[44px] sm:min-h-0',
             selectedItem && getItemKey(selectedItem) === getItemKey(item)
               ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'

@@ -17,15 +17,103 @@ export const useFirestoreStore = defineStore('firestore', () => {
   const collections = ref<FirestoreCollectionWithMetadata[]>([])
   const documents = ref<Map<string, FirestoreDocument[]>>(new Map())
 
+  // Database management with localStorage persistence
+  const STORAGE_KEY_DATABASES = 'firestore-databases'
+  const STORAGE_KEY_SELECTED_DB = 'firestore-selected-database'
+
+  // Load databases from localStorage
+  const loadDatabasesFromStorage = (): string[] => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY_DATABASES)
+      return stored ? JSON.parse(stored) : ['(default)']
+    } catch {
+      return ['(default)']
+    }
+  }
+
+  // Load selected database from localStorage
+  const loadSelectedDatabaseFromStorage = (): string => {
+    return localStorage.getItem(STORAGE_KEY_SELECTED_DB) || '(default)'
+  }
+
+  // Save databases to localStorage
+  const saveDatabasesToStorage = (databaseList: string[]) => {
+    localStorage.setItem(STORAGE_KEY_DATABASES, JSON.stringify(databaseList))
+  }
+
+  // Save selected database to localStorage
+  const saveSelectedDatabaseToStorage = (databaseId: string) => {
+    localStorage.setItem(STORAGE_KEY_SELECTED_DB, databaseId)
+  }
+
+  const availableDatabases = ref<string[]>(loadDatabasesFromStorage())
+  const selectedDatabase = ref<string>(loadSelectedDatabaseFromStorage())
+  const testingDatabase = ref(false)
+
   const getDocumentsByCollection = computed(() => {
     return (collectionId: string) => documents.value.get(collectionId) || []
   })
+
+  // Add a new database
+  const addDatabase = async (projectId: string, databaseId: string): Promise<boolean> => {
+    try {
+      testingDatabase.value = true
+
+      // Test if database exists
+      const exists = await firestoreApi.testDatabase(projectId, databaseId)
+      if (!exists) {
+        return false
+      }
+
+      // Add to available databases if not already present
+      if (!availableDatabases.value.includes(databaseId)) {
+        availableDatabases.value.push(databaseId)
+        availableDatabases.value.sort((a, b) => {
+          if (a === '(default)') return -1
+          if (b === '(default)') return 1
+          return a.localeCompare(b)
+        })
+        saveDatabasesToStorage(availableDatabases.value)
+      }
+
+      return true
+    } catch (error) {
+      console.error('Failed to add database:', error)
+      return false
+    } finally {
+      testingDatabase.value = false
+    }
+  }
+
+  // Remove a database (except default)
+  const removeDatabase = (databaseId: string) => {
+    if (databaseId === '(default)') return
+
+    availableDatabases.value = availableDatabases.value.filter(db => db !== databaseId)
+    saveDatabasesToStorage(availableDatabases.value)
+
+    // If the removed database was selected, switch to default
+    if (selectedDatabase.value === databaseId) {
+      setSelectedDatabase('(default)')
+    }
+  }
+
+  // Set selected database
+  const setSelectedDatabase = (databaseId: string) => {
+    selectedDatabase.value = databaseId
+    saveSelectedDatabaseToStorage(databaseId)
+  }
+
+  // Get current database path
+  const getCurrentDatabasePath = (projectId: string): string => {
+    return firestoreApi.getDatabasePath(projectId, selectedDatabase.value)
+  }
 
   // Load collections
   const loadCollections = async (projectId: string) => {
     try {
       loading.value = true
-      const databasePath = firestoreApi.getDefaultDatabasePath(projectId)
+      const databasePath = getCurrentDatabasePath(projectId)
       const response = await firestoreApi.listCollections(databasePath)
 
       collections.value = response.collections.map(collection => ({
@@ -52,7 +140,7 @@ export const useFirestoreStore = defineStore('firestore', () => {
   const createCollection = async (projectId: string, collectionId: string, initialDocument?: any, documentId?: string) => {
     try {
       loading.value = true
-      const databasePath = firestoreApi.getDefaultDatabasePath(projectId)
+      const databasePath = getCurrentDatabasePath(projectId)
 
       const request: CreateDocumentRequest = {
         parent: databasePath,
@@ -123,7 +211,7 @@ export const useFirestoreStore = defineStore('firestore', () => {
   const createDocument = async (projectId: string, collectionId: string, document: any, documentId?: string) => {
     try {
       loading.value = true
-      const databasePath = firestoreApi.getDefaultDatabasePath(projectId)
+      const databasePath = getCurrentDatabasePath(projectId)
 
       const request: CreateDocumentRequest = {
         parent: databasePath,
@@ -177,7 +265,7 @@ export const useFirestoreStore = defineStore('firestore', () => {
   const loadDocuments = async (projectId: string, collectionId: string) => {
     try {
       loading.value = true
-      const databasePath = firestoreApi.getDefaultDatabasePath(projectId)
+      const databasePath = getCurrentDatabasePath(projectId)
       const response = await firestoreApi.listDocuments(databasePath, collectionId)
       documents.value.set(collectionId, response.documents)
 
@@ -198,7 +286,7 @@ export const useFirestoreStore = defineStore('firestore', () => {
   const updateDocument = async (projectId: string, collectionId: string, documentId: string, document: any) => {
     try {
       loading.value = true
-      const databasePath = firestoreApi.getDefaultDatabasePath(projectId)
+      const databasePath = getCurrentDatabasePath(projectId)
       const documentPath = `${databasePath}/documents/${collectionId}/${documentId}`
 
       await firestoreApi.updateDocument(documentPath, document)
@@ -244,7 +332,7 @@ export const useFirestoreStore = defineStore('firestore', () => {
   const deleteCollection = async (projectId: string, collectionId: string) => {
     try {
       loading.value = true
-      const databasePath = firestoreApi.getDefaultDatabasePath(projectId)
+      const databasePath = getCurrentDatabasePath(projectId)
 
       await firestoreApi.deleteCollection(databasePath, collectionId)
 
@@ -306,6 +394,15 @@ export const useFirestoreStore = defineStore('firestore', () => {
     collections,
     documents,
     getDocumentsByCollection,
+    // Database management
+    availableDatabases,
+    selectedDatabase,
+    testingDatabase,
+    addDatabase,
+    removeDatabase,
+    setSelectedDatabase,
+    getCurrentDatabasePath,
+    // Collection and document operations
     loadCollections,
     loadSubcollections,
     createCollection,

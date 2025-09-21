@@ -43,6 +43,8 @@ export const useModalManager = () => {
 
   const openCreateRootCollectionModal = () => {
     isCreatingRootCollection.value = true
+    isAddingToSubcollection.value = false
+    subcollectionPath.value = null
     showCreateCollectionModal.value = true
   }
 

@@ -14,6 +14,16 @@
           </div>
 
           <div class="flex items-center gap-2 flex-shrink-0">
+            <!-- Database Selector -->
+            <DatabaseSelector
+              :available-databases="availableDatabases"
+              :selected-database="selectedDatabase"
+              :testing-database="testingDatabase"
+              @select-database="$emit('database-change', $event)"
+              @add-database="$emit('add-database', $event)"
+              @remove-database="$emit('remove-database', $event)"
+            />
+
             <button
               @click="$emit('refresh')"
               :disabled="loading"
@@ -33,15 +43,26 @@
 
 <script setup lang="ts">
 import { ArrowPathIcon } from '@heroicons/vue/24/outline'
+import DatabaseSelector from '@/components/firestore/DatabaseSelector.vue'
 
 interface Props {
   collectionsCount: number
   loading?: boolean
+  availableDatabases?: string[]
+  selectedDatabase?: string
+  testingDatabase?: boolean
 }
 
-defineProps<Props>()
+withDefaults(defineProps<Props>(), {
+  availableDatabases: () => ['(default)'],
+  selectedDatabase: '(default)',
+  testingDatabase: false
+})
 
 defineEmits<{
   refresh: []
+  'database-change': [databaseId: string]
+  'add-database': [databaseId: string]
+  'remove-database': [databaseId: string]
 }>()
 </script>

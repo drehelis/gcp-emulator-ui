@@ -1,7 +1,7 @@
 <template>
   <BaseModal
     v-model="isOpen"
-    :title="props.parentDocumentPath ? 'Start Subcollection' : 'Start Collection'"
+    title="Start Collection"
     size="5xl"
     :actions="modalActions"
     @close="handleClose"

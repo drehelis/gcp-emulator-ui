@@ -220,10 +220,29 @@ export const firestoreApi = {
     }
   },
 
+  // Test if a specific database exists
+  async testDatabase(projectId: string, databaseId: string): Promise<boolean> {
+    try {
+      const databasePath = `projects/${projectId}/databases/${databaseId}`
+      const response = await firestoreClient.get(`/v1/${databasePath}/documents/`, {
+        timeout: 3000,
+        validateStatus: (status) => status === 200 || status === 404
+      })
+      return response.status === 200 || response.status === 404
+    } catch {
+      return false
+    }
+  },
+
   // Helper to get database path
   getDefaultDatabasePath(projectId?: string): string {
     const project = projectId || import.meta.env.VITE_GOOGLE_CLOUD_PROJECT_ID || 'test-project'
     return `projects/${project}/databases/(default)`
+  },
+
+  // Helper to get custom database path
+  getDatabasePath(projectId: string, databaseId: string): string {
+    return `projects/${projectId}/databases/${databaseId}`
   }
 }
 

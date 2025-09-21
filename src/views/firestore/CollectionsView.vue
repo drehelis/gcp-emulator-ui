@@ -4,113 +4,223 @@
     <PageHeader
       :collections-count="collections.length"
       :loading="firestoreStore.loading"
+      :available-databases="firestoreStore.availableDatabases"
+      :selected-database="firestoreStore.selectedDatabase"
+      :testing-database="firestoreStore.testingDatabase"
       @refresh="refreshCollections"
+      @database-change="handleDatabaseChange"
+      @add-database="handleAddDatabase"
+      @remove-database="handleRemoveDatabase"
     />
 
-    <!-- Breadcrumb Navigator -->
-    <NavigationBreadcrumb
-      :navigation-path="navigation.breadcrumbPath.value"
-      :selected-collection="null"
-      :selected-document="null"
-      :selected-subcollection-document="null"
-      :is-in-subcollection-mode="!navigation.isAtRoot.value"
-      @navigate-to-root="navigation.navigateToRoot"
-      @navigate-to-collection="() => {}"
-      @navigate-to-segment="navigation.navigateToBreadcrumbIndex"
-      @navigate-to-path="handleNavigateToPath"
-    />
+    <!-- Desktop Breadcrumb Navigator -->
+    <div class="hidden lg:block">
+      <NavigationBreadcrumb
+        :navigation-path="navigation.breadcrumbPath.value"
+        :selected-collection="null"
+        :selected-document="null"
+        :selected-subcollection-document="null"
+        :is-in-subcollection-mode="!navigation.isAtRoot.value"
+        @navigate-to-root="navigation.navigateToRoot"
+        @navigate-to-collection="() => {}"
+        @navigate-to-segment="navigation.navigateToBreadcrumbIndex"
+        @navigate-to-path="handleNavigateToPath"
+      />
+    </div>
 
-    <!-- Sliding Layout -->
-    <SlidingContainer :slide-offset="navigation.slideOffset.value">
-      <!-- Render each navigation level -->
-      <div
-        v-for="(level, levelIndex) in navigation.navigationStack.value"
-        :key="`level-${levelIndex}`"
-        class="flex-shrink-0 w-full flex h-full"
-      >
-        <!-- Column 1: Previous level items, collections, or document editor for deep navigation -->
-        <DocumentEditor
-          v-if="deepNavigation.shouldShowDocumentEditorInColumnOne(levelIndex)"
-            :selected-document="deepNavigation.getColumnOneDocument(levelIndex)"
-            :subcollections="deepNavigation.getColumnOneSubcollections(levelIndex)"
-            :selected-subcollection="deepNavigation.getColumnOneSelectedSubcollection(levelIndex)"
-            :expanded-fields="expandedMapFields"
-            :column-mode="true"
-            @start-subcollection="handleStartSubcollection('column-one')"
-            @navigate-to-subcollection="handleNavigateToSubcollection(levelIndex, $event)"
-            @add-field="handleColumnOneFieldOperations.addField"
-            @toggle-field="toggleMapField"
-            @edit-field="handleColumnOneFieldOperations.editField"
-            @delete-field="handleColumnOneFieldOperations.deleteField"
-            @add-to-map="modalManager.openAddToMapModal"
-            @add-to-array="modalManager.openAddToArrayModal"
-            @clone-document="handleCloneDocument"
-            @delete-all-fields="modalManager.openDeleteAllFieldsModal"
-            @delete-document="handleDeleteDocument"
-          />
-        <ColumnOne
-          v-else
-          :header="getColumnOneHeader(levelIndex)"
-          :items="getColumnOneItems(levelIndex)"
-          :selected-item="getColumnOneSelectedItem(levelIndex)"
-          :show-add-button="getColumnOneShowAddButton(levelIndex)"
-          :add-button-text="getColumnOneAddButtonText(levelIndex)"
-          :empty-state-text="getColumnOneEmptyStateText(levelIndex)"
-          :loading="firestoreStore.loading"
-          :show-right-border="levelIndex === 0 && !level.selectedItem"
-          @add-item="handleColumnOneAddItem(levelIndex)"
-          @select-item="handleColumnOneSelectItem(levelIndex, $event)"
-        />
+    <!-- Mobile Navigation Header -->
+    <div class="lg:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <!-- Back Button -->
+          <button
+            v-if="mobileNavigationStack.length > 1"
+            @click="handleMobileBack()"
+            class="inline-flex items-center p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 min-h-[44px] min-w-[44px]"
+          >
+            <ChevronLeftIcon class="w-5 h-5" />
+          </button>
 
-        <!-- At root level with no collection selected: show merged columns 2+3 as empty state -->
-        <div v-if="levelIndex === 0 && !level.selectedItem" class="w-2/3 h-full bg-white dark:bg-gray-800">
+          <!-- Current Level Title -->
+          <div class="flex flex-col">
+            <span class="text-sm font-medium text-gray-900 dark:text-white truncate">
+              {{ mobileCurrentLevel.title }}
+            </span>
+            <span v-if="mobileCurrentLevel.subtitle" class="text-xs text-gray-500 dark:text-gray-400 truncate">
+              {{ mobileCurrentLevel.subtitle }}
+            </span>
+          </div>
         </div>
 
-        <!-- Normal 3-column layout for deeper levels or when collection is selected -->
-        <template v-else>
-          <!-- Column 2: Current level items -->
-          <ColumnTwo
-            :header="level.header"
-            :items="level.items"
-            :selected-item="level.selectedItem"
-            :show-add-button="getColumnTwoShowAddButton(levelIndex)"
-            :add-button-text="getColumnTwoAddButtonText(levelIndex)"
-            :empty-state-text="getColumnTwoEmptyStateText(levelIndex)"
-            :show-selection-prompt="false"
-            :show-collection-menu="getColumnTwoShowCollectionMenu(levelIndex)"
-            :loading="firestoreStore.loading"
-            @add-item="handleColumnTwoAddItem(levelIndex)"
-            @select-item="handleColumnTwoSelectItem(levelIndex, $event)"
-            @delete-collection="() => handleColumnTwoDeleteCollection(levelIndex)"
-          />
+        <!-- Navigation Level Indicator -->
+        <div class="flex items-center space-x-1">
+          <div
+            v-for="(_, index) in mobileNavigationStack"
+            :key="index"
+            :class="[
+              'w-2 h-2 rounded-full transition-colors duration-200',
+              index === mobileNavigationStack.length - 1
+                ? 'bg-blue-500'
+                : 'bg-gray-300 dark:bg-gray-600'
+            ]"
+          ></div>
+        </div>
+      </div>
+    </div>
 
-          <!-- Column 3: Document Editor or empty state -->
+    <!-- Desktop: Sliding Layout -->
+    <div class="hidden lg:block">
+      <SlidingContainer :slide-offset="navigation.slideOffset.value">
+        <!-- Render each navigation level -->
+        <div
+          v-for="(level, levelIndex) in navigation.navigationStack.value"
+          :key="`level-${levelIndex}`"
+          class="flex-shrink-0 w-full flex h-full"
+        >
+          <!-- Column 1: Previous level items, collections, or document editor for deep navigation -->
           <DocumentEditor
-            v-if="getColumnThreeDocument(levelIndex)"
-              :selected-document="getColumnThreeDocument(levelIndex)"
-              :subcollections="getColumnThreeSubcollections(levelIndex)"
-              :selected-subcollection="getColumnThreeSelectedSubcollection(levelIndex)"
+            v-if="deepNavigation.shouldShowDocumentEditorInColumnOne(levelIndex)"
+              :selected-document="deepNavigation.getColumnOneDocument(levelIndex)"
+              :subcollections="deepNavigation.getColumnOneSubcollections(levelIndex)"
+              :selected-subcollection="deepNavigation.getColumnOneSelectedSubcollection(levelIndex)"
               :expanded-fields="expandedMapFields"
               :column-mode="true"
-              @start-subcollection="handleStartSubcollection('column-three')"
+              @start-subcollection="handleStartSubcollection('column-one')"
               @navigate-to-subcollection="handleNavigateToSubcollection(levelIndex, $event)"
-              @add-field="handleColumnThreeFieldOperations.addField"
+              @add-field="handleColumnOneFieldOperations.addField"
               @toggle-field="toggleMapField"
-              @edit-field="handleColumnThreeFieldOperations.editField"
-              @delete-field="handleColumnThreeFieldOperations.deleteField"
+              @edit-field="handleColumnOneFieldOperations.editField"
+              @delete-field="handleColumnOneFieldOperations.deleteField"
               @add-to-map="modalManager.openAddToMapModal"
               @add-to-array="modalManager.openAddToArrayModal"
               @clone-document="handleCloneDocument"
               @delete-all-fields="modalManager.openDeleteAllFieldsModal"
               @delete-document="handleDeleteDocument"
             />
+          <ColumnOne
+            v-else
+            :header="getColumnOneHeader(levelIndex)"
+            :items="getColumnOneItems(levelIndex)"
+            :selected-item="getColumnOneSelectedItem(levelIndex)"
+            :show-add-button="getColumnOneShowAddButton(levelIndex)"
+            :add-button-text="getColumnOneAddButtonText(levelIndex)"
+            :empty-state-text="getColumnOneEmptyStateText(levelIndex)"
+            :loading="firestoreStore.loading"
+            :show-right-border="levelIndex === 0 && !level.selectedItem"
+            @add-item="handleColumnOneAddItem(levelIndex)"
+            @select-item="handleColumnOneSelectItem(levelIndex, $event)"
+          />
 
-          <!-- Column 3: Empty state when no document selected -->
-          <div v-else class="w-1/3 h-full bg-white dark:bg-gray-800">
+          <!-- At root level with no collection selected: show merged columns 2+3 as empty state -->
+          <div v-if="levelIndex === 0 && !level.selectedItem" class="w-2/3 h-full bg-white dark:bg-gray-800">
           </div>
-        </template>
+
+          <!-- Normal 3-column layout for deeper levels or when collection is selected -->
+          <template v-else>
+            <!-- Column 2: Current level items -->
+            <ColumnTwo
+              :header="level.header"
+              :items="level.items"
+              :selected-item="level.selectedItem"
+              :show-add-button="getColumnTwoShowAddButton(levelIndex)"
+              :add-button-text="getColumnTwoAddButtonText(levelIndex)"
+              :empty-state-text="getColumnTwoEmptyStateText(levelIndex)"
+              :show-selection-prompt="false"
+              :show-collection-menu="getColumnTwoShowCollectionMenu(levelIndex)"
+              :loading="firestoreStore.loading"
+              @add-item="handleColumnTwoAddItem(levelIndex)"
+              @select-item="handleColumnTwoSelectItem(levelIndex, $event)"
+              @delete-collection="() => handleColumnTwoDeleteCollection(levelIndex)"
+            />
+
+            <!-- Column 3: Document Editor or empty state -->
+            <DocumentEditor
+              v-if="getColumnThreeDocument(levelIndex)"
+                :selected-document="getColumnThreeDocument(levelIndex)"
+                :subcollections="getColumnThreeSubcollections(levelIndex)"
+                :selected-subcollection="getColumnThreeSelectedSubcollection(levelIndex)"
+                :expanded-fields="expandedMapFields"
+                :column-mode="true"
+                @start-subcollection="handleStartSubcollection('column-three')"
+                @navigate-to-subcollection="handleNavigateToSubcollection(levelIndex, $event)"
+                @add-field="handleColumnThreeFieldOperations.addField"
+                @toggle-field="toggleMapField"
+                @edit-field="handleColumnThreeFieldOperations.editField"
+                @delete-field="handleColumnThreeFieldOperations.deleteField"
+                @add-to-map="modalManager.openAddToMapModal"
+                @add-to-array="modalManager.openAddToArrayModal"
+                @clone-document="handleCloneDocument"
+                @delete-all-fields="modalManager.openDeleteAllFieldsModal"
+                @delete-document="handleDeleteDocument"
+              />
+
+            <!-- Column 3: Empty state when no document selected -->
+            <div v-else class="w-1/3 h-full bg-white dark:bg-gray-800">
+            </div>
+          </template>
+        </div>
+      </SlidingContainer>
+    </div>
+
+    <!-- Mobile: Single Column Navigation -->
+    <div class="lg:hidden h-full bg-white dark:bg-gray-800">
+      <!-- Show Collections List (Root Level) -->
+      <div v-if="mobileCurrentLevel.view === 'collections'" class="h-full">
+        <MobileCollectionsList
+          :collections="collections"
+          :loading="firestoreStore.loading"
+          @select-collection="handleMobileSelectCollection"
+          @add-collection="handleColumnOneAddItem(0)"
+        />
       </div>
-    </SlidingContainer>
+
+      <!-- Show Documents in Collection -->
+      <div v-else-if="mobileCurrentLevel.view === 'documents'" class="h-full">
+        <MobileDocumentsList
+          :collection-id="mobileCurrentLevel.collection?.id || ''"
+          :documents="getCurrentLevelDocuments()"
+          :document-subcollections="documentSubcollections"
+          :loading="firestoreStore.loading"
+          @select-document="handleMobileSelectDocument"
+          @add-document="handleMobileAddDocument"
+          @back="handleMobileBack"
+        />
+      </div>
+
+      <!-- Show Document Editor -->
+      <div v-else-if="mobileCurrentLevel.view === 'document'" class="h-full">
+        <MobileDocumentEditor
+          :selected-document="mobileCurrentLevel.document"
+          :subcollections="getMobileDocumentSubcollections()"
+          :expanded-fields="expandedMapFields"
+          @add-field="handleMobileAddField"
+          @edit-field="handleMobileEditField"
+          @delete-field="handleMobileDeleteField"
+          @start-subcollection="handleMobileStartSubcollection"
+          @navigate-to-subcollection="handleMobileNavigateToSubcollection"
+          @back="handleMobileBack"
+          @toggle-field="toggleMapField"
+          @add-to-map="modalManager.openAddToMapModal"
+          @add-to-array="modalManager.openAddToArrayModal"
+          @clone-document="handleCloneDocument"
+          @delete-all-fields="modalManager.openDeleteAllFieldsModal"
+          @delete-document="handleDeleteDocument"
+        />
+      </div>
+
+      <!-- Show Subcollection Documents -->
+      <div v-else-if="mobileCurrentLevel.view === 'subcollection'" class="h-full">
+        <MobileSubcollectionDocuments
+          :subcollection="mobileCurrentLevel.subcollection"
+          :documents="getMobileSubcollectionDocuments()"
+          :document-subcollections="documentSubcollections"
+          :loading="firestoreStore.loading"
+          @select-document="handleMobileSelectSubcollectionDocument"
+          @add-document="handleMobileAddSubcollectionDocument"
+          @back="handleMobileBack"
+        />
+      </div>
+    </div>
 
     <!-- Modals -->
     <StartCollectionModal
@@ -193,6 +303,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { ChevronLeftIcon } from '@heroicons/vue/24/outline'
 
 // Store and API
 import { useFirestoreStore } from '@/stores/firestore'
@@ -209,6 +320,12 @@ import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
 import FieldModal from '@/components/firestore/FieldModal.vue'
 import StartCollectionModal from '@/components/firestore/StartCollectionModal.vue'
 import AddDocumentModal from '@/components/firestore/AddDocumentModal.vue'
+
+// Mobile Components
+import MobileCollectionsList from '@/components/firestore/mobile/MobileCollectionsList.vue'
+import MobileDocumentsList from '@/components/firestore/mobile/MobileDocumentsList.vue'
+import MobileDocumentEditor from '@/components/firestore/mobile/MobileDocumentEditor.vue'
+import MobileSubcollectionDocuments from '@/components/firestore/mobile/MobileSubcollectionDocuments.vue'
 
 // Composables
 import { useFieldOperations } from '@/composables/useFieldOperations'
@@ -240,15 +357,68 @@ const { buildFirestoreValue } = useDocumentForm()
 const documentSubcollections = ref<Map<string, FirestoreCollectionWithMetadata[]>>(new Map())
 const deepNavigation = useDeepNavigation(navigation.navigationStack, documentSubcollections)
 
+// Mobile navigation state - enhanced for deep navigation
+type MobileView = 'collections' | 'documents' | 'document' | 'subcollection'
+interface MobileNavigationLevel {
+  view: MobileView
+  collection?: FirestoreCollectionWithMetadata
+  document?: FirestoreDocument
+  subcollection?: FirestoreCollectionWithMetadata
+  parentDocumentPath?: string
+  documents?: FirestoreDocument[]  // Store documents for this level
+  title: string
+  subtitle?: string
+}
+
+const mobileNavigationStack = ref<MobileNavigationLevel[]>([{
+  view: 'collections',
+  title: 'Collections',
+  subtitle: ''
+}])
+
+const mobileCurrentLevel = computed(() => {
+  return mobileNavigationStack.value[mobileNavigationStack.value.length - 1]
+})
+
+
 // Computed properties
 const currentProjectId = computed(() => route.params.projectId as string)
 const collections = computed(() => firestoreStore.collections)
 
+// Database change handler
+const handleDatabaseChange = async (databaseId: string) => {
+  firestoreStore.setSelectedDatabase(databaseId)
+  // Clear current data
+  firestoreStore.clearData()
+  navigation.clearNavigation()
+  clearExpandedFields()
+  documentSubcollections.value.clear()
+  resetMobileNavigation()
+
+  // Reload collections for the new database
+  await refreshCollections()
+}
+
+// Add database handler
+const handleAddDatabase = async (databaseId: string) => {
+  const success = await firestoreStore.addDatabase(currentProjectId.value, databaseId)
+  if (success) {
+    console.info(`Successfully added database: ${databaseId}`)
+  } else {
+    console.warn(`Database '${databaseId}' not found or not accessible`)
+  }
+}
+
+// Remove database handler
+const handleRemoveDatabase = (databaseId: string) => {
+  firestoreStore.removeDatabase(databaseId)
+}
+
 
 // Helper functions for column configuration
 const getColumnOneHeader = (levelIndex: number): string => {
-  if (levelIndex === 0) return '(default)'
-  if (levelIndex === 1) return '(default)' // Column 1 still shows collections from root
+  if (levelIndex === 0) return firestoreStore.selectedDatabase
+  if (levelIndex === 1) return firestoreStore.selectedDatabase // Column 1 still shows collections from root
 
   const prevLevel = navigation.navigationStack.value[levelIndex - 1]
   return prevLevel?.selectedItem ? getItemDisplayName(prevLevel.selectedItem) : 'Previous'
@@ -350,6 +520,183 @@ const getColumnThreeSelectedSubcollection = (levelIndex: number): FirestoreColle
     return subcollections.find(sub => sub.id === nextLevel.collectionId) || null
   }
   return null
+}
+
+
+// Mobile navigation functions
+const pushMobileLevel = (level: MobileNavigationLevel) => {
+  mobileNavigationStack.value.push(level)
+}
+
+const popMobileLevel = () => {
+  if (mobileNavigationStack.value.length > 1) {
+    mobileNavigationStack.value.pop()
+  }
+}
+
+const resetMobileNavigation = () => {
+  mobileNavigationStack.value = [{
+    view: 'collections',
+    title: 'Collections',
+    subtitle: ''
+  }]
+}
+
+// Mobile event handlers
+const handleMobileSelectCollection = async (collection: FirestoreCollectionWithMetadata) => {
+  // Load documents for the collection
+  await loadDocumentsForCollection(collection.id)
+  const documents = firestoreStore.getDocumentsByCollection(collection.id)
+
+  // Preload subcollections for all documents to show accurate counts
+  await Promise.all(documents.map(async (document) => {
+    if (!documentSubcollections.value.has(document.name)) {
+      const subcollectionsResponse = await navigation.loadSubcollections(document.name)
+      const subcollections = subcollectionsResponse || []
+      documentSubcollections.value.set(document.name, subcollections)
+    }
+  }))
+
+  pushMobileLevel({
+    view: 'documents',
+    collection,
+    documents,
+    title: collection.id,
+    subtitle: `${documents.length} documents`
+  })
+}
+
+const handleMobileSelectDocument = async (document: FirestoreDocument) => {
+  // Load subcollections for the document
+  const subcollectionsResponse = await navigation.loadSubcollections(document.name)
+  const subcollections = subcollectionsResponse || []
+  documentSubcollections.value.set(document.name, subcollections)
+
+  const fieldsCount = Object.keys(document.fields || {}).length
+  pushMobileLevel({
+    view: 'document',
+    document,
+    title: getDocumentId(document.name),
+    subtitle: `${fieldsCount} fields, ${subcollections.length} subcollections`
+  })
+}
+
+const handleMobileSelectSubcollectionDocument = async (document: FirestoreDocument) => {
+  // Load subcollections for the document
+  const subcollectionsResponse = await navigation.loadSubcollections(document.name)
+  const subcollections = subcollectionsResponse || []
+  documentSubcollections.value.set(document.name, subcollections)
+
+  const fieldsCount = Object.keys(document.fields || {}).length
+  pushMobileLevel({
+    view: 'document',
+    document,
+    title: getDocumentId(document.name),
+    subtitle: `${fieldsCount} fields, ${subcollections.length} subcollections`
+  })
+}
+
+const handleMobileBack = () => {
+  popMobileLevel()
+}
+
+const handleMobileAddDocument = () => {
+  const currentLevel = mobileCurrentLevel.value
+  if (currentLevel.collection) {
+    modalManager.openAddDocumentModal()
+  }
+}
+
+const handleMobileAddSubcollectionDocument = () => {
+  const currentLevel = mobileCurrentLevel.value
+  if (currentLevel.subcollection && currentLevel.parentDocumentPath) {
+    modalManager.openAddSubcollectionDocumentModal(currentLevel.parentDocumentPath)
+  }
+}
+
+const handleMobileAddField = () => {
+  const currentLevel = mobileCurrentLevel.value
+  if (currentLevel.document) {
+    // Set the mobile context for field operations
+    activeFieldOperationContext.value = {
+      document: currentLevel.document,
+      column: 'mobile'
+    }
+    modalManager.openAddFieldModal({
+      document: currentLevel.document,
+      column: 'mobile'
+    })
+  }
+}
+
+const handleMobileEditField = (data: { path: string; fieldName: string; fieldValue: any }) => {
+  modalManager.openEditFieldModal({
+    path: data.path,
+    fieldName: data.fieldName,
+    fieldValue: data.fieldValue,
+    fieldType: getFieldType(data.fieldValue),
+    editableValue: getEditableValue(data.fieldValue)
+  })
+}
+
+const handleMobileDeleteField = (data: any) => {
+  modalManager.openDeleteFieldModal(data)
+}
+
+const handleMobileStartSubcollection = () => {
+  const currentLevel = mobileCurrentLevel.value
+  if (currentLevel.document) {
+    modalManager.subcollectionPath.value = currentLevel.document.name
+    modalManager.isAddingToSubcollection.value = true
+    modalManager.openCreateCollectionModal()
+  }
+}
+
+const handleMobileNavigateToSubcollection = async (subcollection: FirestoreCollectionWithMetadata) => {
+  const currentLevel = mobileCurrentLevel.value
+  if (!currentLevel.document) return
+
+  // Load subcollection documents - use the full document path as parent
+  const parentDocumentPath = currentLevel.document.name
+  const documents = await navigation.loadSubcollectionDocuments(parentDocumentPath, subcollection.id)
+
+  // Preload subcollections for all subcollection documents to show accurate counts
+  await Promise.all(documents.map(async (document) => {
+    if (!documentSubcollections.value.has(document.name)) {
+      const subcollectionsResponse = await navigation.loadSubcollections(document.name)
+      const subcollections = subcollectionsResponse || []
+      documentSubcollections.value.set(document.name, subcollections)
+    }
+  }))
+
+  pushMobileLevel({
+    view: 'subcollection',
+    subcollection,
+    parentDocumentPath,
+    documents,
+    title: subcollection.id,
+    subtitle: `${documents.length} documents`
+  })
+}
+
+// Helper functions for mobile views
+const getCurrentLevelDocuments = (): FirestoreDocument[] => {
+  const currentLevel = mobileCurrentLevel.value
+
+  // Return documents stored in the current mobile navigation level
+  return currentLevel.documents || []
+}
+
+const getMobileDocumentSubcollections = (): FirestoreCollectionWithMetadata[] => {
+  const currentLevel = mobileCurrentLevel.value
+  if (!currentLevel.document) return []
+
+  const subcollectionsResponse = documentSubcollections.value.get(currentLevel.document.name)
+  return Array.isArray(subcollectionsResponse) ? subcollectionsResponse : (subcollectionsResponse?.collections || [])
+}
+
+const getMobileSubcollectionDocuments = (): FirestoreDocument[] => {
+  return getCurrentLevelDocuments()
 }
 
 // Event handlers
@@ -567,6 +914,11 @@ const getSelectedDocumentId = (): string => {
 const refreshCollections = async () => {
   await firestoreStore.loadCollections(currentProjectId.value)
   navigation.initializeWithCollections(collections.value)
+}
+
+const initializeData = async () => {
+  // Load collections for the selected database
+  await refreshCollections()
 }
 
 // Event handlers (copied from original implementation)
@@ -945,7 +1297,7 @@ const handleCollectionCreated = async (collectionId: string) => {
 }
 
 const handleDocumentCreated = async (documentId: string) => {
-  // Refresh the current level to show the new document
+  // Refresh the current level to show the new document (Desktop navigation)
   const currentLevel = navigation.currentLevel.value
   if (currentLevel) {
     if (currentLevel.type === 'collection') {
@@ -976,6 +1328,20 @@ const handleDocumentCreated = async (documentId: string) => {
         navigation.selectItem(newDocument)
       }
     }
+  }
+
+  // Update mobile navigation if we're in documents or subcollection view
+  const mobileLevel = mobileCurrentLevel.value
+  if (mobileLevel.view === 'documents' && mobileLevel.collection) {
+    await loadDocumentsForCollection(mobileLevel.collection.id)
+    // Update the current level with new documents
+    mobileLevel.documents = firestoreStore.getDocumentsByCollection(mobileLevel.collection.id)
+    mobileLevel.subtitle = `${mobileLevel.documents.length} documents`
+  } else if (mobileLevel.view === 'subcollection' && mobileLevel.subcollection && mobileLevel.parentDocumentPath) {
+    const documents = await navigation.loadSubcollectionDocuments(mobileLevel.parentDocumentPath, mobileLevel.subcollection.id)
+    // Update the current level with new documents
+    mobileLevel.documents = documents
+    mobileLevel.subtitle = `${documents.length} documents`
   }
 }
 
@@ -1104,15 +1470,16 @@ watch(currentProjectId, async (newProjectId, oldProjectId) => {
     navigation.clearNavigation()
     clearExpandedFields()
     documentSubcollections.value.clear()
+    resetMobileNavigation()
 
     if (newProjectId) {
-      await refreshCollections()
+      await initializeData()
     }
   }
 }, { immediate: false })
 
 onMounted(async () => {
-  await refreshCollections()
+  await initializeData()
   document.addEventListener('keydown', handleKeyDown)
 })
 
