@@ -1,5 +1,5 @@
 <template>
-  <div class="w-1/3 h-full bg-white dark:bg-gray-800 border-x border-gray-200 dark:border-gray-700 overflow-y-auto">
+  <div class="w-1/3 h-full bg-white dark:bg-gray-800 border-l border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
     <div class="p-4">
       <!-- Header -->
       <div class="mb-3">

@@ -57,6 +57,7 @@
           :add-button-text="getColumnOneAddButtonText(levelIndex)"
           :empty-state-text="getColumnOneEmptyStateText(levelIndex)"
           :loading="firestoreStore.loading"
+          :show-right-border="levelIndex === 0 && !level.selectedItem"
           @add-item="handleColumnOneAddItem(levelIndex)"
           @select-item="handleColumnOneSelectItem(levelIndex, $event)"
         />

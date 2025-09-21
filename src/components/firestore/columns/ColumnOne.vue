@@ -1,5 +1,8 @@
 <template>
-  <div class="w-1/3 h-full bg-white dark:bg-gray-800 overflow-y-auto">
+  <div :class="[
+    'w-1/3 h-full bg-white dark:bg-gray-800 overflow-y-auto',
+    { 'border-r border-gray-200 dark:border-gray-700': props.showRightBorder }
+  ]">
     <div class="p-4">
       <!-- Header -->
       <div class="mb-3">
@@ -56,11 +59,13 @@ interface Props {
   emptyStateText: string
   emptyStateIcon?: any
   loading?: boolean
+  showRightBorder?: boolean
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   emptyStateIcon: CircleStackIcon,
-  loading: false
+  loading: false,
+  showRightBorder: false
 })
 
 defineEmits<{
