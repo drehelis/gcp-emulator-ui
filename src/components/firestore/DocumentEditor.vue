@@ -5,7 +5,7 @@
       <h3 class="text-sm font-medium text-gray-900 dark:text-white">{{ title }}</h3>
       <button
         @click="showDocumentHelp = !showDocumentHelp"
-        class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+        class="firestore-hover-gray transition-colors"
       >
         <QuestionMarkCircleIcon class="w-5 h-5" />
       </button>
@@ -33,7 +33,7 @@
           @input="$emit('update:documentId', $event.target.value)"
           type="text"
           placeholder="Auto-generated (customize if needed)"
-          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+          class="firestore-input placeholder-gray-400 sm:text-sm"
         />
         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
           Leave empty for auto-generation or provide a custom ID.
@@ -73,7 +73,7 @@
           <div class="bg-gray-50 dark:bg-gray-700/30 px-4 py-3 border-t border-gray-200 dark:border-gray-600">
             <button
               @click="addField"
-              class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              class="inline-flex items-center px-3 py-2 text-sm font-medium firestore-hover-blue hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 firestore-focus-blue"
             >
               <PlusIcon class="w-4 h-4 mr-2" />
               Add Another Field

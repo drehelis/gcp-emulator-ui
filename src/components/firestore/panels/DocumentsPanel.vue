@@ -105,7 +105,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { PlusIcon, EllipsisVerticalIcon, DocumentIcon, CircleStackIcon } from '@heroicons/vue/24/outline'
-import { getDocumentId } from '@/utils/firestoreHelpers'
+import { useDocumentUtils } from '@/composables/useDocumentUtils'
 import type { FirestoreDocument, FirestoreCollectionWithMetadata } from '@/types'
 
 interface Props {
@@ -117,6 +117,7 @@ interface Props {
 
 defineProps<Props>()
 
+const { getDocumentId } = useDocumentUtils()
 const showCollectionMenu = ref(false)
 
 const emit = defineEmits<{

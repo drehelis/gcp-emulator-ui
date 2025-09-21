@@ -107,7 +107,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { PlusIcon, EllipsisVerticalIcon, ChevronRightIcon, CircleStackIcon } from '@heroicons/vue/24/outline'
-import { getDocumentId } from '@/utils/firestoreHelpers'
+import { useDocumentUtils } from '@/composables/useDocumentUtils'
 import FieldList from '@/components/firestore/fields/FieldList.vue'
 import type { FirestoreDocument, FirestoreCollectionWithMetadata } from '@/types'
 
@@ -122,6 +122,8 @@ withDefaults(defineProps<Props>(), {
   subcollections: () => [],
   expandedFields: () => new Set()
 })
+
+const { getDocumentId } = useDocumentUtils()
 
 const emit = defineEmits<{
   'start-subcollection': []

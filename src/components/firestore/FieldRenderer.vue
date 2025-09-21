@@ -17,7 +17,7 @@
           <button
             v-if="field.type === 'map'"
             @click="toggleFieldCollapse(field.id)"
-            class="mr-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            class="mr-2 firestore-hover-gray"
           >
             <svg class="w-4 h-4 transform transition-transform" :class="{ 'rotate-90': !isFieldCollapsed(field.id) }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -31,7 +31,7 @@
           <input
             v-model="field.name"
             type="text"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+            class="firestore-input"
             placeholder="Field name"
             :class="{ 'border-red-300 dark:border-red-600': !field.name && level === 1 }"
           />
@@ -42,7 +42,7 @@
         <div class="col-span-3 relative">
           <button
             @click="toggleDropdown(field.id)"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-left text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:text-white flex items-center justify-between"
+            class="firestore-select flex items-center justify-between"
           >
             <span>{{ field.type }}</span>
             <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -73,7 +73,7 @@
             v-if="field.type !== 'map'"
             v-model="field.value"
             type="text"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+            class="firestore-input"
             placeholder="Field value"
           />
           <div v-else class="flex items-center text-sm text-gray-500 dark:text-gray-400">

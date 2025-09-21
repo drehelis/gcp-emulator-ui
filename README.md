@@ -66,6 +66,7 @@ docker run \
 docker run \
    --rm \
    --env PUBSUB_EMULATOR_URL="host.docker.internal:8085" \
+   --env FIRESTORE_EMULATOR_URL="host.docker.internal:8086" \
    --env STORAGE_EMULATOR_URL="host.docker.internal:4443" \
    --publish 9090:80 \
    ghcr.io/drehelis/gcp-emulator-ui:main

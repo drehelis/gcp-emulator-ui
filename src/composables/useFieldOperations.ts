@@ -1,8 +1,9 @@
 import { ref } from 'vue'
-import { formatFieldValue, getFieldType, getEditableValue } from '@/utils/firestoreHelpers'
+import { useFirestoreFields } from '@/composables/useFirestoreFields'
 
 export const useFieldOperations = () => {
   const expandedMapFields = ref<Set<string>>(new Set())
+  const { formatFieldValue, getFieldType, getEditableValue } = useFirestoreFields()
 
   const toggleMapField = (fieldName: string) => {
     if (expandedMapFields.value.has(fieldName)) {

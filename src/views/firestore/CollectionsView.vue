@@ -336,7 +336,8 @@ import { useDocumentForm } from '@/composables/useDocumentForm'
 import { useColumnFieldOperations } from '@/composables/useColumnFieldOperations'
 
 // Utils
-import { getDocumentId, getFieldType, getEditableValue } from '@/utils/firestoreHelpers'
+import { useDocumentUtils } from '@/composables/useDocumentUtils'
+import { useFirestoreFields } from '@/composables/useFirestoreFields'
 
 
 const route = useRoute()
@@ -352,6 +353,8 @@ const {
 const navigation = useRecursiveNavigation()
 const modalManager = useModalManager()
 const { buildFirestoreValue } = useDocumentForm()
+const { getDocumentId } = useDocumentUtils()
+const { getFieldType, getEditableValue } = useFirestoreFields()
 
 // Local state for caching subcollections
 const documentSubcollections = ref<Map<string, FirestoreCollectionWithMetadata[]>>(new Map())

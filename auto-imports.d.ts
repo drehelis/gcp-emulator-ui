@@ -175,6 +175,7 @@ declare global {
   const useDevicesList: typeof import('@vueuse/core')['useDevicesList']
   const useDisplayMedia: typeof import('@vueuse/core')['useDisplayMedia']
   const useDocumentForm: typeof import('./src/composables/useDocumentForm')['useDocumentForm']
+  const useDocumentUtils: typeof import('./src/composables/useDocumentUtils')['useDocumentUtils']
   const useDocumentVisibility: typeof import('@vueuse/core')['useDocumentVisibility']
   const useDraggable: typeof import('@vueuse/core')['useDraggable']
   const useDropZone: typeof import('@vueuse/core')['useDropZone']
@@ -194,7 +195,9 @@ declare global {
   const useFileDialog: typeof import('@vueuse/core')['useFileDialog']
   const useFileSystemAccess: typeof import('@vueuse/core')['useFileSystemAccess']
   const useFirestoreActions: typeof import('./src/composables/useFirestoreActions')['useFirestoreActions']
+  const useFirestoreFields: typeof import('./src/composables/useFirestoreFields')['useFirestoreFields']
   const useFirestoreNavigation: typeof import('./src/composables/useFirestoreNavigation')['useFirestoreNavigation']
+  const useFirestoreStorage: typeof import('./src/composables/useFirestoreStorage')['useFirestoreStorage']
   const useFirestoreStore: typeof import('./src/stores/firestore')['useFirestoreStore']
   const useFocus: typeof import('@vueuse/core')['useFocus']
   const useFocusWithin: typeof import('@vueuse/core')['useFocusWithin']
@@ -349,6 +352,9 @@ declare global {
   // @ts-ignore
   export type { Field } from './src/composables/useDocumentForm'
   import('./src/composables/useDocumentForm')
+  // @ts-ignore
+  export type { FieldTypeInfo } from './src/composables/useFirestoreFields'
+  import('./src/composables/useFirestoreFields')
   // @ts-ignore
   export type { NavigationItem, NavigationLevel } from './src/composables/useRecursiveNavigation'
   import('./src/composables/useRecursiveNavigation')

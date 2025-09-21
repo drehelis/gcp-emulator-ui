@@ -11,6 +11,7 @@ import type {
 } from '@/types'
 import firestoreApi from '@/api/firestore'
 import { useProjectsStore } from './projects'
+import { useFirestoreStorage } from '@/composables/useFirestoreStorage'
 
 export const useFirestoreStore = defineStore('firestore', () => {
   const loading = ref(false)
@@ -18,33 +19,13 @@ export const useFirestoreStore = defineStore('firestore', () => {
   const documents = ref<Map<string, FirestoreDocument[]>>(new Map())
 
   // Database management with localStorage persistence
-  const STORAGE_KEY_DATABASES = 'firestore-databases'
-  const STORAGE_KEY_SELECTED_DB = 'firestore-selected-database'
-
-  // Load databases from localStorage
-  const loadDatabasesFromStorage = (): string[] => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY_DATABASES)
-      return stored ? JSON.parse(stored) : ['(default)']
-    } catch {
-      return ['(default)']
-    }
-  }
-
-  // Load selected database from localStorage
-  const loadSelectedDatabaseFromStorage = (): string => {
-    return localStorage.getItem(STORAGE_KEY_SELECTED_DB) || '(default)'
-  }
-
-  // Save databases to localStorage
-  const saveDatabasesToStorage = (databaseList: string[]) => {
-    localStorage.setItem(STORAGE_KEY_DATABASES, JSON.stringify(databaseList))
-  }
-
-  // Save selected database to localStorage
-  const saveSelectedDatabaseToStorage = (databaseId: string) => {
-    localStorage.setItem(STORAGE_KEY_SELECTED_DB, databaseId)
-  }
+  const {
+    loadDatabasesFromStorage,
+    loadSelectedDatabaseFromStorage,
+    addDatabaseToStorage,
+    removeDatabaseFromStorage,
+    saveSelectedDatabaseToStorage
+  } = useFirestoreStorage()
 
   const availableDatabases = ref<string[]>(loadDatabasesFromStorage())
   const selectedDatabase = ref<string>(loadSelectedDatabaseFromStorage())
@@ -66,15 +47,7 @@ export const useFirestoreStore = defineStore('firestore', () => {
       }
 
       // Add to available databases if not already present
-      if (!availableDatabases.value.includes(databaseId)) {
-        availableDatabases.value.push(databaseId)
-        availableDatabases.value.sort((a, b) => {
-          if (a === '(default)') return -1
-          if (b === '(default)') return 1
-          return a.localeCompare(b)
-        })
-        saveDatabasesToStorage(availableDatabases.value)
-      }
+      availableDatabases.value = addDatabaseToStorage(databaseId)
 
       return true
     } catch (error) {
@@ -87,15 +60,10 @@ export const useFirestoreStore = defineStore('firestore', () => {
 
   // Remove a database (except default)
   const removeDatabase = (databaseId: string) => {
-    if (databaseId === '(default)') return
+    availableDatabases.value = removeDatabaseFromStorage(databaseId)
 
-    availableDatabases.value = availableDatabases.value.filter(db => db !== databaseId)
-    saveDatabasesToStorage(availableDatabases.value)
-
-    // If the removed database was selected, switch to default
-    if (selectedDatabase.value === databaseId) {
-      setSelectedDatabase('(default)')
-    }
+    // Update selected database if it was the removed one
+    selectedDatabase.value = loadSelectedDatabaseFromStorage()
   }
 
   // Set selected database

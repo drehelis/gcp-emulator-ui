@@ -65,7 +65,7 @@
 
 <script setup lang="ts">
 import { PlusIcon, DocumentIcon, ChevronRightIcon, ChevronLeftIcon } from '@heroicons/vue/24/outline'
-import { getDocumentId } from '@/utils/firestoreHelpers'
+import { useDocumentUtils } from '@/composables/useDocumentUtils'
 import type { FirestoreDocument, FirestoreCollectionWithMetadata } from '@/types'
 
 interface Props {
@@ -79,6 +79,8 @@ const props = withDefaults(defineProps<Props>(), {
   loading: false,
   documentSubcollections: () => new Map()
 })
+
+const { getDocumentId } = useDocumentUtils()
 
 defineEmits<{
   'select-document': [document: FirestoreDocument]

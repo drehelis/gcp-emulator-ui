@@ -124,7 +124,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { ChevronRightIcon, PlusIcon, PencilIcon, TrashIcon } from '@heroicons/vue/24/outline'
-import { formatFieldValue, getFieldType } from '@/utils/firestoreHelpers'
+import { useFirestoreFields } from '@/composables/useFirestoreFields'
 
 interface Props {
   fieldName: string
@@ -142,6 +142,8 @@ defineEmits<{
   'add-to-map': [fieldPath: string]
   'add-to-array': [fieldPath: string]
 }>()
+
+const { formatFieldValue, getFieldType } = useFirestoreFields()
 
 const isExpanded = computed(() => {
   return props.expandedFields.has(props.fieldPath)

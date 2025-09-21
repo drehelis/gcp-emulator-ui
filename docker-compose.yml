@@ -27,9 +27,9 @@ services:
     ports:
       - "9090:80"
     environment:
-      - PUBSUB_EMULATOR_URL=pubsub-emulator:8085
-      - FIRESTORE_EMULATOR_URL=firestore-emulator:8086
-      - STORAGE_EMULATOR_URL=storage-emulator:4443
+      - PUBSUB_EMULATOR_URL=host.docker.internal:8085
+      - FIRESTORE_EMULATOR_URL=host.docker.internal:8086
+      - STORAGE_EMULATOR_URL=host.docker.internal:4443
     depends_on:
       - pubsub-emulator
       - firestore-emulator

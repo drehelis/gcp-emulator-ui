@@ -90,7 +90,7 @@
 <script setup lang="ts">
 import { ref, computed, nextTick } from 'vue'
 import { ChevronRightIcon, ClipboardDocumentIcon, CheckIcon, PencilIcon } from '@heroicons/vue/24/outline'
-import { getDocumentId } from '@/utils/firestoreHelpers'
+import { useDocumentUtils } from '@/composables/useDocumentUtils'
 import type { FirestoreDocument, FirestoreCollectionWithMetadata } from '@/types'
 
 export interface NavigationSegment {
@@ -118,6 +118,9 @@ const $emit = defineEmits<{
 
 // Copy functionality
 const copySuccess = ref(false)
+
+// Composables
+const { getDocumentId } = useDocumentUtils()
 
 // Edit functionality
 const isEditing = ref(false)

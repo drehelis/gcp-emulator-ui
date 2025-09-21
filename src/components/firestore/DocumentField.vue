@@ -1,5 +1,5 @@
 <template>
-  <div class="px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+  <div class="px-4 py-3 firestore-row-hover">
     <div class="grid grid-cols-12 gap-3 items-start">
       <!-- Field Name -->
       <div class="col-span-4">
@@ -8,7 +8,7 @@
           @blur="updateField"
           type="text"
           placeholder="Enter field name"
-          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+          class="firestore-input"
         />
         <p v-if="!localField.name.trim()" class="mt-1 text-xs text-gray-500 dark:text-gray-400">Optional field - leave empty to skip</p>
       </div>
@@ -18,7 +18,7 @@
         <select
           v-model="localField.type"
           @change="handleTypeChange"
-          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+          class="firestore-select"
         >
           <option value="string">String</option>
           <option value="number">Number</option>
@@ -41,7 +41,7 @@
           @input="updateField"
           placeholder="Enter text value"
           rows="1"
-          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white resize-none"
+          class="firestore-textarea"
           style="field-sizing: content; min-height: 2.5rem;"
         />
 
@@ -53,7 +53,7 @@
           type="number"
           step="any"
           placeholder="0"
-          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+          class="firestore-input"
         />
 
         <!-- Boolean -->
@@ -61,7 +61,7 @@
           v-else-if="localField.type === 'boolean'"
           v-model="localField.value"
           @change="updateField"
-          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+          class="firestore-select"
         >
           <option :value="true">true</option>
           <option :value="false">false</option>
@@ -73,11 +73,11 @@
           v-model="localField.value"
           @input="updateField"
           type="datetime-local"
-          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+          class="firestore-input"
         />
 
         <!-- Null -->
-        <div v-else-if="localField.type === 'null'" class="px-3 py-2 bg-gray-100 dark:bg-gray-600 rounded-md text-sm text-gray-500 dark:text-gray-400 italic">
+        <div v-else-if="localField.type === 'null'" class="firestore-null-value">
           null
         </div>
 
@@ -88,7 +88,7 @@
           @input="updateField"
           type="text"
           placeholder="projects/PROJECT_ID/databases/(default)/documents/..."
-          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+          class="firestore-input"
         />
 
         <!-- GeoPoint -->
@@ -99,7 +99,7 @@
             type="number"
             step="any"
             placeholder="Latitude"
-            class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+            class="firestore-input"
           />
           <input
             v-model.number="geoPoint.longitude"
@@ -107,7 +107,7 @@
             type="number"
             step="any"
             placeholder="Longitude"
-            class="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+            class="firestore-input"
           />
         </div>
 
@@ -144,7 +144,7 @@
       <div class="col-span-1 flex justify-end">
         <button
           @click="$emit('delete', field.id)"
-          class="p-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+          class="firestore-btn-icon-small firestore-hover-red hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
           title="Delete field"
         >
           <TrashIcon class="w-4 h-4" />

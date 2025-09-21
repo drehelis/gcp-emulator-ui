@@ -57,32 +57,21 @@ export const firestoreApi = {
     document: any,
     documentId?: string
   ): Promise<FirestoreDocument> {
-    console.log('Creating subcollection:', {
-      parentDocumentPath,
-      collectionId,
-      documentId,
-      document
-    })
-
     if (documentId) {
       // Create document with specific ID using POST with documentId parameter
       const path = `/v1/${parentDocumentPath}/${collectionId}`
-      console.log('Subcollection API call path:', path)
       const response = await firestoreClient.post(path, {
         fields: document.fields
       }, {
         params: { documentId }
       })
-      console.log('Subcollection created successfully:', response.data)
       return response.data
     } else {
       // Auto-generate document ID - use POST without documentId
       const path = `/v1/${parentDocumentPath}/${collectionId}`
-      console.log('Subcollection API call path:', path)
       const response = await firestoreClient.post(path, {
         fields: document.fields
       })
-      console.log('Subcollection created successfully:', response.data)
       return response.data
     }
   },
