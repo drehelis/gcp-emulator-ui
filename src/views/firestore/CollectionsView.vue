@@ -507,7 +507,7 @@ const handleNavigateToSubcollection = async (levelIndex: number, subcollection: 
       subcollection.id
     )
 
-    await navigation.navigateToSubcollection(subcollection, documents)
+    await navigation.navigateToSubcollectionFromDocument(parentDocumentPath, subcollection, documents)
 
     // Auto-select the first document if any exist in the subcollection
     if (documents.length > 0) {
@@ -926,7 +926,7 @@ const handleCollectionCreated = async (collectionId: string) => {
       const newSubcollection = subcollections.find(sc => sc.id === collectionId)
       if (newSubcollection) {
         const documents = await navigation.loadSubcollectionDocuments(targetDocumentPath, collectionId)
-        await navigation.navigateToSubcollection(newSubcollection, documents)
+        await navigation.navigateToSubcollectionFromDocument(targetDocumentPath, newSubcollection, documents)
 
         // Auto-select the first document if any exist
         if (documents.length > 0) {
