@@ -314,6 +314,32 @@ export function useRecursiveNavigation() {
     }
   }
 
+  // Handle subcollection deletion navigation update
+  const handleSubcollectionDeleted = (deletedSubcollectionId: string, parentDocumentPath: string) => {
+    console.log('handleSubcollectionDeleted - deletedId:', deletedSubcollectionId, 'parentPath:', parentDocumentPath)
+
+    const currentLevel = navigationStack.value[currentStackIndex.value]
+
+    // Check if we're currently viewing the deleted subcollection
+    if (currentLevel?.type === 'subcollection' && currentLevel.collectionId === deletedSubcollectionId) {
+      console.log('Currently viewing deleted subcollection, navigating back to parent document')
+
+      // Navigate back to the parent document level
+      if (currentStackIndex.value > 0) {
+        // Remove the deleted subcollection level from the navigation stack
+        navigationStack.value.splice(currentStackIndex.value, 1)
+
+        // Navigate back to the parent level
+        currentStackIndex.value = currentStackIndex.value - 1
+        slideOffset.value = -100 * currentStackIndex.value
+
+        console.log('Navigated back to parent level, new stack index:', currentStackIndex.value)
+      }
+    } else {
+      console.log('Not currently viewing deleted subcollection, navigation state preserved')
+    }
+  }
+
   // Handle breadcrumb navigation clicks
   const navigateToBreadcrumbIndex = (index: number) => {
     console.log('Breadcrumb click - index:', index, 'breadcrumbPath:', breadcrumbPath.value)
@@ -397,6 +423,7 @@ export function useRecursiveNavigation() {
     loadSubcollections,
     loadSubcollectionDocuments,
     navigateToPath,
-    navigateToBreadcrumbIndex
+    navigateToBreadcrumbIndex,
+    handleSubcollectionDeleted
   }
 }

@@ -661,6 +661,9 @@ const confirmDeleteCollection = async () => {
       // The parentPath is already the correct document path
       console.log('Refreshing subcollections for parent document:', parentPath)
 
+      // Handle navigation update for the deleted subcollection
+      navigation.handleSubcollectionDeleted(collectionToDelete.id, parentPath)
+
       // Reload subcollections for the parent document
       const subcollectionsResponse = await navigation.loadSubcollections(parentPath)
       const subcollections = Array.isArray(subcollectionsResponse) ? subcollectionsResponse : (subcollectionsResponse?.collections || [])
