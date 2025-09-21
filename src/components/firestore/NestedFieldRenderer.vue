@@ -371,7 +371,7 @@ function deleteField(key: string) {
 function addNestedField(parentKey: string, type: 'map' | 'array') {
   const newValue = preserveObjectOrder(props.value)
   if (type === 'map') {
-    const tempKey = `_temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const tempKey = `_temp_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
     if (!newValue[parentKey]) newValue[parentKey] = {}
     newValue[parentKey][tempKey] = ''
   } else {
@@ -410,7 +410,7 @@ function deleteArrayItem(index: number) {
 function addNestedArrayItem(index: number, type: 'map' | 'array') {
   const newValue = [...props.value]
   if (type === 'map') {
-    const tempKey = `_temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const tempKey = `_temp_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
     if (!newValue[index]) newValue[index] = {}
     newValue[index][tempKey] = ''
   } else {

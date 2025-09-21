@@ -335,7 +335,7 @@ function updateFieldName() {
 }
 
 function addMapField() {
-  const tempKey = `_temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  const tempKey = `_temp_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`
   mapValue.value[tempKey] = ''
   updateValue()
 }

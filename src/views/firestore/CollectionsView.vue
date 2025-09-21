@@ -307,6 +307,7 @@ import { ChevronLeftIcon } from '@heroicons/vue/24/outline'
 
 // Store and API
 import { useFirestoreStore } from '@/stores/firestore'
+import { firestoreApi } from '@/api/firestore'
 import type { FirestoreDocument, FirestoreCollectionWithMetadata } from '@/types'
 
 // Components
@@ -993,25 +994,18 @@ const confirmDeleteCollection = async () => {
       console.log('Deleting subcollection at path:', subcollectionPath)
 
       // Get all documents in the subcollection
-      const response = await fetch(`http://host.docker.internal:8086/v1/${subcollectionPath}`)
-      if (response.ok) {
-        const data = await response.json()
-        const documents = data.documents || []
+      const response = await firestoreApi.listSubcollectionDocuments(documentPath, collectionId)
+      const documents = response.documents || []
 
-        console.log('Found', documents.length, 'documents to delete in subcollection')
+      console.log('Found', documents.length, 'documents to delete in subcollection')
 
-        // Delete each document individually
-        const deletePromises = documents.map((doc: any) =>
-          fetch(`http://host.docker.internal:8086/v1/${doc.name}`, { method: 'DELETE' })
-        )
+      // Delete each document individually
+      const deletePromises = documents.map((doc: any) =>
+        firestoreApi.deleteDocument(doc.name)
+      )
 
-        await Promise.all(deletePromises)
-        console.log('Successfully deleted all documents in subcollection')
-      } else if (response.status === 404) {
-        console.log('Subcollection not found or already empty')
-      } else {
-        throw new Error(`Failed to get subcollection documents: ${response.status}`)
-      }
+      await Promise.all(deletePromises)
+      console.log('Successfully deleted all documents in subcollection')
 
       // For subcollections, refresh the parent document's subcollections
       // The parentPath is already the correct document path
