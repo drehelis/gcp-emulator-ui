@@ -130,7 +130,7 @@ const fullPath = computed(() => {
     // For subcollection mode, use the navigation path
     const pathSegments = props.navigationPath.map(segment => segment.name)
     if (pathSegments.length > 0) {
-      return '/ > ' + pathSegments.join(' > ')
+      return `/ > ${  pathSegments.join(' > ')}`
     }
   } else {
     // For root mode, build from selected items
@@ -142,7 +142,7 @@ const fullPath = computed(() => {
       segments.push(getDocumentId(props.selectedDocument.name))
     }
     if (segments.length > 0) {
-      return '/ > ' + segments.join(' > ')
+      return `/ > ${  segments.join(' > ')}`
     }
   }
 

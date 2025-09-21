@@ -36,7 +36,7 @@
             :selected-subcollection="deepNavigation.getColumnOneSelectedSubcollection(levelIndex)"
             :expanded-fields="expandedMapFields"
             :column-mode="true"
-            @start-subcollection="handleStartSubcollection(levelIndex)"
+            @start-subcollection="handleStartSubcollection('column-one')"
             @navigate-to-subcollection="handleNavigateToSubcollection(levelIndex, $event)"
             @add-field="handleColumnOneFieldOperations.addField"
             @toggle-field="toggleMapField"
@@ -80,7 +80,7 @@
             :loading="firestoreStore.loading"
             @add-item="handleColumnTwoAddItem(levelIndex)"
             @select-item="handleColumnTwoSelectItem(levelIndex, $event)"
-            @delete-collection="handleColumnTwoDeleteCollection(levelIndex)"
+            @delete-collection="() => handleColumnTwoDeleteCollection(levelIndex)"
           />
 
           <!-- Column 3: Document Editor or empty state -->
@@ -91,7 +91,7 @@
               :selected-subcollection="getColumnThreeSelectedSubcollection(levelIndex)"
               :expanded-fields="expandedMapFields"
               :column-mode="true"
-              @start-subcollection="handleStartSubcollection(levelIndex)"
+              @start-subcollection="handleStartSubcollection('column-three')"
               @navigate-to-subcollection="handleNavigateToSubcollection(levelIndex, $event)"
               @add-field="handleColumnThreeFieldOperations.addField"
               @toggle-field="toggleMapField"
@@ -115,7 +115,7 @@
     <StartCollectionModal
       v-model="modalManager.showCreateCollectionModal.value"
       :project-id="currentProjectId"
-      :parent-document-path="getModalParentDocumentPath()"
+      :parent-document-path="modalManager.subcollectionPath.value"
       @created="handleCollectionCreated"
     />
 
@@ -220,6 +220,7 @@ import { useColumnFieldOperations } from '@/composables/useColumnFieldOperations
 // Utils
 import { getDocumentId, getFieldType, getEditableValue } from '@/utils/firestoreHelpers'
 
+
 const route = useRoute()
 const firestoreStore = useFirestoreStore()
 
@@ -231,7 +232,6 @@ const {
 } = useFieldOperations()
 
 const navigation = useRecursiveNavigation()
-const { navigationStack } = navigation
 const modalManager = useModalManager()
 const { buildFirestoreValue } = useDocumentForm()
 
@@ -302,8 +302,10 @@ const getColumnTwoEmptyStateText = (levelIndex: number): string => {
 
 const getColumnTwoShowCollectionMenu = (levelIndex: number): boolean => {
   const level = navigation.navigationStack.value[levelIndex]
-  // Show collection menu when we're viewing a collection's documents
-  return level?.type === 'collection'
+  console.log('getColumnTwoShowCollectionMenu - levelIndex:', levelIndex, 'level:', level)
+
+  // Show collection menu when we're viewing a collection's documents or subcollections
+  return level?.type === 'collection' || level?.type === 'subcollection'
 }
 
 const getColumnThreeDocument = (levelIndex: number): FirestoreDocument | null => {
@@ -316,17 +318,6 @@ const getColumnThreeDocument = (levelIndex: number): FirestoreDocument | null =>
   return null
 }
 
-// Get the current document for subcollection creation regardless of navigation depth
-const getCurrentDocumentForSubcollectionCreation = (): FirestoreDocument | null => {
-  // The current document is always the selected item at the current navigation level
-  const currentLevel = navigation.navigationStack.value[navigation.currentStackIndex.value]
-  const selectedItem = currentLevel?.selectedItem
-
-  if (selectedItem && 'name' in selectedItem) {
-    return selectedItem as FirestoreDocument
-  }
-  return null
-}
 
 const getColumnThreeSubcollections = (levelIndex: number): FirestoreCollectionWithMetadata[] => {
   const level = navigation.navigationStack.value[levelIndex]
@@ -420,9 +411,18 @@ const handleColumnTwoSelectItem = async (levelIndex: number, item: NavigationIte
   navigation.selectItem(item)
 
   if ('id' in item) {
-    // Selected a collection - navigate to it
-    const documents = await loadDocumentsForCollection(item.id)
-    await navigation.navigateToCollection(item, documents)
+    // Check if we're already at the next level with this collection
+    const nextLevel = navigation.navigationStack.value[levelIndex + 1]
+    const isAlreadyAtThisCollection = nextLevel &&
+      nextLevel.collectionId === item.id &&
+      navigation.currentStackIndex.value === levelIndex + 1
+
+    // Only navigate if we're not already at this collection
+    if (!isAlreadyAtThisCollection) {
+      // Selected a collection - navigate to it
+      const documents = await loadDocumentsForCollection(item.id)
+      await navigation.navigateToCollection(item, documents)
+    }
   } else {
     // Selected a document - load its subcollections and cache them
     const subcollectionsResponse = await navigation.loadSubcollections(item.name)
@@ -437,42 +437,88 @@ const handleColumnTwoSelectItem = async (levelIndex: number, item: NavigationIte
 
 const handleColumnTwoDeleteCollection = (levelIndex: number) => {
   const level = navigation.navigationStack.value[levelIndex]
+  console.log('handleColumnTwoDeleteCollection - levelIndex:', levelIndex, 'level:', level)
 
   if (level?.type === 'collection') {
     // For a collection level, we need to get the collection from the previous level's selectedItem
     const previousLevel = navigation.navigationStack.value[levelIndex - 1]
     if (previousLevel?.selectedItem && 'id' in previousLevel.selectedItem) {
+      console.log('Deleting collection:', previousLevel.selectedItem)
       modalManager.openDeleteCollectionModal(previousLevel.selectedItem as FirestoreCollectionWithMetadata)
     }
+  } else if (level?.type === 'subcollection') {
+    // For subcollection level, we want to delete the subcollection itself (not the selected document)
+    // The subcollection info is in the level header and collectionId
+    const subcollectionToDelete: FirestoreCollectionWithMetadata = {
+      id: level.collectionId || level.header,
+      path: level.parentPath ? `${level.parentPath}/${level.collectionId || level.header}` : level.header
+    }
+
+    console.log('Deleting subcollection from level info:', subcollectionToDelete)
+    modalManager.openDeleteCollectionModal(subcollectionToDelete)
   }
 }
 
-const handleStartSubcollection = (_levelIndex: number) => {
+const handleStartSubcollection = (column: string) => {
+  console.log('handleStartSubcollection - column:', column)
+  console.log('handleStartSubcollection - currentStackIndex:', navigation.currentStackIndex.value)
+
+  let targetDocument: FirestoreDocument | null = null
+
+  // Determine which column's document to target based on the column identifier
+  if (column === 'column-one') {
+    // First column: use getColumnOneDocument logic
+    targetDocument = deepNavigation.getColumnOneDocument(navigation.currentStackIndex.value)
+    console.log('First column - targetDocument:', targetDocument?.name)
+  } else if (column === 'column-three') {
+    // Third column: use getColumnThreeDocument logic
+    targetDocument = getColumnThreeDocument(navigation.currentStackIndex.value)
+    console.log('Third column - targetDocument:', targetDocument?.name)
+  }
+
+  if (targetDocument) {
+    // Set the subcollection context to the specific document from the clicked column
+    modalManager.subcollectionPath.value = targetDocument.name
+    modalManager.isAddingToSubcollection.value = true
+    console.log('Setting subcollection path to:', targetDocument.name)
+  } else {
+    console.log('No target document found for column:', column)
+  }
   modalManager.openCreateCollectionModal()
 }
 
+
 const handleNavigateToSubcollection = async (levelIndex: number, subcollection: FirestoreCollectionWithMetadata) => {
-  // Extract parent document path from subcollection path
-  // subcollection.path is like: "projects/.../documents/collection-1/doc-id/subcollection-id"
-  // We need to remove the last part (subcollection-id) to get the parent document path
-  const parentDocumentPath = subcollection.path.split('/').slice(0, -1).join('/')
+  // Check if we're already at this subcollection level
+  const currentLevel = navigation.navigationStack.value[navigation.currentStackIndex.value]
+  const isAlreadyAtThisSubcollection = currentLevel &&
+    currentLevel.type === 'subcollection' &&
+    currentLevel.collectionId === subcollection.id
 
-  const documents = await navigation.loadSubcollectionDocuments(
-    parentDocumentPath,
-    subcollection.id
-  )
+  // Only navigate if we're not already at this subcollection
+  if (!isAlreadyAtThisSubcollection) {
+    // Extract parent document path from subcollection path
+    // subcollection.path is like: "projects/.../documents/collection-1/doc-id/subcollection-id"
+    // We need to remove the last part (subcollection-id) to get the parent document path
+    const parentDocumentPath = subcollection.path.split('/').slice(0, -1).join('/')
 
-  await navigation.navigateToSubcollection(subcollection, documents)
+    const documents = await navigation.loadSubcollectionDocuments(
+      parentDocumentPath,
+      subcollection.id
+    )
 
-  // Auto-select the first document if any exist in the subcollection
-  if (documents.length > 0) {
-    const firstDocument = documents[0]
-    navigation.selectItem(firstDocument)
+    await navigation.navigateToSubcollection(subcollection, documents)
 
-    // Load subcollections for the first document in the subcollection
-    const nestedSubcollectionsResponse = await navigation.loadSubcollections(firstDocument.name)
-    const nestedSubcollections = nestedSubcollectionsResponse || []
-    documentSubcollections.value.set(firstDocument.name, nestedSubcollections)
+    // Auto-select the first document if any exist in the subcollection
+    if (documents.length > 0) {
+      const firstDocument = documents[0]
+      navigation.selectItem(firstDocument)
+
+      // Load subcollections for the first document in the subcollection
+      const nestedSubcollectionsResponse = await navigation.loadSubcollections(firstDocument.name)
+      const nestedSubcollections = nestedSubcollectionsResponse || []
+      documentSubcollections.value.set(firstDocument.name, nestedSubcollections)
+    }
   }
 }
 
@@ -500,16 +546,6 @@ const getSubcollectionPath = (levelIndex: number): string => {
   return level?.parentPath ? `${level.parentPath}/${level.collectionId}` : ''
 }
 
-// Modal helper functions
-const getModalParentDocumentPath = (): string | null => {
-  // If we're explicitly creating a root collection, always return null
-  if (modalManager.isCreatingRootCollection.value) {
-    return null
-  }
-
-  const currentDoc = getCurrentDocumentForSubcollectionCreation()
-  return currentDoc?.name || null
-}
 
 const getModalCollectionId = (): string => {
   const currentLevel = navigation.currentLevel.value
@@ -563,17 +599,87 @@ const confirmDeleteCollection = async () => {
 
   try {
     modalManager.isDeletingCollection.value = true
-    await firestoreStore.deleteCollection(currentProjectId.value, modalManager.collectionToDelete.value.id)
+    const collectionToDelete = modalManager.collectionToDelete.value
+    console.log('Deleting collection:', collectionToDelete)
 
-    // Navigate back if we deleted a currently selected collection
-    const currentLevel = navigation.currentLevel.value
-    if (currentLevel?.selectedItem && 'id' in currentLevel.selectedItem &&
-        currentLevel.selectedItem.id === modalManager.collectionToDelete.value.id) {
-      navigation.navigateToRoot()
+    // Check if this is a subcollection or root collection
+    // Subcollections have paths like: "projects/.../documents/collection-1/doc-id/sub-collection-1"
+    // Root collections have paths like: "projects/.../documents/collection-1"
+    const isSubcollection = collectionToDelete.path &&
+                           collectionToDelete.path.includes('/documents/') &&
+                           collectionToDelete.path.split('/documents/')[1].includes('/')
+
+    console.log('Is subcollection?', isSubcollection, 'Path:', collectionToDelete.path)
+
+    if (isSubcollection) {
+      // This is a subcollection - extract parent path and collection ID
+      const pathParts = collectionToDelete.path.split('/')
+      const collectionId = pathParts.pop() // Last part is the collection ID
+      const parentPath = pathParts.join('/') // Everything before is the parent path
+
+      console.log('Deleting subcollection:', collectionId, 'from parent:', parentPath)
+
+      // For subcollections, we need to call the API with the correct parent path
+      // The parent path includes '/documents/' but the API expects the database path
+      // Extract the database path (everything before '/documents/')
+      const databasePath = parentPath.split('/documents/')[0]
+      const documentPath = parentPath.split('/documents/')[1]
+
+      console.log('Database path:', databasePath)
+      console.log('Document path:', documentPath)
+      console.log('Collection ID:', collectionId)
+
+      // For subcollections, we need to use a different approach
+      // The existing deleteCollection API is designed for root collections
+      // For subcollections, we need to get documents from the subcollection and delete them
+
+      const subcollectionPath = `${databasePath}/documents/${documentPath}/${collectionId}`
+      console.log('Deleting subcollection at path:', subcollectionPath)
+
+      // Get all documents in the subcollection
+      const response = await fetch(`http://host.docker.internal:8086/v1/${subcollectionPath}`)
+      if (response.ok) {
+        const data = await response.json()
+        const documents = data.documents || []
+
+        console.log('Found', documents.length, 'documents to delete in subcollection')
+
+        // Delete each document individually
+        const deletePromises = documents.map((doc: any) =>
+          fetch(`http://host.docker.internal:8086/v1/${doc.name}`, { method: 'DELETE' })
+        )
+
+        await Promise.all(deletePromises)
+        console.log('Successfully deleted all documents in subcollection')
+      } else if (response.status === 404) {
+        console.log('Subcollection not found or already empty')
+      } else {
+        throw new Error(`Failed to get subcollection documents: ${response.status}`)
+      }
+
+      // For subcollections, refresh the parent document's subcollections
+      // The parentPath is already the correct document path
+      console.log('Refreshing subcollections for parent document:', parentPath)
+
+      // Reload subcollections for the parent document
+      const subcollectionsResponse = await navigation.loadSubcollections(parentPath)
+      const subcollections = Array.isArray(subcollectionsResponse) ? subcollectionsResponse : (subcollectionsResponse?.collections || [])
+      documentSubcollections.value.set(parentPath, subcollections)
+    } else {
+      // This is a root collection
+      console.log('Deleting root collection:', collectionToDelete.id)
+      await firestoreStore.deleteCollection(currentProjectId.value, collectionToDelete.id)
+
+      // Navigate back if we deleted a currently selected collection
+      const currentLevel = navigation.currentLevel.value
+      if (currentLevel?.selectedItem && 'id' in currentLevel.selectedItem &&
+          currentLevel.selectedItem.id === collectionToDelete.id) {
+        navigation.navigateToRoot()
+      }
+
+      // Refresh root collections
+      await refreshCollections()
     }
-
-    // Refresh collections
-    await refreshCollections()
   } catch (error) {
     console.error('Failed to delete collection:', error)
   } finally {
@@ -803,18 +909,20 @@ const handleCollectionCreated = async (collectionId: string) => {
     }
   } else {
     // Handle subcollection creation - we're not at root, so this is a subcollection
-    // Get the current document that should be the parent of the new subcollection
-    const currentDocument = getCurrentDocumentForSubcollectionCreation()
-    if (currentDocument) {
-      // Reload subcollections for the current document
-      const subcollectionsResponse = await navigation.loadSubcollections(currentDocument.name)
+    // Use the document path that was set when creating the subcollection
+    const targetDocumentPath = modalManager.subcollectionPath.value
+    console.log('handleCollectionCreated - subcollection created under:', targetDocumentPath)
+
+    if (targetDocumentPath) {
+      // Reload subcollections for the target document (not the currently selected one)
+      const subcollectionsResponse = await navigation.loadSubcollections(targetDocumentPath)
       const subcollections = Array.isArray(subcollectionsResponse) ? subcollectionsResponse : (subcollectionsResponse?.collections || [])
-      documentSubcollections.value.set(currentDocument.name, subcollections)
+      documentSubcollections.value.set(targetDocumentPath, subcollections)
 
       // Find the newly created subcollection and navigate to it
       const newSubcollection = subcollections.find(sc => sc.id === collectionId)
       if (newSubcollection) {
-        const documents = await navigation.loadSubcollectionDocuments(currentDocument.name, collectionId)
+        const documents = await navigation.loadSubcollectionDocuments(targetDocumentPath, collectionId)
         await navigation.navigateToSubcollection(newSubcollection, documents)
 
         // Auto-select the first document if any exist

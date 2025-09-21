@@ -6,11 +6,12 @@ export interface FieldOperationContext {
   column: 'column-one' | 'column-three'
 }
 
+ 
 export function useColumnFieldOperations(
   modalManager: any,
   deepNavigation: any,
-  getColumnThreeDocument: (levelIndex: number) => FirestoreDocument | null,
-  handleEditField: (data: any) => void,
+  getColumnThreeDocument: (_levelIndex: number) => FirestoreDocument | null,
+  handleEditField: (_data: any) => void,
   currentStackIndex: Ref<number>
 ) {
   // Track which document context is being edited
