@@ -1,5 +1,6 @@
 <template>
-  <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+  <div :class="containerClasses">
+    <div :class="columnMode ? 'p-4' : ''">
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-sm font-medium text-gray-900 dark:text-white">{{ title }}</h3>
       <button
@@ -81,11 +82,12 @@
         </div>
       </div>
     </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import {
   QuestionMarkCircleIcon,
   PlusIcon
@@ -98,6 +100,7 @@ interface Props {
   helpText?: string
   documentId: string
   fields: Field[]
+  columnMode?: boolean
 }
 
 interface Emits {
@@ -108,14 +111,23 @@ interface Emits {
   'removeField': [fieldId: string]
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   title: 'Document',
-  helpText: 'A collection must contain at least one document. Documents are Firestore\'s unit of storage and contain your data as fields.'
+  helpText: 'A collection must contain at least one document. Documents are Firestore\'s unit of storage and contain your data as fields.',
+  columnMode: false
 })
 
 const emit = defineEmits<Emits>()
 
 const showDocumentHelp = ref(false)
+
+// Computed
+const containerClasses = computed(() => {
+  if (props.columnMode) {
+    return 'w-1/3 h-full bg-white dark:bg-gray-800 overflow-y-auto'
+  }
+  return 'bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4'
+})
 
 // Methods
 const addField = () => {

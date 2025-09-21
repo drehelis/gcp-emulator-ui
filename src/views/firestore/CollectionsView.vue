@@ -27,8 +27,28 @@
         :key="`level-${levelIndex}`"
         class="flex-shrink-0 w-full flex h-full"
       >
-        <!-- Column 1: Previous level items or collections -->
+        <!-- Column 1: Previous level items, collections, or document editor for deep navigation -->
+        <DocumentEditor
+          v-if="deepNavigation.shouldShowDocumentEditorInColumnOne(levelIndex)"
+            :selected-document="deepNavigation.getColumnOneDocument(levelIndex)"
+            :subcollections="deepNavigation.getColumnOneSubcollections(levelIndex)"
+            :selected-subcollection="deepNavigation.getColumnOneSelectedSubcollection(levelIndex)"
+            :expanded-fields="expandedMapFields"
+            :column-mode="true"
+            @start-subcollection="handleStartSubcollection(levelIndex)"
+            @navigate-to-subcollection="handleNavigateToSubcollection(levelIndex, $event)"
+            @add-field="handleColumnOneFieldOperations.addField"
+            @toggle-field="toggleMapField"
+            @edit-field="handleColumnOneFieldOperations.editField"
+            @delete-field="handleColumnOneFieldOperations.deleteField"
+            @add-to-map="modalManager.openAddToMapModal"
+            @add-to-array="modalManager.openAddToArrayModal"
+            @clone-document="handleCloneDocument"
+            @delete-all-fields="modalManager.openDeleteAllFieldsModal"
+            @delete-document="handleDeleteDocument"
+          />
         <ColumnOne
+          v-else
           :header="getColumnOneHeader(levelIndex)"
           :items="getColumnOneItems(levelIndex)"
           :selected-item="getColumnOneSelectedItem(levelIndex)"
@@ -65,22 +85,23 @@
           <!-- Column 3: Document Editor or empty state -->
           <DocumentEditor
             v-if="getColumnThreeDocument(levelIndex)"
-            :selected-document="getColumnThreeDocument(levelIndex)"
-            :subcollections="getColumnThreeSubcollections(levelIndex)"
-            :selected-subcollection="getColumnThreeSelectedSubcollection(levelIndex)"
-            :expanded-fields="expandedMapFields"
-            @start-subcollection="handleStartSubcollection(levelIndex)"
-            @navigate-to-subcollection="handleNavigateToSubcollection(levelIndex, $event)"
-            @add-field="modalManager.openAddFieldModal"
-            @toggle-field="toggleMapField"
-            @edit-field="handleEditField"
-            @delete-field="modalManager.openDeleteFieldModal"
-            @add-to-map="modalManager.openAddToMapModal"
-            @add-to-array="modalManager.openAddToArrayModal"
-            @clone-document="handleCloneDocument"
-            @delete-all-fields="modalManager.openDeleteAllFieldsModal"
-            @delete-document="handleDeleteDocument"
-          />
+              :selected-document="getColumnThreeDocument(levelIndex)"
+              :subcollections="getColumnThreeSubcollections(levelIndex)"
+              :selected-subcollection="getColumnThreeSelectedSubcollection(levelIndex)"
+              :expanded-fields="expandedMapFields"
+              :column-mode="true"
+              @start-subcollection="handleStartSubcollection(levelIndex)"
+              @navigate-to-subcollection="handleNavigateToSubcollection(levelIndex, $event)"
+              @add-field="handleColumnThreeFieldOperations.addField"
+              @toggle-field="toggleMapField"
+              @edit-field="handleColumnThreeFieldOperations.editField"
+              @delete-field="handleColumnThreeFieldOperations.deleteField"
+              @add-to-map="modalManager.openAddToMapModal"
+              @add-to-array="modalManager.openAddToArrayModal"
+              @clone-document="handleCloneDocument"
+              @delete-all-fields="modalManager.openDeleteAllFieldsModal"
+              @delete-document="handleDeleteDocument"
+            />
 
           <!-- Column 3: Empty state when no document selected -->
           <div v-else class="w-1/3 h-full bg-white dark:bg-gray-800">
@@ -191,7 +212,9 @@ import AddDocumentModal from '@/components/firestore/AddDocumentModal.vue'
 import { useFieldOperations } from '@/composables/useFieldOperations'
 import { useRecursiveNavigation, type NavigationItem } from '@/composables/useRecursiveNavigation'
 import { useModalManager } from '@/composables/useModalManager'
+import { useDeepNavigation } from '@/composables/useDeepNavigation'
 import { useDocumentForm } from '@/composables/useDocumentForm'
+import { useColumnFieldOperations } from '@/composables/useColumnFieldOperations'
 
 // Utils
 import { getDocumentId, getFieldType, getEditableValue } from '@/utils/firestoreHelpers'
@@ -213,6 +236,7 @@ const { buildFirestoreValue } = useDocumentForm()
 
 // Local state for caching subcollections
 const documentSubcollections = ref<Map<string, FirestoreCollectionWithMetadata[]>>(new Map())
+const deepNavigation = useDeepNavigation(navigation.navigationStack, documentSubcollections)
 
 // Computed properties
 const currentProjectId = computed(() => route.params.projectId as string)
@@ -519,6 +543,7 @@ const getSelectedDocumentId = (): string => {
   return currentDoc ? getDocumentId(currentDoc.name) : ''
 }
 
+
 // Core methods
 const refreshCollections = async () => {
   await firestoreStore.loadCollections(currentProjectId.value)
@@ -656,7 +681,9 @@ const confirmDeleteAllFields = async () => {
 const confirmDeleteField = async () => {
   if (!modalManager.fieldToDelete.value) return
 
-  const currentDoc = getColumnThreeDocument(navigation.currentStackIndex.value)
+  console.log('confirmDeleteField - activeFieldOperationContext:', activeFieldOperationContext.value)
+  const currentDoc = activeFieldOperationContext.value.document
+  console.log('confirmDeleteField - currentDoc:', currentDoc?.name, 'path:', currentDoc?.path)
   if (!currentDoc) return
 
   try {
@@ -684,20 +711,66 @@ const confirmDeleteField = async () => {
 
     // Update the document
     const documentPath = currentDoc.name
+    console.log('Delete Field - documentPath:', documentPath)
     const pathSegments = documentPath.split('/')
-    const collectionId = pathSegments[pathSegments.length - 2]
+    console.log('Delete Field - pathSegments:', pathSegments)
+
+    // For subcollections, we need to build the full collection path
+    // Path format: projects/{project}/databases/{db}/documents/{collection}/{doc}/{subcollection}/{subdoc}
+    const documentsIndex = pathSegments.indexOf('documents')
+    const collectionPathSegments = pathSegments.slice(documentsIndex + 1, -1) // Everything after 'documents' except the last segment (doc ID)
+    const fullCollectionPath = collectionPathSegments.join('/')
     const documentId = pathSegments[pathSegments.length - 1]
 
-    await firestoreStore.updateDocument(currentProjectId.value, collectionId, documentId, { fields: updatedFields })
+    console.log('Delete Field - fullCollectionPath:', fullCollectionPath, 'documentId:', documentId)
+
+    await firestoreStore.updateDocument(currentProjectId.value, fullCollectionPath, documentId, { fields: updatedFields })
 
     // Refresh the specific collection's documents without resetting navigation
-    await firestoreStore.loadDocuments(currentProjectId.value, collectionId)
+    await firestoreStore.loadDocuments(currentProjectId.value, fullCollectionPath)
 
     // Update the navigation stack with the refreshed document data
-    const refreshedDocuments = firestoreStore.getDocumentsByCollection(collectionId)
+    const refreshedDocuments = firestoreStore.getDocumentsByCollection(fullCollectionPath)
     const refreshedDocument = refreshedDocuments.find(doc => getDocumentId(doc.name) === documentId)
+
     if (refreshedDocument) {
-      navigation.selectItem(refreshedDocument)
+      // Update the navigation stack to reflect the updated document data
+      // We need to find which level in the navigation stack contains this document and update it
+      const column = activeFieldOperationContext.value.column
+      console.log('Delete Field - Refreshing document in', column, '- document:', refreshedDocument.name)
+
+      // Update ALL navigation levels that might contain this document
+      const currentStackIndex = navigation.currentStackIndex.value
+      let documentUpdated = false
+
+      for (let i = 0; i <= currentStackIndex; i++) {
+        const level = navigation.navigationStack.value[i]
+
+        // Update selectedItem if it matches
+        if (level?.selectedItem && 'name' in level.selectedItem && level.selectedItem.name === refreshedDocument.name) {
+          level.selectedItem = refreshedDocument
+          console.log('Delete Field - Updated selectedItem in navigation level', i, 'with refreshed document data')
+          documentUpdated = true
+        }
+
+        // Update items list if it contains this document
+        if (level?.items) {
+          for (let j = 0; j < level.items.length; j++) {
+            const item = level.items[j]
+            if ('name' in item && item.name === refreshedDocument.name) {
+              level.items[j] = refreshedDocument
+              console.log('Delete Field - Updated item', j, 'in navigation level', i, 'items list')
+              documentUpdated = true
+            }
+          }
+        }
+      }
+
+      if (column === 'column-three' && !documentUpdated) {
+        // Column 3 document was updated but not found in navigation stack - use selectItem as fallback
+        navigation.selectItem(refreshedDocument)
+        console.log('Delete Field - Used selectItem fallback for Column 3 document')
+      }
     }
 
   } catch (error) {
@@ -798,8 +871,24 @@ const handleDocumentCreated = async (documentId: string) => {
   }
 }
 
+
+// Column field operations (after functions are defined)
+const {
+  activeFieldOperationContext,
+  handleColumnOneFieldOperations,
+  handleColumnThreeFieldOperations
+} = useColumnFieldOperations(
+  modalManager,
+  deepNavigation,
+  getColumnThreeDocument,
+  handleEditField,
+  navigation.currentStackIndex
+)
+
 const handleFieldModalSave = async (data: any) => {
-  const currentDoc = getColumnThreeDocument(navigation.currentStackIndex.value)
+  console.log('handleFieldModalSave - activeFieldOperationContext:', activeFieldOperationContext.value)
+  const currentDoc = activeFieldOperationContext.value.document
+  console.log('handleFieldModalSave - currentDoc:', currentDoc?.name, 'path:', currentDoc?.path)
   if (!currentDoc) return
 
   try {
@@ -829,19 +918,61 @@ const handleFieldModalSave = async (data: any) => {
     // Update the document
     const documentPath = currentDoc.name
     const pathSegments = documentPath.split('/')
-    const collectionId = pathSegments[pathSegments.length - 2]
+
+    // For subcollections, we need to build the full collection path
+    // Path format: projects/{project}/databases/{db}/documents/{collection}/{doc}/{subcollection}/{subdoc}
+    const documentsIndex = pathSegments.indexOf('documents')
+    const collectionPathSegments = pathSegments.slice(documentsIndex + 1, -1) // Everything after 'documents' except the last segment (doc ID)
+    const fullCollectionPath = collectionPathSegments.join('/')
     const documentId = pathSegments[pathSegments.length - 1]
 
-    await firestoreStore.updateDocument(currentProjectId.value, collectionId, documentId, { fields: updatedFields })
+    await firestoreStore.updateDocument(currentProjectId.value, fullCollectionPath, documentId, { fields: updatedFields })
 
     // Refresh the specific collection's documents without resetting navigation
-    await firestoreStore.loadDocuments(currentProjectId.value, collectionId)
+    await firestoreStore.loadDocuments(currentProjectId.value, fullCollectionPath)
 
     // Update the navigation stack with the refreshed document data
-    const refreshedDocuments = firestoreStore.getDocumentsByCollection(collectionId)
+    const refreshedDocuments = firestoreStore.getDocumentsByCollection(fullCollectionPath)
     const refreshedDocument = refreshedDocuments.find(doc => getDocumentId(doc.name) === documentId)
+
     if (refreshedDocument) {
-      navigation.selectItem(refreshedDocument)
+      // Update the navigation stack to reflect the updated document data
+      // We need to find which level in the navigation stack contains this document and update it
+      const column = activeFieldOperationContext.value.column
+      console.log('Refreshing document in', column, '- document:', refreshedDocument.name)
+
+      // Update ALL navigation levels that might contain this document
+      const currentStackIndex = navigation.currentStackIndex.value
+      let documentUpdated = false
+
+      for (let i = 0; i <= currentStackIndex; i++) {
+        const level = navigation.navigationStack.value[i]
+
+        // Update selectedItem if it matches
+        if (level?.selectedItem && 'name' in level.selectedItem && level.selectedItem.name === refreshedDocument.name) {
+          level.selectedItem = refreshedDocument
+          console.log('Updated selectedItem in navigation level', i, 'with refreshed document data')
+          documentUpdated = true
+        }
+
+        // Update items list if it contains this document
+        if (level?.items) {
+          for (let j = 0; j < level.items.length; j++) {
+            const item = level.items[j]
+            if ('name' in item && item.name === refreshedDocument.name) {
+              level.items[j] = refreshedDocument
+              console.log('Updated item', j, 'in navigation level', i, 'items list')
+              documentUpdated = true
+            }
+          }
+        }
+      }
+
+      if (column === 'column-three' && !documentUpdated) {
+        // Column 3 document was updated but not found in navigation stack - use selectItem as fallback
+        navigation.selectItem(refreshedDocument)
+        console.log('Used selectItem fallback for Column 3 document')
+      }
     }
 
   } catch (error) {
