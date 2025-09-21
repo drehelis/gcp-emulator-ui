@@ -119,6 +119,26 @@
               </template>
             </div>
 
+            <!-- Firestore Section Container -->
+            <div v-else-if="item.id === 'firestore-section'" class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3">
+              <template v-for="subItem in item.children" :key="subItem.id">
+                <NavItem
+                  :to="subItem.route"
+                  :icon="subItem.icon"
+                  :label="subItem.label"
+                  :badge="subItem.badge"
+                  :disabled="subItem.disabled"
+                  :is-service-header="subItem.isServiceHeader"
+                  :is-sub-item="subItem.isSubItem"
+                  :is-section-header="subItem.isSectionHeader"
+                  :connected="subItem.connected"
+                  :is-collapsed="appStore.layout.sidebar.collapsed && !isMobile"
+                  :custom-classes="subItem.customClasses"
+                  @click="handleMobileNavClick"
+                />
+              </template>
+            </div>
+
             <!-- Other Items (Expanded Mode) -->
             <div v-else-if="!item.id.includes('-section') && !appStore.layout.sidebar.collapsed" class="mt-4">
               <router-link
@@ -266,7 +286,8 @@ import {
   CubeIcon,
   DocumentDuplicateIcon,
   ArrowsRightLeftIcon,
-  ArchiveBoxIcon
+  ArchiveBoxIcon,
+  CircleStackIcon
 } from '@heroicons/vue/24/outline'
 
 import { useAppStore } from '@/stores/app'
@@ -282,9 +303,10 @@ import GlobalSearch from '@/components/search/GlobalSearch.vue'
 const route = useRoute()
 const appStore = useAppStore()
 const projectsStore = useProjectsStore()
-const { 
+const {
   pubsubConnected,
   storageConnected,
+  firestoreConnected,
   checkAllConnections
 } = useServiceConnections()
 
@@ -406,6 +428,41 @@ const navigationItems = computed<NavigationItem[]>(() => {
       })
     }
 
+    // Firestore services with connection status
+    if (showFirestoreNav.value) {
+      const firestoreChildren: NavigationItem[] = []
+
+      // Firestore section header
+      firestoreChildren.push({
+        id: 'firestore-section-header',
+        label: 'Firestore',
+        route: null,
+        icon: null,
+        disabled: false,
+        isSectionHeader: true,
+        connected: firestoreConnected.value
+      })
+
+      // Only show Firestore navigation items when connected
+      if (firestoreConnected.value) {
+        firestoreChildren.push({
+          id: 'firestore-collections',
+          label: 'Collections',
+          route: `/projects/${currentProject.value}/firestore/collections`,
+          icon: CircleStackIcon,
+          disabled: false,
+          isSubItem: true
+        })
+      }
+
+      items.push({
+        id: 'firestore-section',
+        label: 'Firestore Section',
+        route: null,
+        children: firestoreChildren
+      })
+    }
+
   } else {
     // Collapsed sidebar navigation (icon only)
     items.push({
@@ -479,6 +536,27 @@ const navigationItems = computed<NavigationItem[]>(() => {
 
     }
 
+    if (showFirestoreNav.value) {
+      // Add separator before Firestore section
+      items.push({
+        id: 'separator-firestore',
+        label: '',
+        route: null,
+        icon: null,
+        disabled: false,
+        isSeparator: true
+      })
+
+      items.push({
+        id: 'collapsed-firestore-collections',
+        label: 'Collections',
+        route: `/projects/${currentProject.value}/firestore/collections`,
+        icon: CircleStackIcon,
+        disabled: false,
+        customClasses: !firestoreConnected.value ? 'opacity-50' : ''
+      })
+    }
+
     // Add separator before Import/Export
     items.push({
       id: 'separator-import-export',
@@ -506,6 +584,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
 // Always show services when in a project, but with connection status
 const showPubSubNav = computed(() => !!currentProject.value)
 const showStorageNav = computed(() => !!currentProject.value)
+const showFirestoreNav = computed(() => !!currentProject.value)
 
 // Watch for route changes and sync project selection
 watch(() => route.params.projectId, (newProjectId) => {

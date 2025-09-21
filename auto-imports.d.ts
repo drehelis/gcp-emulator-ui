@@ -154,6 +154,7 @@ declare global {
   const useClipboardItems: typeof import('@vueuse/core')['useClipboardItems']
   const useCloned: typeof import('@vueuse/core')['useCloned']
   const useColorMode: typeof import('@vueuse/core')['useColorMode']
+  const useColumnFieldOperations: typeof import('./src/composables/useColumnFieldOperations')['useColumnFieldOperations']
   const useConfirmDialog: typeof import('@vueuse/core')['useConfirmDialog']
   const useCountdown: typeof import('@vueuse/core')['useCountdown']
   const useCounter: typeof import('@vueuse/core')['useCounter']
@@ -167,11 +168,14 @@ declare global {
   const useDebounce: typeof import('@vueuse/core')['useDebounce']
   const useDebounceFn: typeof import('@vueuse/core')['useDebounceFn']
   const useDebouncedRefHistory: typeof import('@vueuse/core')['useDebouncedRefHistory']
+  const useDeepNavigation: typeof import('./src/composables/useDeepNavigation')['useDeepNavigation']
   const useDeviceMotion: typeof import('@vueuse/core')['useDeviceMotion']
   const useDeviceOrientation: typeof import('@vueuse/core')['useDeviceOrientation']
   const useDevicePixelRatio: typeof import('@vueuse/core')['useDevicePixelRatio']
   const useDevicesList: typeof import('@vueuse/core')['useDevicesList']
   const useDisplayMedia: typeof import('@vueuse/core')['useDisplayMedia']
+  const useDocumentForm: typeof import('./src/composables/useDocumentForm')['useDocumentForm']
+  const useDocumentUtils: typeof import('./src/composables/useDocumentUtils')['useDocumentUtils']
   const useDocumentVisibility: typeof import('@vueuse/core')['useDocumentVisibility']
   const useDraggable: typeof import('@vueuse/core')['useDraggable']
   const useDropZone: typeof import('@vueuse/core')['useDropZone']
@@ -186,8 +190,15 @@ declare global {
   const useEyeDropper: typeof import('@vueuse/core')['useEyeDropper']
   const useFavicon: typeof import('@vueuse/core')['useFavicon']
   const useFetch: typeof import('@vueuse/core')['useFetch']
+  const useFieldNavigation: typeof import('./src/composables/useFieldNavigation')['useFieldNavigation']
+  const useFieldOperations: typeof import('./src/composables/useFieldOperations')['useFieldOperations']
   const useFileDialog: typeof import('@vueuse/core')['useFileDialog']
   const useFileSystemAccess: typeof import('@vueuse/core')['useFileSystemAccess']
+  const useFirestoreActions: typeof import('./src/composables/useFirestoreActions')['useFirestoreActions']
+  const useFirestoreFields: typeof import('./src/composables/useFirestoreFields')['useFirestoreFields']
+  const useFirestoreNavigation: typeof import('./src/composables/useFirestoreNavigation')['useFirestoreNavigation']
+  const useFirestoreStorage: typeof import('./src/composables/useFirestoreStorage')['useFirestoreStorage']
+  const useFirestoreStore: typeof import('./src/stores/firestore')['useFirestoreStore']
   const useFocus: typeof import('@vueuse/core')['useFocus']
   const useFocusWithin: typeof import('@vueuse/core')['useFocusWithin']
   const useFps: typeof import('@vueuse/core')['useFps']
@@ -217,6 +228,7 @@ declare global {
   const useMessagePublisher: typeof import('./src/composables/useMessagePublisher')['useMessagePublisher']
   const useMessageTemplatesStore: typeof import('./src/stores/messageTemplates')['useMessageTemplatesStore']
   const useMetricsStore: typeof import('./src/stores/metrics')['useMetricsStore']
+  const useModalManager: typeof import('./src/composables/useModalManager')['useModalManager']
   const useModel: typeof import('vue')['useModel']
   const useMounted: typeof import('@vueuse/core')['useMounted']
   const useMouse: typeof import('@vueuse/core')['useMouse']
@@ -250,11 +262,14 @@ declare global {
   const useQuery: typeof import('@tanstack/vue-query')['useQuery']
   const useQueryClient: typeof import('@tanstack/vue-query')['useQueryClient']
   const useRafFn: typeof import('@vueuse/core')['useRafFn']
+  const useRecursiveFirestoreNavigation: typeof import('./src/composables/useRecursiveFirestoreNavigation')['useRecursiveFirestoreNavigation']
+  const useRecursiveNavigation: typeof import('./src/composables/useRecursiveNavigation')['useRecursiveNavigation']
   const useRefHistory: typeof import('@vueuse/core')['useRefHistory']
   const useResizeObserver: typeof import('@vueuse/core')['useResizeObserver']
   const useRoute: typeof import('vue-router')['useRoute']
   const useRouter: typeof import('vue-router')['useRouter']
   const useSSRWidth: typeof import('@vueuse/core')['useSSRWidth']
+  const useSaveAndAddAnother: typeof import('./src/composables/useSaveAndAddAnother')['useSaveAndAddAnother']
   const useScreenOrientation: typeof import('@vueuse/core')['useScreenOrientation']
   const useScreenSafeArea: typeof import('@vueuse/core')['useScreenSafeArea']
   const useScriptTag: typeof import('@vueuse/core')['useScriptTag']
@@ -331,6 +346,18 @@ declare global {
   // @ts-ignore
   export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, ShallowRef, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
   import('vue')
+  // @ts-ignore
+  export type { FieldOperationContext } from './src/composables/useColumnFieldOperations'
+  import('./src/composables/useColumnFieldOperations')
+  // @ts-ignore
+  export type { Field } from './src/composables/useDocumentForm'
+  import('./src/composables/useDocumentForm')
+  // @ts-ignore
+  export type { FieldTypeInfo } from './src/composables/useFirestoreFields'
+  import('./src/composables/useFirestoreFields')
+  // @ts-ignore
+  export type { NavigationItem, NavigationLevel } from './src/composables/useRecursiveNavigation'
+  import('./src/composables/useRecursiveNavigation')
   // @ts-ignore
   export type { ServiceConnectionStatus } from './src/composables/useServiceConnections'
   import('./src/composables/useServiceConnections')

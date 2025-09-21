@@ -64,7 +64,8 @@ export default [
       'prefer-const': 'error',
       'no-var': 'error',
       'object-shorthand': 'error',
-      'prefer-template': 'error'
+      'prefer-template': 'error',
+      'no-unused-vars': ['error', { 'argsIgnorePattern': '^_' }]
     }
   },
 

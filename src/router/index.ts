@@ -389,6 +389,31 @@ const routes: RouteRecordRaw[] = [
                 ]
               }
             ]
+          },
+          // Firestore routes
+          {
+            path: 'firestore/collections',
+            children: [
+              {
+                path: '',
+                name: 'project-firestore-collections',
+                component: () => import('@/views/firestore/CollectionsView.vue'),
+                props: true,
+                meta: {
+                  title: 'Collections',
+                  description: 'Manage Firestore collections and documents',
+                  icon: 'CircleStackIcon',
+                  requiresAuth: true,
+                  requiresProject: true,
+                  breadcrumbs: [
+                    { label: 'Home', route: '/' },
+                    { label: ':projectId', route: '/projects/:projectId' },
+                    { label: 'Firestore' },
+                    { label: 'Collections' }
+                  ]
+                }
+              }
+            ]
           }
         ]
       },

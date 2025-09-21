@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  pubsub-emulator:
+    image: gcr.io/google.com/cloudsdktool/cloud-sdk:emulators
+    command: sh -c 'gcloud beta emulators pubsub start --host-port=0.0.0.0:8085'
+    ports:
+      - "8085:8085"
+    restart: unless-stopped
+
+  firestore-emulator:
+    image: gcr.io/google.com/cloudsdktool/cloud-sdk:emulators
+    command: sh -c 'gcloud beta emulators firestore start --host-port=0.0.0.0:8086'
+    ports:
+      - "8086:8086"
+    restart: unless-stopped
+
+  storage-emulator:
+    image: fsouza/fake-gcs-server
+    command: -scheme http
+    ports:
+      - "4443:4443"
+    restart: unless-stopped
+
+  gcp-emulator-ui:
+    image: ghcr.io/drehelis/gcp-emulator-ui:main
+    ports:
+      - "9090:80"
+    environment:
+      - PUBSUB_EMULATOR_URL=host.docker.internal:8085
+      - FIRESTORE_EMULATOR_URL=host.docker.internal:8086
+      - STORAGE_EMULATOR_URL=host.docker.internal:4443
+    depends_on:
+      - pubsub-emulator
+      - firestore-emulator
+      - storage-emulator
+    restart: unless-stopped
