@@ -11,6 +11,9 @@ https://github.com/user-attachments/assets/a578672c-4ecc-44ce-9fe1-ea606bbb775c
 
 > Supports `amd64` and `arm64` container images
 
+## Disclaimer
+This is an unofficial third-party application and is not affiliated with, endorsed by, or sponsored by Google LLC or Google Cloud Platform.
+
 ## Features
 
 ### Supported Emulators
