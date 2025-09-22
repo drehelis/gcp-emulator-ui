@@ -5,6 +5,7 @@
     size="5xl"
     :actions="modalActions"
     @close="handleClose"
+    @keydown.enter="handleEnterKey"
   >
     <div class="space-y-6">
       <!-- Collection Information -->
@@ -245,6 +246,14 @@ const handleClose = () => {
 const handleCancel = () => {
   isOpen.value = false
   resetForm()
+}
+
+const handleEnterKey = (event: KeyboardEvent) => {
+  // Only handle Enter if the form is valid and not currently loading
+  if (isFormValid.value && !documentForm.loading.value) {
+    event.preventDefault()
+    handleSave()
+  }
 }
 
 // Helper function to convert Firestore document fields to form fields

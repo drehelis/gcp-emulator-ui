@@ -15,6 +15,7 @@
       <div
         class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full flex flex-col max-h-[95vh] sm:max-h-[90vh]"
         :class="sizeClasses"
+        @keydown="emit('keydown', $event)"
       >
         <!-- Modal header -->
         <div v-if="title || $slots.header" class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-600 flex-shrink-0">
@@ -109,6 +110,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   close: []
+  keydown: [event: KeyboardEvent]
 }>()
 
 
