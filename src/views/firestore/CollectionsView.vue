@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-full bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+  <div class="h-full bg-gray-50 dark:bg-gray-900 transition-colors duration-200 flex flex-col">
     <!-- Page Header -->
     <PageHeader
       :collections-count="collections.length"
@@ -69,7 +69,7 @@
     </div>
 
     <!-- Desktop: Sliding Layout -->
-    <div class="hidden lg:block">
+    <div class="hidden lg:block flex-1">
       <SlidingContainer :slide-offset="navigation.slideOffset.value">
         <!-- Render each navigation level -->
         <div
@@ -163,7 +163,7 @@
     </div>
 
     <!-- Mobile: Single Column Navigation -->
-    <div class="lg:hidden h-full bg-white dark:bg-gray-800">
+    <div class="lg:hidden flex-1 bg-white dark:bg-gray-800">
       <!-- Show Collections List (Root Level) -->
       <div v-if="mobileCurrentLevel.view === 'collections'" class="h-full">
         <MobileCollectionsList
@@ -477,7 +477,6 @@ const getColumnTwoEmptyStateText = (levelIndex: number): string => {
 
 const getColumnTwoShowCollectionMenu = (levelIndex: number): boolean => {
   const level = navigation.navigationStack.value[levelIndex]
-  console.log('getColumnTwoShowCollectionMenu - levelIndex:', levelIndex, 'level:', level)
 
   // Show collection menu when we're viewing a collection's documents or subcollections
   return level?.type === 'collection' || level?.type === 'subcollection'
@@ -789,7 +788,6 @@ const handleColumnTwoSelectItem = async (levelIndex: number, item: NavigationIte
 
 const handleColumnTwoDeleteCollection = (levelIndex: number) => {
   const level = navigation.navigationStack.value[levelIndex]
-  console.log('handleColumnTwoDeleteCollection - levelIndex:', levelIndex, 'level:', level)
 
   if (level?.type === 'collection') {
     // For a collection level, we need to get the collection from the previous level's selectedItem
@@ -966,8 +964,6 @@ const confirmDeleteCollection = async () => {
                            collectionToDelete.path.includes('/documents/') &&
                            collectionToDelete.path.split('/documents/')[1].includes('/')
 
-    console.log('Is subcollection?', isSubcollection, 'Path:', collectionToDelete.path)
-
     if (isSubcollection) {
       // This is a subcollection - extract parent path and collection ID
       const pathParts = collectionToDelete.path.split('/')
@@ -1020,7 +1016,6 @@ const confirmDeleteCollection = async () => {
       documentSubcollections.value.set(parentPath, subcollections)
     } else {
       // This is a root collection
-      console.log('Deleting root collection:', collectionToDelete.id)
       await firestoreStore.deleteCollection(currentProjectId.value, collectionToDelete.id)
 
       // Navigate back if we deleted a currently selected collection
@@ -1264,7 +1259,6 @@ const handleCollectionCreated = async (collectionId: string) => {
     // Handle subcollection creation - we're not at root, so this is a subcollection
     // Use the document path that was set when creating the subcollection
     const targetDocumentPath = modalManager.subcollectionPath.value
-    console.log('handleCollectionCreated - subcollection created under:', targetDocumentPath)
 
     if (targetDocumentPath) {
       // Reload subcollections for the target document (not the currently selected one)

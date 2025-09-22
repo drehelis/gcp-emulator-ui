@@ -2,12 +2,21 @@
 
 A modern web interface for managing Google Cloud Platform emulator services 🎮
 
-[![Release](https://img.shields.io/github/release/drehelis/gcp-emulator-ui.svg?style=flat-square)](https://github.com/drehelis/gcp-emulator-ui/releases/latest)
-[![license](https://img.shields.io/github/license/drehelis/gcp-emulator-ui.svg?style=flat-square)](LICENSE)
+[![Release](https://img.shields.io/github/release/drehelis/gcp-emulator-ui.svg)](https://github.com/drehelis/gcp-emulator-ui/releases/latest)
+[![Release-Date](https://img.shields.io/github/release-date/drehelis/gcp-emulator-ui
+)](https://github.com/drehelis/gcp-emulator-ui/releases/latest)
+[![License](https://img.shields.io/github/license/drehelis/gcp-emulator-ui.svg)](LICENSE)
 
-https://github.com/user-attachments/assets/a578672c-4ecc-44ce-9fe1-ea606bbb775c
+<p align="center">
+  <p><img width="2354" height="1436" alt="pubsub_screen" src="https://github.com/user-attachments/assets/3048bb53-0f6f-415a-8152-35734707206e" /></p>
+  <p><img width="2354" height="1436" alt="bucket_screen" src="https://github.com/user-attachments/assets/d0494da1-ece9-4a6c-9e08-a31d1cb684f5" /></p>
+  <p><img width="2354" height="1436" alt="firestore_screen" src="https://github.com/user-attachments/assets/17bdc291-cbca-44d3-be44-fcb01b008359" /></p>
+</p>
 
 > Supports `amd64` and `arm64` container images
+
+## Disclaimer
+This is an unofficial third-party application and is not affiliated with, endorsed by, or sponsored by Google LLC or Google Cloud Platform.
 
 ## Features
 

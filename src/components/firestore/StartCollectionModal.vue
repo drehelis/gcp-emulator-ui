@@ -38,6 +38,7 @@
               placeholder="Enter collection ID (e.g., users, posts)"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
               :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-500': !collectionId.trim() && hasValidationError }"
+              @keydown.enter="handleEnterKey"
             />
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
               Choose an ID that describes the documents you'll add to this collection.
@@ -259,6 +260,14 @@ const handleClose = () => {
 const handleCancel = () => {
   isOpen.value = false
   resetForm()
+}
+
+const handleEnterKey = (event: KeyboardEvent) => {
+  // Only handle Enter if the form is valid and not currently loading
+  if (isFormValid.value && !documentForm.loading.value) {
+    event.preventDefault()
+    handleSave()
+  }
 }
 
 // Watch for modelValue prop changes to reset form and focus input

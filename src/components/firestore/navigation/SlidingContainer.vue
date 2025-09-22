@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen-header overflow-hidden">
+  <div class="h-full overflow-hidden">
     <div
       class="flex transition-transform duration-300 ease-in-out h-full"
       :style="{ transform: `translateX(${slideOffset}%)` }"
