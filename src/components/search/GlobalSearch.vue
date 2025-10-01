@@ -95,23 +95,29 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { MagnifyingGlassIcon, ClockIcon, QueueListIcon, InboxStackIcon, DocumentTextIcon, ArchiveBoxIcon, DocumentIcon } from '@heroicons/vue/24/outline'
+import { MagnifyingGlassIcon, ClockIcon, QueueListIcon, InboxStackIcon, DocumentTextIcon, ArchiveBoxIcon, DocumentIcon, CircleStackIcon } from '@heroicons/vue/24/outline'
 import { topicsApi, subscriptionsApi } from '@/api/pubsub'
 import storageApi from '@/api/storage'
+import firestoreApi from '@/api/firestore'
 import { useMessageTemplatesStore } from '@/stores/messageTemplates'
 import { useTopicsStore } from '@/stores/topics'
 import { useStorageStore } from '@/stores/storage'
+import { useFirestoreStore } from '@/stores/firestore'
 import type { PubSubTopic, PubSubSubscription, MessageTemplate, StorageBucket, StorageObjectWithPreview } from '@/types'
+import type { FirestoreCollectionWithMetadata } from '@/types/firestore'
 
 interface SearchResult {
   title: string
   description?: string
-  type: 'topic' | 'subscription' | 'template' | 'bucket' | 'object'
+  type: 'topic' | 'subscription' | 'template' | 'bucket' | 'object' | 'collection' | 'document'
   icon: any
   route: string
   focusTarget?: string
   bucket?: string
   objectPath?: string
+  collectionId?: string
+  documentPath?: string
+  pathString?: string // For Firestore navigation path
 }
 
 const router = useRouter()
@@ -119,6 +125,7 @@ const route = useRoute()
 const messageTemplatesStore = useMessageTemplatesStore()
 const topicsStore = useTopicsStore()
 const storageStore = useStorageStore()
+const firestoreStore = useFirestoreStore()
 
 const searchInput = ref<HTMLInputElement>()
 const searchQuery = ref('')
@@ -134,6 +141,7 @@ const allSubscriptions = ref<PubSubSubscription[]>([])
 const allTemplates = ref<MessageTemplate[]>([])
 const allBuckets = ref<StorageBucket[]>([])
 const allObjects = ref<StorageObjectWithPreview[]>([])
+const allCollections = ref<FirestoreCollectionWithMetadata[]>([])
 
 // Configuration constants
 const SEARCH_CONFIG = {
@@ -142,8 +150,12 @@ const SEARCH_CONFIG = {
   REFRESH_INTERVAL: 30000, // 30 seconds refresh interval
   MIN_QUERY_LENGTH_FOR_OBJECTS: 2, // Minimum query length to search objects
   MIN_QUERY_LENGTH_FOR_PATTERNS: 3, // Minimum query length for pattern matching
+  MIN_QUERY_LENGTH_FOR_DOCUMENTS: 3, // Minimum query length to search Firestore documents
   MAX_BUCKETS_TO_SEARCH: 3, // Maximum buckets to search per query
   MAX_OBJECTS_PER_BUCKET: 50, // Maximum objects to fetch per bucket
+  MAX_COLLECTIONS_TO_SEARCH: 5, // Maximum collections to search for documents
+  MAX_DOCUMENTS_PER_COLLECTION: 100, // Maximum documents to fetch per collection
+  MAX_SUBCOLLECTION_DEPTH: 3, // Maximum depth to search in subcollections
   COMMON_BUCKET_PREFIXES: ['tmp', 'temp', 'data', 'files', 'uploads', 'assets', 'logs', 'backup', 'cache']
 } as const
 
@@ -167,11 +179,13 @@ const dataCache = ref<{
   subscriptions: { data: PubSubSubscription[], timestamp: number } | null
   templates: { data: MessageTemplate[], timestamp: number } | null
   buckets: { data: StorageBucket[], timestamp: number } | null
+  collections: { data: FirestoreCollectionWithMetadata[], timestamp: number } | null
 }>({
   topics: null,
   subscriptions: null,
   templates: null,
-  buckets: null
+  buckets: null,
+  collections: null
 })
 
 // Helper to check if cache is valid
@@ -242,7 +256,201 @@ const loadSearchData = async () => {
     allBuckets.value = dataCache.value.buckets.data
   }
 
+  // Load Firestore collections with caching
+  if (!isCacheValid(dataCache.value.collections)) {
+    try {
+      await firestoreStore.loadCollections(currentProjectId.value)
+      dataCache.value.collections = { data: firestoreStore.collections || [], timestamp: Date.now() }
+      allCollections.value = dataCache.value.collections.data
+    } catch (error) {
+      console.warn('Failed to load Firestore collections:', error)
+      allCollections.value = []
+    }
+  } else {
+    allCollections.value = dataCache.value.collections.data
+  }
+
   // DON'T load all objects immediately - only load when searching for objects
+}
+
+// Helper to recursively search through document fields
+const searchInDocumentFields = (fields: any, query: string, path: string = ''): { found: boolean; matchedPath: string; matchedValue: string } | null => {
+  if (!fields) return null
+
+  const lowerQuery = query.toLowerCase()
+
+  for (const [key, value] of Object.entries(fields)) {
+    const currentPath = path ? `${path}.${key}` : key
+
+    // Check if key matches
+    if (key.toLowerCase().includes(lowerQuery)) {
+      return {
+        found: true,
+        matchedPath: currentPath,
+        matchedValue: `field: ${key}`
+      }
+    }
+
+    // Check value based on type
+    if (value && typeof value === 'object') {
+      // Handle Firestore value types
+      if ('stringValue' in value && typeof value.stringValue === 'string') {
+        if (value.stringValue.toLowerCase().includes(lowerQuery)) {
+          return {
+            found: true,
+            matchedPath: currentPath,
+            matchedValue: value.stringValue
+          }
+        }
+      } else if ('integerValue' in value && value.integerValue?.toString().includes(query)) {
+        return {
+          found: true,
+          matchedPath: currentPath,
+          matchedValue: value.integerValue.toString()
+        }
+      } else if ('doubleValue' in value && value.doubleValue?.toString().includes(query)) {
+        return {
+          found: true,
+          matchedPath: currentPath,
+          matchedValue: value.doubleValue.toString()
+        }
+      } else if ('booleanValue' in value && value.booleanValue?.toString().toLowerCase().includes(lowerQuery)) {
+        return {
+          found: true,
+          matchedPath: currentPath,
+          matchedValue: value.booleanValue.toString()
+        }
+      } else if ('mapValue' in value && value.mapValue?.fields) {
+        // Recursively search nested maps
+        const nestedResult = searchInDocumentFields(value.mapValue.fields, query, currentPath)
+        if (nestedResult) return nestedResult
+      } else if ('arrayValue' in value && value.arrayValue?.values) {
+        // Search through array values
+        for (let i = 0; i < value.arrayValue.values.length; i++) {
+          const arrayItem = value.arrayValue.values[i]
+          const arrayPath = `${currentPath}[${i}]`
+
+          if (arrayItem && typeof arrayItem === 'object') {
+            if ('stringValue' in arrayItem && arrayItem.stringValue?.toLowerCase().includes(lowerQuery)) {
+              return {
+                found: true,
+                matchedPath: arrayPath,
+                matchedValue: arrayItem.stringValue
+              }
+            } else if ('mapValue' in arrayItem && arrayItem.mapValue?.fields) {
+              const nestedResult = searchInDocumentFields(arrayItem.mapValue.fields, query, arrayPath)
+              if (nestedResult) return nestedResult
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return null
+}
+
+// Lazy load and search Firestore documents deeply
+const loadDocumentsForSearch = async (query: string): Promise<SearchResult[]> => {
+  const results: SearchResult[] = []
+  const lowerQuery = query.toLowerCase()
+  const databasePath = firestoreStore.getCurrentDatabasePath(currentProjectId.value)
+
+  // Get collections to search (all collections or filtered by query)
+  const collectionsToSearch = allCollections.value
+    .filter(col => {
+      const colId = col.id || col.name || ''
+      // Search all collections if query is generic, or filter if query seems specific
+      return colId.toLowerCase().includes(lowerQuery) || allCollections.value.length <= SEARCH_CONFIG.MAX_COLLECTIONS_TO_SEARCH
+    })
+    .slice(0, SEARCH_CONFIG.MAX_COLLECTIONS_TO_SEARCH)
+
+  // Recursive function to search documents in a collection/subcollection
+  const searchCollectionDocuments = async (
+    parentPath: string,
+    collectionId: string,
+    depth: number,
+    breadcrumb: string[],
+    isSubcollection: boolean = false
+  ): Promise<void> => {
+    if (depth > SEARCH_CONFIG.MAX_SUBCOLLECTION_DEPTH) return
+
+    try {
+      // Use different API methods for top-level vs subcollections
+      const response = isSubcollection
+        ? await firestoreApi.listSubcollectionDocuments(parentPath, collectionId)
+        : await firestoreApi.listDocuments(parentPath, collectionId)
+
+      for (const doc of response.documents.slice(0, SEARCH_CONFIG.MAX_DOCUMENTS_PER_COLLECTION)) {
+        const docId = doc.name.split('/').pop() || ''
+        const docPath = [...breadcrumb, collectionId, docId].join(' > ')
+        // Build navigation path string (e.g., "/ > collection-1 > doc-id > sub-collection > doc-id2")
+        const pathString = `/ > ${docPath}`
+
+        // Search in document ID
+        if (docId.toLowerCase().includes(lowerQuery)) {
+          results.push({
+            title: docId,
+            description: `Document ID in ${docPath}`,
+            type: 'document',
+            icon: DocumentIcon,
+            route: `/projects/${currentProjectId.value}/firestore/collections`,
+            focusTarget: docId,
+            collectionId,
+            documentPath: doc.name,
+            pathString
+          })
+        }
+
+        // Search in document fields
+        if (doc.fields) {
+          const fieldMatch = searchInDocumentFields(doc.fields, query)
+          if (fieldMatch) {
+            results.push({
+              title: docId,
+              description: `${fieldMatch.matchedPath}: "${fieldMatch.matchedValue.substring(0, 50)}${fieldMatch.matchedValue.length > 50 ? '...' : ''}" in ${docPath}`,
+              type: 'document',
+              icon: DocumentIcon,
+              route: `/projects/${currentProjectId.value}/firestore/collections`,
+              focusTarget: docId,
+              collectionId,
+              documentPath: doc.name,
+              pathString
+            })
+          }
+        }
+
+        // Search subcollections recursively
+        if (depth < SEARCH_CONFIG.MAX_SUBCOLLECTION_DEPTH) {
+          try {
+            const subcollectionsResponse = await firestoreApi.listSubcollections(doc.name)
+
+            for (const subcollection of subcollectionsResponse.collections) {
+              const subCollectionId = subcollection.id || subcollection.name.split('/').pop() || ''
+              await searchCollectionDocuments(
+                doc.name,
+                subCollectionId,
+                depth + 1,
+                [...breadcrumb, collectionId, docId],
+                true  // This is a subcollection
+              )
+            }
+          } catch {
+            // No subcollections or error, continue
+          }
+        }
+      }
+    } catch (error) {
+      console.warn(`Failed to search collection ${collectionId}:`, error)
+    }
+  }
+
+  // Search each top-level collection
+  for (const collection of collectionsToSearch) {
+    await searchCollectionDocuments(databasePath, collection.id, 0, [], false)
+  }
+
+  return results
 }
 
 // Helper functions for bucket filtering logic
@@ -467,6 +675,37 @@ const performSearch = async (query: string) => {
     }
   }
 
+  // Search through Firestore collections
+  allCollections.value.forEach(collection => {
+    const collectionId = collection.id || collection.name || ''
+    const documentCount = collection.documentCount || 0
+    // Build navigation path string for root collections
+    const pathString = `/ > ${collectionId}`
+
+    if (collectionId.toLowerCase().includes(lowerQuery)) {
+      results.push({
+        title: collectionId,
+        description: `Collection with ${documentCount} document${documentCount === 1 ? '' : 's'}`,
+        type: 'collection',
+        icon: CircleStackIcon,
+        route: `/projects/${currentProjectId.value}/firestore/collections`,
+        focusTarget: collectionId,
+        collectionId,
+        pathString
+      })
+    }
+  })
+
+  // Deep search through Firestore documents and fields (lazy loaded)
+  if (query.length >= SEARCH_CONFIG.MIN_QUERY_LENGTH_FOR_DOCUMENTS) {
+    try {
+      const documentResults = await loadDocumentsForSearch(query)
+      results.push(...documentResults)
+    } catch (error) {
+      console.warn('Failed to search Firestore documents:', error)
+    }
+  }
+
   // Sort results by relevance (exact matches first)
   results.sort((a, b) => {
     const aExact = a.title.toLowerCase() === lowerQuery
@@ -482,7 +721,7 @@ const performSearch = async (query: string) => {
 
 const groupedResults = computed(() => {
   const groups: Record<string, SearchResult[]> = {}
-  
+
   searchResults.value.forEach(result => {
     let groupName = ''
     switch (result.type) {
@@ -501,16 +740,22 @@ const groupedResults = computed(() => {
       case 'object':
         groupName = 'Storage Objects'
         break
+      case 'collection':
+        groupName = 'Firestore Collections'
+        break
+      case 'document':
+        groupName = 'Firestore Documents'
+        break
       default:
         groupName = 'Other'
     }
-    
+
     if (!groups[groupName]) {
       groups[groupName] = []
     }
     groups[groupName].push(result)
   })
-  
+
   return groups
 })
 
@@ -575,10 +820,24 @@ const selectResult = (result: SearchResult) => {
           targetRoute = `/projects/${currentProjectId.value}/storage/buckets/${encodeURIComponent(result.bucket)}/objects/${encodeURIComponent(result.objectPath)}`
         }
       }
+    } else if (result.type === 'collection') {
+      // For collections, navigate to Firestore collections page with path navigation
+      targetRoute = `/projects/${currentProjectId.value}/firestore/collections`
+    } else if (result.type === 'document') {
+      // For documents, navigate to Firestore collections page with path navigation
+      targetRoute = `/projects/${currentProjectId.value}/firestore/collections`
     }
   }
 
-  router.push(targetRoute)
+  // For Firestore results, pass the pathString via router state to trigger auto-navigation
+  if ((result.type === 'collection' || result.type === 'document') && result.pathString) {
+    router.push({
+      path: targetRoute,
+      state: { navigateToPath: result.pathString }
+    })
+  } else {
+    router.push(targetRoute)
+  }
 
   // Close search
   isOpen.value = false
@@ -643,13 +902,15 @@ watch(currentProjectId, (newProjectId) => {
     allTemplates.value = []
     allBuckets.value = []
     allObjects.value = []
+    allCollections.value = []
     searchResults.value = []
     // Clear cache
     dataCache.value = {
       topics: null,
       subscriptions: null,
       templates: null,
-      buckets: null
+      buckets: null,
+      collections: null
     }
   }
 }, { immediate: true })
@@ -681,6 +942,12 @@ watch(() => storageStore.objects, (newObjects) => {
 watch(() => messageTemplatesStore.templates, (newTemplates) => {
   if (newTemplates) {
     allTemplates.value = newTemplates
+  }
+}, { deep: true })
+
+watch(() => firestoreStore.collections, (newCollections) => {
+  if (newCollections) {
+    allCollections.value = newCollections
   }
 }, { deep: true })
 
