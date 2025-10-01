@@ -4,6 +4,7 @@ import { useMessageTemplatesStore } from '@/stores/messageTemplates'
 import { topicsApi, subscriptionsApi } from '@/api/pubsub'
 import type { PubSubTopic, PubSubSubscription, CreateTopicRequest, CreateSubscriptionRequest } from '@/types'
 import type { MessageTemplate } from '@/utils/templateStorage'
+import { downloadFile, extractTopicName, extractSubscriptionName } from '@/utils/importExportUtils'
 
 interface TopicSubscriptionConfig {
   topic_name: string
@@ -37,33 +38,6 @@ export function usePubSubImportExport() {
     pubsub: false,
     templates: false
   })
-
-  // Utility functions
-  const extractTopicName = (fullName: string): string => {
-    if (fullName.includes('/topics/')) {
-      return fullName.split('/topics/')[1]
-    }
-    return fullName
-  }
-
-  const extractSubscriptionName = (fullName: string): string => {
-    if (fullName.includes('/subscriptions/')) {
-      return fullName.split('/subscriptions/')[1]
-    }
-    return fullName
-  }
-
-  const downloadFile = (content: string, filename: string, mimeType: string) => {
-    const blob = new Blob([content], { type: mimeType })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  }
 
   // Load data
   const loadData = async (projectId: string) => {

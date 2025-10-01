@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { useStorageStore } from '@/stores/storage'
 import type { StorageBucket, CreateBucketRequest } from '@/types/storage'
+import { downloadFile } from '@/utils/importExportUtils'
 
 interface StorageBucketConfig {
   name: string
@@ -20,18 +21,6 @@ export function useStorageImportExport() {
   const buckets = ref<StorageBucket[]>([])
   const isExporting = ref(false)
   const isImporting = ref(false)
-
-  const downloadFile = (content: string, filename: string, mimeType: string) => {
-    const blob = new Blob([content], { type: mimeType })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = filename
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(url)
-  }
 
   // Load data
   const loadData = async () => {
