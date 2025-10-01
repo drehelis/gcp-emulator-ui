@@ -196,6 +196,7 @@ declare global {
   const useFileSystemAccess: typeof import('@vueuse/core')['useFileSystemAccess']
   const useFirestoreActions: typeof import('./src/composables/useFirestoreActions')['useFirestoreActions']
   const useFirestoreFields: typeof import('./src/composables/useFirestoreFields')['useFirestoreFields']
+  const useFirestoreImportExport: typeof import('./src/composables/useFirestoreImportExport')['useFirestoreImportExport']
   const useFirestoreNavigation: typeof import('./src/composables/useFirestoreNavigation')['useFirestoreNavigation']
   const useFirestoreStorage: typeof import('./src/composables/useFirestoreStorage')['useFirestoreStorage']
   const useFirestoreStore: typeof import('./src/stores/firestore')['useFirestoreStore']
@@ -259,6 +260,7 @@ declare global {
   const usePreferredReducedTransparency: typeof import('@vueuse/core')['usePreferredReducedTransparency']
   const usePrevious: typeof import('@vueuse/core')['usePrevious']
   const useProjectsStore: typeof import('./src/stores/projects')['useProjectsStore']
+  const usePubSubImportExport: typeof import('./src/composables/usePubSubImportExport')['usePubSubImportExport']
   const useQuery: typeof import('@tanstack/vue-query')['useQuery']
   const useQueryClient: typeof import('@tanstack/vue-query')['useQueryClient']
   const useRafFn: typeof import('@vueuse/core')['useRafFn']
@@ -286,6 +288,7 @@ declare global {
   const useStepper: typeof import('@vueuse/core')['useStepper']
   const useStorage: typeof import('@vueuse/core')['useStorage']
   const useStorageAsync: typeof import('@vueuse/core')['useStorageAsync']
+  const useStorageImportExport: typeof import('./src/composables/useStorageImportExport')['useStorageImportExport']
   const useStorageStore: typeof import('./src/stores/storage')['useStorageStore']
   const useStyleTag: typeof import('@vueuse/core')['useStyleTag']
   const useSupported: typeof import('@vueuse/core')['useSupported']
@@ -355,6 +358,9 @@ declare global {
   // @ts-ignore
   export type { FieldTypeInfo } from './src/composables/useFirestoreFields'
   import('./src/composables/useFirestoreFields')
+  // @ts-ignore
+  export type { FirestoreDocumentExport, FirestoreCollectionExport } from './src/composables/useFirestoreImportExport'
+  import('./src/composables/useFirestoreImportExport')
   // @ts-ignore
   export type { NavigationItem, NavigationLevel } from './src/composables/useRecursiveNavigation'
   import('./src/composables/useRecursiveNavigation')

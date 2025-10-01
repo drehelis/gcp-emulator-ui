@@ -147,7 +147,7 @@
 
       <!-- Import Options -->
       <div class="mt-4 space-y-3">
-        <div v-if="importType === 'config' || importType === 'storage'">
+        <div v-if="importType === 'config' || importType === 'storage' || importType === 'firestore'">
           <div class="flex items-center" v-if="importType === 'config'">
             <input
               id="create-topics"
@@ -178,7 +178,7 @@
               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:checked:bg-blue-600"
             />
             <label for="overwrite-existing" class="ml-2 block text-xs sm:text-sm text-gray-900 dark:text-white">
-              {{ importType === 'storage' ? 'Overwrite existing buckets' : 'Overwrite existing configurations' }}
+              {{ importType === 'storage' ? 'Overwrite existing buckets' : importType === 'firestore' ? 'Overwrite existing documents' : 'Overwrite existing configurations' }}
             </label>
           </div>
         </div>
@@ -277,6 +277,8 @@ const getFileTypeLabel = () => {
       return 'Template'
     case 'storage':
       return 'Bucket Configuration'
+    case 'firestore':
+      return 'Firestore Collections'
     default:
       return 'Configuration'
   }
@@ -290,6 +292,8 @@ const getPlaceholderText = () => {
       return 'Paste your JSON templates here...'
     case 'storage':
       return 'Paste your JSON bucket configurations here...'
+    case 'firestore':
+      return 'Paste your JSON collections and documents here...'
     default:
       return 'Paste your JSON data here...'
   }
@@ -303,6 +307,8 @@ const getHelpText = () => {
       return 'Paste your JSON array of message templates'
     case 'storage':
       return 'Paste your JSON array of bucket configurations'
+    case 'firestore':
+      return 'Paste your JSON array of Firestore collections with documents'
     default:
       return 'Paste your JSON data'
   }
@@ -314,6 +320,8 @@ const getPreviewLabel = () => {
       return 'template'
     case 'storage':
       return 'bucket configuration'
+    case 'firestore':
+      return 'collection'
     default:
       return 'configuration'
   }
@@ -325,6 +333,8 @@ const getImportButtonLabel = () => {
       return 'Templates'
     case 'storage':
       return 'Bucket Configurations'
+    case 'firestore':
+      return 'Collections'
     default:
       return 'Configuration'
   }
@@ -380,6 +390,13 @@ const validateImportData = (configurations: any[]) => {
       for (const item of configurations) {
         if (!item.name) {
           throw new Error('Each bucket configuration must have a name field')
+        }
+      }
+      break
+    case 'firestore':
+      for (const item of configurations) {
+        if (!item.collectionId || !item.documents) {
+          throw new Error('Each collection must have collectionId and documents fields')
         }
       }
       break

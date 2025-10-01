@@ -1,5 +1,25 @@
 <template>
   <div class="h-full bg-gray-50 dark:bg-gray-900 transition-colors duration-200 flex flex-col">
+    <!-- Loading indicator for path navigation -->
+    <Transition
+      enter-active-class="transition ease-out duration-200"
+      enter-from-class="opacity-0 translate-y-1"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition ease-in duration-150"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 translate-y-1"
+    >
+      <div
+        v-if="isNavigatingToPath"
+        class="absolute top-4 left-1/2 transform -translate-x-1/2 z-50"
+      >
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center space-x-3">
+          <div class="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-500"></div>
+          <p class="text-sm text-gray-700 dark:text-gray-300">Navigating to document...</p>
+        </div>
+      </div>
+    </Transition>
+
     <!-- Page Header -->
     <PageHeader
       :collections-count="collections.length"
@@ -360,6 +380,9 @@ const { getFieldType, getEditableValue } = useFirestoreFields()
 // Local state for caching subcollections
 const documentSubcollections = ref<Map<string, FirestoreCollectionWithMetadata[]>>(new Map())
 const deepNavigation = useDeepNavigation(navigation.navigationStack, documentSubcollections)
+
+// Loading state for path navigation from search
+const isNavigatingToPath = ref(false)
 
 // Mobile navigation state - enhanced for deep navigation
 type MobileView = 'collections' | 'documents' | 'document' | 'subcollection'
@@ -874,7 +897,12 @@ const handleNavigateToSubcollection = async (levelIndex: number, subcollection: 
 
 // Path-based navigation handler
 const handleNavigateToPath = async (pathString: string) => {
-  await navigation.navigateToPath(pathString, firestoreStore, currentProjectId.value, documentSubcollections)
+  isNavigatingToPath.value = true
+  try {
+    await navigation.navigateToPath(pathString, firestoreStore, currentProjectId.value, documentSubcollections)
+  } finally {
+    isNavigatingToPath.value = false
+  }
 }
 
 // Utility functions
@@ -1470,8 +1498,15 @@ watch(currentProjectId, async (newProjectId, oldProjectId) => {
 }, { immediate: false })
 
 onMounted(async () => {
-  await initializeData()
   document.addEventListener('keydown', handleKeyDown)
+
+  await initializeData()
+
+  // Check if we need to navigate to a specific path from search results
+  const navigateToPath = window.history.state?.navigateToPath
+  if (navigateToPath) {
+    await handleNavigateToPath(navigateToPath)
+  }
 })
 
 onUnmounted(() => {

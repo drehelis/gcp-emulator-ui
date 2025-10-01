@@ -26,17 +26,18 @@ This is an unofficial third-party application and is not affiliated with, endors
    * Create, view, and manage Pub/Sub topics
    * Handle subscriptions with pull/push configurations
    * Publish messages with attributes and template variables
-   * Import/export configurations
+   * Import/export topics, subscriptions, and message templates
 
 - **Google Cloud Storage ([fake-gcs](https://github.com/fsouza/fake-gcs-server))**
    * Create, view, and manage Storage buckets
    * Support drag'n'drop files and folders
-   * Import/export configurations
+   * Import/export bucket configurations
 
 - **Google Firestore ([gcloud](https://cloud.google.com/firestore/native/docs/emulator))**
    * Create, view, and manage Collections
    * Document CRUD operations with field editing
    * Multiple databases support
+   * Import/export collections and documents
 
 - **Google Datastore mode ([gcloud](https://cloud.google.com/datastore/docs/tools/datastore-emulator))** - Coming soon
 
@@ -62,7 +63,7 @@ docker run \
 # Start Google Firestore emulator
 docker run \
    --rm \
-   --publish 8085:8085 \
+   --publish 8086:8086 \
    gcr.io/google.com/cloudsdktool/cloud-sdk:emulators sh -c 'gcloud beta emulators firestore start --host-port=0.0.0.0:8086'
 
 # Start fake-gcs emulator
