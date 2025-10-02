@@ -183,6 +183,11 @@ export default defineConfig({
         target: 'ws://localhost:8080',
         ws: true,
         changeOrigin: true
+      },
+      '/datastore': {
+        target: 'http://host.docker.internal:8087',
+        changeOrigin: true,
+        secure: false
       }
     }
   },

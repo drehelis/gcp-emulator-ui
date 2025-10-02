@@ -139,6 +139,26 @@
               </template>
             </div>
 
+            <!-- Datastore Section Container -->
+            <div v-else-if="item.id === 'datastore-section'" class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3">
+              <template v-for="subItem in item.children" :key="subItem.id">
+                <NavItem
+                  :to="subItem.route"
+                  :icon="subItem.icon"
+                  :label="subItem.label"
+                  :badge="subItem.badge"
+                  :disabled="subItem.disabled"
+                  :is-service-header="subItem.isServiceHeader"
+                  :is-sub-item="subItem.isSubItem"
+                  :is-section-header="subItem.isSectionHeader"
+                  :connected="subItem.connected"
+                  :is-collapsed="appStore.layout.sidebar.collapsed && !isMobile"
+                  :custom-classes="subItem.customClasses"
+                  @click="handleMobileNavClick"
+                />
+              </template>
+            </div>
+
             <!-- Other Items (Expanded Mode) -->
             <div v-else-if="!item.id.includes('-section') && !appStore.layout.sidebar.collapsed" class="mt-4">
               <router-link
@@ -292,6 +312,7 @@ import {
 
 import { useAppStore } from '@/stores/app'
 import { useProjectsStore } from '@/stores/projects'
+import { useDatastoreStore } from '@/stores/datastore'
 import { useServiceConnections } from '@/composables/useServiceConnections'
 import type { NavigationItem } from '@/types'
 
@@ -307,6 +328,7 @@ const {
   pubsubConnected,
   storageConnected,
   firestoreConnected,
+  datastoreConnected,
   checkAllConnections
 } = useServiceConnections()
 
@@ -463,6 +485,58 @@ const navigationItems = computed<NavigationItem[]>(() => {
       })
     }
 
+    // Datastore services with connection status
+    if (showDatastoreNav.value) {
+      const datastoreChildren: NavigationItem[] = []
+
+      // Datastore section header
+      datastoreChildren.push({
+        id: 'datastore-section-header',
+        label: 'Datastore',
+        route: null,
+        icon: null,
+        disabled: false,
+        isSectionHeader: true,
+        connected: datastoreConnected.value
+      })
+
+      // Only show Datastore navigation items when connected
+      if (datastoreConnected.value) {
+        const datastoreStore = useDatastoreStore()
+
+        // Show databases
+        if (datastoreStore.databases.length > 0) {
+          datastoreStore.databases.forEach(database => {
+            datastoreChildren.push({
+              id: `datastore-database-${database || 'default'}`,
+              label: database || '(default)',
+              route: `/projects/${currentProject.value}/datastore/namespaces`,
+              icon: CircleStackIcon,
+              disabled: false,
+              isSubItem: true
+            })
+          })
+        } else {
+          // Show default database if none loaded yet
+          datastoreChildren.push({
+            id: 'datastore-database-default',
+            label: '(default)',
+            route: `/projects/${currentProject.value}/datastore/namespaces`,
+            icon: CircleStackIcon,
+            disabled: false,
+            isSubItem: true
+          })
+        }
+      }
+
+      items.push({
+        id: 'datastore-section',
+        label: 'Datastore Section',
+        route: null,
+        children: datastoreChildren
+      })
+    }
+
   } else {
     // Collapsed sidebar navigation (icon only)
     items.push({
@@ -557,6 +631,27 @@ const navigationItems = computed<NavigationItem[]>(() => {
       })
     }
 
+    if (showDatastoreNav.value) {
+      // Add separator before Datastore section
+      items.push({
+        id: 'separator-datastore',
+        label: '',
+        route: null,
+        icon: null,
+        disabled: false,
+        isSeparator: true
+      })
+
+      items.push({
+        id: 'collapsed-datastore-namespaces',
+        label: 'Entities',
+        route: `/projects/${currentProject.value}/datastore/namespaces`,
+        icon: CircleStackIcon,
+        disabled: false,
+        customClasses: !datastoreConnected.value ? 'opacity-50' : ''
+      })
+    }
+
     // Add separator before Import/Export
     items.push({
       id: 'separator-import-export',
@@ -585,6 +680,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
 const showPubSubNav = computed(() => !!currentProject.value)
 const showStorageNav = computed(() => !!currentProject.value)
 const showFirestoreNav = computed(() => !!currentProject.value)
+const showDatastoreNav = computed(() => !!currentProject.value)
 
 // Watch for route changes and sync project selection
 watch(() => route.params.projectId, (newProjectId) => {

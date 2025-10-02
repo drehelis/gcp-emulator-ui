@@ -259,6 +259,106 @@
               </div>
             </div>
           </div>
+
+          <!-- Datastore Service -->
+          <div
+            class="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+            :class="{ 'opacity-75': !datastoreConnected }"
+            @click="navigateToService('datastore')"
+          >
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-4">
+                <div
+                  class="w-10 h-10 rounded-lg flex items-center justify-center"
+                  :class="[
+                    datastoreConnected
+                      ? 'bg-amber-100 dark:bg-amber-900/30'
+                      : 'bg-gray-100 dark:bg-gray-700'
+                  ]"
+                >
+                  <!-- Datastore Icon -->
+                  <svg
+                    class="w-6 h-6"
+                    :class="[
+                      datastoreConnected
+                        ? 'text-amber-600 dark:text-amber-400'
+                        : 'text-gray-400 dark:text-gray-500'
+                    ]"
+                    viewBox="0 0 24 24"
+                  >
+                    <g>
+                      <polygon fill="currentColor" opacity="0.4" points="7 6 8 5 2 5 3 6 7 6"/>
+                      <polygon fill="currentColor" opacity="0.7" points="7 6 7 10 8 11 8 5 7 6"/>
+                      <polygon fill="currentColor" opacity="0.4" points="3 6 2 5 2 11 3 10 3 6"/>
+                      <polygon fill="currentColor" opacity="0.8" points="3 10 2 11 8 11 7 10 3 10"/>
+                      <rect fill="currentColor" opacity="0.4" x="3" y="6" width="4" height="4"/>
+                      <polygon fill="currentColor" opacity="0.8" points="14 6 15 5 9 5 10 6 14 6"/>
+                      <polygon fill="currentColor" opacity="0.4" points="14 6 14 10 15 11 15 5 14 6"/>
+                      <polygon fill="currentColor" opacity="0.8" points="10 6 9 5 9 11 10 10 10 6"/>
+                      <polygon fill="currentColor" opacity="0.4" points="10 10 9 11 15 11 14 10 10 10"/>
+                      <rect fill="currentColor" opacity="1" x="10" y="6" width="4" height="4"/>
+                      <polygon fill="currentColor" opacity="0.8" points="21 6 22 5 16 5 17 6 21 6"/>
+                      <polygon fill="currentColor" opacity="0.4" points="21 6 21 10 22 11 22 5 21 6"/>
+                      <polygon fill="currentColor" opacity="0.8" points="17 6 16 5 16 11 17 10 17 6"/>
+                      <polygon fill="currentColor" opacity="0.4" points="17 10 16 11 22 11 21 10 17 10"/>
+                      <rect fill="currentColor" opacity="1" x="17" y="6" width="4" height="4"/>
+                      <polygon fill="currentColor" opacity="0.8" points="7 14 8 13 2 13 3 14 7 14"/>
+                      <polygon fill="currentColor" opacity="0.4" points="7 14 7 18 8 19 8 13 7 14"/>
+                      <polygon fill="currentColor" opacity="0.8" points="3 14 2 13 2 19 3 18 3 14"/>
+                      <polygon fill="currentColor" opacity="0.4" points="3 18 2 19 8 19 7 18 3 18"/>
+                      <rect fill="currentColor" opacity="1" x="3" y="14" width="4" height="4"/>
+                      <polygon fill="currentColor" opacity="0.4" points="14 14 15 13 9 13 10 14 14 14"/>
+                      <polygon fill="currentColor" opacity="0.7" points="14 14 14 18 15 19 15 13 14 14"/>
+                      <polygon fill="currentColor" opacity="0.4" points="10 14 9 13 9 19 10 18 10 14"/>
+                      <polygon fill="currentColor" opacity="0.8" points="10 18 9 19 15 19 14 18 10 18"/>
+                      <rect fill="currentColor" opacity="0.4" x="10" y="14" width="4" height="4"/>
+                      <polygon fill="currentColor" opacity="0.4" points="21 14 22 13 16 13 17 14 21 14"/>
+                      <polygon fill="currentColor" opacity="0.7" points="21 14 21 18 22 19 22 13 21 14"/>
+                      <polygon fill="currentColor" opacity="0.4" points="17 14 16 13 16 19 17 18 17 14"/>
+                      <polygon fill="currentColor" opacity="0.8" points="17 18 16 19 22 19 21 18 17 18"/>
+                      <rect fill="currentColor" opacity="0.4" x="17" y="14" width="4" height="4"/>
+                    </g>
+                  </svg>
+                </div>
+
+                <div>
+                  <h3
+                    class="text-sm font-medium"
+                    :class="[
+                      datastoreConnected
+                        ? 'text-gray-900 dark:text-white'
+                        : 'text-gray-500 dark:text-gray-400'
+                    ]"
+                  >
+                    Datastore
+                  </h3>
+                  <p
+                    class="text-xs"
+                    :class="[
+                      datastoreConnected
+                        ? 'text-gray-500 dark:text-gray-400'
+                        : 'text-gray-400 dark:text-gray-500'
+                    ]"
+                  >
+                    <span v-if="datastoreConnected">Entity kinds and namespaces</span>
+                    <span v-else>Emulator not running</span>
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-center space-x-3">
+                <!-- Arrow -->
+                <ArrowTopRightOnSquareIcon
+                  v-if="datastoreConnected"
+                  class="w-4 h-4 text-gray-400 dark:text-gray-500"
+                />
+                <ExclamationTriangleIcon
+                  v-else
+                  class="w-4 h-4 text-red-600 dark:text-red-400"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -284,6 +384,7 @@ const {
   pubsubConnected,
   storageConnected,
   firestoreConnected,
+  datastoreConnected,
   checkAllConnections
 } = useServiceConnections()
 
@@ -304,7 +405,7 @@ const checkAllConnectionsWithLoading = async () => {
   }
 }
 
-const navigateToService = (service: 'pubsub' | 'storage' | 'firestore') => {
+const navigateToService = (service: 'pubsub' | 'storage' | 'firestore' | 'datastore') => {
   // Don't navigate if service is disconnected
   if (service === 'pubsub' && !pubsubConnected.value) {
     appStore.showToast({
@@ -333,6 +434,15 @@ const navigateToService = (service: 'pubsub' | 'storage' | 'firestore') => {
     return
   }
 
+  if (service === 'datastore' && !datastoreConnected.value) {
+    appStore.showToast({
+      type: 'error',
+      title: 'Service Unavailable',
+      message: 'Datastore emulator is not running or unreachable'
+    })
+    return
+  }
+
   const projectId = currentProjectId.value
 
   if (service === 'pubsub') {
@@ -341,6 +451,8 @@ const navigateToService = (service: 'pubsub' | 'storage' | 'firestore') => {
     router.push(`/projects/${projectId}/storage/buckets`)
   } else if (service === 'firestore') {
     router.push(`/projects/${projectId}/firestore/collections`)
+  } else if (service === 'datastore') {
+    router.push(`/projects/${projectId}/datastore/namespaces`)
   }
 }
 

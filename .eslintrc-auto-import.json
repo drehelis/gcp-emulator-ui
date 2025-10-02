@@ -185,6 +185,7 @@
     "useCurrentElement": true,
     "useCycleList": true,
     "useDark": true,
+    "useDatastoreStore": true,
     "useDateFormat": true,
     "useDebounce": true,
     "useDebounceFn": true,

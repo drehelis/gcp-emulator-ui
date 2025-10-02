@@ -6,12 +6,14 @@ export interface ServiceConnectionStatus {
     pubsub: boolean
     storage: boolean
     firestore: boolean
+    datastore: boolean
 }
 
 // Reactive connection status
 const pubsubConnected = ref(false)
 const storageConnected = ref(false)
 const firestoreConnected = ref(false)
+const datastoreConnected = ref(false)
 
 /**
  * Composable for managing GCP emulator service connections
@@ -75,19 +77,48 @@ export function useServiceConnections() {
     }
 
     /**
+     * Check Datastore emulator connection
+     */
+    const checkDatastoreConnection = async (): Promise<boolean> => {
+        try {
+            const baseUrl = import.meta.env.VITE_DATASTORE_BASE_URL || '/datastore'
+            // Try a simple query to check connection
+            const response = await fetch(`${baseUrl}/v1/projects/test-project:runQuery`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    partitionId: { projectId: 'test-project' },
+                    query: { kind: [{ name: '__kind__' }], limit: 1 }
+                }),
+                signal: AbortSignal.timeout(3000)
+            })
+            datastoreConnected.value = response.ok || response.status === 400 // 400 is also OK (means emulator is running)
+            return datastoreConnected.value
+        } catch (error) {
+            console.warn('Datastore emulator connection check failed:', error)
+            datastoreConnected.value = false
+            return false
+        }
+    }
+
+    /**
      * Check all service connections
      */
     const checkAllConnections = async (): Promise<ServiceConnectionStatus> => {
-        const [pubsub, storage, firestore] = await Promise.all([
+        const [pubsub, storage, firestore, datastore] = await Promise.all([
             checkPubSubConnection(),
             checkStorageConnection(),
-            checkFirestoreConnection()
+            checkFirestoreConnection(),
+            checkDatastoreConnection()
         ])
 
         return {
             pubsub,
             storage,
-            firestore
+            firestore,
+            datastore
         }
     }
 
@@ -96,11 +127,13 @@ export function useServiceConnections() {
         pubsubConnected,
         storageConnected,
         firestoreConnected,
+        datastoreConnected,
 
         // Methods
         checkPubSubConnection,
         checkStorageConnection,
         checkFirestoreConnection,
+        checkDatastoreConnection,
         checkAllConnections
     }
 }
