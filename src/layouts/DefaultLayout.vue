@@ -502,31 +502,14 @@ const navigationItems = computed<NavigationItem[]>(() => {
 
       // Only show Datastore navigation items when connected
       if (datastoreConnected.value) {
-        const datastoreStore = useDatastoreStore()
-
-        // Show databases
-        if (datastoreStore.databases.length > 0) {
-          datastoreStore.databases.forEach(database => {
-            datastoreChildren.push({
-              id: `datastore-database-${database || 'default'}`,
-              label: database || '(default)',
-              route: `/projects/${currentProject.value}/datastore/namespaces`,
-              icon: CircleStackIcon,
-              disabled: false,
-              isSubItem: true
-            })
-          })
-        } else {
-          // Show default database if none loaded yet
-          datastoreChildren.push({
-            id: 'datastore-database-default',
-            label: '(default)',
-            route: `/projects/${currentProject.value}/datastore/namespaces`,
-            icon: CircleStackIcon,
-            disabled: false,
-            isSubItem: true
-          })
-        }
+        datastoreChildren.push({
+          id: 'datastore-namespaces',
+          label: 'Namespaces',
+          route: `/projects/${currentProject.value}/datastore/namespaces`,
+          icon: CircleStackIcon,
+          disabled: false,
+          isSubItem: true
+        })
       }
 
       items.push({

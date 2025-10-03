@@ -46,11 +46,11 @@ export const useDatastoreStore = defineStore('datastore', () => {
     selectedNamespace.value = namespaceId
   }
 
-  // Load all databases
+  // Load all databases for the selected namespace
   const loadDatabases = async (projectId: string) => {
     try {
       loading.value = true
-      const databaseList = await datastoreApi.listDatabases(projectId)
+      const databaseList = await datastoreApi.listDatabases(projectId, selectedNamespace.value)
       databases.value = databaseList
 
       // Set default database if not selected
@@ -69,7 +69,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
   const loadNamespaces = async (projectId: string) => {
     try {
       loading.value = true
-      const namespaceList = await datastoreApi.listNamespaces(projectId)
+      const namespaceList = await datastoreApi.listNamespaces(projectId, selectedDatabase.value)
       namespaces.value = namespaceList
 
       // Set default namespace if not selected
@@ -88,7 +88,11 @@ export const useDatastoreStore = defineStore('datastore', () => {
   const loadKinds = async (projectId: string) => {
     try {
       loading.value = true
-      const kindNames = await datastoreApi.listKinds(projectId, selectedNamespace.value)
+      const kindNames = await datastoreApi.listKinds(
+        projectId,
+        selectedNamespace.value,
+        selectedDatabase.value
+      )
 
       kinds.value = kindNames.map(name => ({
         name,
@@ -98,13 +102,18 @@ export const useDatastoreStore = defineStore('datastore', () => {
         isExpanded: false
       }))
 
-      // Load entity counts for each kind
+      // OPTIMIZATION: Load entity counts with limit instead of fetching all entities
+      // Only fetch first 1000 entities to get accurate counts for small datasets
+      // For large datasets, we'll show "1000+" instead of exact count
       await Promise.all(
         kinds.value.map(async (kind) => {
           const kindEntities = await datastoreApi.getEntitiesByKind(
             projectId,
             kind.name,
-            selectedNamespace.value
+            selectedNamespace.value,
+            1000, // OPTIMIZATION: Limit to 1000 entities for counting
+            undefined,
+            selectedDatabase.value
           )
           kind.entityCount = kindEntities.length
         })
@@ -123,7 +132,10 @@ export const useDatastoreStore = defineStore('datastore', () => {
       const kindEntities = await datastoreApi.getEntitiesByKind(
         projectId,
         kind,
-        selectedNamespace.value
+        selectedNamespace.value,
+        undefined,
+        undefined,
+        selectedDatabase.value
       )
       entities.value.set(kind, kindEntities)
 
@@ -131,6 +143,21 @@ export const useDatastoreStore = defineStore('datastore', () => {
       const kindMetadata = kinds.value.find(k => k.name === kind)
       if (kindMetadata) {
         kindMetadata.entityCount = kindEntities.length
+      }
+
+      // Extract and track unique database IDs from entities
+      const discoveredDatabases = new Set(databases.value)
+      kindEntities.forEach(entity => {
+        const databaseId = entity.key?.partitionId?.databaseId
+        if (databaseId !== undefined) {
+          discoveredDatabases.add(databaseId)
+        }
+      })
+
+      // Update databases list if new databases were discovered
+      const newDatabasesList = Array.from(discoveredDatabases).sort()
+      if (JSON.stringify(newDatabasesList) !== JSON.stringify(databases.value)) {
+        databases.value = newDatabasesList
       }
     } catch (error) {
       console.error('Failed to load entities:', error)
@@ -249,7 +276,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
   const deleteKind = async (projectId: string, kind: string) => {
     try {
       loading.value = true
-      await datastoreApi.deleteKind(projectId, kind, selectedNamespace.value)
+      await datastoreApi.deleteKind(projectId, kind, selectedNamespace.value, selectedDatabase.value)
 
       // Remove from local state
       kinds.value = kinds.value.filter(k => k.name !== kind)

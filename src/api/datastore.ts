@@ -29,6 +29,43 @@ const datastoreClient = axios.create({
   },
 })
 
+// Simple in-memory cache for expensive list operations
+interface CacheEntry<T> {
+  data: T
+  timestamp: number
+}
+
+const cache = new Map<string, CacheEntry<any>>()
+const CACHE_TTL = 30000 // 30 seconds TTL
+
+function getCached<T>(key: string): T | null {
+  const entry = cache.get(key)
+  if (!entry) return null
+
+  const age = Date.now() - entry.timestamp
+  if (age > CACHE_TTL) {
+    cache.delete(key)
+    return null
+  }
+
+  return entry.data as T
+}
+
+function setCache<T>(key: string, data: T): void {
+  cache.set(key, { data, timestamp: Date.now() })
+}
+
+function clearCache(pattern?: string): void {
+  if (!pattern) {
+    cache.clear()
+    return
+  }
+
+  Array.from(cache.keys())
+    .filter(key => key.includes(pattern))
+    .forEach(key => cache.delete(key))
+}
+
 export const datastoreApi = {
   // Lookup entities by keys
   async lookup(request: LookupRequest): Promise<LookupResponse> {
@@ -66,49 +103,202 @@ export const datastoreApi = {
   },
 
   // List all kinds (entity types) in a project
-  async listKinds(projectId: string, namespaceId?: string): Promise<string[]> {
+  async listKinds(projectId: string, namespaceId?: string, databaseId?: string): Promise<string[]> {
     try {
-      // Query for __kind__ entities which contain all kinds
+      // Check cache first
+      const cacheKey = `kinds:${projectId}:${namespaceId || ''}:${databaseId || ''}`
+      const cached = getCached<string[]>(cacheKey)
+      if (cached) {
+        console.log('[Datastore API] Returning cached kinds')
+        return cached
+      }
+
+      console.log('[Datastore API] Listing kinds for:', { projectId, namespaceId: namespaceId || '(default)', databaseId: databaseId || '(default)' })
+
+      const kinds = new Set<string>()
+
+      // NOTE: The __kind__ meta-entities don't contain databaseId in their partition,
+      // so we need to query actual entity kinds to discover which kinds exist in a database.
+      // First, get all kind names from __kind__
+      const partitionId: any = {
+        projectId,
+        namespaceId: namespaceId || ''
+      }
+
       const request: RunQueryRequest = {
-        partitionId: {
-          projectId,
-          namespaceId: namespaceId || ''
-        },
+        partitionId,
         query: {
           kind: [{ name: '__kind__' }]
         }
       }
 
-      const response = await datastoreClient.post(`/v1/projects/${projectId}:runQuery`, request)
+      console.log('[Datastore API] Querying __kind__ to get all kind names...')
+      const kindResponse = await datastoreClient.post(`/v1/projects/${projectId}:runQuery`, request)
 
-      // Extract kind names from the results
-      const kinds = new Set<string>()
-      if (response.data.batch?.entityResults) {
-        response.data.batch.entityResults.forEach((result: any) => {
-          const entity = result.entity
-          if (entity?.key?.path?.[0]?.name) {
-            kinds.add(entity.key.path[0].name)
+      const allKindNames: string[] = []
+      if (kindResponse.data.batch?.entityResults) {
+        kindResponse.data.batch.entityResults.forEach((result: any) => {
+          const kindName = result.entity?.key?.path?.[0]?.name
+          if (kindName) {
+            allKindNames.push(kindName)
           }
         })
       }
 
-      return Array.from(kinds).sort()
+      console.log(`[Datastore API] Found ${allKindNames.length} total kinds:`, allKindNames)
+
+      // If no database filter, return all kinds
+      if (databaseId === undefined) {
+        return allKindNames.sort()
+      }
+
+      // If database filter is specified, query each kind to check which database it belongs to
+      // OPTIMIZATION: Parallelize queries instead of serial loop
+      console.log(`[Datastore API] Filtering kinds by database: ${databaseId}`)
+
+      const kindCheckPromises = allKindNames.map(async (kindName) => {
+        try {
+          // Query just 1 entity from this kind to check its database
+          const entityRequest: RunQueryRequest = {
+            partitionId,
+            query: {
+              kind: [{ name: kindName }],
+              limit: 1
+            }
+          }
+
+          const entityResponse = await datastoreClient.post(`/v1/projects/${projectId}:runQuery`, entityRequest)
+
+          if (entityResponse.data.batch?.entityResults?.[0]) {
+            const entity = entityResponse.data.batch.entityResults[0].entity
+            const entityDb = entity?.key?.partitionId?.databaseId || ''
+
+            console.log(`[Datastore API] Kind ${kindName} has database: "${entityDb}"`)
+
+            if (entityDb === databaseId) {
+              return kindName
+            }
+          }
+          return null
+        } catch (err) {
+          console.warn(`[Datastore API] Failed to query kind ${kindName}:`, err)
+          return null
+        }
+      })
+
+      // Wait for all queries to complete in parallel
+      const results = await Promise.all(kindCheckPromises)
+      results.forEach(kindName => {
+        if (kindName) kinds.add(kindName)
+      })
+
+      const result = Array.from(kinds).sort()
+      console.log('[Datastore API] Discovered kinds in database:', result)
+
+      // Cache the result
+      setCache(cacheKey, result)
+
+      return result
     } catch (error) {
-      console.warn('Failed to list kinds:', error)
+      console.error('[Datastore API] Failed to list kinds:', error)
       return []
     }
   },
 
-  // List all databases in a project
-  async listDatabases(projectId: string): Promise<string[]> {
+  // List all databases in a project for a specific namespace
+  async listDatabases(projectId: string, namespaceId?: string): Promise<string[]> {
     try {
-      // For emulator, we typically have the default database (empty string ID)
-      // In production, you'd query the Admin API
-      // The default database has database ID of empty string ""
-      // which maps to projects/{project}/databases/ in the API
-      return ['']
+      // Check cache first
+      const cacheKey = `databases:${projectId}:${namespaceId || ''}`
+      const cached = getCached<string[]>(cacheKey)
+      if (cached) {
+        console.log('[Datastore API] Returning cached databases')
+        return cached
+      }
+
+      console.log('[Datastore API] Listing databases for namespace:', namespaceId || '(default)')
+
+      // Query multiple kinds to discover databases from partition IDs
+      const databases = new Set<string>()
+
+      // OPTIMIZATION: Get actual kind names first (not special meta-kinds)
+      // Meta-kinds (__kind__, __namespace__, __property__) don't contain databaseId
+      // Call listKinds WITHOUT databaseId filter to get all kinds in namespace
+      const allKindNames = await this.listKinds(projectId, namespaceId, undefined)
+      console.log('[Datastore API] Found kinds for database discovery:', allKindNames)
+
+      if (allKindNames.length === 0) {
+        console.log('[Datastore API] No kinds found, returning default database')
+        return ['']
+      }
+
+      // Query a sample of actual kinds to discover databases (limit to first 3 for performance)
+      const kindsToQuery = allKindNames.slice(0, 3)
+
+      const partitionId: any = { projectId }
+      if (namespaceId !== undefined) {
+        partitionId.namespaceId = namespaceId
+      }
+
+      // OPTIMIZATION: Parallelize queries instead of serial loop
+      const queryPromises = kindsToQuery.map(async (kindName) => {
+        try {
+          const request: RunQueryRequest = {
+            partitionId,
+            query: {
+              kind: [{ name: kindName }],
+              limit: 10 // Only need a few entities to discover database
+            }
+          }
+
+          console.log(`[Datastore API] Querying ${kindName} for databases...`)
+          const response = await datastoreClient.post(`/v1/projects/${projectId}:runQuery`, request)
+
+          const foundDatabases: string[] = []
+          // Extract database IDs from entity partition IDs
+          if (response.data.batch?.entityResults) {
+            console.log(`[Datastore API] Found ${response.data.batch.entityResults.length} results for ${kindName}`)
+            response.data.batch.entityResults.forEach((result: any) => {
+              const resultNamespace = result.entity?.key?.partitionId?.namespaceId || ''
+              const databaseId = result.entity?.key?.partitionId?.databaseId
+
+              console.log(`[Datastore API] Entity in ${kindName}:`, {
+                namespace: resultNamespace,
+                databaseId: databaseId
+              })
+
+              // Only include if namespace matches (or if no namespace filter)
+              if (namespaceId === undefined || resultNamespace === namespaceId) {
+                // Add database (including empty string for default database)
+                foundDatabases.push(databaseId !== undefined ? databaseId : '')
+              }
+            })
+          }
+          return foundDatabases
+        } catch (err) {
+          console.warn(`[Datastore API] Failed to query ${kindName}:`, err)
+          return []
+        }
+      })
+
+      // Wait for all queries in parallel
+      const allResults = await Promise.all(queryPromises)
+      allResults.flat().forEach(db => databases.add(db))
+
+      // Always ensure we have at least the default database
+      if (databases.size === 0) {
+        databases.add('')
+      }
+
+      const result = Array.from(databases).sort()
+      console.log('[Datastore API] Discovered databases:', result)
+
+      // Cache the result
+      setCache(cacheKey, result)
+
+      return result
     } catch (error) {
-      console.warn('Failed to list databases:', error)
+      console.error('[Datastore API] Failed to list databases:', error)
       return ['']
     }
   },
@@ -116,11 +306,19 @@ export const datastoreApi = {
   // List all namespaces in a project
   async listNamespaces(projectId: string, databaseId?: string): Promise<string[]> {
     try {
+      // Check cache first
+      const cacheKey = `namespaces:${projectId}:${databaseId || ''}`
+      const cached = getCached<string[]>(cacheKey)
+      if (cached) {
+        console.log('[Datastore API] Returning cached namespaces')
+        return cached
+      }
       // Query for __namespace__ entities which contain all namespaces
+      // NOTE: Datastore emulator doesn't support databaseId in query partitionId
+      const partitionId: any = { projectId }
+
       const request: RunQueryRequest = {
-        partitionId: {
-          projectId
-        },
+        partitionId,
         query: {
           kind: [{ name: '__namespace__' }]
         }
@@ -135,13 +333,29 @@ export const datastoreApi = {
       if (response.data.batch?.entityResults) {
         response.data.batch.entityResults.forEach((result: any) => {
           const entity = result.entity
-          if (entity?.key?.path?.[0]?.name) {
-            namespaces.add(entity.key.path[0].name)
+          const entityDb = entity?.key?.partitionId?.databaseId || ''
+          const namespaceName = entity?.key?.path?.[0]?.name
+
+          // Filter by database if specified
+          if (databaseId !== undefined) {
+            if (entityDb === databaseId && namespaceName) {
+              namespaces.add(namespaceName)
+            }
+          } else {
+            // No filter, add all namespaces
+            if (namespaceName) {
+              namespaces.add(namespaceName)
+            }
           }
         })
       }
 
-      return Array.from(namespaces).sort()
+      const result = Array.from(namespaces).sort()
+
+      // Cache the result
+      setCache(cacheKey, result)
+
+      return result
     } catch (error) {
       console.warn('Failed to list namespaces:', error)
       return ['']
@@ -154,17 +368,28 @@ export const datastoreApi = {
     kind: string,
     namespaceId?: string,
     limit?: number,
-    offset?: number
+    offset?: number,
+    databaseId?: string
   ): Promise<DatastoreEntity[]> {
     try {
+      // NOTE: Datastore emulator doesn't support databaseId in query partitionId,
+      // so we query without it and filter results in code
+      const partitionId: any = {
+        projectId,
+        namespaceId: namespaceId || ''
+      }
+
+      // OPTIMIZATION: If we have a database filter, fetch more to compensate for filtering
+      // Otherwise use exact limit. Use 3x multiplier as safer estimate than 2x
+      const queryLimit = (databaseId !== undefined && limit)
+        ? Math.min(limit * 3, 5000) // Cap at 5000 to avoid excessive fetching
+        : limit
+
       const request: RunQueryRequest = {
-        partitionId: {
-          projectId,
-          namespaceId: namespaceId || ''
-        },
+        partitionId,
         query: {
           kind: [{ name: kind }],
-          limit,
+          limit: queryLimit,
           offset
         }
       }
@@ -172,7 +397,19 @@ export const datastoreApi = {
       const response = await datastoreClient.post(`/v1/projects/${projectId}:runQuery`, request)
 
       if (response.data.batch?.entityResults) {
-        return response.data.batch.entityResults.map((result: any) => result.entity)
+        const entities = response.data.batch.entityResults.map((result: any) => result.entity)
+
+        // Filter by database if specified
+        if (databaseId !== undefined) {
+          const filtered = entities.filter((entity: DatastoreEntity) => {
+            const entityDb = entity.key?.partitionId?.databaseId || ''
+            return entityDb === databaseId
+          })
+          // Apply limit after filtering
+          return limit ? filtered.slice(0, limit) : filtered
+        }
+
+        return entities
       }
 
       return []
@@ -214,6 +451,9 @@ export const datastoreApi = {
     }
 
     const response = await datastoreClient.post(`/v1/projects/${projectId}:commit`, request)
+
+    // Invalidate caches since we created an entity
+    clearCache(projectId)
 
     // Return the entity with the generated key if applicable
     if (response.data.mutationResults?.[0]?.key) {
@@ -268,13 +508,16 @@ export const datastoreApi = {
     }
 
     await datastoreClient.post(`/v1/projects/${projectId}:commit`, request)
+
+    // Invalidate caches since we deleted an entity
+    clearCache(projectId)
   },
 
   // Delete all entities of a kind
-  async deleteKind(projectId: string, kind: string, namespaceId?: string): Promise<void> {
+  async deleteKind(projectId: string, kind: string, namespaceId?: string, databaseId?: string): Promise<void> {
     try {
       // Get all entities of this kind
-      const entities = await this.getEntitiesByKind(projectId, kind, namespaceId)
+      const entities = await this.getEntitiesByKind(projectId, kind, namespaceId, undefined, undefined, databaseId)
 
       if (entities.length === 0) {
         return
@@ -293,6 +536,9 @@ export const datastoreApi = {
 
         await datastoreClient.post(`/v1/projects/${projectId}:commit`, request)
       }
+
+      // Invalidate caches since we deleted entities
+      clearCache(projectId)
     } catch (error) {
       console.error('Failed to delete kind:', error)
       throw error
@@ -366,6 +612,11 @@ export const datastoreApi = {
   getKeyKind(key: DatastoreKey): string {
     const lastElement = key.path[key.path.length - 1]
     return lastElement.kind
+  },
+
+  // Cache management
+  clearCache(pattern?: string): void {
+    clearCache(pattern)
   }
 }
 

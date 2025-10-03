@@ -23,6 +23,7 @@ export interface PathElement {
 export interface PartitionId {
   projectId: string
   namespaceId?: string
+  databaseId?: string
 }
 
 export interface DatastoreValue {
