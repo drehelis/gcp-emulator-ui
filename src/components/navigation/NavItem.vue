@@ -1,6 +1,6 @@
 <template>
   <div v-if="isSectionHeader" class="flex items-center mb-2" :class="customClasses">
-    <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+    <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider theme-transition-colors">
       {{ label }}
     </p>
   </div>
@@ -10,7 +10,7 @@
     <router-link
       :to="to"
       @click="handleClick"
-      class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+      class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg theme-transition-colors"
       :class="[
         isActive ?
           'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
@@ -28,7 +28,7 @@
     v-else-if="!isCollapsed && isSubItem"
     :to="to"
     @click="handleClick"
-    class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+    class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg theme-transition-colors"
     :class="[
       isActive ?
         'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
@@ -44,7 +44,7 @@
   <router-link
     v-else-if="isCollapsed"
     :to="to"
-    class="flex items-center justify-center w-full px-2 py-2 text-sm font-medium rounded-lg transition-colors duration-200"
+    class="flex items-center justify-center w-full px-2 py-2 text-sm font-medium rounded-lg theme-transition-colors"
     :class="[
       isActive ?
         'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
@@ -115,11 +115,17 @@ const handleClick = () => {
 @reference "tailwindcss";
 
 .nav-item {
-  @apply flex items-center w-full px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200 transition-colors duration-200;
+  @apply flex items-center w-full px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200;
+  transition: 
+    background-color var(--theme-transition-duration) var(--theme-transition-timing),
+    color var(--theme-transition-duration) var(--theme-transition-timing);
 }
 
 .nav-item--active {
   @apply bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300;
+  transition: 
+    background-color var(--theme-transition-duration) var(--theme-transition-timing),
+    color var(--theme-transition-duration) var(--theme-transition-timing);
 }
 
 .nav-item--collapsed {
@@ -140,10 +146,16 @@ const handleClick = () => {
 
 .nav-item__badge {
   @apply ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300;
+  transition: 
+    background-color var(--theme-transition-duration) var(--theme-transition-timing),
+    color var(--theme-transition-duration) var(--theme-transition-timing);
 }
 
 .nav-item--active .nav-item__badge {
   @apply bg-blue-200 text-blue-800 dark:bg-blue-800 dark:text-blue-200;
+  transition: 
+    background-color var(--theme-transition-duration) var(--theme-transition-timing),
+    color var(--theme-transition-duration) var(--theme-transition-timing);
 }
 
 .nav-item--disabled {
@@ -156,6 +168,9 @@ const handleClick = () => {
 
 .nav-item--service-header {
   @apply font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider px-2 py-1 cursor-default;
+  transition: 
+    background-color var(--theme-transition-duration) var(--theme-transition-timing),
+    color var(--theme-transition-duration) var(--theme-transition-timing);
 }
 
 .nav-item--service-header:hover {

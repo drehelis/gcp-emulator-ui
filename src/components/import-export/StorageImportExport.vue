@@ -1,8 +1,8 @@
 <template>
   <div class="space-y-6">
     <!-- Export Section -->
-    <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
-      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg theme-transition-colors">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 theme-transition-colors">
         <h2 class="text-base sm:text-lg font-medium text-gray-900 dark:text-white">
           Export Storage Configuration
         </h2>

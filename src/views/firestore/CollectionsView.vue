@@ -1,5 +1,5 @@
 <template>
-  <div class="h-full bg-gray-50 dark:bg-gray-900 transition-colors duration-200 flex flex-col">
+  <div class="h-full bg-gray-50 dark:bg-gray-900 theme-transition-bg flex flex-col">
     <!-- Loading indicator for path navigation -->
     <Transition
       enter-active-class="transition ease-out duration-200"
@@ -13,7 +13,7 @@
         v-if="isNavigatingToPath"
         class="absolute top-4 left-1/2 transform -translate-x-1/2 z-50"
       >
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center space-x-3">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center space-x-3 theme-transition-colors">
           <div class="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-500"></div>
           <p class="text-sm text-gray-700 dark:text-gray-300">Navigating to document...</p>
         </div>
@@ -49,7 +49,7 @@
     </div>
 
     <!-- Mobile Navigation Header -->
-    <div class="lg:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
+    <div class="lg:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 theme-transition-colors">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-2">
           <!-- Back Button -->

@@ -1,5 +1,5 @@
 <template>
-  <div class="w-1/3 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
+  <div class="w-1/3 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto theme-transition-colors">
     <div class="p-4">
       <!-- Database Name -->
       <div class="mb-3">

@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 flex transition-colors duration-200">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 flex theme-transition-bg">
     <!-- Sidebar -->
     <Transition
       enter-active-class="transition-transform duration-300"
@@ -12,13 +12,13 @@
         class="fixed inset-y-0 left-0 z-50 lg:static lg:inset-0"
         :class="[
           appStore.layout.sidebar.collapsed && !isMobile ? 'w-16' : 'w-80',
-          'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-colors duration-200',
+          'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 theme-transition-colors',
           'flex flex-col overflow-y-auto overflow-x-visible transition-all duration-200'
         ]"
       >
         <!-- Sidebar Header -->
         <div 
-          class="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700 transition-colors duration-200"
+          class="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700 theme-transition-colors"
           :class="{ 'justify-center': appStore.layout.sidebar.collapsed && !isMobile }"
         >
           <div 
@@ -40,10 +40,12 @@
             <QueueListIcon class="w-5 h-5 text-white" />
           </div>
 
+                    <!-- Collapse/Expand button (desktop only) -->
           <button
             v-if="!isMobile"
             @click="appStore.toggleSidebar"
-            class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-200"
+            class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 theme-transition-colors"
+            :title="appStore.layout.sidebar.collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
           >
             <ChevronLeftIcon 
               class="w-5 h-5 transition-transform duration-200" 
@@ -53,7 +55,7 @@
         </div>
 
         <!-- Project Selector -->
-        <div class="px-4 py-4 border-b border-gray-200 dark:border-gray-700 overflow-visible relative z-50 transition-colors duration-200">
+        <div class="px-4 py-4 border-b border-gray-200 dark:border-gray-700 overflow-visible relative z-50 theme-transition-colors">
           <ProjectSelector :collapsed="appStore.layout.sidebar.collapsed && !isMobile" />
         </div>
 
@@ -80,7 +82,7 @@
             </div>
 
             <!-- PubSub Section Container -->
-            <div v-else-if="item.id === 'pubsub-section'" class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3">
+            <div v-else-if="item.id === 'pubsub-section'" class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3 theme-transition-colors">
               <template v-for="subItem in item.children" :key="subItem.id">
                 <NavItem
                   :to="subItem.route"
@@ -100,7 +102,7 @@
             </div>
 
             <!-- Storage Section Container -->
-            <div v-else-if="item.id === 'storage-section'" class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3">
+            <div v-else-if="item.id === 'storage-section'" class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3 theme-transition-colors">
               <template v-for="subItem in item.children" :key="subItem.id">
                 <NavItem
                   :to="subItem.route"
@@ -163,7 +165,7 @@
             <div v-else-if="!item.id.includes('-section') && !appStore.layout.sidebar.collapsed" class="mt-4">
               <router-link
                 :to="item.route"
-                class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors"
+                class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white theme-transition-colors"
                 @click="handleMobileNavClick"
               >
                 <component :is="item.icon" class="w-5 h-5 mr-3" />
@@ -172,7 +174,7 @@
             </div>
 
             <!-- Collapsed Separator -->
-            <div v-else-if="item.isSeparator && appStore.layout.sidebar.collapsed" class="my-3 mx-auto w-8 border-t border-gray-200 dark:border-gray-700"></div>
+            <div v-else-if="item.isSeparator && appStore.layout.sidebar.collapsed" class="my-3 mx-auto w-8 border-t border-gray-200 dark:border-gray-700 theme-transition-colors"></div>
 
             <!-- Collapsed/Other Items -->
             <NavItem
@@ -214,7 +216,7 @@
     <div class="flex-1 flex flex-col min-w-0">
       <!-- Top Header -->
       <header 
-        class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-4 lg:px-6 transition-colors duration-200"
+        class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-4 lg:px-6 theme-transition-colors"
         :class="{ 'lg:pl-4': appStore.layout.sidebar.collapsed }"
       >
         <!-- Left side -->
@@ -223,7 +225,7 @@
           <button
             v-if="isMobile"
             @click="appStore.setSidebarCollapsed(false)"
-            class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 theme-transition-colors"
           >
             <Bars3Icon class="w-6 h-6" />
           </button>
@@ -232,12 +234,12 @@
           <nav class="hidden md:flex" aria-label="Breadcrumb">
             <ol class="flex items-center space-x-2">
               <li v-for="(breadcrumb, index) in appStore.breadcrumbs" :key="index" class="flex items-center">
-                <ChevronRightIcon v-if="index > 0" class="w-4 h-4 text-gray-400 mx-2" />
+                <ChevronRightIcon v-if="index > 0" class="w-4 h-4 text-gray-400 mx-2 theme-transition-colors" />
                 <component
                   :is="breadcrumb.route && !breadcrumb.disabled ? 'router-link' : 'span'"
                   :to="breadcrumb.route"
                   :class="[
-                    'text-sm font-medium',
+                    'text-sm font-medium theme-transition-colors',
                     breadcrumb.disabled 
                       ? 'text-gray-400 dark:text-gray-500' 
                       : breadcrumb.route 
@@ -263,7 +265,7 @@
           <!-- Theme toggle -->
           <button
             @click="toggleTheme"
-            class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-200"
+            class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 theme-transition-colors"
             :title="`Switch to ${appStore.isDarkMode ? 'light' : 'dark'} theme`"
           >
             <component :is="themeIcon" class="w-5 h-5" />
@@ -272,7 +274,7 @@
           <!-- Fullscreen toggle -->
           <button
             @click="toggleFullscreen"
-            class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-200"
+            class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 theme-transition-colors"
             title="Toggle fullscreen"
           >
             <component :is="fullscreenIcon" class="w-5 h-5" />
@@ -312,7 +314,6 @@ import {
 
 import { useAppStore } from '@/stores/app'
 import { useProjectsStore } from '@/stores/projects'
-import { useDatastoreStore } from '@/stores/datastore'
 import { useServiceConnections } from '@/composables/useServiceConnections'
 import type { NavigationItem } from '@/types'
 

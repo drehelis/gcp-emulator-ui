@@ -85,7 +85,7 @@
       @click="showKeyboardHelp = false"
     >
       <div 
-        class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+        class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto theme-transition-bg"
         @click.stop
       >
         <div class="p-6">
@@ -389,7 +389,7 @@ a,
 /* Vue transition classes */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity var(--theme-transition-duration) var(--theme-transition-timing);
 }
 
 .fade-enter-from,
@@ -399,7 +399,7 @@ a,
 
 .slide-enter-active,
 .slide-leave-active {
-  transition: transform 0.3s ease;
+  transition: transform var(--theme-transition-duration) var(--theme-transition-timing);
 }
 
 .slide-enter-from {
@@ -434,6 +434,10 @@ a,
   background-color: white;
   color: #1f2937;
   border: 1px solid #e5e7eb;
+  transition: 
+    background-color var(--theme-transition-duration) var(--theme-transition-timing),
+    color var(--theme-transition-duration) var(--theme-transition-timing),
+    border-color var(--theme-transition-duration) var(--theme-transition-timing);
 }
 
 .dark .Vue-Toastification__toast {

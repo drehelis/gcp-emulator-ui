@@ -5,6 +5,34 @@
 /* TailwindCSS v4 dark mode variant configuration */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Global theme transition consistency */
+:root {
+  --theme-transition-duration: 200ms;
+  --theme-transition-timing: ease-in-out;
+}
+
+/* Global theme transition classes */
+.theme-transition {
+  transition:
+    background-color var(--theme-transition-duration) var(--theme-transition-timing),
+    border-color var(--theme-transition-duration) var(--theme-transition-timing),
+    color var(--theme-transition-duration) var(--theme-transition-timing),
+    fill var(--theme-transition-duration) var(--theme-transition-timing),
+    stroke var(--theme-transition-duration) var(--theme-transition-timing),
+    box-shadow var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+.theme-transition-colors {
+  transition:
+    background-color var(--theme-transition-duration) var(--theme-transition-timing),
+    border-color var(--theme-transition-duration) var(--theme-transition-timing),
+    color var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+.theme-transition-bg {
+  transition: background-color var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
 /* Custom component styles */
 .btn {
   display: inline-flex;
@@ -15,7 +43,12 @@
   font-weight: 500;
   border-radius: 0.375rem;
   border: 1px solid transparent;
-  transition: all 0.2s;
+  transition:
+    background-color var(--theme-transition-duration) var(--theme-transition-timing),
+    border-color var(--theme-transition-duration) var(--theme-transition-timing),
+    color var(--theme-transition-duration) var(--theme-transition-timing),
+    opacity var(--theme-transition-duration) var(--theme-transition-timing),
+    transform 150ms ease-in-out;
   cursor: pointer;
 }
 
