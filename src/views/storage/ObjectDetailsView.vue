@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-full bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+  <div class="min-h-full bg-gray-50 dark:bg-gray-900 transition-colors">
     <!-- Page Header -->
     <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
       <div class="px-4 sm:px-6 lg:px-8">
@@ -8,7 +8,7 @@
             <div class="flex items-center space-x-4 min-w-0 flex-1">
               <button
                 @click="navigateBack"
-                class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 flex-shrink-0"
+                class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex-shrink-0"
               >
                 <ArrowLeftIcon class="w-5 h-5" />
               </button>
@@ -28,7 +28,7 @@
               <button
                 @click="downloadObject"
                 :disabled="storageStore.loading.download"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
               >
                 <ArrowDownTrayIcon class="w-4 h-4 mr-2" />
                 Download
@@ -47,7 +47,7 @@
           <li>
             <button
               @click="navigateToPath('')"
-              class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200"
+              class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
             >
               <HomeIcon class="w-4 h-4 translate-y-0.5" />
               <span class="sr-only">Home</span>
@@ -58,7 +58,7 @@
             <button
               v-if="!breadcrumb.isLast"
               @click="navigateToPath(breadcrumb.path)"
-              class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 truncate transition-colors duration-200"
+              class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 truncate transition-colors"
             >
               {{ breadcrumb.name }}
             </button>
@@ -120,7 +120,7 @@
               <button
                 v-if="isTextFile && !isEditing"
                 @click="startEditing"
-                class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-transparent rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200"
+                class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 border border-transparent rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                 title="Edit file"
               >
                 <PencilSquareIcon class="w-4 h-4 mr-1" />

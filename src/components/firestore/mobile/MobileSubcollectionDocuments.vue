@@ -5,7 +5,7 @@
       <div class="flex items-center space-x-3">
         <button
           @click="$emit('back')"
-          class="inline-flex items-center justify-center p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+          class="inline-flex items-center justify-center p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
         >
           <ChevronLeftIcon class="w-6 h-6" />
         </button>
@@ -20,7 +20,7 @@
     <div class="flex-shrink-0 p-4">
       <button
         @click="$emit('add-document')"
-        class="w-full inline-flex items-center justify-center px-4 py-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 border border-blue-200 dark:border-blue-800"
+        class="w-full inline-flex items-center justify-center px-4 py-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 border border-blue-200 dark:border-blue-800"
       >
         <PlusIcon class="w-5 h-5 mr-2" />
         Add document
@@ -48,7 +48,7 @@
           v-for="document in documents"
           :key="document.name"
           @click="$emit('select-document', document)"
-          class="w-full flex items-center p-4 text-left bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full flex items-center p-4 text-left bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <div class="flex-1 min-w-0">
             <p class="font-medium text-gray-900 dark:text-white truncate">{{ getDocumentId(document.name) }}</p>

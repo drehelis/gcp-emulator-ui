@@ -24,7 +24,7 @@
             >
               <button
                 @click="$emit('delete-collection')"
-                class="w-full px-3 py-2 text-left text-sm font-sans font-normal text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 rounded-lg"
+                class="w-full px-3 py-2 text-left text-sm font-sans font-normal text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors rounded-lg"
               >
                 Delete collection
               </button>
@@ -38,7 +38,7 @@
       <div v-if="selectedCollection" class="mb-4">
         <button
           @click="$emit('add-document')"
-          class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <PlusIcon class="w-3 h-3 mr-1" />
           Add document
@@ -51,7 +51,7 @@
           v-for="document in documents"
           :key="document.name"
           :class="[
-            'flex items-center justify-between px-3 py-2 text-sm rounded-md cursor-pointer transition-colors duration-200',
+            'flex items-center justify-between px-3 py-2 text-sm rounded-md cursor-pointer transition-colors',
             selectedDocument?.name === document.name
               ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -75,7 +75,7 @@
         >
           <button
             @click="$emit('navigate-to-subcollection', subcollection)"
-            class="flex items-center w-full px-2 py-1.5 text-sm rounded-md cursor-pointer transition-colors duration-200 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+            class="flex items-center w-full px-2 py-1.5 text-sm rounded-md cursor-pointer transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <ChevronRightIcon class="w-4 h-4 mr-1 flex-shrink-0" />
             <CircleStackIcon class="w-4 h-4 mr-2 flex-shrink-0" />
@@ -95,7 +95,7 @@
         </p>
         <button
           @click="$emit('add-document')"
-          class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors duration-200"
+          class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
         >
           <PlusIcon class="w-4 h-4 mr-2" />
           Add your first document

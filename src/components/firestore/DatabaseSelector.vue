@@ -4,7 +4,7 @@
     <button
       @click="showDropdown = !showDropdown"
       :disabled="testingDatabase"
-      class="flex items-center px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+      class="flex items-center px-3 py-2 text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <span class="truncate max-w-[120px]">
         {{ selectedDatabase }}
@@ -30,7 +30,7 @@
           :key="database"
           @click="handleSelectDatabase(database)"
           :class="[
-            'w-full flex items-center justify-between px-3 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150',
+            'w-full flex items-center justify-between px-3 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors',
             selectedDatabase === database
               ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
               : 'text-gray-700 dark:text-gray-300'
@@ -46,7 +46,7 @@
             <button
               v-if="database !== '(default)'"
               @click.stop="handleRemoveDatabase(database)"
-              class="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors duration-150"
+              class="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-colors"
               title="Remove database"
             >
               <XMarkIcon class="w-3 h-3 text-gray-400 hover:text-red-500" />
@@ -67,7 +67,7 @@
           <button
             @click="handleAddDatabase"
             :disabled="!newDatabaseName.trim() || testingDatabase"
-            class="px-3 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded transition-colors duration-200"
+            class="px-3 py-1 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded transition-colors"
           >
             <ArrowPathIcon v-if="testingDatabase" class="w-3 h-3 animate-spin" />
             <span v-else>Add</span>

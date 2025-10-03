@@ -7,8 +7,10 @@ import { nextTick } from 'vue'
  * Applies a smooth fade-out highlight effect to an element
  */
 export const applyFocusHighlight = async (element: HTMLElement) => {
-  // Add a smooth fade-out highlight effect
-  element.style.transition = 'background-color 1.5s ease-out'
+  // Add a smooth fade-out highlight effect using CSS variable
+  const duration = getComputedStyle(document.documentElement).getPropertyValue('--highlight-transition-duration').trim() || '1.5s'
+  const timing = getComputedStyle(document.documentElement).getPropertyValue('--highlight-transition-timing').trim() || 'ease-out'
+  element.style.transition = `background-color ${duration} ${timing}`
   element.style.backgroundColor = 'rgba(59, 130, 246, 0.25)'
 
   // Start fading out after a brief moment

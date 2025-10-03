@@ -1,7 +1,7 @@
 <template>
   <Transition
-    enter-active-class="transition-all duration-200 ease-out"
-    leave-active-class="transition-all duration-200 ease-in"
+    enter-active-class="transition-all"
+    leave-active-class="transition-all"
     enter-from-class="transform -translate-y-full opacity-0"
     leave-to-class="transform -translate-y-full opacity-0"
   >

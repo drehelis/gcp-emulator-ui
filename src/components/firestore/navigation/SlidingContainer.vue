@@ -1,7 +1,7 @@
 <template>
   <div class="h-full overflow-hidden">
     <div
-      class="flex transition-transform duration-300 ease-in-out h-full"
+      class="flex transition-transform h-full"
       :style="{ transform: `translateX(${slideOffset}%)` }"
     >
       <slot />

@@ -2,10 +2,10 @@
   <div class="h-full bg-gray-50 dark:bg-gray-900 theme-transition-bg flex flex-col">
     <!-- Loading indicator for path navigation -->
     <Transition
-      enter-active-class="transition ease-out duration-200"
+      enter-active-class="transition"
       enter-from-class="opacity-0 translate-y-1"
       enter-to-class="opacity-100 translate-y-0"
-      leave-active-class="transition ease-in duration-150"
+      leave-active-class="transition"
       leave-from-class="opacity-100 translate-y-0"
       leave-to-class="opacity-0 translate-y-1"
     >
@@ -56,7 +56,7 @@
           <button
             v-if="mobileNavigationStack.length > 1"
             @click="handleMobileBack()"
-            class="inline-flex items-center p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 min-h-[44px] min-w-[44px]"
+            class="inline-flex items-center p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px] min-w-[44px]"
           >
             <ChevronLeftIcon class="w-5 h-5" />
           </button>
@@ -78,7 +78,7 @@
             v-for="(_, index) in mobileNavigationStack"
             :key="index"
             :class="[
-              'w-2 h-2 rounded-full transition-colors duration-200',
+              'w-2 h-2 rounded-full transition-colors',
               index === mobileNavigationStack.length - 1
                 ? 'bg-blue-500'
                 : 'bg-gray-300 dark:bg-gray-600'

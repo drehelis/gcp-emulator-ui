@@ -5,7 +5,7 @@
       <div class="flex items-center space-x-3">
         <button
           @click="$emit('back')"
-          class="inline-flex items-center justify-center p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+          class="inline-flex items-center justify-center p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
         >
           <ChevronLeftIcon class="w-6 h-6" />
         </button>
@@ -17,7 +17,7 @@
         </div>
         <button
           @click="showDocumentMenu = !showDocumentMenu"
-          class="inline-flex items-center justify-center p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+          class="inline-flex items-center justify-center p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
         >
           <EllipsisVerticalIcon class="w-6 h-6" />
         </button>
@@ -31,19 +31,19 @@
       >
         <button
           @click="handleCloneDocument"
-          class="w-full px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 first:rounded-t-lg"
+          class="w-full px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors first:rounded-t-lg"
         >
           Clone document
         </button>
         <button
           @click="handleDeleteAllFields"
-          class="w-full px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150"
+          class="w-full px-4 py-3 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
         >
           Clear all fields
         </button>
         <button
           @click="handleDeleteDocument"
-          class="w-full px-4 py-3 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-150 last:rounded-b-lg"
+          class="w-full px-4 py-3 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors last:rounded-b-lg"
         >
           Delete document
         </button>
@@ -58,7 +58,7 @@
           <h2 class="text-sm font-medium text-gray-900 dark:text-white">Subcollections</h2>
           <button
             @click="$emit('start-subcollection')"
-            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200"
+            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
           >
             <PlusIcon class="w-4 h-4 mr-1" />
             Add
@@ -69,7 +69,7 @@
             v-for="subcollection in subcollections"
             :key="subcollection.id"
             @click="$emit('navigate-to-subcollection', subcollection)"
-            class="w-full flex items-center p-3 text-left bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors duration-200"
+            class="w-full flex items-center p-3 text-left bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
           >
             <CircleStackIcon class="w-5 h-5 text-blue-500 dark:text-blue-400 mr-3 flex-shrink-0" />
             <span class="font-medium text-gray-900 dark:text-white truncate">{{ subcollection.id }}</span>
@@ -82,7 +82,7 @@
       <div v-else class="p-4 border-b border-gray-200 dark:border-gray-700">
         <button
           @click="$emit('start-subcollection')"
-          class="w-full inline-flex items-center justify-center px-4 py-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 border border-blue-200 dark:border-blue-800"
+          class="w-full inline-flex items-center justify-center px-4 py-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 border border-blue-200 dark:border-blue-800"
         >
           <PlusIcon class="w-5 h-5 mr-2" />
           Start collection
@@ -95,7 +95,7 @@
           <h2 class="text-sm font-medium text-gray-900 dark:text-white">Fields</h2>
           <button
             @click="$emit('add-field')"
-            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200"
+            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
           >
             <PlusIcon class="w-4 h-4 mr-1" />
             Add
@@ -124,7 +124,7 @@
           <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Add your first field to this document.</p>
           <button
             @click="$emit('add-field')"
-            class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors duration-200"
+            class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
           >
             <PlusIcon class="w-4 h-4 mr-2" />
             Add field

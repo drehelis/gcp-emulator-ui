@@ -12,7 +12,7 @@
     <div class="flex-shrink-0 p-4">
       <button
         @click="$emit('add-collection')"
-        class="w-full inline-flex items-center justify-center px-4 py-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 border border-blue-200 dark:border-blue-800"
+        class="w-full inline-flex items-center justify-center px-4 py-3 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 border border-blue-200 dark:border-blue-800"
       >
         <PlusIcon class="w-5 h-5 mr-2" />
         Start collection
@@ -40,7 +40,7 @@
           v-for="collection in collections"
           :key="collection.id"
           @click="$emit('select-collection', collection)"
-          class="w-full flex items-center p-4 text-left bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full flex items-center p-4 text-left bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <CircleStackIcon class="w-6 h-6 text-blue-500 dark:text-blue-400 mr-3 flex-shrink-0" />
           <div class="flex-1 min-w-0">

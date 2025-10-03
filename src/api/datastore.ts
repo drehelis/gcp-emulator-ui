@@ -414,8 +414,8 @@ export const datastoreApi = {
 
         // Check if there are more results
         const hasMore = moreResults === 'MORE_RESULTS_AFTER_LIMIT' ||
-                       moreResults === 'MORE_RESULTS_AFTER_CURSOR' ||
-                       moreResults === 'NOT_FINISHED'
+          moreResults === 'MORE_RESULTS_AFTER_CURSOR' ||
+          moreResults === 'NOT_FINISHED'
 
         // Filter by database if needed
         if (needsFiltering) {
@@ -528,33 +528,13 @@ export const datastoreApi = {
 
   // Delete an entity
   async deleteEntity(projectId: string, key: DatastoreKey): Promise<void> {
-    console.log('[Datastore API] Deleting entity with key:', JSON.stringify(key, null, 2))
-
-    // CRITICAL LIMITATION: The Datastore emulator does not support mutation operations
-    // (insert, update, upsert, delete) on entities in named databases.
-    //
-    // According to the official API spec:
-    // https://cloud.google.com/datastore/docs/reference/data/rest/v1/projects/commit
-    // - databaseId should be at the request body level
-    // - Keys should NOT include databaseId in partitionId
-    //
-    // However, the emulator:
-    // 1. Returns entities with databaseId in their keys (from queries)
-    // 2. Rejects mutations when databaseId is in request body: "mismatched databases"
-    // 3. Rejects mutations when databaseId is in key: "mismatched databases"
-    // 4. Returns 404 for database-specific endpoints: /databases/{databaseId}:commit
-    // 5. Returns 200 OK without databaseId but doesn't actually delete (wrong database)
-    //
-    // This is a confirmed bug in the emulator. Named databases only work for queries.
-
     const databaseId = key.partitionId.databaseId
 
     // Block delete operations on named databases with a clear error message
     if (databaseId && databaseId !== '' && databaseId !== '(default)') {
       throw new Error(
         `Delete operations are not supported for entities in named database "${databaseId}". ` +
-        `This is a known limitation of the Datastore emulator. ` +
-        `See: https://github.com/googleapis/google-cloud-go/issues/2078`
+        `This is a known limitation of the Datastore emulator. `
       )
     }
 

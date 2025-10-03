@@ -12,7 +12,7 @@
       <div class="mb-4">
         <button
           @click="$emit('create-collection')"
-          class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <PlusIcon class="w-3 h-3 mr-1" />
           Start collection
@@ -29,7 +29,7 @@
           <div
             @click="$emit('select-collection', collection)"
             :class="[
-              'flex items-center px-3 py-2 text-sm rounded-md cursor-pointer transition-colors duration-200',
+              'flex items-center px-3 py-2 text-sm rounded-md cursor-pointer transition-colors',
               selectedCollection?.id === collection.id
                 ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
                 : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'

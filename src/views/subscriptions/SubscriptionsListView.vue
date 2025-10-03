@@ -68,11 +68,11 @@
             <div class="flex items-start space-x-3">
               <ChevronRightIcon 
                 v-if="!isTopicExpanded(topicName)"
-                class="h-4 w-4 text-gray-400 transition-transform duration-200"
+                class="h-4 w-4 text-gray-400 transition-transform"
               />
               <ChevronDownIcon 
                 v-else
-                class="h-4 w-4 text-gray-400 transition-transform duration-200"
+                class="h-4 w-4 text-gray-400 transition-transform"
               />
               <QueueListIcon class="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
               <div class="flex-1 min-w-0">

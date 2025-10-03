@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-full bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+  <div class="min-h-full bg-gray-50 dark:bg-gray-900 transition-colors">
     <!-- Page Header -->
     <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -16,7 +16,7 @@
             
             <router-link
               :to="`/projects/${currentProjectId}/storage/buckets`"
-              class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+              class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             >
               <ArrowLeftIcon class="w-4 h-4 mr-2" />
               Back to Buckets
@@ -129,7 +129,7 @@
             <label
               v-for="option in storageClassOptions"
               :key="option.value"
-              class="relative flex cursor-pointer rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 p-4 shadow-sm focus:outline-none hover:border-blue-300 dark:hover:border-blue-600 transition-colors duration-200"
+              class="relative flex cursor-pointer rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 p-4 shadow-sm focus:outline-none hover:border-blue-300 dark:hover:border-blue-600 transition-colors"
               :class="{
                 'border-blue-500 dark:border-blue-400 ring-2 ring-blue-500 dark:ring-blue-400': form.storageClass === option.value
               }"
@@ -187,14 +187,14 @@
                   type="button"
                   @click="form.enableVersioning = !form.enableVersioning"
                   :disabled="storageStore.loading.create"
-                  class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
                   :class="{
                     'bg-blue-600': form.enableVersioning,
                     'bg-gray-200 dark:bg-gray-700': !form.enableVersioning
                   }"
                 >
                   <span
-                    class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                    class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition-out"
                     :class="{
                       'translate-x-5': form.enableVersioning,
                       'translate-x-0': !form.enableVersioning
@@ -235,7 +235,7 @@
                       type="button"
                       @click="removeLabel(index)"
                       :disabled="storageStore.loading.create"
-                      class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <TrashIcon class="w-4 h-4" />
                     </button>
@@ -245,7 +245,7 @@
                   type="button"
                   @click="addLabel"
                   :disabled="storageStore.loading.create"
-                  class="mt-2 inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border border-transparent rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                  class="mt-2 inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 border border-transparent rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
                   <PlusIcon class="w-4 h-4 mr-2" />
                   Add Label
@@ -268,7 +268,7 @@
             <div class="flex items-center space-x-3">
               <router-link
                 :to="`/projects/${currentProjectId}/storage/buckets`"
-                class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
+                class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
               >
                 Cancel
               </router-link>
@@ -276,7 +276,7 @@
               <button
                 type="submit"
                 :disabled="!isFormValid || storageStore.loading.create"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <ArrowPathIcon v-if="storageStore.loading.create" class="animate-spin -ml-1 mr-2 h-4 w-4" />
                 {{ storageStore.loading.create ? 'Creating...' : 'Create Bucket' }}

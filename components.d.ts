@@ -17,6 +17,7 @@ declare module 'vue' {
     ConfirmationModal: typeof import('./src/components/modals/ConfirmationModal.vue')['default']
     ConnectionWarning: typeof import('./src/components/ConnectionWarning.vue')['default']
     CreateBucketModal: typeof import('./src/components/modals/CreateBucketModal.vue')['default']
+    CreateEntityModal: typeof import('./src/components/datastore/CreateEntityModal.vue')['default']
     CreateTopicModal: typeof import('./src/components/modals/CreateTopicModal.vue')['default']
     CustomSelect: typeof import('./src/components/ui/CustomSelect.vue')['default']
     DatabaseSelector: typeof import('./src/components/firestore/DatabaseSelector.vue')['default']

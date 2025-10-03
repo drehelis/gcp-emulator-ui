@@ -73,7 +73,7 @@
           <div class="bg-gray-50 dark:bg-gray-700/30 px-4 py-3 border-t border-gray-200 dark:border-gray-600">
             <button
               @click="addField"
-              class="inline-flex items-center px-3 py-2 text-sm font-medium firestore-hover-blue hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 firestore-focus-blue"
+              class="inline-flex items-center px-3 py-2 text-sm font-medium firestore-hover-blue hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors firestore-focus-blue"
             >
               <PlusIcon class="w-4 h-4 mr-2" />
               Add Another Field

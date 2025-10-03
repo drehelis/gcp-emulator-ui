@@ -23,8 +23,8 @@
 
   <!-- PWA update prompt -->
   <Transition
-    enter-active-class="transition-transform duration-300"
-    leave-active-class="transition-transform duration-300"
+    enter-active-class="transition-transform"
+    leave-active-class="transition-transform"
     enter-from-class="transform translate-y-full"
     leave-to-class="transform translate-y-full"
   >
@@ -48,13 +48,13 @@
           <div class="mt-3 flex space-x-2">
             <button
               @click="refreshApp"
-              class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition-colors duration-200"
+              class="text-xs bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded transition-colors"
             >
               Refresh
             </button>
             <button
               @click="dismissUpdatePrompt"
-              class="text-xs bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-3 py-1 rounded transition-colors duration-200"
+              class="text-xs bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-3 py-1 rounded transition-colors"
             >
               Later
             </button>
@@ -74,8 +74,8 @@
 
   <!-- Keyboard shortcuts help -->
   <Transition
-    enter-active-class="transition-opacity duration-200"
-    leave-active-class="transition-opacity duration-200"
+    enter-active-class="transition-opacity"
+    leave-active-class="transition-opacity"
     enter-from-class="opacity-0"
     leave-to-class="opacity-0"
   >

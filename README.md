@@ -146,7 +146,18 @@ src/
 - **TypeScript** - Type-safe development
 - **Vite** - Fast build tool and dev server
 - **Tailwind CSS** - Utility-first CSS framework
-- **Heroicons** - Beautiful hand-crafted SVG icons
+
+## Credits
+
+### Icons
+This project uses [**Heroicons**](https://heroicons.com/) - a set of free MIT-licensed high-quality SVG icons created by [Tailwind Labs](https://tailwindlabs.com/).
+
+- **License**: MIT
+- **Version**: 2.1.5
+- **Repository**: [github.com/tailwindlabs/heroicons](https://github.com/tailwindlabs/heroicons)
+- **Copyright**: © 2020 Refactoring UI Inc.
+
+All icons are used in accordance with the MIT License. See [Heroicons License](https://github.com/tailwindlabs/heroicons/blob/master/LICENSE) for details.
 
 ## Contributing
 

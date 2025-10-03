@@ -2,8 +2,8 @@
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900 flex theme-transition-bg">
     <!-- Sidebar -->
     <Transition
-      enter-active-class="transition-transform duration-300"
-      leave-active-class="transition-transform duration-300"
+      enter-active-class="transition-transform"
+      leave-active-class="transition-transform"
       enter-from-class="transform -translate-x-full"
       leave-to-class="transform -translate-x-full"
     >
@@ -13,7 +13,7 @@
         :class="[
           appStore.layout.sidebar.collapsed && !isMobile ? 'w-16' : 'w-80',
           'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 theme-transition-colors',
-          'flex flex-col overflow-y-auto overflow-x-visible transition-all duration-200'
+          'flex flex-col overflow-y-auto overflow-x-visible transition-all'
         ]"
       >
         <!-- Sidebar Header -->
@@ -47,8 +47,8 @@
             class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 theme-transition-colors"
             :title="appStore.layout.sidebar.collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
           >
-            <ChevronLeftIcon 
-              class="w-5 h-5 transition-transform duration-200" 
+            <ChevronLeftIcon
+              class="w-5 h-5 transition-transform"
               :class="{ 'rotate-180': appStore.layout.sidebar.collapsed }"
             />
           </button>
@@ -200,8 +200,8 @@
 
     <!-- Mobile sidebar overlay -->
     <Transition
-      enter-active-class="transition-opacity duration-300"
-      leave-active-class="transition-opacity duration-300"
+      enter-active-class="transition-opacity"
+      leave-active-class="transition-opacity"
       enter-from-class="opacity-0"
       leave-to-class="opacity-0"
     >

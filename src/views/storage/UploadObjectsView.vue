@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-full bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+  <div class="min-h-full bg-gray-50 dark:bg-gray-900 transition-colors">
     <!-- Page Header -->
     <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -8,7 +8,7 @@
             <div class="flex items-center space-x-4">
               <router-link
                 :to="`/projects/${currentProjectId}/storage/buckets/${encodeURIComponent(bucketName)}`"
-                class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 <ArrowLeftIcon class="w-5 h-5" />
               </router-link>
@@ -40,7 +40,7 @@
           @dragenter="handleDragEnter"
           @dragleave="handleDragLeave"
           :class="[
-            'border-2 border-dashed rounded-lg p-8 text-center transition-colors duration-200',
+            'border-2 border-dashed rounded-lg p-8 text-center transition-colors',
             isDragOver 
               ? 'border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/20' 
               : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
@@ -71,7 +71,7 @@
               <button
                 @click="$refs.fileInput?.click()"
                 :disabled="storageStore.loading.upload"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <DocumentPlusIcon class="w-4 h-4 mr-2" />
                 Select Files
@@ -94,7 +94,7 @@
           <button
             @click="clearFiles"
             :disabled="storageStore.loading.upload"
-            class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Clear All
           </button>
@@ -120,7 +120,7 @@
             <button
               @click="removeFile(index)"
               :disabled="storageStore.loading.upload"
-              class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              class="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <XMarkIcon class="w-4 h-4" />
             </button>
@@ -135,7 +135,7 @@
           <button
             @click="handleUpload"
             :disabled="storageStore.loading.upload || selectedFiles.length === 0"
-            class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             <ArrowPathIcon v-if="storageStore.loading.upload" class="animate-spin -ml-1 mr-2 h-4 w-4" />
             {{ storageStore.loading.upload ? 'Uploading...' : 'Start Upload' }}
@@ -189,7 +189,7 @@
             <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
               <div
                 :class="[
-                  'h-2 rounded-full transition-all duration-300',
+                  'h-2 rounded-full transition-all',
                   progress.status === 'completed' 
                     ? 'bg-green-500' 
                     : progress.status === 'error' 

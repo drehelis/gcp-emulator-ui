@@ -90,6 +90,32 @@
           </div>
         </div>
 
+        <!-- Action Buttons Section -->
+        <div class="mt-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <button
+              @click="createEntity"
+              class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            >
+              <PlusIcon class="w-4 h-4 mr-2" />
+              Create
+            </button>
+
+            <button
+              v-if="selectedEntities.length > 0"
+              @click="deleteSelectedEntities"
+              class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+            >
+              <TrashIcon class="w-4 h-4 mr-2" />
+              Delete ({{ selectedEntities.length }})
+            </button>
+          </div>
+
+          <div v-if="selectedEntities.length > 0" class="text-sm text-blue-700 dark:text-blue-300">
+            {{ selectedEntities.length }} entity(ies) selected
+          </div>
+        </div>
+
         <!-- Info Banner - No databases in namespace -->
         <div v-if="selectedNamespace && databases.length === 0 && !loading" class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
           <div class="flex">
@@ -143,10 +169,10 @@
                 </MenuButton>
 
                 <transition
-                  enter-active-class="transition ease-out duration-100"
+                  enter-active-class="transition"
                   enter-from-class="transform opacity-0 scale-95"
                   enter-to-class="transform opacity-100 scale-100"
-                  leave-active-class="transition ease-in duration-75"
+                  leave-active-class="transition"
                   leave-from-class="transform opacity-100 scale-100"
                   leave-to-class="transform opacity-0 scale-95"
                 >
@@ -212,42 +238,6 @@
                   </MenuItems>
                 </transition>
               </Menu>
-
-              <button
-                v-if="selectedEntities.length > 0"
-                @click="deleteSelectedEntities"
-                class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
-              >
-                <TrashIcon class="w-4 h-4 mr-2" />
-                Delete ({{ selectedEntities.length }})
-              </button>
-
-              <button
-                @click="createEntity"
-                class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-              >
-                <PlusIcon class="w-4 h-4 mr-2" />
-                Create Entity
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Named Database Warning -->
-        <div
-          v-if="selectedDatabase && selectedDatabase !== '' && selectedDatabase !== '(default)' && entities.length > 0"
-          class="mx-6 mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg"
-        >
-          <div class="flex items-start">
-            <ExclamationTriangleIcon class="w-5 h-5 text-amber-600 dark:text-amber-400 mr-3 flex-shrink-0 mt-0.5" />
-            <div class="flex-1">
-              <p class="text-sm font-medium text-amber-900 dark:text-amber-200">
-                Emulator Limitation: Named Database
-              </p>
-              <p class="mt-1 text-sm text-amber-800 dark:text-amber-300">
-                Delete operations are not supported for entities in named database "<span class="font-mono">{{ selectedDatabase }}</span>".
-                The Datastore emulator only supports mutations on the default database.
-              </p>
             </div>
           </div>
         </div>
@@ -364,22 +354,7 @@
             <tfoot>
               <tr>
                 <td colspan="100%" class="px-3 py-3">
-                  <div class="flex items-center justify-between">
-                    <!-- Bulk actions (shown when entities are selected) -->
-                    <div v-if="selectedEntities.length > 0" class="flex items-center gap-3">
-                      <span class="text-sm text-blue-700 dark:text-blue-300">
-                        {{ selectedEntities.length }} entity(ies) selected
-                      </span>
-                      <button
-                        @click="deleteSelectedEntities"
-                        class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
-                      >
-                        <TrashIcon class="w-4 h-4 mr-2" />
-                        Delete Selected
-                      </button>
-                    </div>
-                    <div v-else></div>
-
+                  <div class="flex items-center justify-end">
                     <!-- Rows per page selector and pagination -->
                     <div class="flex items-center gap-3">
                       <div class="flex items-center gap-1.5">
@@ -432,6 +407,16 @@
       </div>
     </div>
 
+    <!-- Create Entity Modal -->
+    <CreateEntityModal
+      v-model="showCreateEntityModal"
+      :project-id="currentProjectId"
+      :namespace="selectedNamespace"
+      :database="selectedDatabase"
+      :kind="selectedKind"
+      @created="handleEntityCreated"
+    />
+
     <!-- Entity Details Modal -->
     <EntityDetailsModal
       v-model="showEntityDetailsModal"
@@ -483,6 +468,7 @@ import type { SelectOption } from '@/components/ui/CustomSelect.vue'
 import datastoreApi from '@/api/datastore'
 import CustomSelect from '@/components/ui/CustomSelect.vue'
 import EntityDetailsModal from '@/components/datastore/EntityDetailsModal.vue'
+import CreateEntityModal from '@/components/datastore/CreateEntityModal.vue'
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
 
 const route = useRoute()
@@ -504,6 +490,7 @@ const pageCursors = ref<string[]>([]) // Stack of cursors for each page
 const currentCursor = ref<string | undefined>(undefined)
 const showEntityDetailsModal = ref(false)
 const selectedEntity = ref<DatastoreEntity | null>(null)
+const showCreateEntityModal = ref(false)
 const showDeleteModal = ref(false)
 const isDeleting = ref(false)
 const entitiesToDelete = ref<string[]>([])
@@ -838,8 +825,12 @@ const previousPage = async () => {
 }
 
 const createEntity = () => {
-  // TODO: Open create entity modal
-  console.log('Create entity')
+  showCreateEntityModal.value = true
+}
+
+const handleEntityCreated = async (_entity: DatastoreEntity) => {
+  // Refresh entities list to show the new entity
+  await loadEntities()
 }
 
 const editEntity = (entity: DatastoreEntity) => {

@@ -17,10 +17,10 @@
     <!-- Dropdown -->
     <Teleport to="body">
       <Transition
-        enter-active-class="transition duration-200 ease-out"
+        enter-active-class="transition"
         enter-from-class="transform scale-95 opacity-0"
         enter-to-class="transform scale-100 opacity-100"
-        leave-active-class="transition duration-200 ease-in"
+        leave-active-class="transition"
         leave-from-class="transform scale-100 opacity-100"
         leave-to-class="transform scale-95 opacity-0"
       >
