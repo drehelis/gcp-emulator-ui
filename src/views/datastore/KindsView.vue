@@ -80,7 +80,7 @@
               :options="kindOptions"
               :icon="CubeIcon"
               :badge="`${kinds.length}`"
-              :disabled="kinds.length === 0 || !selectedDatabase"
+              :disabled="kinds.length === 0 || selectedDatabase === undefined"
               placeholder="Select entity kind..."
               searchable
               :empty-text="selectedDatabase ? 'No kinds in this database' : 'Select database first'"
