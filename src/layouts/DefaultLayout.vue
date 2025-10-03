@@ -294,9 +294,9 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { 
-  QueueListIcon, 
-  ChevronLeftIcon, 
+import {
+  QueueListIcon,
+  ChevronLeftIcon,
   ChevronRightIcon,
   Bars3Icon,
   SunIcon,
@@ -309,7 +309,8 @@ import {
   DocumentDuplicateIcon,
   ArrowsRightLeftIcon,
   ArchiveBoxIcon,
-  CircleStackIcon
+  CircleStackIcon,
+  FolderIcon
 } from '@heroicons/vue/24/outline'
 
 import { useAppStore } from '@/stores/app'
@@ -507,7 +508,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
           id: 'datastore-namespaces',
           label: 'Namespaces',
           route: `/projects/${currentProject.value}/datastore/namespaces`,
-          icon: CircleStackIcon,
+          icon: FolderIcon,
           disabled: false,
           isSubItem: true
         })
@@ -630,7 +631,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
         id: 'collapsed-datastore-namespaces',
         label: 'Entities',
         route: `/projects/${currentProject.value}/datastore/namespaces`,
-        icon: CircleStackIcon,
+        icon: FolderIcon,
         disabled: false,
         customClasses: !datastoreConnected.value ? 'opacity-50' : ''
       })

@@ -1,10 +1,12 @@
 <template>
-  <div class="h-full bg-gray-50 dark:bg-gray-900 flex flex-col">
-    <!-- Page Header with Database Selector -->
-    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-      <div class="px-6 py-4">
+  <div class="h-full bg-gray-50 dark:bg-gray-900 flex flex-col space-y-6 pb-6">
+    <!-- Page Header -->
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
         <div class="flex items-center justify-between">
-          <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Datastore</h1>
+          <h2 class="text-lg font-medium text-gray-900 dark:text-white">
+            Datastore ({{ namespaces.length }})
+          </h2>
           <button
             @click="refreshData"
             :disabled="loading"
@@ -18,7 +20,7 @@
     </div>
 
     <!-- Filters Section -->
-    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
       <div class="px-6 py-4">
         <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3">
           <!-- Namespace Selector - PRIMARY FILTER -->
@@ -105,20 +107,20 @@
     <!-- Main Content Area -->
     <div class="flex-1 overflow-hidden">
       <!-- No Kind Selected State -->
-      <div v-if="!selectedKind" class="h-full flex items-center justify-center">
-        <div class="text-center max-w-md px-4">
-          <CubeIcon class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" />
-          <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">
+      <div v-if="!selectedKind" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+        <div class="text-center py-12">
+          <CubeIcon class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600" />
+          <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">
             Select an entity kind
           </h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400">
+          <p class="mt-2 text-gray-600 dark:text-gray-400">
             Choose a namespace, database, and entity kind from the filters above to view and manage entities.
           </p>
         </div>
       </div>
 
       <!-- Entities Table -->
-      <div v-else class="h-full flex flex-col bg-white dark:bg-gray-800">
+      <div v-else class="h-full flex flex-col bg-white dark:bg-gray-800 shadow rounded-lg">
         <!-- Table Header with Actions -->
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <div class="flex items-center justify-between">
@@ -327,23 +329,76 @@
           </table>
         </div>
 
-        <!-- Bulk Actions Footer -->
-        <div
-          v-if="selectedEntities.length > 0"
-          class="px-6 py-3 bg-blue-50 dark:bg-blue-900/20 border-t border-blue-200 dark:border-blue-800"
-        >
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-blue-700 dark:text-blue-300">
-              {{ selectedEntities.length }} entity(ies) selected
-            </span>
-            <button
-              @click="deleteSelectedEntities"
-              class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
-            >
-              <TrashIcon class="w-4 h-4 mr-2" />
-              Delete Selected
-            </button>
-          </div>
+        <!-- Table Footer -->
+        <div class="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+          <table class="min-w-full">
+            <tfoot>
+              <tr>
+                <td colspan="100%" class="px-3 py-3">
+                  <div class="flex items-center justify-between">
+                    <!-- Bulk actions (shown when entities are selected) -->
+                    <div v-if="selectedEntities.length > 0" class="flex items-center gap-3">
+                      <span class="text-sm text-blue-700 dark:text-blue-300">
+                        {{ selectedEntities.length }} entity(ies) selected
+                      </span>
+                      <button
+                        @click="deleteSelectedEntities"
+                        class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+                      >
+                        <TrashIcon class="w-4 h-4 mr-2" />
+                        Delete Selected
+                      </button>
+                    </div>
+                    <div v-else></div>
+
+                    <!-- Rows per page selector and pagination -->
+                    <div class="flex items-center gap-3">
+                      <div class="flex items-center gap-1.5">
+                        <label class="text-xs text-gray-500 dark:text-gray-400">Rows:</label>
+                        <select
+                          v-model="queryLimit"
+                          @change="handleLimitChange"
+                          class="px-1.5 py-0.5 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-1 focus:ring-blue-500 focus:outline-none"
+                        >
+                          <option :value="10">10</option>
+                          <option :value="25">25</option>
+                          <option :value="50">50</option>
+                          <option :value="100">100</option>
+                          <option :value="250">250</option>
+                          <option :value="500">500</option>
+                          <option :value="1000">1000</option>
+                        </select>
+                      </div>
+
+                      <div class="flex items-center gap-2">
+                        <span class="text-xs text-gray-600 dark:text-gray-400">
+                          {{ paginationStart }}–{{ paginationEnd }}{{ hasNextPage ? '+' : '' }}
+                        </span>
+                        <div class="flex items-center gap-1">
+                          <button
+                            @click="previousPage"
+                            :disabled="currentPage === 1"
+                            class="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            title="Previous page"
+                          >
+                            <ChevronLeftIcon class="w-4 h-4" />
+                          </button>
+                          <button
+                            @click="nextPage"
+                            :disabled="!hasNextPage"
+                            class="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                            title="Next page"
+                          >
+                            <ChevronRightIcon class="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
       </div>
     </div>
@@ -365,6 +420,7 @@ import {
   TrashIcon,
   ChevronUpDownIcon,
   ChevronRightIcon,
+  ChevronLeftIcon,
   ChevronDownIcon,
   ViewColumnsIcon
 } from '@heroicons/vue/24/outline'
@@ -382,10 +438,14 @@ const datastoreStore = useDatastoreStore()
 const selectedKind = ref<string>('')
 const entities = ref<DatastoreEntity[]>([])
 const loading = ref(false)
-const queryLimit = ref<number>(100)
+const queryLimit = ref<number>(25)
 const selectedEntities = ref<string[]>([])
 const columns = ref<{ key: string; label: string; visible: boolean; fixed?: boolean }[]>([])
 const showParentColumn = ref(true)
+const currentPage = ref<number>(1)
+const hasNextPage = ref<boolean>(false)
+const pageCursors = ref<string[]>([]) // Stack of cursors for each page
+const currentCursor = ref<string | undefined>(undefined)
 
 // Computed
 const currentProjectId = computed(() => route.params.projectId as string)
@@ -414,6 +474,16 @@ const allSelected = computed(() =>
   selectedEntities.value.length === entities.value.length
 )
 
+const paginationStart = computed(() => {
+  if (entities.value.length === 0) return 0
+  return (currentPage.value - 1) * queryLimit.value + 1
+})
+
+const paginationEnd = computed(() => {
+  if (entities.value.length === 0) return 0
+  return (currentPage.value - 1) * queryLimit.value + entities.value.length
+})
+
 // Select options for custom dropdowns
 const namespaceOptions = computed<SelectOption[]>(() =>
   namespaces.value.map(ns => ({
@@ -432,12 +502,19 @@ const databaseOptions = computed<SelectOption[]>(() =>
 )
 
 const kindOptions = computed<SelectOption[]>(() =>
-  kinds.value.map(kind => ({
-    value: kind.name,
-    label: kind.name,
-    badge: `${kind.entityCount}`,
-    icon: CubeIcon
-  }))
+  kinds.value.map(kind => {
+    // Show "100+" if count is exactly 100 (might be more)
+    let badge = undefined
+    if (kind.entityCount !== undefined && kind.entityCount > 0) {
+      badge = kind.entityCount >= 100 ? '100+' : `${kind.entityCount}`
+    }
+    return {
+      value: kind.name,
+      label: kind.name,
+      badge,
+      icon: CubeIcon
+    }
+  })
 )
 
 // Methods
@@ -503,6 +580,9 @@ const handleNamespaceChange = async () => {
   selectedKind.value = ''
   entities.value = []
   columns.value = []
+  currentPage.value = 1
+  currentCursor.value = undefined
+  pageCursors.value = []
 
   // Update URL to remove database and kind when namespace changes
   router.push({
@@ -536,6 +616,9 @@ const handleDatabaseChange = async () => {
   selectedKind.value = ''
   entities.value = []
   columns.value = []
+  currentPage.value = 1
+  currentCursor.value = undefined
+  pageCursors.value = []
 
   // Update URL with namespace and database, clear kind
   router.push({
@@ -587,20 +670,38 @@ const loadEntities = async () => {
 
   loading.value = true
   try {
-    const kindEntities = await datastoreApi.getEntitiesByKind(
+    // Use offset-based pagination when database is selected (emulator limitation)
+    // Otherwise use cursor-based pagination
+    const paginationParam = selectedDatabase.value
+      ? (currentPage.value - 1) * queryLimit.value  // offset
+      : currentCursor.value  // cursor
+
+    const result = await datastoreApi.getEntitiesByKind(
       currentProjectId.value,
       selectedKind.value,
       selectedNamespace.value,
       queryLimit.value,
-      undefined,
+      paginationParam,
       selectedDatabase.value
     )
-    entities.value = kindEntities
+
+    entities.value = result.entities
+
+    // Update pagination info
+    hasNextPage.value = result.hasMore
+
+    // Store the end cursor for next page navigation (only for cursor-based pagination)
+    if (result.endCursor && !selectedDatabase.value) {
+      // Only update cursor stack if we're moving forward
+      if (currentPage.value > pageCursors.value.length) {
+        pageCursors.value.push(result.endCursor)
+      }
+    }
 
     // Build columns from entity properties
-    if (kindEntities.length > 0) {
+    if (result.entities.length > 0) {
       const allProperties = new Set<string>()
-      kindEntities.forEach(entity => {
+      result.entities.forEach(entity => {
         Object.keys(entity.properties || {}).forEach(prop => allProperties.add(prop))
       })
 
@@ -618,6 +719,45 @@ const loadEntities = async () => {
     entities.value = []
   } finally {
     loading.value = false
+  }
+}
+
+const handleLimitChange = () => {
+  currentPage.value = 1
+  currentCursor.value = undefined
+  pageCursors.value = []
+  loadEntities()
+}
+
+const nextPage = async () => {
+  if (hasNextPage.value) {
+    // Save current scroll position
+    const scrollX = window.scrollX
+    const scrollY = window.scrollY
+
+    // Use the cursor from the current page to fetch the next page
+    currentCursor.value = pageCursors.value[currentPage.value - 1]
+    currentPage.value++
+    await loadEntities()
+
+    // Restore scroll position after loading
+    window.scrollTo(scrollX, scrollY)
+  }
+}
+
+const previousPage = async () => {
+  if (currentPage.value > 1) {
+    // Save current scroll position
+    const scrollX = window.scrollX
+    const scrollY = window.scrollY
+
+    currentPage.value--
+    // Use the cursor for the previous page (or undefined for page 1)
+    currentCursor.value = currentPage.value === 1 ? undefined : pageCursors.value[currentPage.value - 2]
+    await loadEntities()
+
+    // Restore scroll position after loading
+    window.scrollTo(scrollX, scrollY)
   }
 }
 

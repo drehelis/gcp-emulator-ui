@@ -65,11 +65,12 @@ export const useDatastoreStore = defineStore('datastore', () => {
     }
   }
 
-  // Load all namespaces
+  // Load all namespaces (without database filter to get all namespaces)
   const loadNamespaces = async (projectId: string) => {
     try {
       loading.value = true
-      const namespaceList = await datastoreApi.listNamespaces(projectId, selectedDatabase.value)
+      // Don't pass database filter - we want all namespaces across all databases
+      const namespaceList = await datastoreApi.listNamespaces(projectId)
       namespaces.value = namespaceList
 
       // Set default namespace if not selected
@@ -94,6 +95,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
         selectedDatabase.value
       )
 
+      // Set kinds immediately without counts for fast UI rendering
       kinds.value = kindNames.map(name => ({
         name,
         entityCount: 0,
@@ -102,22 +104,32 @@ export const useDatastoreStore = defineStore('datastore', () => {
         isExpanded: false
       }))
 
-      // OPTIMIZATION: Load entity counts with limit instead of fetching all entities
-      // Only fetch first 1000 entities to get accurate counts for small datasets
-      // For large datasets, we'll show "1000+" instead of exact count
-      await Promise.all(
+      // Load entity counts in background (don't block UI)
+      // Use smaller limit for faster counting
+      Promise.all(
         kinds.value.map(async (kind) => {
-          const kindEntities = await datastoreApi.getEntitiesByKind(
-            projectId,
-            kind.name,
-            selectedNamespace.value,
-            1000, // OPTIMIZATION: Limit to 1000 entities for counting
-            undefined,
-            selectedDatabase.value
-          )
-          kind.entityCount = kindEntities.length
+          try {
+            const result = await datastoreApi.getEntitiesByKind(
+              projectId,
+              kind.name,
+              selectedNamespace.value,
+              100, // Fetch only 100 for quick count estimation
+              undefined,
+              selectedDatabase.value
+            )
+            // Update count reactively
+            kind.entityCount = result.entities.length
+            // If we got exactly 100, there might be more - show 100+
+            if (result.entities.length === 100 && result.hasMore) {
+              kind.entityCount = 100 // UI can show "100+" if needed
+            }
+          } catch (error) {
+            console.warn(`Failed to load count for kind ${kind.name}:`, error)
+          }
         })
-      )
+      ).catch(() => {
+        // Silently handle errors - counts are not critical
+      })
     } catch (error) {
       console.warn('Failed to load kinds:', error)
     } finally {
@@ -129,7 +141,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
   const loadEntities = async (projectId: string, kind: string) => {
     try {
       loading.value = true
-      const kindEntities = await datastoreApi.getEntitiesByKind(
+      const result = await datastoreApi.getEntitiesByKind(
         projectId,
         kind,
         selectedNamespace.value,
@@ -137,6 +149,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
         undefined,
         selectedDatabase.value
       )
+      const kindEntities = result.entities
       entities.value.set(kind, kindEntities)
 
       // Update kind entity count

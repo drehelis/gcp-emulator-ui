@@ -427,7 +427,7 @@ const routes: RouteRecordRaw[] = [
                 meta: {
                   title: 'Namespaces',
                   description: 'Manage Datastore namespaces',
-                  icon: 'CircleStackIcon',
+                  icon: 'FolderIcon',
                   requiresAuth: true,
                   requiresProject: true,
                   breadcrumbs: [

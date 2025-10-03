@@ -368,54 +368,84 @@ export const datastoreApi = {
     kind: string,
     namespaceId?: string,
     limit?: number,
-    offset?: number,
+    cursorOrOffset?: string | number,
     databaseId?: string
-  ): Promise<DatastoreEntity[]> {
+  ): Promise<{ entities: DatastoreEntity[], endCursor?: string, hasMore: boolean }> {
     try {
-      // NOTE: Datastore emulator doesn't support databaseId in query partitionId,
-      // so we query without it and filter results in code
       const partitionId: any = {
         projectId,
         namespaceId: namespaceId || ''
       }
 
-      // OPTIMIZATION: If we have a database filter, fetch more to compensate for filtering
-      // Otherwise use exact limit. Use 3x multiplier as safer estimate than 2x
-      const queryLimit = (databaseId !== undefined && limit)
-        ? Math.min(limit * 3, 5000) // Cap at 5000 to avoid excessive fetching
-        : limit
+      // NOTE: Datastore emulator doesn't support databaseId in partitionId
+      // We must filter results client-side when database is specified
+      const needsFiltering = databaseId !== undefined
+
+      // Determine if we're using cursor (string) or offset (number) pagination
+      const cursor = typeof cursorOrOffset === 'string' ? cursorOrOffset : undefined
+      const offset = typeof cursorOrOffset === 'number' ? cursorOrOffset : undefined
+
+      // When filtering by database, use offset-based pagination and fetch more to compensate
+      const queryLimit = needsFiltering && limit ? Math.min(limit * 3, 5000) : limit
+
+      const query: any = {
+        kind: [{ name: kind }],
+        limit: queryLimit
+      }
+
+      // Use cursor for normal queries, offset when filtering by database
+      if (needsFiltering && offset !== undefined) {
+        query.offset = offset
+      } else if (!needsFiltering && cursor) {
+        query.startCursor = cursor
+      }
 
       const request: RunQueryRequest = {
         partitionId,
-        query: {
-          kind: [{ name: kind }],
-          limit: queryLimit,
-          offset
-        }
+        query
       }
 
       const response = await datastoreClient.post(`/v1/projects/${projectId}:runQuery`, request)
 
       if (response.data.batch?.entityResults) {
         const entities = response.data.batch.entityResults.map((result: any) => result.entity)
+        const endCursor = response.data.batch.endCursor
+        const moreResults = response.data.batch.moreResults
 
-        // Filter by database if specified
-        if (databaseId !== undefined) {
+        // Check if there are more results
+        const hasMore = moreResults === 'MORE_RESULTS_AFTER_LIMIT' ||
+                       moreResults === 'MORE_RESULTS_AFTER_CURSOR' ||
+                       moreResults === 'NOT_FINISHED'
+
+        // Filter by database if needed
+        if (needsFiltering) {
           const filtered = entities.filter((entity: DatastoreEntity) => {
             const entityDb = entity.key?.partitionId?.databaseId || ''
             return entityDb === databaseId
           })
           // Apply limit after filtering
-          return limit ? filtered.slice(0, limit) : filtered
+          const limitedEntities = limit ? filtered.slice(0, limit) : filtered
+
+          // Don't return cursor when filtering (can't use it anyway)
+          // Estimate if there are more results based on whether we got enough filtered results
+          return {
+            entities: limitedEntities,
+            endCursor: undefined,
+            hasMore: hasMore && limitedEntities.length >= (limit || 0)
+          }
         }
 
-        return entities
+        return {
+          entities,
+          endCursor,
+          hasMore
+        }
       }
 
-      return []
+      return { entities: [], hasMore: false }
     } catch (error) {
       console.error('Failed to get entities by kind:', error)
-      return []
+      return { entities: [], hasMore: false }
     }
   },
 
