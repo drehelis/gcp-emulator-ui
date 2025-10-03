@@ -24,6 +24,7 @@ declare module 'vue' {
     DocumentField: typeof import('./src/components/firestore/DocumentField.vue')['default']
     DocumentsList: typeof import('./src/components/firestore/DocumentsList.vue')['default']
     DocumentsPanel: typeof import('./src/components/firestore/panels/DocumentsPanel.vue')['default']
+    EntityDetailsModal: typeof import('./src/components/datastore/EntityDetailsModal.vue')['default']
     FieldEditor: typeof import('./src/components/firestore/FieldEditor.vue')['default']
     FieldFormComponent: typeof import('./src/components/firestore/FieldFormComponent.vue')['default']
     FieldItem: typeof import('./src/components/firestore/fields/FieldItem.vue')['default']

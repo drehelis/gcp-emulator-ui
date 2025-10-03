@@ -286,9 +286,10 @@
               <tr
                 v-for="entity in entities"
                 :key="getEntityId(entity)"
-                class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                @click="openEntityDetails(entity)"
               >
-                <td class="px-3 py-2 whitespace-nowrap">
+                <td class="px-3 py-2 whitespace-nowrap" @click.stop>
                   <input
                     type="checkbox"
                     :checked="selectedEntities.includes(getEntityId(entity))"
@@ -298,7 +299,7 @@
                 </td>
                 <td class="px-3 py-2 whitespace-nowrap">
                   <div
-                    class="text-sm font-mono font-medium text-gray-900 dark:text-white cursor-help"
+                    class="text-sm font-mono font-medium text-gray-900 dark:text-white"
                     :title="getEntityId(entity)"
                   >
                     {{ getDisplayEntityId(entity) }}
@@ -307,7 +308,7 @@
                 <td v-if="showParentColumn" class="px-3 py-2 whitespace-nowrap">
                   <div
                     v-if="getEntityParent(entity)"
-                    class="text-sm font-mono text-gray-600 dark:text-gray-400 cursor-help"
+                    class="text-sm font-mono text-gray-600 dark:text-gray-400"
                     :title="getEntityParent(entity)"
                   >
                     {{ getDisplayEntityParent(entity) }}
@@ -402,6 +403,13 @@
         </div>
       </div>
     </div>
+
+    <!-- Entity Details Modal -->
+    <EntityDetailsModal
+      v-model="showEntityDetailsModal"
+      :entity="selectedEntity"
+      @close="closeEntityDetails"
+    />
   </div>
 </template>
 
@@ -429,6 +437,7 @@ import type { DatastoreEntity } from '@/types'
 import type { SelectOption } from '@/components/ui/CustomSelect.vue'
 import datastoreApi from '@/api/datastore'
 import CustomSelect from '@/components/ui/CustomSelect.vue'
+import EntityDetailsModal from '@/components/datastore/EntityDetailsModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -446,6 +455,8 @@ const currentPage = ref<number>(1)
 const hasNextPage = ref<boolean>(false)
 const pageCursors = ref<string[]>([]) // Stack of cursors for each page
 const currentCursor = ref<string | undefined>(undefined)
+const showEntityDetailsModal = ref(false)
+const selectedEntity = ref<DatastoreEntity | null>(null)
 
 // Computed
 const currentProjectId = computed(() => route.params.projectId as string)
@@ -769,6 +780,16 @@ const createEntity = () => {
 const editEntity = (entity: DatastoreEntity) => {
   // TODO: Open edit entity modal
   console.log('Edit entity:', entity)
+}
+
+const openEntityDetails = (entity: DatastoreEntity) => {
+  selectedEntity.value = entity
+  showEntityDetailsModal.value = true
+}
+
+const closeEntityDetails = () => {
+  showEntityDetailsModal.value = false
+  selectedEntity.value = null
 }
 
 const deleteEntityConfirm = async (entity: DatastoreEntity) => {
