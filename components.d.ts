@@ -47,6 +47,7 @@ declare module 'vue' {
     NavItem: typeof import('./src/components/navigation/NavItem.vue')['default']
     NestedFieldRenderer: typeof import('./src/components/firestore/NestedFieldRenderer.vue')['default']
     PageHeader: typeof import('./src/components/firestore/layout/PageHeader.vue')['default']
+    PaginationFooter: typeof import('./src/components/ui/PaginationFooter.vue')['default']
     ProjectSelector: typeof import('./src/components/navigation/ProjectSelector.vue')['default']
     PublishMessageModal: typeof import('./src/components/modals/PublishMessageModal.vue')['default']
     PubSubImportExport: typeof import('./src/components/import-export/PubSubImportExport.vue')['default']

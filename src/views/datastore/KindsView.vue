@@ -129,8 +129,8 @@
                 {{ selectedKind }}
               </h2>
               <p class="text-sm text-gray-500 dark:text-gray-400">
-                {{ entities.length }} entities
-                <span v-if="selectedDatabase"> in database "{{ selectedDatabase || '(default)' }}"</span>
+                Showing {{ entities.length }} entities
+                <span v-if="selectedDatabase"></span>
               </p>
             </div>
             <div class="flex items-center gap-2">
@@ -214,12 +214,40 @@
               </Menu>
 
               <button
+                v-if="selectedEntities.length > 0"
+                @click="deleteSelectedEntities"
+                class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+              >
+                <TrashIcon class="w-4 h-4 mr-2" />
+                Delete ({{ selectedEntities.length }})
+              </button>
+
+              <button
                 @click="createEntity"
                 class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
               >
                 <PlusIcon class="w-4 h-4 mr-2" />
-                New Entity
+                Create Entity
               </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Named Database Warning -->
+        <div
+          v-if="selectedDatabase && selectedDatabase !== '' && selectedDatabase !== '(default)' && entities.length > 0"
+          class="mx-6 mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg"
+        >
+          <div class="flex items-start">
+            <ExclamationTriangleIcon class="w-5 h-5 text-amber-600 dark:text-amber-400 mr-3 flex-shrink-0 mt-0.5" />
+            <div class="flex-1">
+              <p class="text-sm font-medium text-amber-900 dark:text-amber-200">
+                Emulator Limitation: Named Database
+              </p>
+              <p class="mt-1 text-sm text-amber-800 dark:text-amber-300">
+                Delete operations are not supported for entities in named database "<span class="font-mono">{{ selectedDatabase }}</span>".
+                The Datastore emulator only supports mutations on the default database.
+              </p>
             </div>
           </div>
         </div>
@@ -410,6 +438,21 @@
       :entity="selectedEntity"
       @close="closeEntityDetails"
     />
+
+    <!-- Delete Confirmation Modal -->
+    <ConfirmationModal
+      v-model="showDeleteModal"
+      :title="deleteModalTitle"
+      :message="deleteModalMessage"
+      confirm-label="Delete"
+      :is-loading="isDeleting"
+      :details="{
+        title: 'What will happen:',
+        description: 'The selected entities will be permanently deleted from the datastore.'
+      }"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
   </div>
 </template>
 
@@ -430,18 +473,22 @@ import {
   ChevronRightIcon,
   ChevronLeftIcon,
   ChevronDownIcon,
-  ViewColumnsIcon
+  ViewColumnsIcon,
+  ExclamationTriangleIcon
 } from '@heroicons/vue/24/outline'
 import { useDatastoreStore } from '@/stores/datastore'
+import { useAppStore } from '@/stores/app'
 import type { DatastoreEntity } from '@/types'
 import type { SelectOption } from '@/components/ui/CustomSelect.vue'
 import datastoreApi from '@/api/datastore'
 import CustomSelect from '@/components/ui/CustomSelect.vue'
 import EntityDetailsModal from '@/components/datastore/EntityDetailsModal.vue'
+import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
 
 const route = useRoute()
 const router = useRouter()
 const datastoreStore = useDatastoreStore()
+const appStore = useAppStore()
 
 // State
 const selectedKind = ref<string>('')
@@ -457,6 +504,10 @@ const pageCursors = ref<string[]>([]) // Stack of cursors for each page
 const currentCursor = ref<string | undefined>(undefined)
 const showEntityDetailsModal = ref(false)
 const selectedEntity = ref<DatastoreEntity | null>(null)
+const showDeleteModal = ref(false)
+const isDeleting = ref(false)
+const entitiesToDelete = ref<string[]>([])
+const deleteMode = ref<'single' | 'multiple'>('multiple')
 
 // Computed
 const currentProjectId = computed(() => route.params.projectId as string)
@@ -484,6 +535,20 @@ const allSelected = computed(() =>
   entities.value.length > 0 &&
   selectedEntities.value.length === entities.value.length
 )
+
+const deleteModalTitle = computed(() => {
+  if (deleteMode.value === 'single') {
+    return 'Delete Entity'
+  }
+  return `Delete ${entitiesToDelete.value.length} Entities`
+})
+
+const deleteModalMessage = computed(() => {
+  if (deleteMode.value === 'single') {
+    return `Are you sure you want to delete this entity?`
+  }
+  return `Are you sure you want to delete ${entitiesToDelete.value.length} selected entities?`
+})
 
 const paginationStart = computed(() => {
   if (entities.value.length === 0) return 0
@@ -792,22 +857,67 @@ const closeEntityDetails = () => {
   selectedEntity.value = null
 }
 
-const deleteEntityConfirm = async (entity: DatastoreEntity) => {
-  if (!confirm('Are you sure you want to delete this entity?')) return
+const deleteEntityConfirm = (entity: DatastoreEntity) => {
+  deleteMode.value = 'single'
+  entitiesToDelete.value = [getEntityId(entity)]
+  showDeleteModal.value = true
+}
+
+const deleteSelectedEntities = () => {
+  deleteMode.value = 'multiple'
+  entitiesToDelete.value = [...selectedEntities.value]
+  showDeleteModal.value = true
+}
+
+const confirmDelete = async () => {
+  const count = entitiesToDelete.value.length
 
   try {
-    await datastoreApi.deleteEntity(currentProjectId.value, entity.key)
+    isDeleting.value = true
+
+    // Delete each entity
+    const deletePromises = entitiesToDelete.value.map(entityId => {
+      const entity = entities.value.find(e => getEntityId(e) === entityId)
+      if (entity) {
+        return datastoreApi.deleteEntity(currentProjectId.value, entity.key)
+      }
+      return Promise.resolve()
+    })
+
+    await Promise.all(deletePromises)
+
+    // Clear selection
+    selectedEntities.value = []
+
+    // Close modal
+    showDeleteModal.value = false
+
+    // Show success toast
+    appStore.showToast({
+      type: 'success',
+      title: 'Entities Deleted',
+      message: `Successfully deleted ${count} ${count === 1 ? 'entity' : 'entities'}`
+    })
+
+    // Reload entities
     await loadEntities()
   } catch (error) {
-    console.error('Failed to delete entity:', error)
+    console.error('Failed to delete entities:', error)
+
+    // Show error toast
+    appStore.showToast({
+      type: 'error',
+      title: 'Delete Failed',
+      message: `Failed to delete ${count === 1 ? 'entity' : 'entities'}. Please try again.`
+    })
+  } finally {
+    isDeleting.value = false
   }
 }
 
-const deleteSelectedEntities = async () => {
-  if (!confirm(`Delete ${selectedEntities.value.length} selected entity(ies)?`)) return
-
-  // TODO: Implement bulk delete
-  console.log('Delete selected:', selectedEntities.value)
+const cancelDelete = () => {
+  entitiesToDelete.value = []
+  showDeleteModal.value = false
 }
 
 const toggleSelectAll = () => {

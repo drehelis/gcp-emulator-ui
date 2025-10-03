@@ -56,97 +56,154 @@
 
       <!-- Properties -->
       <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
-        <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-4">Properties</h3>
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 flex items-center">
+            <span class="w-1 h-4 bg-blue-500 dark:bg-blue-400 rounded mr-2"></span>
+            Properties
+          </h3>
+          <button
+            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+            title="Add property"
+          >
+            <PlusIcon class="w-3.5 h-3.5 mr-1" />
+            Add property
+          </button>
+        </div>
 
         <div v-if="!entity.properties || Object.keys(entity.properties).length === 0" class="text-center py-8">
           <InboxIcon class="mx-auto w-12 h-12 text-gray-400 dark:text-gray-600 mb-2" />
           <p class="text-sm text-gray-500 dark:text-gray-400">No properties</p>
         </div>
 
-        <div v-else class="space-y-4">
-          <div
-            v-for="(value, key) in entity.properties"
-            :key="key"
-            class="border border-gray-200 dark:border-gray-600 rounded-lg p-3 bg-white dark:bg-gray-800"
-          >
-            <div class="flex items-start justify-between mb-2">
-              <div class="flex-1">
-                <div class="flex items-center gap-2">
-                  <label class="text-sm font-medium text-gray-900 dark:text-white font-mono">
-                    {{ key }}
-                  </label>
-                  <span class="inline-flex items-center px-2 py-0.5 text-xs rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">
+        <div v-else class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-100 dark:bg-gray-800">
+              <tr>
+                <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                  Name
+                </th>
+                <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                  Type
+                </th>
+                <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                  Value
+                </th>
+                <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                  Indexed
+                </th>
+                <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tr
+                v-for="(value, key) in paginatedProperties"
+                :key="key"
+                class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+              >
+                <!-- Name -->
+                <td class="px-3 py-2 whitespace-nowrap">
+                  <code class="text-xs font-mono text-gray-900 dark:text-gray-100">{{ key }}</code>
+                </td>
+
+                <!-- Type -->
+                <td class="px-3 py-2 whitespace-nowrap">
+                  <span class="inline-flex items-center px-2 py-0.5 text-xs rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-medium">
                     {{ getPropertyType(value) }}
                   </span>
-                  <span v-if="value.excludeFromIndexes" class="inline-flex items-center px-2 py-0.5 text-xs rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
-                    Not indexed
+                </td>
+
+                <!-- Value -->
+                <td class="px-3 py-2">
+                  <div class="max-w-md">
+                    <!-- String value -->
+                    <code v-if="value.stringValue !== undefined" class="text-xs font-mono text-gray-900 dark:text-gray-100 break-all">{{ value.stringValue }}</code>
+
+                    <!-- Integer value -->
+                    <code v-else-if="value.integerValue !== undefined" class="text-xs font-mono text-gray-900 dark:text-gray-100">{{ value.integerValue }}</code>
+
+                    <!-- Double value -->
+                    <code v-else-if="value.doubleValue !== undefined" class="text-xs font-mono text-gray-900 dark:text-gray-100">{{ value.doubleValue }}</code>
+
+                    <!-- Boolean value -->
+                    <code v-else-if="value.booleanValue !== undefined" class="text-xs font-mono text-gray-900 dark:text-gray-100">{{ value.booleanValue }}</code>
+
+                    <!-- Timestamp value -->
+                    <code v-else-if="value.timestampValue !== undefined" class="text-xs font-mono text-gray-900 dark:text-gray-100">{{ value.timestampValue }}</code>
+
+                    <!-- Null value -->
+                    <code v-else-if="value.nullValue !== undefined" class="text-xs font-mono text-gray-500 dark:text-gray-400 italic">null</code>
+
+                    <!-- Array value -->
+                    <code v-else-if="value.arrayValue" class="text-xs font-mono text-gray-900 dark:text-gray-100 block">
+                      <pre class="whitespace-pre-wrap break-all">{{ formatArrayValue(value.arrayValue) }}</pre>
+                    </code>
+
+                    <!-- Entity value (nested) -->
+                    <code v-else-if="value.entityValue" class="text-xs font-mono text-gray-900 dark:text-gray-100 block">
+                      <pre class="whitespace-pre-wrap break-all">{{ formatEntityValue(value.entityValue) }}</pre>
+                    </code>
+
+                    <!-- Key value -->
+                    <code v-else-if="value.keyValue" class="text-xs font-mono text-gray-900 dark:text-gray-100 block">
+                      <pre class="whitespace-pre-wrap break-all">{{ JSON.stringify(value.keyValue, null, 2) }}</pre>
+                    </code>
+
+                    <!-- Blob value -->
+                    <code v-else-if="value.blobValue !== undefined" class="text-xs font-mono text-gray-900 dark:text-gray-100 break-all">{{ value.blobValue }}</code>
+
+                    <!-- GeoPoint value -->
+                    <code v-else-if="value.geoPointValue" class="text-xs font-mono text-gray-900 dark:text-gray-100">{{ value.geoPointValue.latitude }}, {{ value.geoPointValue.longitude }}</code>
+
+                    <!-- Unknown type -->
+                    <code v-else class="text-xs font-mono text-gray-500 dark:text-gray-400 italic">Unknown type</code>
+                  </div>
+                </td>
+
+                <!-- Indexed -->
+                <td class="px-3 py-2 whitespace-nowrap">
+                  <span v-if="!value.excludeFromIndexes" class="inline-flex items-center px-2 py-0.5 text-xs rounded bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                    Yes
                   </span>
-                </div>
-              </div>
-            </div>
+                  <span v-else class="inline-flex items-center px-2 py-0.5 text-xs rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                    No
+                  </span>
+                </td>
 
-            <div class="mt-2">
-              <!-- String value -->
-              <div v-if="value.stringValue !== undefined" class="px-3 py-2 bg-gray-50 dark:bg-gray-900 rounded text-sm text-gray-900 dark:text-gray-100 font-mono break-all">
-                {{ value.stringValue }}
-              </div>
+                <!-- Actions -->
+                <td class="px-3 py-2 whitespace-nowrap">
+                  <div class="flex items-center gap-1">
+                    <button
+                      class="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                      title="Edit property"
+                    >
+                      <PencilIcon class="w-4 h-4" />
+                    </button>
+                    <button
+                      class="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                      title="Delete property"
+                    >
+                      <TrashIcon class="w-4 h-4" />
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
-              <!-- Integer value -->
-              <div v-else-if="value.integerValue !== undefined" class="px-3 py-2 bg-gray-50 dark:bg-gray-900 rounded text-sm text-gray-900 dark:text-gray-100 font-mono">
-                {{ value.integerValue }}
-              </div>
-
-              <!-- Double value -->
-              <div v-else-if="value.doubleValue !== undefined" class="px-3 py-2 bg-gray-50 dark:bg-gray-900 rounded text-sm text-gray-900 dark:text-gray-100 font-mono">
-                {{ value.doubleValue }}
-              </div>
-
-              <!-- Boolean value -->
-              <div v-else-if="value.booleanValue !== undefined" class="px-3 py-2 bg-gray-50 dark:bg-gray-900 rounded text-sm text-gray-900 dark:text-gray-100 font-mono">
-                {{ value.booleanValue }}
-              </div>
-
-              <!-- Timestamp value -->
-              <div v-else-if="value.timestampValue !== undefined" class="px-3 py-2 bg-gray-50 dark:bg-gray-900 rounded text-sm text-gray-900 dark:text-gray-100 font-mono">
-                {{ value.timestampValue }}
-              </div>
-
-              <!-- Null value -->
-              <div v-else-if="value.nullValue !== undefined" class="px-3 py-2 bg-gray-50 dark:bg-gray-900 rounded text-sm text-gray-500 dark:text-gray-400 font-mono italic">
-                null
-              </div>
-
-              <!-- Array value -->
-              <div v-else-if="value.arrayValue" class="px-3 py-2 bg-gray-50 dark:bg-gray-900 rounded text-sm text-gray-900 dark:text-gray-100 font-mono">
-                <pre class="whitespace-pre-wrap break-all">{{ formatArrayValue(value.arrayValue) }}</pre>
-              </div>
-
-              <!-- Entity value (nested) -->
-              <div v-else-if="value.entityValue" class="px-3 py-2 bg-gray-50 dark:bg-gray-900 rounded text-sm text-gray-900 dark:text-gray-100 font-mono">
-                <pre class="whitespace-pre-wrap break-all">{{ formatEntityValue(value.entityValue) }}</pre>
-              </div>
-
-              <!-- Key value -->
-              <div v-else-if="value.keyValue" class="px-3 py-2 bg-gray-50 dark:bg-gray-900 rounded text-sm text-gray-900 dark:text-gray-100 font-mono">
-                <pre class="whitespace-pre-wrap break-all">{{ JSON.stringify(value.keyValue, null, 2) }}</pre>
-              </div>
-
-              <!-- Blob value -->
-              <div v-else-if="value.blobValue !== undefined" class="px-3 py-2 bg-gray-50 dark:bg-gray-900 rounded text-sm text-gray-900 dark:text-gray-100 font-mono">
-                {{ value.blobValue }}
-              </div>
-
-              <!-- GeoPoint value -->
-              <div v-else-if="value.geoPointValue" class="px-3 py-2 bg-gray-50 dark:bg-gray-900 rounded text-sm text-gray-900 dark:text-gray-100 font-mono">
-                {{ value.geoPointValue.latitude }}, {{ value.geoPointValue.longitude }}
-              </div>
-
-              <!-- Unknown type -->
-              <div v-else class="px-3 py-2 bg-gray-50 dark:bg-gray-900 rounded text-sm text-gray-500 dark:text-gray-400 font-mono italic">
-                Unknown type
-              </div>
-            </div>
-          </div>
+          <!-- Table Footer -->
+          <PaginationFooter
+            v-model:limit="propertiesPagination.limit.value"
+            :current-page="propertiesPagination.currentPage.value"
+            :pagination-start="propertiesPaginatedData.paginationStart.value"
+            :pagination-end="propertiesPaginatedData.paginationEnd.value"
+            :has-more="propertiesPaginatedData.hasMore.value"
+            :limit-options="propertiesPagination.defaultLimits"
+            @limit-change="propertiesPagination.handleLimitChange"
+            @next="propertiesPagination.nextPage"
+            @previous="propertiesPagination.previousPage"
+          />
         </div>
       </div>
     </div>
@@ -154,12 +211,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { CubeIcon, InboxIcon } from '@heroicons/vue/24/outline'
+import { computed, ref } from 'vue'
+import { CubeIcon, InboxIcon, PencilIcon, TrashIcon, PlusIcon } from '@heroicons/vue/24/outline'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
 import type { DatastoreEntity, DatastoreValue } from '@/types'
 import datastoreApi from '@/api/datastore'
+import PaginationFooter from '@/components/ui/PaginationFooter.vue'
+import { usePagination, usePaginatedData } from '@/composables/usePagination'
 
 interface Props {
   modelValue: boolean
@@ -184,6 +243,28 @@ const modalActions = computed<ModalAction[]>(() => [
     variant: 'secondary'
   }
 ])
+
+// Properties pagination
+const propertiesPagination = usePagination({ initialLimit: 25 })
+
+const propertiesArray = computed(() => {
+  if (!props.entity?.properties) return []
+  return Object.entries(props.entity.properties)
+})
+
+const totalPropertiesCount = computed(() => propertiesArray.value.length)
+
+const propertiesPaginatedData = usePaginatedData(
+  {
+    items: propertiesArray,
+    totalCount: totalPropertiesCount
+  },
+  propertiesPagination
+)
+
+const paginatedProperties = computed(() => {
+  return Object.fromEntries(propertiesPaginatedData.paginatedItems.value)
+})
 
 const getEntityKind = (entity: DatastoreEntity): string => {
   return datastoreApi.getKeyKind(entity.key) || 'unknown'

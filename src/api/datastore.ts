@@ -528,19 +528,64 @@ export const datastoreApi = {
 
   // Delete an entity
   async deleteEntity(projectId: string, key: DatastoreKey): Promise<void> {
-    const request: CommitRequest = {
-      mode: 'NON_TRANSACTIONAL',
-      mutations: [
-        {
-          delete: key
-        }
-      ]
+    console.log('[Datastore API] Deleting entity with key:', JSON.stringify(key, null, 2))
+
+    // CRITICAL LIMITATION: The Datastore emulator does not support mutation operations
+    // (insert, update, upsert, delete) on entities in named databases.
+    //
+    // According to the official API spec:
+    // https://cloud.google.com/datastore/docs/reference/data/rest/v1/projects/commit
+    // - databaseId should be at the request body level
+    // - Keys should NOT include databaseId in partitionId
+    //
+    // However, the emulator:
+    // 1. Returns entities with databaseId in their keys (from queries)
+    // 2. Rejects mutations when databaseId is in request body: "mismatched databases"
+    // 3. Rejects mutations when databaseId is in key: "mismatched databases"
+    // 4. Returns 404 for database-specific endpoints: /databases/{databaseId}:commit
+    // 5. Returns 200 OK without databaseId but doesn't actually delete (wrong database)
+    //
+    // This is a confirmed bug in the emulator. Named databases only work for queries.
+
+    const databaseId = key.partitionId.databaseId
+
+    // Block delete operations on named databases with a clear error message
+    if (databaseId && databaseId !== '' && databaseId !== '(default)') {
+      throw new Error(
+        `Delete operations are not supported for entities in named database "${databaseId}". ` +
+        `This is a known limitation of the Datastore emulator. ` +
+        `See: https://github.com/googleapis/google-cloud-go/issues/2078`
+      )
     }
 
-    await datastoreClient.post(`/v1/projects/${projectId}:commit`, request)
+    // For default database entities, strip databaseId from key
+    const cleanKey: DatastoreKey = {
+      partitionId: {
+        projectId: key.partitionId.projectId,
+        namespaceId: key.partitionId.namespaceId
+      },
+      path: key.path
+    }
 
-    // Invalidate caches since we deleted an entity
-    clearCache(projectId)
+    try {
+      const request: CommitRequest = {
+        mode: 'NON_TRANSACTIONAL',
+        mutations: [
+          {
+            delete: cleanKey
+          }
+        ]
+      }
+
+      const response = await datastoreClient.post(`/v1/projects/${projectId}:commit`, request)
+      console.log('[Datastore API] Delete successful:', response.data)
+
+      clearCache(projectId)
+    } catch (error: any) {
+      const errorMsg = error.response?.data?.error?.message || error.message
+      console.error('[Datastore API] Delete failed:', errorMsg)
+      throw new Error(`Failed to delete entity: ${errorMsg}`)
+    }
   },
 
   // Delete all entities of a kind
