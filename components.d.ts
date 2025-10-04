@@ -51,6 +51,7 @@ declare module 'vue' {
     PageHeader: typeof import('./src/components/firestore/layout/PageHeader.vue')['default']
     PaginationFooter: typeof import('./src/components/ui/PaginationFooter.vue')['default']
     ProjectSelector: typeof import('./src/components/navigation/ProjectSelector.vue')['default']
+    PropertyEditor: typeof import('./src/components/datastore/PropertyEditor.vue')['default']
     PublishMessageModal: typeof import('./src/components/modals/PublishMessageModal.vue')['default']
     PubSubImportExport: typeof import('./src/components/import-export/PubSubImportExport.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

@@ -33,7 +33,7 @@
                 href="https://github.com/drehelis/gcp-emulator-ui"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="p-1.5 hover:opacity-70 theme-transition-colors"
+                class="p-1.5 hover:opacity-70 theme-transition-colors hover:scale-110 transition-transform"
                 title="View on GitHub"
               >
                 <svg width="20" height="20" viewBox="0 0 98 96" xmlns="http://www.w3.org/2000/svg" class="fill-gray-700 dark:fill-gray-300">

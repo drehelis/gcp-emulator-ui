@@ -62,15 +62,34 @@
             Properties
           </h3>
           <button
+            @click="handleAddEditProperty"
             class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-            title="Add property"
+            :title="editMode ? 'Add new property' : 'Add or edit properties'"
           >
             <PlusIcon class="w-3.5 h-3.5 mr-1" />
-            Add property
+            {{ editMode ? 'Add new property' : 'Add/Edit property' }}
           </button>
         </div>
 
-        <div v-if="!entity.properties || Object.keys(entity.properties).length === 0" class="text-center py-8">
+        <!-- Edit Mode: Property Editors -->
+        <div v-if="editMode" class="space-y-3">
+          <div v-if="editedProperties.length === 0" class="text-center py-8 px-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+            <InboxIcon class="w-10 h-10 mx-auto mb-3 text-gray-400 dark:text-gray-500" />
+            <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">No properties yet</p>
+            <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">Click "Add property" to create your first property</p>
+          </div>
+
+          <PropertyEditor
+            v-for="(property, index) in editedProperties"
+            :key="index"
+            :property="property"
+            :property-id="`edit-${index}`"
+            @remove="removeProperty(index)"
+          />
+        </div>
+
+        <!-- View Mode: Table -->
+        <div v-else-if="!entity.properties || Object.keys(entity.properties).length === 0" class="text-center py-8">
           <InboxIcon class="mx-auto w-12 h-12 text-gray-400 dark:text-gray-600 mb-2" />
           <p class="text-sm text-gray-500 dark:text-gray-400">No properties</p>
         </div>
@@ -79,20 +98,41 @@
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead class="bg-gray-100 dark:bg-gray-800">
               <tr>
-                <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                  Name
+                <th
+                  @click="sortBy('name')"
+                  class="px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <div class="flex items-center">
+                    Name
+                    <ChevronUpIcon v-if="sortColumn === 'name' && sortDirection === 'asc'" class="w-4 h-4 ml-1" />
+                    <ChevronDownIcon v-else-if="sortColumn === 'name' && sortDirection === 'desc'" class="w-4 h-4 ml-1" />
+                    <ChevronUpDownIcon v-else class="w-4 h-4 ml-1 opacity-30" />
+                  </div>
                 </th>
-                <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                  Type
+                <th
+                  @click="sortBy('type')"
+                  class="px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <div class="flex items-center">
+                    Type
+                    <ChevronUpIcon v-if="sortColumn === 'type' && sortDirection === 'asc'" class="w-4 h-4 ml-1" />
+                    <ChevronDownIcon v-else-if="sortColumn === 'type' && sortDirection === 'desc'" class="w-4 h-4 ml-1" />
+                    <ChevronUpDownIcon v-else class="w-4 h-4 ml-1 opacity-30" />
+                  </div>
                 </th>
                 <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                   Value
                 </th>
-                <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                  Indexed
-                </th>
-                <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                  Actions
+                <th
+                  @click="sortBy('indexed')"
+                  class="px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                >
+                  <div class="flex items-center">
+                    Indexed
+                    <ChevronUpIcon v-if="sortColumn === 'indexed' && sortDirection === 'asc'" class="w-4 h-4 ml-1" />
+                    <ChevronDownIcon v-else-if="sortColumn === 'indexed' && sortDirection === 'desc'" class="w-4 h-4 ml-1" />
+                    <ChevronUpDownIcon v-else class="w-4 h-4 ml-1 opacity-30" />
+                  </div>
                 </th>
               </tr>
             </thead>
@@ -170,24 +210,6 @@
                     No
                   </span>
                 </td>
-
-                <!-- Actions -->
-                <td class="px-3 py-2 whitespace-nowrap">
-                  <div class="flex items-center gap-1">
-                    <button
-                      class="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
-                      title="Edit property"
-                    >
-                      <PencilIcon class="w-4 h-4" />
-                    </button>
-                    <button
-                      class="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
-                      title="Delete property"
-                    >
-                      <TrashIcon class="w-4 h-4" />
-                    </button>
-                  </div>
-                </td>
               </tr>
             </tbody>
           </table>
@@ -211,14 +233,18 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { CubeIcon, InboxIcon, PencilIcon, TrashIcon, PlusIcon } from '@heroicons/vue/24/outline'
+import { computed, ref, watch } from 'vue'
+import { CubeIcon, InboxIcon, PlusIcon, ChevronUpDownIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/vue/24/outline'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
 import type { DatastoreEntity, DatastoreValue } from '@/types'
 import datastoreApi from '@/api/datastore'
 import PaginationFooter from '@/components/ui/PaginationFooter.vue'
 import { usePagination, usePaginatedData } from '@/composables/usePagination'
+import PropertyEditor, { type PropertyForm } from '@/components/datastore/PropertyEditor.vue'
+import { useDatastoreStore } from '@/stores/datastore'
+import { useAppStore } from '@/stores/app'
+import { useRoute } from 'vue-router'
 
 interface Props {
   modelValue: boolean
@@ -229,27 +255,88 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   close: []
+  updated: [entity: DatastoreEntity]
 }>()
+
+const route = useRoute()
+const datastoreStore = useDatastoreStore()
+const appStore = useAppStore()
+
+// Edit mode state
+const editMode = ref(false)
+const isSaving = ref(false)
+const editedProperties = ref<PropertyForm[]>([])
+const editingProperty = ref<{ key: string; index: number } | null>(null)
+
+// Sorting state
+const sortColumn = ref<'name' | 'type' | 'indexed' | null>(null)
+const sortDirection = ref<'asc' | 'desc'>('asc')
 
 const modelValue = computed({
   get: () => props.modelValue,
   set: (value: boolean) => emit('update:modelValue', value)
 })
 
-const modalActions = computed<ModalAction[]>(() => [
-  {
-    label: 'Close',
-    handler: handleClose,
-    variant: 'secondary'
+const modalActions = computed<ModalAction[]>(() => {
+  if (editMode.value) {
+    return [
+      {
+        label: 'Cancel',
+        handler: cancelEdit,
+        variant: 'secondary'
+      },
+      {
+        label: 'Save Changes',
+        handler: saveChanges,
+        variant: 'primary',
+        loading: isSaving.value
+      }
+    ]
   }
-])
+
+  return [
+    {
+      label: 'Close',
+      handler: handleClose,
+      variant: 'secondary'
+    }
+  ]
+})
 
 // Properties pagination
 const propertiesPagination = usePagination({ initialLimit: 25 })
 
 const propertiesArray = computed(() => {
   if (!props.entity?.properties) return []
-  return Object.entries(props.entity.properties)
+  let entries = Object.entries(props.entity.properties)
+
+  // Apply sorting if a column is selected
+  if (sortColumn.value) {
+    entries = entries.sort((a, b) => {
+      const [keyA, valueA] = a
+      const [keyB, valueB] = b
+
+      let compareResult = 0
+
+      switch (sortColumn.value) {
+        case 'name':
+          compareResult = keyA.localeCompare(keyB)
+          break
+        case 'type':
+          compareResult = getPropertyType(valueA).localeCompare(getPropertyType(valueB))
+          break
+        case 'indexed':
+          const indexedA = !valueA.excludeFromIndexes
+          const indexedB = !valueB.excludeFromIndexes
+          compareResult = indexedA === indexedB ? 0 : indexedA ? -1 : 1
+          break
+      }
+
+      return sortDirection.value === 'asc' ? compareResult : -compareResult
+    })
+  }
+
+  return entries
 })
 
 const totalPropertiesCount = computed(() => propertiesArray.value.length)
@@ -383,8 +470,185 @@ const convertEntityToObject = (entityValue: any): any => {
   return result
 }
 
+// Convert Datastore value to PropertyForm
+const datastoreValueToPropertyForm = (key: string, value: DatastoreValue): PropertyForm => {
+  let type: PropertyForm['type'] = 'string'
+  let val = ''
+
+  if (value.stringValue !== undefined) {
+    type = 'string'
+    val = value.stringValue
+  } else if (value.integerValue !== undefined) {
+    type = 'integer'
+    val = String(value.integerValue)
+  } else if (value.doubleValue !== undefined) {
+    type = 'double'
+    val = String(value.doubleValue)
+  } else if (value.booleanValue !== undefined) {
+    type = 'boolean'
+    val = String(value.booleanValue)
+  } else if (value.timestampValue !== undefined) {
+    type = 'timestamp'
+    val = value.timestampValue
+  } else if (value.blobValue !== undefined) {
+    type = 'blob'
+    val = value.blobValue
+  } else if (value.nullValue !== undefined) {
+    type = 'null'
+    val = ''
+  }
+
+  return {
+    name: key,
+    type,
+    value: val,
+    indexed: !value.excludeFromIndexes,
+    expanded: false
+  }
+}
+
+// Convert PropertyForm to Datastore value
+const propertyFormToDatastoreValue = (property: PropertyForm): DatastoreValue => {
+  const datastoreValue: DatastoreValue = {
+    excludeFromIndexes: !property.indexed
+  }
+
+  switch (property.type) {
+    case 'string':
+      datastoreValue.stringValue = property.value
+      break
+    case 'integer':
+      datastoreValue.integerValue = property.value
+      break
+    case 'double':
+      datastoreValue.doubleValue = parseFloat(property.value) || 0
+      break
+    case 'boolean':
+      datastoreValue.booleanValue = property.value === 'true'
+      break
+    case 'timestamp':
+      datastoreValue.timestampValue = property.value
+      break
+    case 'blob':
+      datastoreValue.blobValue = property.value
+      break
+    case 'null':
+      datastoreValue.nullValue = null
+      break
+  }
+
+  return datastoreValue
+}
+
+const enterEditMode = () => {
+  if (!props.entity?.properties) return
+
+  // Convert entity properties to editable form
+  editedProperties.value = Object.entries(props.entity.properties).map(([key, value]) =>
+    datastoreValueToPropertyForm(key, value)
+  )
+
+  editMode.value = true
+}
+
+const cancelEdit = () => {
+  editMode.value = false
+  editedProperties.value = []
+  editingProperty.value = null
+}
+
+const handleAddEditProperty = () => {
+  // Enter edit mode if not already in it
+  if (!editMode.value) {
+    enterEditMode()
+  } else {
+    // If already in edit mode, just add a new property
+    editedProperties.value.push({
+      name: '',
+      type: 'string',
+      value: '',
+      indexed: true,
+      expanded: true
+    })
+  }
+}
+
+const sortBy = (column: 'name' | 'type' | 'indexed') => {
+  if (sortColumn.value === column) {
+    // Toggle direction if clicking the same column
+    sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
+  } else {
+    // New column, default to ascending
+    sortColumn.value = column
+    sortDirection.value = 'asc'
+  }
+}
+
+const removeProperty = (index: number) => {
+  editedProperties.value.splice(index, 1)
+}
+
+const saveChanges = async () => {
+  if (!props.entity) return
+
+  try {
+    isSaving.value = true
+
+    // Build updated properties object
+    const properties: Record<string, DatastoreValue> = {}
+    editedProperties.value.forEach(prop => {
+      if (!prop.name.trim()) return
+      properties[prop.name] = propertyFormToDatastoreValue(prop)
+    })
+
+    // Build updated entity
+    const updatedEntity: DatastoreEntity = {
+      ...props.entity,
+      properties
+    }
+
+    // Update entity via API
+    const projectId = route.params.projectId as string
+    await datastoreStore.updateEntity(projectId, updatedEntity)
+
+    appStore.showToast({
+      type: 'success',
+      title: 'Entity Updated',
+      message: 'Entity properties updated successfully'
+    })
+
+    // Exit edit mode
+    editMode.value = false
+    editedProperties.value = []
+
+    // Emit updated event
+    emit('updated', updatedEntity)
+
+  } catch (error: any) {
+    console.error('[EntityDetailsModal] Failed to save changes:', error)
+    appStore.showToast({
+      type: 'error',
+      title: 'Update Failed',
+      message: 'Failed to update entity. Please try again.'
+    })
+  } finally {
+    isSaving.value = false
+  }
+}
+
 const handleClose = () => {
+  if (editMode.value) {
+    cancelEdit()
+  }
   modelValue.value = false
   emit('close')
 }
+
+// Reset edit mode when modal opens/closes
+watch(modelValue, (newValue) => {
+  if (!newValue) {
+    editMode.value = false
+    editedProperties.value = []
+  }
+})
 </script>

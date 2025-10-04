@@ -765,6 +765,7 @@
       v-model="showEntityDetailsModal"
       :entity="selectedEntity"
       @close="closeEntityDetails"
+      @updated="handleEntityUpdated"
     />
 
     <!-- Delete Confirmation Modal -->
@@ -1496,7 +1497,32 @@ const runQuery = async () => {
   }
 }
 
-const handleEntityCreated = async (_entity: DatastoreEntity) => {
+const handleEntityCreated = async (entity: DatastoreEntity) => {
+  // Navigate to the kind of the newly created entity
+  const entityKind = datastoreApi.getKeyKind(entity.key)
+  const entityNamespace = entity.key?.partitionId?.namespaceId || ''
+  const entityDatabase = entity.key?.partitionId?.databaseId || ''
+
+  // Update selections
+  if (entityNamespace !== selectedNamespace.value) {
+    datastoreStore.setSelectedNamespace(entityNamespace)
+  }
+  if (entityDatabase !== selectedDatabase.value) {
+    datastoreStore.setSelectedDatabase(entityDatabase)
+  }
+  if (entityKind !== selectedKind.value) {
+    selectedKind.value = entityKind
+  }
+
+  // Update URL
+  router.push({
+    query: {
+      ns: entityNamespace || undefined,
+      db: entityDatabase || undefined,
+      kind: entityKind || undefined
+    }
+  })
+
   // Refresh entities list to show the new entity
   await loadEntities()
 }
@@ -1530,6 +1556,14 @@ const copyToClipboard = async (entityId: string, colKey: string, value: string, 
 const closeEntityDetails = () => {
   showEntityDetailsModal.value = false
   selectedEntity.value = null
+}
+
+const handleEntityUpdated = async (updatedEntity: DatastoreEntity) => {
+  // Refresh entities list to show the updated entity
+  await loadEntities()
+
+  // Update the selected entity to show fresh data
+  selectedEntity.value = updatedEntity
 }
 
 const deleteEntityConfirm = (entity: DatastoreEntity) => {
