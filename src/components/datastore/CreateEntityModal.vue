@@ -223,6 +223,7 @@ import { useDatastoreStore } from '@/stores/datastore'
 import { useAppStore } from '@/stores/app'
 import datastoreApi from '@/api/datastore'
 import type { DatastoreEntity, DatastoreValue } from '@/types/datastore'
+import { propertyFormToDatastoreValue } from '@/utils/propertyConverters'
 
 interface Props {
   modelValue: boolean
@@ -441,40 +442,11 @@ const removeProperty = (index: number) => {
 
 const buildDatastoreEntity = (): DatastoreEntity => {
   const properties: Record<string, DatastoreValue> = {}
-  
+
   // Build properties
   form.value.properties.forEach(prop => {
     if (!prop.name.trim()) return
-    
-    const datastoreValue: DatastoreValue = {
-      excludeFromIndexes: !prop.indexed
-    }
-    
-    switch (prop.type) {
-      case 'string':
-        datastoreValue.stringValue = prop.value
-        break
-      case 'integer':
-        datastoreValue.integerValue = prop.value
-        break
-      case 'double':
-        datastoreValue.doubleValue = parseFloat(prop.value) || 0
-        break
-      case 'boolean':
-        datastoreValue.booleanValue = prop.value === 'true'
-        break
-      case 'timestamp':
-        datastoreValue.timestampValue = prop.value
-        break
-      case 'blob':
-        datastoreValue.blobValue = prop.value
-        break
-      case 'null':
-        datastoreValue.nullValue = null
-        break
-    }
-    
-    properties[prop.name] = datastoreValue
+    properties[prop.name] = propertyFormToDatastoreValue(prop)
   })
   
   // Build entity

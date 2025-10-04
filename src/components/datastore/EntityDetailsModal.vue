@@ -245,6 +245,7 @@ import PropertyEditor, { type PropertyForm } from '@/components/datastore/Proper
 import { useDatastoreStore } from '@/stores/datastore'
 import { useAppStore } from '@/stores/app'
 import { useRoute } from 'vue-router'
+import { propertyFormToDatastoreValue, datastoreValueToPropertyForm } from '@/utils/propertyConverters'
 
 interface Props {
   modelValue: boolean
@@ -470,83 +471,16 @@ const convertEntityToObject = (entityValue: any): any => {
   return result
 }
 
-// Convert Datastore value to PropertyForm
-const datastoreValueToPropertyForm = (key: string, value: DatastoreValue): PropertyForm => {
-  let type: PropertyForm['type'] = 'string'
-  let val = ''
-
-  if (value.stringValue !== undefined) {
-    type = 'string'
-    val = value.stringValue
-  } else if (value.integerValue !== undefined) {
-    type = 'integer'
-    val = String(value.integerValue)
-  } else if (value.doubleValue !== undefined) {
-    type = 'double'
-    val = String(value.doubleValue)
-  } else if (value.booleanValue !== undefined) {
-    type = 'boolean'
-    val = String(value.booleanValue)
-  } else if (value.timestampValue !== undefined) {
-    type = 'timestamp'
-    val = value.timestampValue
-  } else if (value.blobValue !== undefined) {
-    type = 'blob'
-    val = value.blobValue
-  } else if (value.nullValue !== undefined) {
-    type = 'null'
-    val = ''
-  }
-
-  return {
-    name: key,
-    type,
-    value: val,
-    indexed: !value.excludeFromIndexes,
-    expanded: false
-  }
-}
-
-// Convert PropertyForm to Datastore value
-const propertyFormToDatastoreValue = (property: PropertyForm): DatastoreValue => {
-  const datastoreValue: DatastoreValue = {
-    excludeFromIndexes: !property.indexed
-  }
-
-  switch (property.type) {
-    case 'string':
-      datastoreValue.stringValue = property.value
-      break
-    case 'integer':
-      datastoreValue.integerValue = property.value
-      break
-    case 'double':
-      datastoreValue.doubleValue = parseFloat(property.value) || 0
-      break
-    case 'boolean':
-      datastoreValue.booleanValue = property.value === 'true'
-      break
-    case 'timestamp':
-      datastoreValue.timestampValue = property.value
-      break
-    case 'blob':
-      datastoreValue.blobValue = property.value
-      break
-    case 'null':
-      datastoreValue.nullValue = null
-      break
-  }
-
-  return datastoreValue
-}
-
 const enterEditMode = () => {
-  if (!props.entity?.properties) return
-
-  // Convert entity properties to editable form
-  editedProperties.value = Object.entries(props.entity.properties).map(([key, value]) =>
-    datastoreValueToPropertyForm(key, value)
-  )
+  if (!props.entity?.properties) {
+    // No properties yet, start with empty array
+    editedProperties.value = []
+  } else {
+    // Convert entity properties to editable form
+    editedProperties.value = Object.entries(props.entity.properties).map(([key, value]) =>
+      datastoreValueToPropertyForm(key, value)
+    )
+  }
 
   editMode.value = true
 }

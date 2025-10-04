@@ -1710,6 +1710,11 @@ const getEntityColumnValue = (entity: DatastoreEntity, columnKey: string): strin
   if (prop.timestampValue !== undefined) return prop.timestampValue
   if (prop.nullValue !== undefined) return 'null'
 
+  // Display geopoint as "lat,lng"
+  if (prop.geoPointValue !== undefined) {
+    return `${prop.geoPointValue.latitude},${prop.geoPointValue.longitude}`
+  }
+
   // Convert array to JSON string to show full content
   if (prop.arrayValue) {
     try {
