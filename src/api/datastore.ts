@@ -10,6 +10,8 @@ import type {
   LookupResponse,
   RunQueryRequest,
   RunQueryResponse,
+  RunAggregationQueryRequest,
+  RunAggregationQueryResponse,
   CommitRequest,
   CommitResponse,
   BeginTransactionRequest,
@@ -76,6 +78,12 @@ export const datastoreApi = {
   // Run a query
   async runQuery(projectId: string, request: RunQueryRequest): Promise<RunQueryResponse> {
     const response = await datastoreClient.post(`/v1/projects/${projectId}:runQuery`, request)
+    return response.data
+  },
+
+  // Run an aggregation query
+  async runAggregationQuery(projectId: string, request: RunAggregationQueryRequest): Promise<RunAggregationQueryResponse> {
+    const response = await datastoreClient.post(`/v1/projects/${projectId}:runAggregationQuery`, request)
     return response.data
   },
 

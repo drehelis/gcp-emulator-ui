@@ -124,6 +124,52 @@ export interface QueryResultBatch {
   skippedCursor?: string
 }
 
+export interface RunAggregationQueryRequest {
+  partitionId?: PartitionId
+  aggregationQuery?: AggregationQuery
+  gqlQuery?: GqlQuery
+  readOptions?: ReadOptions
+}
+
+export interface RunAggregationQueryResponse {
+  batch: AggregationResultBatch
+  query?: AggregationQuery
+}
+
+export interface AggregationQuery {
+  nestedQuery: DatastoreQuery
+  aggregations: Aggregation[]
+}
+
+export interface Aggregation {
+  count?: CountAggregation
+  sum?: SumAggregation
+  avg?: AvgAggregation
+  alias?: string
+}
+
+export interface CountAggregation {
+  upTo?: number
+}
+
+export interface SumAggregation {
+  property: PropertyReference
+}
+
+export interface AvgAggregation {
+  property: PropertyReference
+}
+
+export interface AggregationResultBatch {
+  aggregationResults: AggregationResult[]
+  moreResults: 'NOT_FINISHED' | 'MORE_RESULTS_AFTER_LIMIT' | 'MORE_RESULTS_AFTER_CURSOR' | 'NO_MORE_RESULTS'
+  readTime?: string
+}
+
+export interface AggregationResult {
+  aggregateProperties: Record<string, DatastoreValue>
+}
+
 export interface GqlQuery {
   queryString: string
   allowLiterals?: boolean

@@ -101,6 +101,17 @@
               Create
             </button>
 
+            <button
+              v-if="selectedEntities.length > 0"
+              @click="deleteSelectedEntities"
+              class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+            >
+              <TrashIcon class="w-4 h-4 mr-2" />
+              Delete ({{ selectedEntities.length }})
+            </button>
+          </div>
+
+          <div class="flex items-center gap-3">
             <!-- Query Builder Dropdown -->
             <Menu as="div" class="relative inline-block text-left">
               <MenuButton class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors shadow-sm">
@@ -218,18 +229,18 @@
               </transition>
             </Menu>
 
+            <!-- Clear Query Button -->
             <button
-              v-if="selectedEntities.length > 0"
-              @click="deleteSelectedEntities"
-              class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors"
+              @click="clearQueryAndReload"
+              :disabled="queryClauses.length === 0"
+              class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+              :class="queryClauses.length > 0
+                ? 'text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer'
+                : 'text-gray-400 dark:text-gray-600 bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 cursor-not-allowed'"
             >
-              <TrashIcon class="w-4 h-4 mr-2" />
-              Delete ({{ selectedEntities.length }})
+              <XMarkIcon class="w-3.5 h-3.5 mr-1.5" />
+              Clear
             </button>
-          </div>
-
-          <div v-if="selectedEntities.length > 0" class="text-sm text-blue-700 dark:text-blue-300">
-            {{ selectedEntities.length }} entity(ies) selected
           </div>
         </div>
 
@@ -403,7 +414,11 @@
           <div class="mt-3 flex items-center gap-2">
             <button
               @click="runQuery"
-              class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors shadow-sm"
+              :disabled="!canRunQuery"
+              class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
+              :class="canRunQuery
+                ? 'text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer'
+                : 'text-gray-400 dark:text-gray-600 bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 cursor-not-allowed'"
             >
               <PlayIcon class="w-3.5 h-3.5 mr-1.5" />
               Run Query
@@ -546,6 +561,28 @@
             </div>
           </div>
 
+          <!-- Aggregation Results Table -->
+          <table v-else-if="aggregationResults.length > 0" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <thead class="bg-gray-50 dark:bg-gray-900 sticky top-0">
+              <tr>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-gray-50 dark:bg-gray-900">
+                  Query results
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+              <tr v-for="result in aggregationResults" :key="result.label" class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-baseline gap-3">
+                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[80px]">{{ result.label }}</span>
+                    <span class="text-base text-gray-900 dark:text-white font-medium">{{ result.value }}</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- No entities found -->
           <div v-else-if="entities.length === 0" class="flex items-center justify-center h-64">
             <div class="text-center">
               <InboxIcon class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-600 mb-4" />
@@ -565,6 +602,7 @@
             </div>
           </div>
 
+          <!-- Entities Table -->
           <table v-else class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead class="bg-gray-50 dark:bg-gray-900 sticky top-0">
               <tr>
@@ -810,6 +848,9 @@ const deleteMode = ref<'single' | 'multiple'>('multiple')
 // Copy to clipboard state
 const copiedCell = ref<string | null>(null)
 
+// Aggregation results state
+const aggregationResults = ref<Array<{ label: string; value: string }>>([])
+
 // Query builder state
 interface QueryClause {
   type: string
@@ -860,6 +901,22 @@ const allSelected = computed(() =>
   entities.value.length > 0 &&
   selectedEntities.value.length === entities.value.length
 )
+
+// Check if query can be run (all required fields are filled)
+const canRunQuery = computed(() => {
+  if (queryClauses.value.length === 0) return false
+
+  // Check if any WHERE, ORDER BY, or aggregation clauses have empty properties
+  return !queryClauses.value.some(clause => {
+    if (clause.type === 'where' || clause.type === 'orderBy') {
+      return !clause.property || clause.property === ''
+    }
+    if (['avg', 'sum'].includes(clause.type)) {
+      return !clause.property || clause.property === ''
+    }
+    return false
+  })
+})
 
 const deleteModalTitle = computed(() => {
   if (deleteMode.value === 'single') {
@@ -1209,6 +1266,12 @@ const clearQuery = () => {
   queryClauses.value = []
 }
 
+const clearQueryAndReload = async () => {
+  queryClauses.value = []
+  aggregationResults.value = []
+  await loadEntities()
+}
+
 const runQuery = async () => {
   if (!selectedKind.value) {
     appStore.showToast({ title: 'Please select a kind first', type: 'error' })
@@ -1304,22 +1367,75 @@ const runQuery = async () => {
       query.limit = parseInt(limitClause.value)
     }
 
-    // Check for aggregation clauses
-    const aggregationClause = queryClauses.value.find(c => ['avg', 'count', 'sum'].includes(c.type))
-    if (aggregationClause) {
-      // Aggregation queries need special handling
-      // For now, show a message that aggregations are not yet implemented
-      appStore.showToast({ title: 'Aggregation queries are not yet implemented', type: 'info' })
-      loading.value = false
-      return
-    }
-
     // Build partition ID
     const partitionId: any = {
       projectId: currentProjectId.value,
       namespaceId: selectedNamespace.value || ''
     }
 
+    // Check for aggregation clauses
+    const aggregationClauses = queryClauses.value.filter(c => ['avg', 'count', 'sum'].includes(c.type))
+
+    if (aggregationClauses.length > 0) {
+      // Build aggregation query
+      const aggregations = aggregationClauses.map(clause => {
+        const agg: any = {
+          alias: clause.type
+        }
+
+        if (clause.type === 'count') {
+          agg.count = {}
+        } else if (clause.type === 'sum' && clause.property) {
+          agg.sum = { property: { name: clause.property } }
+        } else if (clause.type === 'avg' && clause.property) {
+          agg.avg = { property: { name: clause.property } }
+        }
+
+        return agg
+      })
+
+      const aggregationRequest = {
+        partitionId,
+        aggregationQuery: {
+          nestedQuery: query,
+          aggregations
+        }
+      }
+
+      console.log('[Query Builder] Executing aggregation query:', JSON.stringify(aggregationRequest, null, 2))
+
+      // Execute aggregation query
+      const aggResponse = await datastoreApi.runAggregationQuery(currentProjectId.value, aggregationRequest)
+
+      // Display aggregation results
+      if (aggResponse.batch?.aggregationResults && aggResponse.batch.aggregationResults.length > 0) {
+        const result = aggResponse.batch.aggregationResults[0]
+
+        aggregationResults.value = aggregationClauses.map(clause => {
+          const value = result.aggregateProperties[clause.type]
+          let displayValue = 'N/A'
+
+          if (value) {
+            if (value.integerValue !== undefined) displayValue = value.integerValue
+            else if (value.doubleValue !== undefined) displayValue = value.doubleValue.toString()
+            else if (value.stringValue !== undefined) displayValue = value.stringValue
+          }
+
+          const label = clause.type.toLowerCase()
+          return { label, value: displayValue }
+        })
+
+        // Clear entities since aggregation doesn't return entities
+        entities.value = []
+        columns.value = []
+      } else {
+        aggregationResults.value = []
+        appStore.showToast({ title: 'No aggregation results returned', type: 'info' })
+      }
+      return
+    }
+
+    // Regular query (non-aggregation)
     const request = {
       partitionId,
       query
@@ -1333,6 +1449,9 @@ const runQuery = async () => {
     // Update entities with query results
     if (response.batch?.entityResults) {
       entities.value = response.batch.entityResults.map((result: any) => result.entity)
+
+      // Clear aggregation results for regular queries
+      aggregationResults.value = []
 
       // Filter by database if needed
       if (selectedDatabase.value) {
