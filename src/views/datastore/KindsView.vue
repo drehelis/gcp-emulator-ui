@@ -270,12 +270,12 @@
                 </span>
               </div>
               <div class="flex-1 grid grid-cols-12 gap-2">
-                <div class="col-span-4">
-                  <input
+                <div class="col-span-3">
+                  <CustomSelect
                     v-model="clause.property"
-                    type="text"
-                    placeholder="Property name"
-                    class="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    :options="availableProperties"
+                    placeholder="Property"
+                    searchable
                   />
                 </div>
                 <div class="col-span-2">
@@ -292,12 +292,27 @@
                     placeholder="=="
                   />
                 </div>
-                <div class="col-span-6">
+                <div class="col-span-2">
+                  <CustomSelect
+                    v-model="clause.valueType"
+                    :options="[
+                      { label: 'String', value: 'string' },
+                      { label: 'Integer', value: 'integer' },
+                      { label: 'Double', value: 'double' },
+                      { label: 'Boolean', value: 'boolean' },
+                      { label: 'Timestamp', value: 'timestamp' },
+                      { label: 'Null', value: 'null' }
+                    ]"
+                    placeholder="Type"
+                  />
+                </div>
+                <div class="col-span-5">
                   <input
                     v-model="clause.value"
                     type="text"
                     placeholder="Value"
-                    class="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    :disabled="clause.valueType === 'null'"
+                    class="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -320,11 +335,11 @@
                 </span>
               </div>
               <div class="flex-1 grid grid-cols-2 gap-2">
-                <input
+                <CustomSelect
                   v-model="clause.property"
-                  type="text"
-                  placeholder="Property name"
-                  class="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  :options="availableProperties"
+                  placeholder="Property"
+                  searchable
                 />
                 <CustomSelect
                   v-model="clause.order"
@@ -367,11 +382,11 @@
                 </CustomSelect>
               </div>
               <div class="flex-1">
-                <input
+                <CustomSelect
                   v-model="clause.property"
-                  type="text"
-                  placeholder="Property name"
-                  class="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  :options="availableProperties"
+                  placeholder="Property"
+                  searchable
                 />
               </div>
               <button
@@ -802,6 +817,7 @@ interface QueryClause {
   selection?: string
   property?: string
   operator?: string
+  valueType?: string
   value?: string
   order?: string
 }
@@ -828,6 +844,17 @@ const selectedNamespace = computed({
 })
 
 const visibleColumns = computed(() => columns.value.filter(col => col.visible))
+
+// Available properties for query builder dropdowns
+const availableProperties = computed(() => {
+  // Get all unique property names from visible columns
+  return columns.value
+    .filter(col => !col.fixed) // Exclude fixed columns like Key/ID
+    .map(col => ({
+      label: col.label,
+      value: col.key
+    }))
+})
 
 const allSelected = computed(() =>
   entities.value.length > 0 &&
@@ -1159,6 +1186,7 @@ const addQueryClause = (clauseType: string) => {
     newClause.selection = 'WHERE'
     newClause.property = ''
     newClause.operator = '=='
+    newClause.valueType = 'string'
     newClause.value = ''
   } else if (clauseType === 'orderBy') {
     newClause.selection = 'ORDER BY'
@@ -1181,10 +1209,172 @@ const clearQuery = () => {
   queryClauses.value = []
 }
 
-const runQuery = () => {
-  console.log('Running query with clauses:', queryClauses.value)
-  // TODO: Implement actual query execution logic
-  // This will need to build a Datastore query from the clauses and execute it
+const runQuery = async () => {
+  if (!selectedKind.value) {
+    appStore.showToast({ title: 'Please select a kind first', type: 'error' })
+    return
+  }
+
+  if (queryClauses.value.length === 0) {
+    appStore.showToast({ title: 'Please add at least one query clause', type: 'warning' })
+    return
+  }
+
+  try {
+    loading.value = true
+
+    // Build the query from clauses
+    const query: any = {
+      kind: [{ name: selectedKind.value }]
+    }
+
+    // Process WHERE clauses (filters)
+    const whereClauses = queryClauses.value.filter(c => c.type === 'where')
+    if (whereClauses.length > 0) {
+      const filters = whereClauses.map(clause => {
+        // Map UI operators to Datastore operators
+        const operatorMap: Record<string, string> = {
+          '==': 'EQUAL',
+          '!=': 'NOT_EQUAL',
+          '<': 'LESS_THAN',
+          '<=': 'LESS_THAN_OR_EQUAL',
+          '>': 'GREATER_THAN',
+          '>=': 'GREATER_THAN_OR_EQUAL'
+        }
+
+        // Build value object based on type
+        let valueObj: any = {}
+        switch (clause.valueType) {
+          case 'string':
+            valueObj = { stringValue: clause.value }
+            break
+          case 'integer':
+            valueObj = { integerValue: clause.value }
+            break
+          case 'double':
+            valueObj = { doubleValue: parseFloat(clause.value || '0') }
+            break
+          case 'boolean':
+            valueObj = { booleanValue: clause.value === 'true' || clause.value === '1' }
+            break
+          case 'timestamp':
+            valueObj = { timestampValue: clause.value }
+            break
+          case 'null':
+            valueObj = { nullValue: null }
+            break
+          default:
+            valueObj = { stringValue: clause.value }
+        }
+
+        return {
+          propertyFilter: {
+            property: { name: clause.property },
+            op: operatorMap[clause.operator || '=='],
+            value: valueObj
+          }
+        }
+      })
+
+      // If multiple filters, use composite AND filter
+      if (filters.length > 1) {
+        query.filter = {
+          compositeFilter: {
+            op: 'AND',
+            filters
+          }
+        }
+      } else {
+        query.filter = filters[0]
+      }
+    }
+
+    // Process ORDER BY clauses
+    const orderByClauses = queryClauses.value.filter(c => c.type === 'orderBy')
+    if (orderByClauses.length > 0) {
+      query.order = orderByClauses.map(clause => ({
+        property: { name: clause.property },
+        direction: clause.order === 'ascending' ? 'ASCENDING' : 'DESCENDING'
+      }))
+    }
+
+    // Process LIMIT clause
+    const limitClause = queryClauses.value.find(c => c.type === 'limit')
+    if (limitClause && limitClause.value) {
+      query.limit = parseInt(limitClause.value)
+    }
+
+    // Check for aggregation clauses
+    const aggregationClause = queryClauses.value.find(c => ['avg', 'count', 'sum'].includes(c.type))
+    if (aggregationClause) {
+      // Aggregation queries need special handling
+      // For now, show a message that aggregations are not yet implemented
+      appStore.showToast({ title: 'Aggregation queries are not yet implemented', type: 'info' })
+      loading.value = false
+      return
+    }
+
+    // Build partition ID
+    const partitionId: any = {
+      projectId: currentProjectId.value,
+      namespaceId: selectedNamespace.value || ''
+    }
+
+    const request = {
+      partitionId,
+      query
+    }
+
+    console.log('[Query Builder] Executing query:', JSON.stringify(request, null, 2))
+
+    // Execute the query
+    const response = await datastoreApi.runQuery(currentProjectId.value, request)
+
+    // Update entities with query results
+    if (response.batch?.entityResults) {
+      entities.value = response.batch.entityResults.map((result: any) => result.entity)
+
+      // Filter by database if needed
+      if (selectedDatabase.value) {
+        entities.value = entities.value.filter((entity: DatastoreEntity) => {
+          const entityDb = entity.key?.partitionId?.databaseId || ''
+          return entityDb === selectedDatabase.value
+        })
+      }
+
+      // Update pagination
+      currentPage.value = 1
+      hasNextPage.value = response.batch.moreResults === 'MORE_RESULTS_AFTER_LIMIT' ||
+        response.batch.moreResults === 'MORE_RESULTS_AFTER_CURSOR'
+      currentCursor.value = response.batch.endCursor
+
+      // Build columns from entity properties
+      if (entities.value.length > 0) {
+        const allProperties = new Set<string>()
+        entities.value.forEach(entity => {
+          Object.keys(entity.properties || {}).forEach(prop => allProperties.add(prop))
+        })
+
+        // Sort columns alphabetically
+        columns.value = Array.from(allProperties)
+          .sort((a, b) => a.localeCompare(b))
+          .map(prop => ({
+            key: prop,
+            label: prop,
+            visible: true
+          }))
+      }
+    } else {
+      entities.value = []
+      columns.value = []
+      appStore.showToast({ title: 'Query returned no results', type: 'info' })
+    }
+  } catch (error: any) {
+    console.error('[Query Builder] Query failed:', error)
+    appStore.showToast({ title: error.message || 'Query execution failed', type: 'error' })
+  } finally {
+    loading.value = false
+  }
 }
 
 const handleEntityCreated = async (_entity: DatastoreEntity) => {
