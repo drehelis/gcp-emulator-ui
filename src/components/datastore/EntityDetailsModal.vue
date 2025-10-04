@@ -28,9 +28,9 @@
             <code class="text-gray-900 dark:text-gray-100 font-mono text-xs bg-white dark:bg-gray-900/50 px-1.5 py-0.5 rounded break-all border border-gray-200 dark:border-gray-700">{{ entity.key.partitionId.namespaceId || '(default)' }}</code>
           </div>
 
-          <!-- Kind -->
+          <!-- Entity Kind -->
           <div class="flex items-baseline hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded px-2 py-1 transition-colors">
-            <span class="text-gray-600 dark:text-gray-400 whitespace-nowrap text-xs w-24 flex-shrink-0">Kind:</span>
+            <span class="text-gray-600 dark:text-gray-400 whitespace-nowrap text-xs w-24 flex-shrink-0">Entity Kind:</span>
             <code class="text-gray-900 dark:text-gray-100 font-mono text-xs bg-white dark:bg-gray-900/50 px-1.5 py-0.5 rounded break-all border border-gray-200 dark:border-gray-700">{{ getEntityKind(entity) }}</code>
           </div>
 

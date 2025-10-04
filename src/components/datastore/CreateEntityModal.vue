@@ -75,11 +75,11 @@
             />
           </div>
 
-          <!-- Kind -->
+          <!-- Entity Kind -->
           <div>
             <div class="flex items-center justify-between mb-1.5">
               <label class="block text-xs font-medium text-gray-600 dark:text-gray-400">
-                Kind <span class="text-red-500">*</span>
+                Entity Kind <span class="text-red-500">*</span>
               </label>
               <button
                 @click="useManualKind = !useManualKind"
@@ -111,7 +111,7 @@
             />
             <p v-if="hasValidationError && !form.kind.trim()" class="mt-1 text-xs text-red-600 dark:text-red-400 flex items-center">
               <ExclamationCircleIcon class="w-3.5 h-3.5 mr-1" />
-              Kind is required
+              Entity Kind is required
             </p>
           </div>
         </div>

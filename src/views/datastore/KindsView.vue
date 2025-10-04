@@ -101,6 +101,123 @@
               Create
             </button>
 
+            <!-- Query Builder Dropdown -->
+            <Menu as="div" class="relative inline-block text-left">
+              <MenuButton class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors shadow-sm">
+                <FunnelIcon class="w-3.5 h-3.5 mr-1.5" />
+                Add to query
+                <ChevronDownIcon class="w-3.5 h-3.5 ml-1" />
+              </MenuButton>
+
+              <transition
+                enter-active-class="transition"
+                enter-from-class="opacity-0"
+                enter-to-class="opacity-100"
+                leave-active-class="transition"
+                leave-from-class="opacity-100"
+                leave-to-class="opacity-0"
+              >
+                <MenuItems class="absolute left-0 z-10 mt-1.5 w-72 origin-top-left rounded-lg bg-white dark:bg-gray-800 shadow-xl focus:!outline-none border !border-gray-200 dark:!border-gray-700">
+                  <div class="p-1.5">
+                    <!-- Selection Section -->
+                    <div class="px-2 py-1.5">
+                      <h3 class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                        Selection
+                      </h3>
+                    </div>
+
+                    <MenuItem v-slot="{ active }">
+                      <button
+                        @click="addQueryClause('where')"
+                        :class="[
+                          'w-full text-left px-2.5 py-1.5 rounded-md transition-colors group',
+                          active ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                        ]"
+                      >
+                        <div :class="['font-medium text-xs', active ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white']">WHERE</div>
+                        <div class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5">Match conditions with operators</div>
+                      </button>
+                    </MenuItem>
+
+                    <MenuItem v-slot="{ active }">
+                      <button
+                        @click="addQueryClause('orderBy')"
+                        :class="[
+                          'w-full text-left px-2.5 py-1.5 rounded-md transition-colors group',
+                          active ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                        ]"
+                      >
+                        <div :class="['font-medium text-xs', active ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white']">ORDER BY</div>
+                        <div class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5">Sort by property</div>
+                      </button>
+                    </MenuItem>
+
+                    <MenuItem v-slot="{ active }">
+                      <button
+                        @click="addQueryClause('limit')"
+                        :class="[
+                          'w-full text-left px-2.5 py-1.5 rounded-md transition-colors group',
+                          active ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                        ]"
+                      >
+                        <div :class="['font-medium text-xs', active ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white']">LIMIT</div>
+                        <div class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5">Limit result count</div>
+                      </button>
+                    </MenuItem>
+
+                    <!-- Divider -->
+                    <div class="my-1.5 border-t border-gray-200 dark:border-gray-700"></div>
+
+                    <!-- Aggregation Section -->
+                    <div class="px-2 py-1.5">
+                      <h3 class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                        Aggregation
+                      </h3>
+                    </div>
+
+                    <MenuItem v-slot="{ active }">
+                      <button
+                        @click="addQueryClause('avg')"
+                        :class="[
+                          'w-full text-left px-2.5 py-1.5 rounded-md transition-colors group',
+                          active ? 'bg-purple-50 dark:bg-purple-900/20' : ''
+                        ]"
+                      >
+                        <div :class="['font-medium text-xs', active ? 'text-purple-700 dark:text-purple-300' : 'text-gray-900 dark:text-white']">AVG</div>
+                        <div class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5">Average of numeric values</div>
+                      </button>
+                    </MenuItem>
+
+                    <MenuItem v-slot="{ active }">
+                      <button
+                        @click="addQueryClause('count')"
+                        :class="[
+                          'w-full text-left px-2.5 py-1.5 rounded-md transition-colors group',
+                          active ? 'bg-purple-50 dark:bg-purple-900/20' : ''
+                        ]"
+                      >
+                        <div :class="['font-medium text-xs', active ? 'text-purple-700 dark:text-purple-300' : 'text-gray-900 dark:text-white']">COUNT</div>
+                        <div class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5">Count matching documents</div>
+                      </button>
+                    </MenuItem>
+
+                    <MenuItem v-slot="{ active }">
+                      <button
+                        @click="addQueryClause('sum')"
+                        :class="[
+                          'w-full text-left px-2.5 py-1.5 rounded-md transition-colors group',
+                          active ? 'bg-purple-50 dark:bg-purple-900/20' : ''
+                        ]"
+                      >
+                        <div :class="['font-medium text-xs', active ? 'text-purple-700 dark:text-purple-300' : 'text-gray-900 dark:text-white']">SUM</div>
+                        <div class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5">Sum of numeric values</div>
+                      </button>
+                    </MenuItem>
+                  </div>
+                </MenuItems>
+              </transition>
+            </Menu>
+
             <button
               v-if="selectedEntities.length > 0"
               @click="deleteSelectedEntities"
@@ -113,6 +230,169 @@
 
           <div v-if="selectedEntities.length > 0" class="text-sm text-blue-700 dark:text-blue-300">
             {{ selectedEntities.length }} entity(ies) selected
+          </div>
+        </div>
+
+        <!-- Query Builder Display -->
+        <div v-if="queryClauses.length > 0" class="mt-3 space-y-2">
+          <!-- LIMIT Clause -->
+          <div v-for="(clause, index) in queryClauses.filter(c => c.type === 'limit')" :key="'limit-' + index" class="group relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div class="flex items-center gap-3 p-3">
+              <div class="flex-shrink-0">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-xs font-semibold tracking-wide">
+                  LIMIT
+                </span>
+              </div>
+              <div class="flex-1">
+                <input
+                  v-model="clause.value"
+                  type="number"
+                  placeholder="Enter limit value (e.g. 100)"
+                  class="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              <button
+                @click="removeQueryClause(queryClauses.indexOf(clause))"
+                class="flex-shrink-0 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all opacity-0 group-hover:opacity-100"
+                title="Remove clause"
+              >
+                <TrashIcon class="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          <!-- WHERE Clause -->
+          <div v-for="(clause, index) in queryClauses.filter(c => c.type === 'where')" :key="'where-' + index" class="group relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div class="flex items-center gap-3 p-3">
+              <div class="flex-shrink-0">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-xs font-semibold tracking-wide">
+                  WHERE
+                </span>
+              </div>
+              <div class="flex-1 grid grid-cols-12 gap-2">
+                <div class="col-span-4">
+                  <input
+                    v-model="clause.property"
+                    type="text"
+                    placeholder="Property name"
+                    class="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div class="col-span-2">
+                  <CustomSelect
+                    v-model="clause.operator"
+                    :options="[
+                      { label: '==', value: '==' },
+                      { label: '!=', value: '!=' },
+                      { label: '<', value: '<' },
+                      { label: '<=', value: '<=' },
+                      { label: '>', value: '>' },
+                      { label: '>=', value: '>=' }
+                    ]"
+                    placeholder="=="
+                  />
+                </div>
+                <div class="col-span-6">
+                  <input
+                    v-model="clause.value"
+                    type="text"
+                    placeholder="Value"
+                    class="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              <button
+                @click="removeQueryClause(queryClauses.indexOf(clause))"
+                class="flex-shrink-0 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all opacity-0 group-hover:opacity-100"
+                title="Remove clause"
+              >
+                <TrashIcon class="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          <!-- ORDER BY Clause -->
+          <div v-for="(clause, index) in queryClauses.filter(c => c.type === 'orderBy')" :key="'orderby-' + index" class="group relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div class="flex items-center gap-3 p-3">
+              <div class="flex-shrink-0">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-xs font-semibold tracking-wide">
+                  ORDER BY
+                </span>
+              </div>
+              <div class="flex-1 grid grid-cols-2 gap-2">
+                <input
+                  v-model="clause.property"
+                  type="text"
+                  placeholder="Property name"
+                  class="px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <CustomSelect
+                  v-model="clause.order"
+                  :options="[
+                    { label: 'Ascending', value: 'ascending' },
+                    { label: 'Descending', value: 'descending' }
+                  ]"
+                  placeholder="Order"
+                />
+              </div>
+              <button
+                @click="removeQueryClause(queryClauses.indexOf(clause))"
+                class="flex-shrink-0 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all opacity-0 group-hover:opacity-100"
+                title="Remove clause"
+              >
+                <TrashIcon class="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          <!-- Aggregation Clauses (AVG, COUNT, SUM) -->
+          <div v-for="(clause, index) in queryClauses.filter(c => ['avg', 'count', 'sum'].includes(c.type))" :key="clause.type + '-' + index" class="group relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+            <div class="flex items-center gap-3 p-3">
+              <div class="flex-shrink-0">
+                <CustomSelect
+                  v-model="clause.type"
+                  :options="[
+                    { label: 'AVG', value: 'avg' },
+                    { label: 'COUNT', value: 'count' },
+                    { label: 'SUM', value: 'sum' }
+                  ]"
+                  placeholder="Function"
+                  class="w-24"
+                >
+                  <template #selected="{ label }">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 text-xs font-semibold tracking-wide">
+                      {{ label }}
+                    </span>
+                  </template>
+                </CustomSelect>
+              </div>
+              <div class="flex-1">
+                <input
+                  v-model="clause.property"
+                  type="text"
+                  placeholder="Property name"
+                  class="w-full px-3 py-1.5 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-900 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                />
+              </div>
+              <button
+                @click="removeQueryClause(queryClauses.indexOf(clause))"
+                class="flex-shrink-0 p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all opacity-0 group-hover:opacity-100"
+                title="Remove clause"
+              >
+                <TrashIcon class="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          <!-- Run Query Button -->
+          <div class="mt-3 flex items-center gap-2">
+            <button
+              @click="runQuery"
+              class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors shadow-sm"
+            >
+              <PlayIcon class="w-3.5 h-3.5 mr-1.5" />
+              Run Query
+            </button>
           </div>
         </div>
 
@@ -304,8 +584,7 @@
               <tr
                 v-for="entity in entities"
                 :key="getEntityId(entity)"
-                class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
-                @click="openEntityDetails(entity)"
+                class="group hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
                 <td class="px-3 py-2 whitespace-nowrap" @click.stop>
                   <input
@@ -315,18 +594,18 @@
                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                 </td>
-                <td class="px-3 py-2 whitespace-nowrap">
+                <td class="px-3 py-2 whitespace-nowrap cursor-pointer" @click="openEntityDetails(entity)">
                   <div
-                    class="text-sm font-mono font-medium text-gray-900 dark:text-white"
+                    class="text-sm font-mono font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
                     :title="getEntityId(entity)"
                   >
                     {{ getDisplayEntityId(entity) }}
                   </div>
                 </td>
-                <td v-if="showParentColumn" class="px-3 py-2 whitespace-nowrap">
+                <td v-if="showParentColumn" class="px-3 py-2 whitespace-nowrap cursor-pointer" @click="getEntityParent(entity) ? openEntityDetails(entity) : null">
                   <div
                     v-if="getEntityParent(entity)"
-                    class="text-sm font-mono text-gray-600 dark:text-gray-400"
+                    class="text-sm font-mono text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
                     :title="getEntityParent(entity)"
                   >
                     {{ getDisplayEntityParent(entity) }}
@@ -338,10 +617,21 @@
                 <td
                   v-for="col in visibleColumns"
                   :key="col.key"
-                  class="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white max-w-xs truncate"
+                  class="group/cell px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white max-w-xs cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                   :title="getEntityColumnValue(entity, col.key)"
+                  @click="copyToClipboard(getEntityId(entity), col.key, getEntityColumnValue(entity, col.key), $event)"
                 >
-                  {{ getEntityColumnValue(entity, col.key) }}
+                  <div class="flex items-center gap-2">
+                    <span class="truncate">{{ getEntityColumnValue(entity, col.key) }}</span>
+                    <CheckIcon
+                      v-if="copiedCell === `${getEntityId(entity)}-${col.key}`"
+                      class="w-4 h-4 flex-shrink-0 text-green-600 dark:text-green-400"
+                    />
+                    <ClipboardIcon
+                      v-else
+                      class="w-4 h-4 flex-shrink-0 text-gray-400 dark:text-gray-500 opacity-0 group-hover/cell:opacity-100"
+                    />
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -444,7 +734,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Menu, MenuButton, MenuItems } from '@headlessui/vue'
+import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import {
   ArrowPathIcon,
   CircleStackIcon,
@@ -459,7 +749,13 @@ import {
   ChevronLeftIcon,
   ChevronDownIcon,
   ViewColumnsIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  FunnelIcon,
+  XMarkIcon,
+  ExclamationCircleIcon,
+  PlayIcon,
+  ClipboardIcon,
+  CheckIcon
 } from '@heroicons/vue/24/outline'
 import { useDatastoreStore } from '@/stores/datastore'
 import { useAppStore } from '@/stores/app'
@@ -495,6 +791,21 @@ const showDeleteModal = ref(false)
 const isDeleting = ref(false)
 const entitiesToDelete = ref<string[]>([])
 const deleteMode = ref<'single' | 'multiple'>('multiple')
+
+// Copy to clipboard state
+const copiedCell = ref<string | null>(null)
+
+// Query builder state
+interface QueryClause {
+  type: string
+  description: string
+  selection?: string
+  property?: string
+  operator?: string
+  value?: string
+  order?: string
+}
+const queryClauses = ref<QueryClause[]>([])
 
 // Computed
 const currentProjectId = computed(() => route.params.projectId as string)
@@ -828,6 +1139,54 @@ const createEntity = () => {
   showCreateEntityModal.value = true
 }
 
+const addQueryClause = (clauseType: string) => {
+  const descriptions: Record<string, string> = {
+    where: 'Use specific operators to match conditions',
+    orderBy: 'Sort results in ascending or descending order by property',
+    limit: 'Return up to a specific number of results',
+    avg: 'Return the average of the numeric values that match the specified criterion',
+    count: 'Return the number of documents that match the specified criterion',
+    sum: 'Return the sum of the numeric values that match the specified criterion'
+  }
+
+  const newClause: QueryClause = {
+    type: clauseType,
+    description: descriptions[clauseType] || 'Query clause'
+  }
+
+  // Initialize with default values based on type
+  if (clauseType === 'where') {
+    newClause.selection = 'WHERE'
+    newClause.property = ''
+    newClause.operator = '=='
+    newClause.value = ''
+  } else if (clauseType === 'orderBy') {
+    newClause.selection = 'ORDER BY'
+    newClause.property = ''
+    newClause.order = 'ascending'
+  } else if (clauseType === 'limit') {
+    newClause.value = ''
+  } else if (['avg', 'count', 'sum'].includes(clauseType)) {
+    newClause.property = ''
+  }
+
+  queryClauses.value.push(newClause)
+}
+
+const removeQueryClause = (index: number) => {
+  queryClauses.value.splice(index, 1)
+}
+
+const clearQuery = () => {
+  queryClauses.value = []
+}
+
+const runQuery = () => {
+  console.log('Running query with clauses:', queryClauses.value)
+  // TODO: Implement actual query execution logic
+  // This will need to build a Datastore query from the clauses and execute it
+}
+
 const handleEntityCreated = async (_entity: DatastoreEntity) => {
   // Refresh entities list to show the new entity
   await loadEntities()
@@ -841,6 +1200,22 @@ const editEntity = (entity: DatastoreEntity) => {
 const openEntityDetails = (entity: DatastoreEntity) => {
   selectedEntity.value = entity
   showEntityDetailsModal.value = true
+}
+
+const copyToClipboard = async (entityId: string, colKey: string, value: string, event: Event) => {
+  event.stopPropagation()
+  try {
+    await navigator.clipboard.writeText(value)
+    const cellId = `${entityId}-${colKey}`
+    copiedCell.value = cellId
+    setTimeout(() => {
+      if (copiedCell.value === cellId) {
+        copiedCell.value = null
+      }
+    }, 2000)
+  } catch (err) {
+    console.error('Failed to copy to clipboard:', err)
+  }
 }
 
 const closeEntityDetails = () => {

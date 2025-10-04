@@ -38,6 +38,7 @@ declare module 'vue' {
     KeyValueInput: typeof import('./src/components/ui/KeyValueInput.vue')['default']
     Menu: typeof import('@headlessui/vue')['Menu']
     MenuButton: typeof import('@headlessui/vue')['MenuButton']
+    MenuItem: typeof import('@headlessui/vue')['MenuItem']
     MenuItems: typeof import('@headlessui/vue')['MenuItems']
     MessageAttributeInput: typeof import('./src/components/ui/MessageAttributeInput.vue')['default']
     MobileCollectionsList: typeof import('./src/components/firestore/mobile/MobileCollectionsList.vue')['default']
