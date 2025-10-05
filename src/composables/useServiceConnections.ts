@@ -81,21 +81,13 @@ export function useServiceConnections() {
      */
     const checkDatastoreConnection = async (): Promise<boolean> => {
         try {
-            const baseUrl = import.meta.env.VITE_DATASTORE_BASE_URL || '/datastore'
-            // Try a simple query to check connection
-            const response = await fetch(`${baseUrl}/v1/projects/test-project:runQuery`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    partitionId: { projectId: 'test-project' },
-                    query: { kind: [{ name: '__kind__' }], limit: 1 }
-                }),
+            const baseUrl = import.meta.env.VITE_DATASTORE_BASE_URL || '/_datastore-hc'
+            const response = await fetch(`${baseUrl}/`, {
+                method: 'GET',
                 signal: AbortSignal.timeout(3000)
             })
-            datastoreConnected.value = response.ok || response.status === 400 // 400 is also OK (means emulator is running)
-            return datastoreConnected.value
+            datastoreConnected.value = response.ok
+            return response.ok
         } catch (error) {
             console.warn('Datastore emulator connection check failed:', error)
             datastoreConnected.value = false
