@@ -27,7 +27,7 @@
             >
               <button
                 @click="handleDeleteCollection"
-                class="w-full px-3 py-2 text-left text-sm font-sans font-normal text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 rounded-lg"
+                class="w-full px-3 py-2 text-left text-sm font-sans font-normal text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors rounded-lg"
               >
                 Delete collection
               </button>
@@ -41,7 +41,7 @@
         <button
           v-if="selectedCollection"
           @click="$emit('add-document')"
-          class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <PlusIcon class="w-4 h-4 mr-2" />
           Add document
@@ -55,7 +55,7 @@
             v-for="document in documents"
             :key="document.name"
             :class="[
-              'flex items-center px-3 py-2 text-sm rounded-md cursor-pointer transition-colors duration-200',
+              'flex items-center px-3 py-2 text-sm rounded-md cursor-pointer transition-colors',
               selectedDocument?.name === document.name
                 ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
                 : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
@@ -77,7 +77,7 @@
           </p>
           <button
             @click="$emit('add-document')"
-            class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors duration-200"
+            class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
           >
             <PlusIcon class="w-4 h-4 mr-2" />
             Add your first document
@@ -145,6 +145,6 @@ const handleDeleteCollection = () => {
 }
 
 .animate-fade-in {
-  animation: fade-in 0.3s ease-out;
+  animation: fade-in var(--theme-transition-duration) var(--theme-transition-timing);
 }
 </style>

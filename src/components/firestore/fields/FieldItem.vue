@@ -2,18 +2,18 @@
   <div>
     <!-- Root level field -->
     <div
-      class="group flex items-center justify-between text-sm p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+      class="group flex items-center justify-between text-sm p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
     >
       <div class="flex items-center min-w-0 flex-1">
         <!-- Toggle button for map and array fields -->
         <button
           v-if="getFieldType(fieldValue) === 'map' || getFieldType(fieldValue) === 'array'"
           @click="$emit('toggle-field', fieldName)"
-          class="p-0.5 mr-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-150"
+          class="p-0.5 mr-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
         >
           <ChevronRightIcon
             :class="[
-              'w-3 h-3 transition-transform duration-200',
+              'w-3 h-3 transition-transform',
               isExpanded ? 'rotate-90' : ''
             ]"
           />
@@ -48,12 +48,12 @@
       </div>
 
       <!-- Hover Actions -->
-      <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+      <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
         <span class="text-xs text-gray-500 dark:text-gray-400 font-mono">{{ getFieldType(fieldValue) }}</span>
         <button
           v-if="getFieldType(fieldValue) === 'map' || getFieldType(fieldValue) === 'array'"
           @click="getFieldType(fieldValue) === 'map' ? $emit('add-to-map', fieldPath) : $emit('add-to-array', fieldPath)"
-          class="p-1 text-gray-400 hover:text-green-600 dark:hover:text-green-400 rounded transition-colors duration-150"
+          class="p-1 text-gray-400 hover:text-green-600 dark:hover:text-green-400 rounded transition-colors"
           :title="getFieldType(fieldValue) === 'map' ? 'Add field to map' : 'Add item to array'"
         >
           <PlusIcon class="w-3 h-3" />
@@ -61,14 +61,14 @@
         <button
           v-else
           @click="$emit('edit-field', { path: fieldPath, fieldName, fieldValue })"
-          class="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded transition-colors duration-150"
+          class="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 rounded transition-colors"
           title="Edit field"
         >
           <PencilIcon class="w-3 h-3" />
         </button>
         <button
           @click="$emit('delete-field', { path: fieldPath, displayName: fieldName })"
-          class="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded transition-colors duration-150"
+          class="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 rounded transition-colors"
           title="Delete field"
         >
           <TrashIcon class="w-3 h-3" />

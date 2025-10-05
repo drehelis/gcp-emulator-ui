@@ -46,10 +46,10 @@
         </button>
         
         <Transition
-          enter-active-class="transition-all duration-200"
+          enter-active-class="transition-all"
           enter-from-class="opacity-0 max-h-0"
           enter-to-class="opacity-100 max-h-96"
-          leave-active-class="transition-all duration-200"
+          leave-active-class="transition-all"
           leave-from-class="opacity-100 max-h-96"
           leave-to-class="opacity-0 max-h-0"
         >

@@ -2,31 +2,31 @@
   <div class="relative" ref="dropdownRef">
     <button
       @click="isOpen = !isOpen"
-      class="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700"
+      class="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-700 theme-transition-colors"
       :class="{ 'justify-center px-2': collapsed }"
     >
       <div class="flex items-center" :class="{ 'justify-center': collapsed }">
-        <FolderIcon class="w-4 h-4" :class="collapsed ? '' : 'mr-2'" />
+        <FolderIcon class="w-4 h-4 theme-transition-colors" :class="collapsed ? '' : 'mr-2'" />
         <span v-if="!collapsed" class="truncate">
           {{ selectedProject || 'Select project...' }}
         </span>
       </div>
-      <ChevronDownIcon v-if="!collapsed" class="w-4 h-4 ml-4" />
+      <ChevronDownIcon v-if="!collapsed" class="w-4 h-4 ml-4 theme-transition-colors" />
     </button>
 
     <!-- Dropdown -->
     <Teleport to="body">
       <Transition
-        enter-active-class="transition duration-200 ease-out"
+        enter-active-class="transition"
         enter-from-class="transform scale-95 opacity-0"
         enter-to-class="transform scale-100 opacity-100"
-        leave-active-class="transition duration-75 ease-in"
+        leave-active-class="transition"
         leave-from-class="transform scale-100 opacity-100"
         leave-to-class="transform scale-95 opacity-0"
       >
         <div
           v-if="isOpen"
-          class="fixed z-[9999] bg-white border border-gray-300 rounded-md shadow-lg dark:bg-gray-800 dark:border-gray-600"
+          class="fixed z-[9999] bg-white border border-gray-300 rounded-md shadow-lg dark:bg-gray-800 dark:border-gray-600 theme-transition-colors"
           :class="collapsed ? 'w-48' : 'w-80'"
           :style="dropdownStyles"
         >
@@ -37,7 +37,7 @@
           <div
             v-for="project in projects"
             :key="project"
-            class="group flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+            class="group flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 theme-transition-colors"
             :class="{ 'bg-gray-100 dark:bg-gray-700': project === selectedProject }"
           >
             <button

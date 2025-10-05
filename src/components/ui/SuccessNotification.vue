@@ -19,7 +19,7 @@
       <div v-if="showClearButton" class="flex-shrink-0">
         <button
           @click="$emit('clear')"
-          class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md px-2 py-1"
+          class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md px-2 py-1"
         >
           {{ clearButtonLabel }}
         </button>

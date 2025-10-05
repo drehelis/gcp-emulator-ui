@@ -414,6 +414,31 @@ const routes: RouteRecordRaw[] = [
                 }
               }
             ]
+          },
+          // Datastore routes
+          {
+            path: 'datastore/namespaces',
+            children: [
+              {
+                path: '',
+                name: 'project-datastore-namespaces',
+                component: () => import('@/views/datastore/KindsView.vue'),
+                props: true,
+                meta: {
+                  title: 'Namespaces',
+                  description: 'Manage Datastore namespaces',
+                  icon: 'FolderIcon',
+                  requiresAuth: true,
+                  requiresProject: true,
+                  breadcrumbs: [
+                    { label: 'Home', route: '/' },
+                    { label: ':projectId', route: '/projects/:projectId' },
+                    { label: 'Datastore' },
+                    { label: 'Namespaces' }
+                  ]
+                }
+              }
+            ]
           }
         ]
       },

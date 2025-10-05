@@ -1,8 +1,8 @@
 <template>
   <div class="space-y-6">
     <!-- Header -->
-    <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
-      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+    <div class="bg-white dark:bg-gray-800 shadow rounded-lg theme-transition-colors">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 theme-transition-colors">
         <div class="flex items-center justify-between">
           <h2 class="text-lg font-medium text-gray-900 dark:text-white">
             Import/Export
@@ -18,7 +18,7 @@
     </div>
 
     <!-- No Emulators Running Message -->
-    <div v-if="availableTabs.length === 0" class="bg-white dark:bg-gray-800 shadow rounded-lg">
+    <div v-if="availableTabs.length === 0" class="bg-white dark:bg-gray-800 shadow rounded-lg theme-transition-bg">
       <div class="px-6 py-8 text-center">
         <div class="mb-4">
           <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -41,8 +41,8 @@
     </div>
 
     <!-- Service Selection Tabs -->
-    <div v-if="availableTabs.length > 0" class="bg-white dark:bg-gray-800 shadow rounded-lg">
-      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+    <div v-if="availableTabs.length > 0" class="bg-white dark:bg-gray-800 shadow rounded-lg theme-transition-colors">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 theme-transition-colors">
         <nav class="flex space-x-8" aria-label="Tabs">
           <button
             v-for="tab in availableTabs"

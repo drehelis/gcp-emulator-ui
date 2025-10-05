@@ -5,6 +5,67 @@
 /* TailwindCSS v4 dark mode variant configuration */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Global theme transition consistency */
+:root {
+  --theme-transition-duration: 200ms;
+  --theme-transition-timing: ease-in-out;
+  --highlight-transition-duration: 1.5s;
+  --highlight-transition-timing: ease-out;
+}
+
+/* Global theme transition classes */
+.theme-transition {
+  transition:
+    background-color var(--theme-transition-duration) var(--theme-transition-timing),
+    border-color var(--theme-transition-duration) var(--theme-transition-timing),
+    color var(--theme-transition-duration) var(--theme-transition-timing),
+    fill var(--theme-transition-duration) var(--theme-transition-timing),
+    stroke var(--theme-transition-duration) var(--theme-transition-timing),
+    box-shadow var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+.theme-transition-colors {
+  transition:
+    background-color var(--theme-transition-duration) var(--theme-transition-timing),
+    border-color var(--theme-transition-duration) var(--theme-transition-timing),
+    color var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+.theme-transition-bg {
+  transition: background-color var(--theme-transition-duration) var(--theme-transition-timing);
+}
+
+/* Override Tailwind's default transition utilities to use consistent timing */
+.transition-colors {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: var(--theme-transition-timing);
+  transition-duration: var(--theme-transition-duration);
+}
+
+.transition-opacity {
+  transition-property: opacity;
+  transition-timing-function: var(--theme-transition-timing);
+  transition-duration: var(--theme-transition-duration);
+}
+
+.transition-transform {
+  transition-property: transform;
+  transition-timing-function: var(--theme-transition-timing);
+  transition-duration: var(--theme-transition-duration);
+}
+
+.transition-all {
+  transition-property: all;
+  transition-timing-function: var(--theme-transition-timing);
+  transition-duration: var(--theme-transition-duration);
+}
+
+.transition {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: var(--theme-transition-timing);
+  transition-duration: var(--theme-transition-duration);
+}
+
 /* Custom component styles */
 .btn {
   display: inline-flex;
@@ -15,7 +76,12 @@
   font-weight: 500;
   border-radius: 0.375rem;
   border: 1px solid transparent;
-  transition: all 0.2s;
+  transition:
+    background-color var(--theme-transition-duration) var(--theme-transition-timing),
+    border-color var(--theme-transition-duration) var(--theme-transition-timing),
+    color var(--theme-transition-duration) var(--theme-transition-timing),
+    opacity var(--theme-transition-duration) var(--theme-transition-timing),
+    transform var(--theme-transition-duration) var(--theme-transition-timing);
   cursor: pointer;
 }
 
@@ -251,11 +317,15 @@ button:focus {
 
 /* Button styles */
 .firestore-btn-icon {
-  @apply p-2 transition-colors rounded-md min-h-[44px] min-w-[44px] sm:p-0 sm:min-h-0 sm:min-w-0;
+  @apply p-2 rounded-md min-h-[44px] min-w-[44px] sm:p-0 sm:min-h-0 sm:min-w-0;
+  transition: color var(--theme-transition-duration) var(--theme-transition-timing),
+    background-color var(--theme-transition-duration) var(--theme-transition-timing);
 }
 
 .firestore-btn-icon-small {
-  @apply p-1 transition-colors;
+  @apply p-1;
+  transition: color var(--theme-transition-duration) var(--theme-transition-timing),
+    background-color var(--theme-transition-duration) var(--theme-transition-timing);
 }
 
 .firestore-hover-gray {
@@ -276,7 +346,8 @@ button:focus {
 
 /* Row hover effects */
 .firestore-row-hover {
-  @apply hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors;
+  @apply hover:bg-gray-50 dark:hover:bg-gray-700/50;
+  transition: background-color var(--theme-transition-duration) var(--theme-transition-timing);
 }
 
 /* Focus and interaction states */

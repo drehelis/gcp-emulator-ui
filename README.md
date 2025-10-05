@@ -39,7 +39,11 @@ This is an unofficial third-party application and is not affiliated with, endors
    * Multiple databases support
    * Import/export collections and documents
 
-- **Google Datastore mode ([gcloud](https://cloud.google.com/datastore/docs/tools/datastore-emulator))** - Coming soon
+- **Google Firestore (datastore-mode) ([gcloud](https://cloud.google.com/datastore/docs/tools/datastore-emulator))**
+   > Named database mutation operations not supported by Datastore emulator
+   * Create, view, and manage namespaces on `(default)` database.
+   * Query/Read operations on named databases
+   * ~~Import/export functionality~~
 
 
 ## Quick Start
@@ -66,6 +70,12 @@ docker run \
    --publish 8086:8086 \
    gcr.io/google.com/cloudsdktool/cloud-sdk:emulators sh -c 'gcloud beta emulators firestore start --host-port=0.0.0.0:8086'
 
+# Start Google Firestore datastore-mode emulator
+docker run \
+   --rm \
+   --publish 8087:8087 \
+   gcr.io/google.com/cloudsdktool/cloud-sdk:emulators sh -c 'gcloud beta emulators firestore start --database-mode=datastore-mode --host-port=0.0.0.0:8087'
+
 # Start fake-gcs emulator
 docker run \
    --rm \
@@ -77,6 +87,7 @@ docker run \
    --rm \
    --env PUBSUB_EMULATOR_URL="host.docker.internal:8085" \
    --env FIRESTORE_EMULATOR_URL="host.docker.internal:8086" \
+   --env DATASTORE_EMULATOR_URL="host.docker.internal:8087" \
    --env STORAGE_EMULATOR_URL="host.docker.internal:4443" \
    --publish 9090:80 \
    ghcr.io/drehelis/gcp-emulator-ui:main
@@ -118,6 +129,7 @@ Browse to http://localhost:9090
 |----------|---------|-------------|
 | `VITE_PUBSUB_BASE_URL` | `http://localhost:8085` | Pub/Sub emulator endpoint |
 | `VITE_FIRESTORE_BASE_URL` | `http://localhost:8086` | Firestore emulator endpoint |
+| `VITE_DATASTORE_BASE_URL` | `http://localhost:8087` | Firestore datastore-mode emulator endpoint |
 | `VITE_STORAGE_BASE_URL` | `http://localhost:4443` | Storage emulator endpoint |
 
 ## Development
@@ -146,7 +158,18 @@ src/
 - **TypeScript** - Type-safe development
 - **Vite** - Fast build tool and dev server
 - **Tailwind CSS** - Utility-first CSS framework
-- **Heroicons** - Beautiful hand-crafted SVG icons
+
+## Credits
+
+### Icons
+This project uses [**Heroicons**](https://heroicons.com/) - a set of free MIT-licensed high-quality SVG icons created by [Tailwind Labs](https://tailwindlabs.com/).
+
+- **License**: MIT
+- **Version**: 2.1.5
+- **Repository**: [github.com/tailwindlabs/heroicons](https://github.com/tailwindlabs/heroicons)
+- **Copyright**: © 2020 Refactoring UI Inc.
+
+All icons are used in accordance with the MIT License. See [Heroicons License](https://github.com/tailwindlabs/heroicons/blob/master/LICENSE) for details.
 
 ## Contributing
 

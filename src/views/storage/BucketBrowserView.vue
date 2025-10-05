@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-full bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+  <div class="min-h-full bg-gray-50 dark:bg-gray-900 transition-colors">
     <!-- Page Header -->
     <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
       <div class="px-4 sm:px-6 lg:px-8">
@@ -9,7 +9,7 @@
             <div class="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
               <router-link
                 :to="`/projects/${currentProjectId}/storage/buckets`"
-                class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               >
                 <ArrowLeftIcon class="w-5 h-5" />
               </router-link>
@@ -29,7 +29,7 @@
               <button
                 @click="refreshObjects"
                 :disabled="storageStore.loading.objects"
-                class="inline-flex items-center px-2 sm:px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+                class="inline-flex items-center px-2 sm:px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <ArrowPathIcon
                   :class="['w-4 h-4', storageStore.loading.objects ? 'animate-spin' : '', 'sm:mr-2']"
@@ -39,7 +39,7 @@
 
               <button
                 @click="showUploadModal = true"
-                class="inline-flex items-center px-2 sm:px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
+                class="inline-flex items-center px-2 sm:px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
               >
                 <ArrowUpTrayIcon class="w-4 h-4 sm:mr-2" />
                 <span class="hidden sm:inline">Upload</span>
@@ -60,7 +60,7 @@
           <li>
             <button
               @click="navigateToPath('')"
-              class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200"
+              class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
             >
               <HomeIcon class="w-4 h-4 translate-y-0.5" />
               <span class="sr-only">Home</span>
@@ -74,7 +74,7 @@
               <button
                 v-if="!breadcrumb.isLast"
                 @click="navigateToPath(breadcrumb.path)"
-                class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 truncate transition-colors duration-200"
+                class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 truncate transition-colors"
               >
                 {{ breadcrumb.name }}
               </button>
@@ -90,7 +90,7 @@
             <button
               @click="downloadSelectedAsZip"
               :disabled="downloadingZip"
-              class="inline-flex items-center px-1 sm:px-2 text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              class="inline-flex items-center px-1 sm:px-2 text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ArrowDownTrayIcon :class="['w-3 h-3 sm:w-4 sm:h-4 sm:mr-1', downloadingZip ? 'animate-pulse' : '']" />
               <span class="hidden sm:inline">{{ downloadingZip ? ((downloadContext?.count || storageStore.selectedObjects.length) === 1 ? 'Downloading...' : 'Creating ZIP...') : `Download (${downloadContext?.count || storageStore.selectedObjects.length})` }}</span>
@@ -98,7 +98,7 @@
             <button
               @click="confirmBulkDelete"
               :disabled="storageStore.loading.delete"
-              class="inline-flex items-center px-1 sm:px-2 text-xs sm:text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 rounded focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              class="inline-flex items-center px-1 sm:px-2 text-xs sm:text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 rounded focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <TrashIcon class="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
               <span class="hidden sm:inline">Delete</span>
@@ -106,7 +106,7 @@
             <button
               @click="storageStore.clearSelection"
               :disabled="downloadingZip"
-              class="inline-flex items-center px-1 sm:px-2 text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+              class="inline-flex items-center px-1 sm:px-2 text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <XMarkIcon class="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
               <span class="hidden sm:inline">Clear</span>
@@ -116,7 +116,7 @@
 
       <!-- Loading State -->
       <div v-if="storageStore.loading.objects && !storageStore.objects.length" class="text-center py-12">
-        <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm text-blue-600 dark:text-blue-400 transition ease-in-out duration-150">
+        <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm text-blue-600 dark:text-blue-400 transition">
           <ArrowPathIcon class="animate-spin -ml-1 mr-3 h-5 w-5" />
           Loading objects...
         </div>
@@ -134,7 +134,7 @@
           </p>
           <button
             @click="refreshObjects"
-            class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors duration-200"
+            class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-lg hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
           >
             <ArrowPathIcon class="w-4 h-4 mr-2" />
             Retry
@@ -145,7 +145,7 @@
       <!-- Empty State with Drag & Drop -->
       <div v-else-if="!storageStore.objects.length" class="text-center py-12">
         <div
-          class="bg-white dark:bg-gray-800 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 p-8 max-w-2xl mx-auto transition-colors duration-200"
+          class="bg-white dark:bg-gray-800 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 p-8 max-w-2xl mx-auto transition-colors"
           :class="{
             'border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/10': isDragOver
           }"
@@ -188,7 +188,7 @@
                 <div class="flex items-center space-x-2">
                   <div class="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
                     <div
-                      class="bg-blue-600 h-1.5 rounded-full transition-all duration-300"
+                      class="bg-blue-600 h-1.5 rounded-full transition-all"
                       :style="{ width: `${progress.percentage}%` }"
                     ></div>
                   </div>
@@ -203,21 +203,21 @@
             <div class="flex flex-col sm:flex-row gap-3 items-center justify-center mb-3">
               <button
                 @click="showCreateFolderModal = true"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
               >
                 <FolderPlusIcon class="w-4 h-4 mr-2" />
                 Create Folder
               </button>
               <button
                 @click="showCreateFileModal = true"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
               >
                 <DocumentTextIcon class="w-4 h-4 mr-2" />
                 Create File
               </button>
               <button
                 @click="triggerFileInput"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
+                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
               >
                 <ArrowUpTrayIcon class="w-4 h-4 mr-2" />
                 Choose Files
@@ -264,7 +264,7 @@
                 <th scope="col" class="px-3 py-2 text-left">
                   <button
                     @click="handleSort('name')"
-                    class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-150"
+                    class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
                   >
                     Name
                     <ChevronUpIcon
@@ -281,7 +281,7 @@
                 <th scope="col" class="px-3 py-2 text-left w-24">
                   <button
                     @click="handleSort('size')"
-                    class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-150"
+                    class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
                   >
                     Size
                     <ChevronUpIcon
@@ -298,7 +298,7 @@
                 <th scope="col" class="px-3 py-2 text-left w-32">
                   <button
                     @click="handleSort('type')"
-                    class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-150"
+                    class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
                   >
                     Type
                     <ChevronUpIcon
@@ -315,7 +315,7 @@
                 <th scope="col" class="px-3 py-2 text-left w-36">
                   <button
                     @click="handleSort('modified')"
-                    class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-150"
+                    class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
                   >
                     Modified
                     <ChevronUpIcon
@@ -336,7 +336,7 @@
               <tr
                 v-for="(object, index) in storageStore.objects"
                 :key="object.name"
-                class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150 cursor-pointer"
+                class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
                 :class="[
                   { 'bg-blue-50 dark:bg-blue-900/20': storageStore.selectedObjects.includes(object.name) },
                   index !== storageStore.objects.length - 1 ? 'border-b border-gray-100 dark:border-gray-700/50' : ''
@@ -390,7 +390,7 @@
                     v-if="!object.isFolder"
                     @click.stop="downloadObject(object)"
                     :disabled="storageStore.loading.download"
-                    class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150 px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                    class="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors px-2 py-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20"
                   >
                     ↓
                   </button>
@@ -436,7 +436,7 @@
             <div
               v-for="object in storageStore.objects"
               :key="object.name"
-              class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150"
+              class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
               :class="{ 'bg-blue-50 dark:bg-blue-900/20': storageStore.selectedObjects.includes(object.name) }"
               @click="handleObjectClick(object)"
             >
@@ -474,7 +474,7 @@
                       v-if="!object.isFolder"
                       @click.stop="downloadObject(object)"
                       :disabled="storageStore.loading.download"
-                      class="ml-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-150"
+                      class="ml-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       <ArrowDownTrayIcon class="w-4 h-4" />
                     </button>
@@ -505,14 +505,14 @@
         <div
           v-for="object in storageStore.objects"
           :key="object.name"
-          class="group relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md dark:hover:shadow-blue-900/10 transition-all duration-200 cursor-pointer"
+          class="group relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md dark:hover:shadow-blue-900/10 transition-all cursor-pointer"
           :class="{ 'ring-2 ring-blue-500 dark:ring-blue-400': storageStore.selectedObjects.includes(object.name) }"
           @click="handleObjectClick(object)"
         >
           <!-- Selection checkbox -->
           <div
             v-if="!object.isFolder"
-            class="absolute top-2 left-2 transition-opacity duration-200"
+            class="absolute top-2 left-2 transition-opacity"
             :class="[
               storageStore.selectedObjects.includes(object.name)
                 ? 'opacity-100'
@@ -575,7 +575,7 @@
         <button
           @click="loadMore"
           :disabled="storageStore.loading.objects"
-          class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800 border border-blue-300 dark:border-blue-600 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+          class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800 border border-blue-300 dark:border-blue-600 rounded-lg hover:bg-blue-50 dark:hover:bg-blue-900/20 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <ArrowPathIcon v-if="storageStore.loading.objects" class="animate-spin -ml-1 mr-2 h-4 w-4" />
           {{ storageStore.loading.objects ? 'Loading...' : 'Load More' }}
@@ -605,10 +605,10 @@
       <Dialog as="div" class="relative z-50" @close="handleUploadModalClose">
         <TransitionChild
           as="template"
-          enter="ease-out duration-300"
+          enter=""
           enter-from="opacity-0"
           enter-to="opacity-100"
-          leave="ease-in duration-200"
+          leave=""
           leave-from="opacity-100"
           leave-to="opacity-0"
         >
@@ -619,10 +619,10 @@
           <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
             <TransitionChild
               as="template"
-              enter="ease-out duration-300"
+              enter=""
               enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
               enter-to="opacity-100 translate-y-0 sm:scale-100"
-              leave="ease-in duration-200"
+              leave=""
               leave-from="opacity-100 translate-y-0 sm:scale-100"
               leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
@@ -650,7 +650,7 @@
                     @dragover.prevent="isDragOver = true"
                     @dragleave.prevent="isDragOver = false"
                     :class="[
-                      'border-2 border-dashed rounded-lg p-6 text-center transition-colors duration-200',
+                      'border-2 border-dashed rounded-lg p-6 text-center transition-colors',
                       isDragOver
                         ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20'
                         : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
@@ -661,20 +661,20 @@
                       <div class="flex flex-col sm:flex-row gap-3 items-center justify-center">
                         <button
                           @click="showUploadModal = false; showCreateFileModal = true"
-                          class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
+                          class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
                         >
                           <DocumentTextIcon class="w-4 h-4 mr-2" />
                           Create File
                         </button>
                         <button
                           @click="showUploadModal = false; showCreateFolderModal = true"
-                          class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200"
+                          class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
                         >
                           <FolderPlusIcon class="w-4 h-4 mr-2" />
                           Create Folder
                         </button>
                         <label for="upload-files" class="cursor-pointer">
-                          <span class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors duration-200">
+                          <span class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors">
                             <ArrowUpTrayIcon class="w-4 h-4 mr-2" />
                             Choose Files
                           </span>
@@ -747,7 +747,7 @@
                       </div>
                       <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
                         <div
-                          class="bg-blue-600 h-2 rounded-full transition-all duration-200"
+                          class="bg-blue-600 h-2 rounded-full transition-all"
                           :style="{ width: `${progress.progress * 100}%` }"
                         ></div>
                       </div>
@@ -785,10 +785,10 @@
       <Dialog as="div" class="relative z-50" @close="showCreateFileModal = false">
         <TransitionChild
           as="template"
-          enter="ease-out duration-300"
+          enter=""
           enter-from="opacity-0"
           enter-to="opacity-100"
-          leave="ease-in duration-200"
+          leave=""
           leave-from="opacity-100"
           leave-to="opacity-0"
         >
@@ -799,10 +799,10 @@
           <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
             <TransitionChild
               as="template"
-              enter="ease-out duration-300"
+              enter=""
               enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
               enter-to="opacity-100 translate-y-0 sm:scale-100"
-              leave="ease-in duration-200"
+              leave=""
               leave-from="opacity-100 translate-y-0 sm:scale-100"
               leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
@@ -838,7 +838,7 @@
                           type="text"
                           id="fileName"
                           placeholder="example.json"
-                          class="block w-full rounded-lg border-0 bg-white dark:bg-gray-800 px-4 py-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-200 text-sm"
+                          class="block w-full rounded-lg border-0 bg-white dark:bg-gray-800 px-4 py-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:ring-2 focus:ring-inset focus:ring-blue-500 dark:focus:ring-blue-400 transition-all text-sm"
                           :class="{
                             'ring-red-500 dark:ring-red-400': createFileValidationError && fileName.trim(),
                             'ring-green-500 dark:ring-green-400': !createFileValidationError && fileName.trim()
@@ -942,10 +942,10 @@
       <Dialog as="div" class="relative z-50" @close="showCreateFolderModal = false">
         <TransitionChild
           as="template"
-          enter="ease-out duration-300"
+          enter=""
           enter-from="opacity-0"
           enter-to="opacity-100"
-          leave="ease-in duration-200"
+          leave=""
           leave-from="opacity-100"
           leave-to="opacity-0"
         >
@@ -956,10 +956,10 @@
           <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
             <TransitionChild
               as="template"
-              enter="ease-out duration-300"
+              enter=""
               enter-from="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
               enter-to="opacity-100 translate-y-0 sm:scale-100"
-              leave="ease-in duration-200"
+              leave=""
               leave-from="opacity-100 translate-y-0 sm:scale-100"
               leave-to="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
             >
@@ -983,7 +983,7 @@
                             v-model="folderName"
                             type="text"
                             placeholder="Enter folder name..."
-                            class="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:focus:ring-blue-400 transition-colors duration-200 text-sm"
+                            class="block w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:focus:ring-blue-400 transition-colors text-sm"
                             :class="{
                               'border-red-500 dark:border-red-400 focus:ring-red-500 dark:focus:ring-red-400': createFolderValidationError,
                               'focus:ring-blue-500 dark:focus:ring-blue-400': !createFolderValidationError

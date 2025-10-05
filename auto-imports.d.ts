@@ -164,6 +164,7 @@ declare global {
   const useCurrentElement: typeof import('@vueuse/core')['useCurrentElement']
   const useCycleList: typeof import('@vueuse/core')['useCycleList']
   const useDark: typeof import('@vueuse/core')['useDark']
+  const useDatastoreStore: typeof import('./src/stores/datastore')['useDatastoreStore']
   const useDateFormat: typeof import('@vueuse/core')['useDateFormat']
   const useDebounce: typeof import('@vueuse/core')['useDebounce']
   const useDebounceFn: typeof import('@vueuse/core')['useDebounceFn']
@@ -245,6 +246,8 @@ declare global {
   const useOffsetPagination: typeof import('@vueuse/core')['useOffsetPagination']
   const useOnline: typeof import('@vueuse/core')['useOnline']
   const usePageLeave: typeof import('@vueuse/core')['usePageLeave']
+  const usePaginatedData: typeof import('./src/composables/usePagination')['usePaginatedData']
+  const usePagination: typeof import('./src/composables/usePagination')['usePagination']
   const useParallax: typeof import('@vueuse/core')['useParallax']
   const useParentElement: typeof import('@vueuse/core')['useParentElement']
   const usePerformanceObserver: typeof import('@vueuse/core')['usePerformanceObserver']
@@ -361,6 +364,9 @@ declare global {
   // @ts-ignore
   export type { FirestoreDocumentExport, FirestoreCollectionExport } from './src/composables/useFirestoreImportExport'
   import('./src/composables/useFirestoreImportExport')
+  // @ts-ignore
+  export type { PaginationOptions, PaginatedData } from './src/composables/usePagination'
+  import('./src/composables/usePagination')
   // @ts-ignore
   export type { NavigationItem, NavigationLevel } from './src/composables/useRecursiveNavigation'
   import('./src/composables/useRecursiveNavigation')

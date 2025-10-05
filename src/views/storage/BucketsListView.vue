@@ -107,7 +107,7 @@
                 <th scope="col" class="px-3 py-2 text-left">
                   <button
                     @click="handleSort('name')"
-                    class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-150"
+                    class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
                   >
                     Name
                     <ChevronUpIcon
@@ -124,7 +124,7 @@
                 <th scope="col" class="px-3 py-2 text-left w-32 hidden md:table-cell">
                   <button
                     @click="handleSort('created')"
-                    class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-150"
+                    class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
                   >
                     Created
                     <ChevronUpIcon
@@ -141,7 +141,7 @@
                 <th scope="col" class="px-3 py-2 text-left w-24 hidden sm:table-cell">
                   <button
                     @click="handleSort('location')"
-                    class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-150"
+                    class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
                   >
                     Location
                     <ChevronUpIcon
@@ -158,7 +158,7 @@
                 <th scope="col" class="px-3 py-2 text-left w-28 hidden lg:table-cell">
                   <button
                     @click="handleSort('storageClass')"
-                    class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-150 whitespace-nowrap"
+                    class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors whitespace-nowrap"
                   >
                     Class
                     <ChevronUpIcon
@@ -187,7 +187,7 @@
                 v-for="(bucket, index) in sortedBuckets"
                 :key="bucket.name"
                 :id="`bucket-${bucket.name}`"
-                class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150 cursor-pointer"
+                class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
                 :class="[
                   index !== sortedBuckets.length - 1 ? 'border-b border-gray-100 dark:border-gray-700/50' : ''
                 ]"
@@ -290,7 +290,7 @@
                 v-for="bucket in sortedBuckets"
                 :key="bucket.name"
                 :id="`bucket-${bucket.name}`"
-                class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150 cursor-pointer"
+                class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
                 @click="navigateToBucket(bucket.name)"
               >
                 <div class="flex items-start space-x-3">
@@ -320,7 +320,7 @@
             :key="bucket.name"
             :id="`bucket-${bucket.name}`"
             @click="navigateToBucket(bucket.name)"
-            class="group relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md dark:hover:shadow-blue-900/10 transition-all duration-200 cursor-pointer"
+            class="group relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md dark:hover:shadow-blue-900/10 transition-all cursor-pointer"
           >
             <!-- Bucket Icon -->
             <div class="flex flex-col items-center text-center">
@@ -349,7 +349,7 @@
             </div>
 
             <!-- Action Buttons (visible on hover) -->
-            <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex space-x-1">
+            <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
               <button
                 @click.stop="navigateToBucket(bucket.name)"
                 class="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"

@@ -1,7 +1,7 @@
 <template>
   <div class="relative">
     <div class="relative">
-      <MagnifyingGlassIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+      <MagnifyingGlassIcon class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 theme-transition-colors" />
       <input
         ref="searchInput"
         v-model="searchQuery"
@@ -10,25 +10,25 @@
         @keydown="handleKeydown"
         type="text"
         placeholder="Search..."
-        class="w-full pl-10 pr-4 py-2 text-sm bg-gray-100 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:bg-gray-800 dark:text-white dark:focus:bg-gray-700"
+        class="w-full pl-10 pr-4 py-2 text-sm bg-gray-100 border border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white dark:bg-gray-800 dark:text-white dark:focus:bg-gray-700 theme-transition-colors"
       />
-      <kbd class="absolute right-3 top-1/2 transform -translate-y-1/2 px-2 py-1 text-xs font-semibold text-gray-500 bg-gray-200 border border-gray-300 rounded dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">
+      <kbd class="absolute right-3 top-1/2 transform -translate-y-1/2 px-2 py-1 text-xs font-semibold text-gray-500 bg-gray-200 border border-gray-300 rounded dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600 theme-transition-colors">
         ⌘K
       </kbd>
     </div>
 
     <!-- Search Results Dropdown -->
     <Transition
-      enter-active-class="transition duration-200 ease-out"
+      enter-active-class="transition"
       enter-from-class="transform scale-95 opacity-0"
       enter-to-class="transform scale-100 opacity-100"
-      leave-active-class="transition duration-75 ease-in"
+      leave-active-class="transition"
       leave-from-class="transform scale-100 opacity-100"
       leave-to-class="transform scale-95 opacity-0"
     >
       <div
         v-if="isOpen && (searchQuery || recentSearches.length > 0)"
-        class="absolute z-50 w-full mt-2 bg-white border border-gray-300 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-600 max-h-96 overflow-y-auto"
+        class="absolute z-50 w-full mt-2 bg-white border border-gray-300 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-600 max-h-96 overflow-y-auto theme-transition-colors"
       >
         <div v-if="isLoading" class="p-4">
           <div class="flex items-center space-x-2">
@@ -64,7 +64,7 @@
               v-for="(group, groupName) in groupedResults"
               :key="groupName"
             >
-              <div class="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600">
+              <div class="px-4 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 border-b border-gray-200 dark:border-gray-600 theme-transition-colors">
                 {{ groupName }}
               </div>
               <button
@@ -74,7 +74,7 @@
                 :class="{
                   'bg-gray-100 dark:bg-gray-700': index === selectedIndex && currentGroup === groupName
                 }"
-                class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700"
+                class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 theme-transition-colors"
               >
                 <component :is="result.icon" class="w-4 h-4 mr-3 text-gray-400" />
                 <div class="flex-1 text-left">

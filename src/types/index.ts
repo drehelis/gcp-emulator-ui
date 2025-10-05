@@ -7,6 +7,7 @@
 export * from './pubsub'
 export * from './storage'
 export * from './firestore'
+export * from './datastore'
 export * from './api'
 export * from './ui'
 

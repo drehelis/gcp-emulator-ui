@@ -1,9 +1,9 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 flex transition-colors duration-200">
+  <div class="min-h-screen bg-gray-50 dark:bg-gray-900 flex theme-transition-bg">
     <!-- Sidebar -->
     <Transition
-      enter-active-class="transition-transform duration-300"
-      leave-active-class="transition-transform duration-300"
+      enter-active-class="transition-transform"
+      leave-active-class="transition-transform"
       enter-from-class="transform -translate-x-full"
       leave-to-class="transform -translate-x-full"
     >
@@ -12,23 +12,34 @@
         class="fixed inset-y-0 left-0 z-50 lg:static lg:inset-0"
         :class="[
           appStore.layout.sidebar.collapsed && !isMobile ? 'w-16' : 'w-80',
-          'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-colors duration-200',
-          'flex flex-col overflow-y-auto overflow-x-visible transition-all duration-200'
+          'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 theme-transition-colors',
+          'flex flex-col overflow-y-auto overflow-x-visible transition-all'
         ]"
       >
         <!-- Sidebar Header -->
         <div 
-          class="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700 transition-colors duration-200"
+          class="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700 theme-transition-colors"
           :class="{ 'justify-center': appStore.layout.sidebar.collapsed && !isMobile }"
         >
-          <div 
+          <div
             v-if="!appStore.layout.sidebar.collapsed || isMobile"
             class="flex items-center space-x-3"
           >
             <div class="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
               <QueueListIcon class="w-5 h-5 text-white" />
             </div>
-            <div>
+            <div class="flex items-center space-x-2">
+              <a
+                href="https://github.com/drehelis/gcp-emulator-ui"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="p-1.5 hover:opacity-70 theme-transition-colors hover:scale-110 transition-transform"
+                title="View on GitHub"
+              >
+                <svg width="20" height="20" viewBox="0 0 98 96" xmlns="http://www.w3.org/2000/svg" class="fill-gray-700 dark:fill-gray-300">
+                  <path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/>
+                </svg>
+              </a>
               <h1 class="text-lg font-semibold text-gray-900 dark:text-white">GCP Emulator UI</h1>
             </div>
           </div>
@@ -40,20 +51,22 @@
             <QueueListIcon class="w-5 h-5 text-white" />
           </div>
 
+                    <!-- Collapse/Expand button (desktop only) -->
           <button
             v-if="!isMobile"
             @click="appStore.toggleSidebar"
-            class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-200"
+            class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 theme-transition-colors"
+            :title="appStore.layout.sidebar.collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
           >
-            <ChevronLeftIcon 
-              class="w-5 h-5 transition-transform duration-200" 
+            <ChevronLeftIcon
+              class="w-5 h-5 transition-transform"
               :class="{ 'rotate-180': appStore.layout.sidebar.collapsed }"
             />
           </button>
         </div>
 
         <!-- Project Selector -->
-        <div class="px-4 py-4 border-b border-gray-200 dark:border-gray-700 overflow-visible relative z-50 transition-colors duration-200">
+        <div class="px-4 py-4 border-b border-gray-200 dark:border-gray-700 overflow-visible relative z-50 theme-transition-colors">
           <ProjectSelector :collapsed="appStore.layout.sidebar.collapsed && !isMobile" />
         </div>
 
@@ -80,7 +93,7 @@
             </div>
 
             <!-- PubSub Section Container -->
-            <div v-else-if="item.id === 'pubsub-section'" class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3">
+            <div v-else-if="item.id === 'pubsub-section'" class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3 theme-transition-colors">
               <template v-for="subItem in item.children" :key="subItem.id">
                 <NavItem
                   :to="subItem.route"
@@ -100,7 +113,7 @@
             </div>
 
             <!-- Storage Section Container -->
-            <div v-else-if="item.id === 'storage-section'" class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3">
+            <div v-else-if="item.id === 'storage-section'" class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3 theme-transition-colors">
               <template v-for="subItem in item.children" :key="subItem.id">
                 <NavItem
                   :to="subItem.route"
@@ -139,11 +152,31 @@
               </template>
             </div>
 
+            <!-- Datastore Section Container -->
+            <div v-else-if="item.id === 'datastore-section'" class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3">
+              <template v-for="subItem in item.children" :key="subItem.id">
+                <NavItem
+                  :to="subItem.route"
+                  :icon="subItem.icon"
+                  :label="subItem.label"
+                  :badge="subItem.badge"
+                  :disabled="subItem.disabled"
+                  :is-service-header="subItem.isServiceHeader"
+                  :is-sub-item="subItem.isSubItem"
+                  :is-section-header="subItem.isSectionHeader"
+                  :connected="subItem.connected"
+                  :is-collapsed="appStore.layout.sidebar.collapsed && !isMobile"
+                  :custom-classes="subItem.customClasses"
+                  @click="handleMobileNavClick"
+                />
+              </template>
+            </div>
+
             <!-- Other Items (Expanded Mode) -->
             <div v-else-if="!item.id.includes('-section') && !appStore.layout.sidebar.collapsed" class="mt-4">
               <router-link
                 :to="item.route"
-                class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white transition-colors"
+                class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white theme-transition-colors"
                 @click="handleMobileNavClick"
               >
                 <component :is="item.icon" class="w-5 h-5 mr-3" />
@@ -152,7 +185,7 @@
             </div>
 
             <!-- Collapsed Separator -->
-            <div v-else-if="item.isSeparator && appStore.layout.sidebar.collapsed" class="my-3 mx-auto w-8 border-t border-gray-200 dark:border-gray-700"></div>
+            <div v-else-if="item.isSeparator && appStore.layout.sidebar.collapsed" class="my-3 mx-auto w-8 border-t border-gray-200 dark:border-gray-700 theme-transition-colors"></div>
 
             <!-- Collapsed/Other Items -->
             <NavItem
@@ -178,8 +211,8 @@
 
     <!-- Mobile sidebar overlay -->
     <Transition
-      enter-active-class="transition-opacity duration-300"
-      leave-active-class="transition-opacity duration-300"
+      enter-active-class="transition-opacity"
+      leave-active-class="transition-opacity"
       enter-from-class="opacity-0"
       leave-to-class="opacity-0"
     >
@@ -194,7 +227,7 @@
     <div class="flex-1 flex flex-col min-w-0">
       <!-- Top Header -->
       <header 
-        class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-4 lg:px-6 transition-colors duration-200"
+        class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-4 lg:px-6 theme-transition-colors"
         :class="{ 'lg:pl-4': appStore.layout.sidebar.collapsed }"
       >
         <!-- Left side -->
@@ -203,7 +236,7 @@
           <button
             v-if="isMobile"
             @click="appStore.setSidebarCollapsed(false)"
-            class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+            class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 theme-transition-colors"
           >
             <Bars3Icon class="w-6 h-6" />
           </button>
@@ -212,12 +245,12 @@
           <nav class="hidden md:flex" aria-label="Breadcrumb">
             <ol class="flex items-center space-x-2">
               <li v-for="(breadcrumb, index) in appStore.breadcrumbs" :key="index" class="flex items-center">
-                <ChevronRightIcon v-if="index > 0" class="w-4 h-4 text-gray-400 mx-2" />
+                <ChevronRightIcon v-if="index > 0" class="w-4 h-4 text-gray-400 mx-2 theme-transition-colors" />
                 <component
                   :is="breadcrumb.route && !breadcrumb.disabled ? 'router-link' : 'span'"
                   :to="breadcrumb.route"
                   :class="[
-                    'text-sm font-medium',
+                    'text-sm font-medium theme-transition-colors',
                     breadcrumb.disabled 
                       ? 'text-gray-400 dark:text-gray-500' 
                       : breadcrumb.route 
@@ -243,7 +276,7 @@
           <!-- Theme toggle -->
           <button
             @click="toggleTheme"
-            class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-200"
+            class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 theme-transition-colors"
             :title="`Switch to ${appStore.isDarkMode ? 'light' : 'dark'} theme`"
           >
             <component :is="themeIcon" class="w-5 h-5" />
@@ -252,7 +285,7 @@
           <!-- Fullscreen toggle -->
           <button
             @click="toggleFullscreen"
-            class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-200"
+            class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 theme-transition-colors"
             title="Toggle fullscreen"
           >
             <component :is="fullscreenIcon" class="w-5 h-5" />
@@ -272,9 +305,9 @@
 <script setup lang="ts">
 import { computed, ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { 
-  QueueListIcon, 
-  ChevronLeftIcon, 
+import {
+  QueueListIcon,
+  ChevronLeftIcon,
   ChevronRightIcon,
   Bars3Icon,
   SunIcon,
@@ -287,7 +320,8 @@ import {
   DocumentDuplicateIcon,
   ArrowsRightLeftIcon,
   ArchiveBoxIcon,
-  CircleStackIcon
+  CircleStackIcon,
+  FolderIcon
 } from '@heroicons/vue/24/outline'
 
 import { useAppStore } from '@/stores/app'
@@ -307,6 +341,7 @@ const {
   pubsubConnected,
   storageConnected,
   firestoreConnected,
+  datastoreConnected,
   checkAllConnections
 } = useServiceConnections()
 
@@ -463,6 +498,41 @@ const navigationItems = computed<NavigationItem[]>(() => {
       })
     }
 
+    // Datastore services with connection status
+    if (showDatastoreNav.value) {
+      const datastoreChildren: NavigationItem[] = []
+
+      // Datastore section header
+      datastoreChildren.push({
+        id: 'datastore-section-header',
+        label: 'Datastore',
+        route: null,
+        icon: null,
+        disabled: false,
+        isSectionHeader: true,
+        connected: datastoreConnected.value
+      })
+
+      // Only show Datastore navigation items when connected
+      if (datastoreConnected.value) {
+        datastoreChildren.push({
+          id: 'datastore-namespaces',
+          label: 'Namespaces',
+          route: `/projects/${currentProject.value}/datastore/namespaces`,
+          icon: FolderIcon,
+          disabled: false,
+          isSubItem: true
+        })
+      }
+
+      items.push({
+        id: 'datastore-section',
+        label: 'Datastore Section',
+        route: null,
+        children: datastoreChildren
+      })
+    }
+
   } else {
     // Collapsed sidebar navigation (icon only)
     items.push({
@@ -557,6 +627,27 @@ const navigationItems = computed<NavigationItem[]>(() => {
       })
     }
 
+    if (showDatastoreNav.value) {
+      // Add separator before Datastore section
+      items.push({
+        id: 'separator-datastore',
+        label: '',
+        route: null,
+        icon: null,
+        disabled: false,
+        isSeparator: true
+      })
+
+      items.push({
+        id: 'collapsed-datastore-namespaces',
+        label: 'Entities',
+        route: `/projects/${currentProject.value}/datastore/namespaces`,
+        icon: FolderIcon,
+        disabled: false,
+        customClasses: !datastoreConnected.value ? 'opacity-50' : ''
+      })
+    }
+
     // Add separator before Import/Export
     items.push({
       id: 'separator-import-export',
@@ -585,6 +676,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
 const showPubSubNav = computed(() => !!currentProject.value)
 const showStorageNav = computed(() => !!currentProject.value)
 const showFirestoreNav = computed(() => !!currentProject.value)
+const showDatastoreNav = computed(() => !!currentProject.value)
 
 // Watch for route changes and sync project selection
 watch(() => route.params.projectId, (newProjectId) => {

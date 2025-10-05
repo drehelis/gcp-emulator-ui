@@ -20,7 +20,7 @@
             >
               <button
                 @click="handleDeleteCollection"
-                class="w-full px-3 py-2 text-left text-sm font-sans font-normal text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 rounded-lg"
+                class="w-full px-3 py-2 text-left text-sm font-sans font-normal text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors rounded-lg"
               >
                 Delete collection
               </button>
@@ -34,7 +34,7 @@
       <div v-if="showAddButton" class="mb-4">
         <button
           @click="$emit('add-item')"
-          class="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto justify-center sm:justify-start"
+          class="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto justify-center sm:justify-start"
         >
           <PlusIcon class="w-4 h-4 mr-2" />
           {{ addButtonText }}
@@ -47,7 +47,7 @@
           v-for="item in items"
           :key="getItemKey(item)"
           :class="[
-            'flex items-center px-3 py-3 sm:py-2 text-sm rounded-md cursor-pointer transition-colors duration-200 min-h-[44px] sm:min-h-0',
+            'flex items-center px-3 py-3 sm:py-2 text-sm rounded-md cursor-pointer transition-colors min-h-[44px] sm:min-h-0',
             selectedItem && getItemKey(selectedItem) === getItemKey(item)
               ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
               : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'

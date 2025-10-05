@@ -6,12 +6,14 @@ export interface ServiceConnectionStatus {
     pubsub: boolean
     storage: boolean
     firestore: boolean
+    datastore: boolean
 }
 
 // Reactive connection status
 const pubsubConnected = ref(false)
 const storageConnected = ref(false)
 const firestoreConnected = ref(false)
+const datastoreConnected = ref(false)
 
 /**
  * Composable for managing GCP emulator service connections
@@ -75,19 +77,40 @@ export function useServiceConnections() {
     }
 
     /**
+     * Check Datastore emulator connection
+     */
+    const checkDatastoreConnection = async (): Promise<boolean> => {
+        try {
+            const baseUrl = import.meta.env.VITE_DATASTORE_BASE_URL || '/_datastore-hc'
+            const response = await fetch(`${baseUrl}/`, {
+                method: 'GET',
+                signal: AbortSignal.timeout(3000)
+            })
+            datastoreConnected.value = response.ok
+            return response.ok
+        } catch (error) {
+            console.warn('Datastore emulator connection check failed:', error)
+            datastoreConnected.value = false
+            return false
+        }
+    }
+
+    /**
      * Check all service connections
      */
     const checkAllConnections = async (): Promise<ServiceConnectionStatus> => {
-        const [pubsub, storage, firestore] = await Promise.all([
+        const [pubsub, storage, firestore, datastore] = await Promise.all([
             checkPubSubConnection(),
             checkStorageConnection(),
-            checkFirestoreConnection()
+            checkFirestoreConnection(),
+            checkDatastoreConnection()
         ])
 
         return {
             pubsub,
             storage,
-            firestore
+            firestore,
+            datastore
         }
     }
 
@@ -96,11 +119,13 @@ export function useServiceConnections() {
         pubsubConnected,
         storageConnected,
         firestoreConnected,
+        datastoreConnected,
 
         // Methods
         checkPubSubConnection,
         checkStorageConnection,
         checkFirestoreConnection,
+        checkDatastoreConnection,
         checkAllConnections
     }
 }

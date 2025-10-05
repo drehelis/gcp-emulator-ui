@@ -15,6 +15,13 @@ services:
       - "8086:8086"
     restart: unless-stopped
 
+  firestore-datastore-emulator:
+    image: gcr.io/google.com/cloudsdktool/cloud-sdk:emulators
+    command: sh -c 'gcloud beta emulators firestore start --database-mode=datastore-mode --host-port=0.0.0.0:8087'
+    ports:
+      - "8087:8087"
+    restart: unless-stopped
+
   storage-emulator:
     image: fsouza/fake-gcs-server
     command: -scheme http
@@ -29,9 +36,11 @@ services:
     environment:
       - PUBSUB_EMULATOR_URL=host.docker.internal:8085
       - FIRESTORE_EMULATOR_URL=host.docker.internal:8086
+      - DATASTORE_EMULATOR_URL=host.docker.internal:8087
       - STORAGE_EMULATOR_URL=host.docker.internal:4443
     depends_on:
       - pubsub-emulator
       - firestore-emulator
+      - firestore-datastore-emulator
       - storage-emulator
     restart: unless-stopped
