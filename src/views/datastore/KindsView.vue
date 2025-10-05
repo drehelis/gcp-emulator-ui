@@ -1032,10 +1032,12 @@ const refreshData = async () => {
 }
 
 const handleNamespaceChange = async () => {
-  console.log('[KindsView] Namespace changed to:', selectedNamespace.value)
+  // Store the previous database to detect if we need to force reload
+  const previousDatabase = selectedDatabase.value
 
   // Reset downstream selections
-  datastoreStore.setSelectedDatabase('')
+  // Set to undefined (not empty string) to prevent auto-selection in loadDatabases
+  datastoreStore.setSelectedDatabase(undefined as any)
   selectedKind.value = ''
   entities.value = []
   columns.value = []
@@ -1050,16 +1052,37 @@ const handleNamespaceChange = async () => {
     }
   })
 
-  // Load databases for the selected namespace
+  // Clear kinds immediately when namespace changes to prevent showing stale data
+  datastoreStore.clearData()
+
+  // CRITICAL: Clear API cache to prevent returning stale cached data
+  datastoreApi.clearCache()
+
+  // Load databases and kinds for the selected namespace
   if (selectedNamespace.value !== undefined) {
     loading.value = true
     try {
-      console.log('[KindsView] Loading databases for namespace:', selectedNamespace.value)
       await datastoreStore.loadDatabases(currentProjectId.value)
-      console.log('[KindsView] Loaded databases:', databases.value)
-      console.log('[KindsView] Database options:', databaseOptions.value)
 
-      // Don't auto-select database - let user choose from the dropdown
+      // After databases are loaded, check if we should auto-select and load kinds
+      // Note: loadDatabases will only auto-select if selectedDatabase is undefined
+      if (databases.value.length === 1) {
+        const db = databases.value[0]
+        datastoreStore.setSelectedDatabase(db)
+        await datastoreStore.loadKinds(currentProjectId.value)
+      } else if (databases.value.length > 1) {
+        // Multiple databases - try to select the same database name if it exists
+        const sameNameDb = databases.value.find(db => db === previousDatabase)
+
+        if (sameNameDb) {
+          // Matching database found - select it explicitly
+          datastoreStore.setSelectedDatabase(sameNameDb)
+        }
+        // If no matching database, use the one auto-selected by loadDatabases
+
+        // Always load kinds for the selected database
+        await datastoreStore.loadKinds(currentProjectId.value)
+      }
     } catch (error) {
       console.error('Failed to load databases:', error)
     } finally {
@@ -1069,8 +1092,6 @@ const handleNamespaceChange = async () => {
 }
 
 const handleDatabaseChange = async () => {
-  console.log('[KindsView] Database changed to:', selectedDatabase.value)
-
   // Reset downstream selections
   selectedKind.value = ''
   entities.value = []
@@ -1091,15 +1112,9 @@ const handleDatabaseChange = async () => {
   if (selectedDatabase.value !== undefined) {
     loading.value = true
     try {
-      console.log('[KindsView] Loading kinds for:', {
-        project: currentProjectId.value,
-        namespace: selectedNamespace.value,
-        database: selectedDatabase.value
-      })
       await datastoreStore.loadKinds(currentProjectId.value)
-      console.log('[KindsView] Kinds loaded:', kinds.value.length)
     } catch (error) {
-      console.error('[KindsView] Failed to load kinds:', error)
+      console.error('Failed to load kinds:', error)
     } finally {
       loading.value = false
     }

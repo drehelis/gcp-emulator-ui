@@ -53,8 +53,9 @@ export const useDatastoreStore = defineStore('datastore', () => {
       const databaseList = await datastoreApi.listDatabases(projectId, selectedNamespace.value)
       databases.value = databaseList
 
-      // Set default database if not selected
-      if (!selectedDatabase.value && databaseList.length > 0) {
+      // Set default database if not selected (only auto-select if value is exactly undefined)
+      // Empty string '' is a valid database selection (default database)
+      if (selectedDatabase.value === undefined && databaseList.length > 0) {
         selectedDatabase.value = databaseList[0]
       }
     } catch (error) {

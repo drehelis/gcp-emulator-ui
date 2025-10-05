@@ -525,6 +525,17 @@ const removeProperty = (index: number) => {
 const saveChanges = async () => {
   if (!props.entity) return
 
+  // Check for named database limitation
+  const databaseId = props.entity.key?.partitionId?.databaseId
+  if (databaseId && databaseId !== '' && databaseId !== '(default)') {
+    appStore.showToast({
+      type: 'error',
+      title: 'Named Database Limitation',
+      message: `Cannot update entities in named database "${databaseId}". This is a known limitation of the Datastore emulator. Please use the default database instead.`
+    })
+    return
+  }
+
   try {
     isSaving.value = true
 
@@ -535,9 +546,9 @@ const saveChanges = async () => {
       properties[prop.name] = propertyFormToDatastoreValue(prop)
     })
 
-    // Build updated entity
+    // Build updated entity - only send key and properties
     const updatedEntity: DatastoreEntity = {
-      ...props.entity,
+      key: props.entity.key,
       properties
     }
 

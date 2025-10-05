@@ -27,11 +27,18 @@ export function propertyFormToDatastoreValue(property: PropertyForm): DatastoreV
       datastoreValue.booleanValue = property.value === 'true'
       break
     case 'timestamp':
-      // Convert datetime-local format to RFC 3339 with timezone
+      // Handle timestamp values
       if (property.value) {
-        // datetime-local gives us "2025-01-11T11:11", we need "2025-01-11T11:11:00Z"
-        const dateTime = property.value.includes(':00') ? property.value : property.value + ':00'
-        datastoreValue.timestampValue = dateTime.endsWith('Z') ? dateTime : dateTime + 'Z'
+        // Check if it's a datetime-local format (YYYY-MM-DDTHH:mm or YYYY-MM-DDTHH:mm:ss)
+        // without milliseconds/microseconds and without Z
+        if (property.value.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/) && !property.value.includes('.')) {
+          // datetime-local format - add seconds if needed and Z
+          const withSeconds = property.value.match(/:\d{2}:\d{2}$/) ? property.value : property.value + ':00'
+          datastoreValue.timestampValue = withSeconds + 'Z'
+        } else {
+          // Already has RFC 3339 format (possibly with microseconds) - preserve it
+          datastoreValue.timestampValue = property.value.endsWith('Z') ? property.value : property.value + 'Z'
+        }
       }
       break
     case 'key':
@@ -95,9 +102,12 @@ export function datastoreValueToPropertyForm(key: string, value: DatastoreValue)
     val = String(value.booleanValue)
   } else if (value.timestampValue !== undefined) {
     type = 'timestamp'
-    // Convert RFC 3339 timestamp to datetime-local format
-    // "2025-01-11T11:11:00Z" -> "2025-01-11T11:11"
-    val = value.timestampValue.replace(/:\d{2}Z?$/, '').replace(/Z$/, '')
+    // Convert RFC 3339 timestamp to datetime-local format for the input
+    // "2026-02-06T08:39:28.026860Z" -> "2026-02-06T08:39:28"
+    // datetime-local input needs YYYY-MM-DDTHH:mm:ss (no milliseconds, no Z)
+    val = value.timestampValue
+      .replace(/\.\d+Z?$/, '') // Remove milliseconds/microseconds and Z
+      .replace(/Z$/, '')        // Remove Z if no milliseconds
   } else if (value.keyValue !== undefined) {
     type = 'key'
     val = JSON.stringify(value.keyValue, null, 2)
