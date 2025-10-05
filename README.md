@@ -129,6 +129,7 @@ Browse to http://localhost:9090
 |----------|---------|-------------|
 | `VITE_PUBSUB_BASE_URL` | `http://localhost:8085` | Pub/Sub emulator endpoint |
 | `VITE_FIRESTORE_BASE_URL` | `http://localhost:8086` | Firestore emulator endpoint |
+| `VITE_DATASTORE_BASE_URL` | `http://localhost:8087` | Firestore datastore-mode emulator endpoint |
 | `VITE_STORAGE_BASE_URL` | `http://localhost:4443` | Storage emulator endpoint |
 
 ## Development
