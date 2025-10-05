@@ -57,7 +57,7 @@ interface Props {
   limitOptions?: number[]
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   limitOptions: () => [10, 25, 50, 100]
 })
 
@@ -69,7 +69,7 @@ const emit = defineEmits<{
 }>()
 
 const handleLimitChange = (event: Event) => {
-  const target = event.target as HTMLSelectElement
+  const target = event.target as unknown as { value: string }
   const newLimit = Number(target.value)
   emit('update:limit', newLimit)
   emit('limit-change')

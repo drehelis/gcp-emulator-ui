@@ -85,6 +85,7 @@
             :property="property"
             :property-id="`edit-${index}`"
             @remove="removeProperty(index)"
+            @update="(updatedProperty) => updateProperty(index, updatedProperty)"
           />
         </div>
 
@@ -326,11 +327,12 @@ const propertiesArray = computed(() => {
         case 'type':
           compareResult = getPropertyType(valueA).localeCompare(getPropertyType(valueB))
           break
-        case 'indexed':
+        case 'indexed': {
           const indexedA = !valueA.excludeFromIndexes
           const indexedB = !valueB.excludeFromIndexes
           compareResult = indexedA === indexedB ? 0 : indexedA ? -1 : 1
           break
+        }
       }
 
       return sortDirection.value === 'asc' ? compareResult : -compareResult
@@ -362,18 +364,6 @@ const getEntityId = (entity: DatastoreEntity): string => {
   return datastoreApi.getKeyId(entity.key) || 'unknown'
 }
 
-const getEntityParent = (entity: DatastoreEntity): string | null => {
-  if (!entity.key?.path || entity.key.path.length <= 1) {
-    return null
-  }
-
-  const parentPath = entity.key.path.slice(0, -1)
-  return parentPath.map(element => {
-    const id = element.name || element.id || ''
-    return `${element.kind}:${id}`
-  }).join('/')
-}
-
 const getKeyLiteral = (entity: DatastoreEntity): string => {
   if (!entity.key?.path) return ''
 
@@ -395,7 +385,7 @@ const getUrlSafeKey = (entity: DatastoreEntity): string => {
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
       .replace(/=+$/, '')
-  } catch (e) {
+  } catch {
     return '[Encoding failed]'
   }
 }
@@ -429,7 +419,7 @@ const formatArrayValue = (arrayValue: { values: DatastoreValue[] }): string => {
       return v
     }) || []
     return JSON.stringify(values, null, 2)
-  } catch (e) {
+  } catch {
     return '[Error formatting array]'
   }
 }
@@ -437,7 +427,7 @@ const formatArrayValue = (arrayValue: { values: DatastoreValue[] }): string => {
 const formatEntityValue = (entityValue: any): string => {
   try {
     return JSON.stringify(convertEntityToObject(entityValue), null, 2)
-  } catch (e) {
+  } catch {
     return '[Error formatting entity]'
   }
 }
@@ -520,6 +510,10 @@ const sortBy = (column: 'name' | 'type' | 'indexed') => {
 
 const removeProperty = (index: number) => {
   editedProperties.value.splice(index, 1)
+}
+
+const updateProperty = (index: number, updatedProperty: PropertyForm) => {
+  editedProperties.value[index] = updatedProperty
 }
 
 const saveChanges = async () => {

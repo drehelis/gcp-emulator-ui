@@ -197,6 +197,7 @@
             :property="property"
             :property-id="`create-${index}`"
             @remove="removeProperty(index)"
+            @update="(updatedProperty) => updateProperty(index, updatedProperty)"
           />
         </div>
       </div>
@@ -216,7 +217,7 @@ import {
 } from '@heroicons/vue/24/outline'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import CustomSelect from '@/components/ui/CustomSelect.vue'
-import PropertyEditor from '@/components/datastore/PropertyEditor.vue'
+import PropertyEditor, { type PropertyForm as PropertyEditorForm } from '@/components/datastore/PropertyEditor.vue'
 import type { ModalAction } from '@/types/ui'
 import type { SelectOption } from '@/components/ui/CustomSelect.vue'
 import { useDatastoreStore } from '@/stores/datastore'
@@ -235,7 +236,7 @@ interface Props {
 
 interface PropertyForm {
   name: string
-  type: 'string' | 'integer' | 'double' | 'boolean' | 'timestamp' | 'blob' | 'null'
+  type: 'string' | 'text' | 'timestamp' | 'integer' | 'double' | 'boolean' | 'key' | 'geopoint' | 'array' | 'entity' | 'null'
   value: string
   indexed: boolean
   expanded: boolean
@@ -381,7 +382,7 @@ watch(() => form.value.namespace, async (newNamespace, oldNamespace) => {
       // Load databases for the selected namespace directly from API
       const databases = await datastoreApi.listDatabases(props.projectId, newNamespace)
       localDatabases.value = databases
-    } catch (error) {
+    } catch {
       localDatabases.value = ['']
     } finally {
       isLoadingCascade.value = false
@@ -403,7 +404,7 @@ watch(() => form.value.database, async (newDatabase, oldDatabase) => {
       // Load kinds for the selected database directly from API
       const kinds = await datastoreApi.listKinds(props.projectId, form.value.namespace, newDatabase)
       localKinds.value = kinds
-    } catch (error) {
+    } catch {
       localKinds.value = []
     } finally {
       isLoadingCascade.value = false
@@ -438,6 +439,18 @@ const addProperty = () => {
 
 const removeProperty = (index: number) => {
   form.value.properties.splice(index, 1)
+}
+
+const updateProperty = (index: number, updatedProperty: PropertyEditorForm) => {
+  // Convert from PropertyEditorForm to local PropertyForm 
+  const localProperty: PropertyForm = {
+    name: updatedProperty.name,
+    type: updatedProperty.type as PropertyForm['type'],
+    value: updatedProperty.value,
+    indexed: updatedProperty.indexed,
+    expanded: updatedProperty.expanded
+  }
+  form.value.properties[index] = localProperty
 }
 
 const buildDatastoreEntity = (): DatastoreEntity => {
@@ -543,7 +556,7 @@ watch(isOpen, async (newValue) => {
           const kinds = await datastoreApi.listKinds(props.projectId, form.value.namespace, form.value.database)
           localKinds.value = kinds
         }
-      } catch (error) {
+      } catch {
         // Silently fail - user can manually select
       }
     }

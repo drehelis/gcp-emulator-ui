@@ -33,11 +33,11 @@ export function propertyFormToDatastoreValue(property: PropertyForm): DatastoreV
         // without milliseconds/microseconds and without Z
         if (property.value.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/) && !property.value.includes('.')) {
           // datetime-local format - add seconds if needed and Z
-          const withSeconds = property.value.match(/:\d{2}:\d{2}$/) ? property.value : property.value + ':00'
-          datastoreValue.timestampValue = withSeconds + 'Z'
+          const withSeconds = property.value.match(/:\d{2}:\d{2}$/) ? property.value : `${property.value}:00`
+          datastoreValue.timestampValue = `${withSeconds}Z`
         } else {
           // Already has RFC 3339 format (possibly with microseconds) - preserve it
-          datastoreValue.timestampValue = property.value.endsWith('Z') ? property.value : property.value + 'Z'
+          datastoreValue.timestampValue = property.value.endsWith('Z') ? property.value : `${property.value}Z`
         }
       }
       break
@@ -49,13 +49,14 @@ export function propertyFormToDatastoreValue(property: PropertyForm): DatastoreV
         datastoreValue.keyValue = {}
       }
       break
-    case 'geopoint':
+    case 'geopoint': {
       const [lat, lng] = property.value.split(',').map(v => parseFloat(v.trim()))
       datastoreValue.geoPointValue = {
         latitude: lat || 0,
         longitude: lng || 0
       }
       break
+    }
     case 'array':
       try {
         datastoreValue.arrayValue = JSON.parse(property.value)

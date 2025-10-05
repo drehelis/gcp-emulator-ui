@@ -803,10 +803,8 @@ import {
   ChevronLeftIcon,
   ChevronDownIcon,
   ViewColumnsIcon,
-  ExclamationTriangleIcon,
   FunnelIcon,
   XMarkIcon,
-  ExclamationCircleIcon,
   PlayIcon,
   ClipboardIcon,
   CheckIcon
@@ -1278,10 +1276,6 @@ const removeQueryClause = (index: number) => {
   queryClauses.value.splice(index, 1)
 }
 
-const clearQuery = () => {
-  queryClauses.value = []
-}
-
 const clearQueryAndReload = async () => {
   queryClauses.value = []
   aggregationResults.value = []
@@ -1542,11 +1536,6 @@ const handleEntityCreated = async (entity: DatastoreEntity) => {
   await loadEntities()
 }
 
-const editEntity = (entity: DatastoreEntity) => {
-  // TODO: Open edit entity modal
-  console.log('Edit entity:', entity)
-}
-
 const openEntityDetails = (entity: DatastoreEntity) => {
   selectedEntity.value = entity
   showEntityDetailsModal.value = true
@@ -1579,12 +1568,6 @@ const handleEntityUpdated = async (updatedEntity: DatastoreEntity) => {
 
   // Update the selected entity to show fresh data
   selectedEntity.value = updatedEntity
-}
-
-const deleteEntityConfirm = (entity: DatastoreEntity) => {
-  deleteMode.value = 'single'
-  entitiesToDelete.value = [getEntityId(entity)]
-  showDeleteModal.value = true
 }
 
 const deleteSelectedEntities = () => {
@@ -1680,7 +1663,7 @@ const getDisplayEntityId = (entity: DatastoreEntity): string => {
   const id = getEntityId(entity)
   // Truncate long IDs for display (show first 20 chars + ellipsis)
   if (id.length > 30) {
-    return id.substring(0, 30) + '...'
+    return `${id.substring(0, 30)  }...`
   }
   return id
 }
@@ -1705,13 +1688,9 @@ const getDisplayEntityParent = (entity: DatastoreEntity): string => {
 
   // Truncate long parent paths for display
   if (parent.length > 30) {
-    return parent.substring(0, 30) + '...'
+    return `${parent.substring(0, 30)  }...`
   }
   return parent
-}
-
-const getEntityKind = (entity: DatastoreEntity): string => {
-  return datastoreApi.getKeyKind(entity.key) || 'unknown'
 }
 
 const getEntityColumnValue = (entity: DatastoreEntity, columnKey: string): string => {
@@ -1745,7 +1724,7 @@ const getEntityColumnValue = (entity: DatastoreEntity, columnKey: string): strin
         return v
       }) || []
       return JSON.stringify(arrayContent)
-    } catch (e) {
+    } catch {
       return `[${prop.arrayValue.values?.length || 0} items]`
     }
   }
@@ -1754,7 +1733,7 @@ const getEntityColumnValue = (entity: DatastoreEntity, columnKey: string): strin
   if (prop.entityValue) {
     try {
       return JSON.stringify(convertEntityToObject(prop.entityValue))
-    } catch (e) {
+    } catch {
       return '[Entity]'
     }
   }
@@ -1762,7 +1741,7 @@ const getEntityColumnValue = (entity: DatastoreEntity, columnKey: string): strin
   if (prop.keyValue) {
     try {
       return JSON.stringify(prop.keyValue)
-    } catch (e) {
+    } catch {
       return '[Key]'
     }
   }

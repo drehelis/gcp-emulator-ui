@@ -19,8 +19,6 @@ import type {
   RollbackRequest,
   AllocateIdsRequest,
   AllocateIdsResponse,
-  ListKindsResponse,
-  ListNamespacesResponse,
 } from '@/types'
 
 const datastoreClient = axios.create({
@@ -272,7 +270,7 @@ export const datastoreApi = {
 
               console.log(`[Datastore API] Entity in ${kindName}:`, {
                 namespace: resultNamespace,
-                databaseId: databaseId
+                databaseId
               })
 
               // Only include if namespace matches (or if no namespace filter)

@@ -2,13 +2,13 @@
   <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-900 hover:border-blue-300 dark:hover:border-blue-600 transition-colors">
     <div class="flex items-center justify-between px-4 py-2.5 bg-gray-50 dark:bg-gray-800/50">
       <button
-        @click="property.expanded = !property.expanded"
+        @click="expanded = !expanded"
         class="flex items-center text-sm font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex-1 text-left"
       >
-        <ChevronDownIcon v-if="property.expanded" class="w-4 h-4 mr-2 text-gray-500" />
+        <ChevronDownIcon v-if="expanded" class="w-4 h-4 mr-2 text-gray-500" />
         <ChevronRightIcon v-else class="w-4 h-4 mr-2 text-gray-500" />
-        <span class="truncate">{{ property.name || 'Unnamed property' }}</span>
-        <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">{{ property.type }}</span>
+        <span class="truncate">{{ name || 'Unnamed property' }}</span>
+        <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">{{ type }}</span>
       </button>
 
       <button
@@ -20,14 +20,14 @@
       </button>
     </div>
 
-    <div v-if="property.expanded" class="p-4 space-y-3 border-t border-gray-200 dark:border-gray-700 animate-fadeIn">
+    <div v-if="expanded" class="p-4 space-y-3 border-t border-gray-200 dark:border-gray-700 animate-fadeIn">
       <!-- Property Name -->
       <div>
         <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
           Name <span class="text-red-500">*</span>
         </label>
         <input
-          v-model="property.name"
+          v-model="name"
           type="text"
           placeholder="Property name"
           :disabled="readOnly"
@@ -41,7 +41,7 @@
           Type
         </label>
         <select
-          v-model="property.type"
+          v-model="type"
           :disabled="readOnly"
           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -65,16 +65,16 @@
           Value
         </label>
         <textarea
-          v-if="['string', 'text', 'key', 'array', 'entity'].includes(property.type)"
-          v-model="property.value"
-          :rows="property.type === 'array' || property.type === 'entity' ? 5 : 3"
-          :placeholder="getValuePlaceholder(property.type)"
+          v-if="['string', 'text', 'key', 'array', 'entity'].includes(type)"
+          v-model="propertyValue"
+          :rows="type === 'array' || type === 'entity' ? 5 : 3"
+          :placeholder="getValuePlaceholder(type)"
           :disabled="readOnly"
           class="w-full px-3 py-2 text-sm font-mono border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical disabled:opacity-50 disabled:cursor-not-allowed"
         />
         <select
-          v-else-if="property.type === 'boolean'"
-          v-model="property.value"
+          v-else-if="type === 'boolean'"
+          v-model="propertyValue"
           :disabled="readOnly"
           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
         >
@@ -82,10 +82,10 @@
           <option value="false">false</option>
         </select>
         <input
-          v-else-if="property.type !== 'null'"
-          v-model="property.value"
-          :type="getInputType(property.type)"
-          :placeholder="getValuePlaceholder(property.type)"
+          v-else-if="type !== 'null'"
+          v-model="propertyValue"
+          :type="getInputType(type)"
+          :placeholder="getValuePlaceholder(type)"
           :disabled="readOnly"
           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
         />
@@ -98,7 +98,7 @@
       <div class="flex items-center pt-2">
         <input
           :id="`index-${propertyId}`"
-          v-model="property.indexed"
+          v-model="indexed"
           type="checkbox"
           :disabled="readOnly"
           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded disabled:opacity-50 disabled:cursor-not-allowed"
@@ -112,6 +112,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { ChevronDownIcon, ChevronRightIcon, TrashIcon } from '@heroicons/vue/24/outline'
 
 export interface PropertyForm {
@@ -128,10 +129,38 @@ interface Props {
   readOnly?: boolean
 }
 
-defineProps<Props>()
-defineEmits<{
+const props = defineProps<Props>()
+const emit = defineEmits<{
   remove: []
+  update: [property: PropertyForm]
 }>()
+
+// Create computed properties with getters and setters to avoid prop mutation
+
+const expanded = computed({
+  get: () => props.property.expanded,
+  set: (value: boolean) => emit('update', { ...props.property, expanded: value })
+})
+
+const name = computed({
+  get: () => props.property.name,
+  set: (value: string) => emit('update', { ...props.property, name: value })
+})
+
+const type = computed({
+  get: () => props.property.type,
+  set: (value: PropertyForm['type']) => emit('update', { ...props.property, type: value })
+})
+
+const propertyValue = computed({
+  get: () => props.property.value,
+  set: (value: string) => emit('update', { ...props.property, value })
+})
+
+const indexed = computed({
+  get: () => props.property.indexed,
+  set: (value: boolean) => emit('update', { ...props.property, indexed: value })
+})
 
 const getInputType = (propertyType: string): string => {
   switch (propertyType) {
