@@ -9,7 +9,7 @@ A modern web interface for managing Google Cloud Platform emulator services 🎮
 
 
 
-https://github.com/user-attachments/assets/f6452186-131f-4f6d-a744-678e4173bc0d
+![Screenshot](https://github.com/user-attachments/assets/f6452186-131f-4f6d-a744-678e4173bc0d)
 
 
 
