@@ -7,11 +7,7 @@ A modern web interface for managing Google Cloud Platform emulator services 🎮
 )](https://github.com/drehelis/gcp-emulator-ui/releases/latest)
 [![License](https://img.shields.io/github/license/drehelis/gcp-emulator-ui.svg)](LICENSE)
 
-<p align="center">
-  <p><img width="2354" height="1436" alt="pubsub_screen" src="https://github.com/user-attachments/assets/3048bb53-0f6f-415a-8152-35734707206e" /></p>
-  <p><img width="2354" height="1436" alt="bucket_screen" src="https://github.com/user-attachments/assets/d0494da1-ece9-4a6c-9e08-a31d1cb684f5" /></p>
-  <p><img width="2354" height="1436" alt="firestore_screen" src="https://github.com/user-attachments/assets/17bdc291-cbca-44d3-be44-fcb01b008359" /></p>
-</p>
+https://github.com/user-attachments/assets/f6452186-131f-4f6d-a744-678e4173bc0d
 
 > Supports `amd64` and `arm64` container images
 
