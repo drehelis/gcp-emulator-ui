@@ -350,7 +350,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
+import { computed, ref, watch, watchEffect, onMounted, onUnmounted } from 'vue'
 import {
   ExclamationTriangleIcon,
   DocumentDuplicateIcon,
@@ -367,6 +367,7 @@ import BaseModal from '@/components/ui/BaseModal.vue'
 import TemplateVariableInput from '@/components/ui/TemplateVariableInput.vue'
 import MessageAttributeInput from '@/components/ui/MessageAttributeInput.vue'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
+import { usePreconfiguredMessageAttributes } from '@/utils/pubsubAttributes'
 
 interface Props {
   modelValue: boolean
@@ -399,7 +400,7 @@ const isOpen = computed({
 
 // Message state
 const messageData = ref('')
-const messageAttributes = ref<Array<{ key: string, value: string }>>([{ key: '', value: '' }])
+const messageAttributes = ref<Array<{ key: string, value: string }>>([])
 const templateVariables = ref<Array<{ name: string, value: string }>>([{ name: '', value: '' }])
 const formatAsJson = ref(true)
 const publishCount = ref(1)
@@ -432,6 +433,9 @@ const jsonValidationError = computed(() => {
     return 'Invalid JSON format'
   }
 })
+
+// Reactive pre-configured attributes
+const preconfiguredAttributes = usePreconfiguredMessageAttributes()
 
 // Check if we have an original template to update
 const hasOriginalTemplate = computed(() => !!props.initialTemplate?.originalTemplate)
@@ -521,7 +525,13 @@ const initializeFromTemplate = async () => {
     messageAttributes.value = Object.entries(props.initialTemplate.attributes)
       .map(([key, value]) => ({ key, value }))
     if (messageAttributes.value.length === 0) {
-      messageAttributes.value = [{ key: '', value: '' }]
+      // Use reactive pre-configured attributes
+      const preconfiguredAttrs = preconfiguredAttributes.value
+      if (preconfiguredAttrs.length > 0) {
+        messageAttributes.value = [...preconfiguredAttrs, { key: '', value: '' }]
+      } else {
+        messageAttributes.value = [{ key: '', value: '' }]
+      }
     }
     
     // Convert variables object to array  
@@ -538,8 +548,24 @@ const initializeFromTemplate = async () => {
     } catch {
       formatAsJson.value = false
     }
+  } else {
+    // No template provided, use reactive pre-configured attributes
+    const preconfiguredAttrs = preconfiguredAttributes.value
+    if (preconfiguredAttrs.length > 0) {
+      messageAttributes.value = [...preconfiguredAttrs, { key: '', value: '' }]
+    } else {
+      messageAttributes.value = [{ key: '', value: '' }]
+    }
   }
 }
+
+// Initialize messageAttributes with preconfigured values when available
+watchEffect(() => {
+  if (messageAttributes.value.length === 0) {
+    const attrs = preconfiguredAttributes.value
+    messageAttributes.value = attrs.length > 0 ? [...attrs, { key: '', value: '' }] : [{ key: '', value: '' }]
+  }
+})
 
 const processMessageData = (data: string): string => {
   if (!data.trim()) return data
@@ -751,7 +777,13 @@ const clearTemplateError = () => {
 
 const resetForm = () => {
   messageData.value = ''
-  messageAttributes.value = [{ key: '', value: '' }]
+  // Use reactive pre-configured attributes when available
+  const preconfiguredAttrs = preconfiguredAttributes.value
+  if (preconfiguredAttrs.length > 0) {
+    messageAttributes.value = [...preconfiguredAttrs, { key: '', value: '' }]
+  } else {
+    messageAttributes.value = [{ key: '', value: '' }]
+  }
   templateVariables.value = [{ name: '', value: '' }]
   formatAsJson.value = false
   publishCount.value = 1

@@ -81,10 +81,10 @@ docker run \
 # Now start the UI
 docker run \
    --rm \
-   --env PUBSUB_EMULATOR_URL="host.docker.internal:8085" \
+   --env PUBSUB_EMULATOR_URL="host.docker.internal:8085"    \
    --env FIRESTORE_EMULATOR_URL="host.docker.internal:8086" \
    --env DATASTORE_EMULATOR_URL="host.docker.internal:8087" \
-   --env STORAGE_EMULATOR_URL="host.docker.internal:4443" \
+   --env STORAGE_EMULATOR_URL="host.docker.internal:4443"   \
    --publish 9090:80 \
    ghcr.io/drehelis/gcp-emulator-ui:main
 ```
@@ -161,7 +161,6 @@ src/
 This project uses [**Heroicons**](https://heroicons.com/) - a set of free MIT-licensed high-quality SVG icons created by [Tailwind Labs](https://tailwindlabs.com/).
 
 - **License**: MIT
-- **Version**: 2.1.5
 - **Repository**: [github.com/tailwindlabs/heroicons](https://github.com/tailwindlabs/heroicons)
 - **Copyright**: © 2020 Refactoring UI Inc.
 
