@@ -23,6 +23,8 @@ export const useConfigStore = defineStore('config', () => {
     const isLoading = ref(false)
     const error = ref<string | null>(null)
 
+    let initPromise: Promise<void> | null = null
+
     // Getters
     const pubsubPreConfiguredAttributes = computed((): Record<string, string> => {
         // Use only runtime configuration - no build-time fallbacks
@@ -35,40 +37,46 @@ export const useConfigStore = defineStore('config', () => {
 
     // Actions
     async function loadRuntimeConfig() {
-        if (isLoading.value) return
+        if (initPromise) return initPromise
+
+        // Already loaded, skip
+        if (isLoaded.value) return
 
         isLoading.value = true
         error.value = null
 
-        try {
-            // Try to fetch runtime configuration
-            const response = await fetch('/config.json', {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                    'Cache-Control': 'no-cache'
-                }
-            })
+        initPromise = (async () => {
+            try {
+                const response = await fetch('/config.json', {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    }
+                })
 
-            if (response.ok) {
-                const config = await response.json()
-                runtimeConfig.value = config
-            } else if (response.status !== 404) {
-                // 404 is expected if config endpoint doesn't exist, other errors should be logged
-                console.warn('Failed to load runtime config:', response.status, response.statusText)
+                if (response.ok) {
+                    const config = await response.json()
+                    runtimeConfig.value = config
+                } else if (response.status !== 404) {
+                    console.warn('Failed to load runtime config:', response.status, response.statusText)
+                }
+            } catch (err) {
+                console.warn('Runtime config loading failed:', err)
+                error.value = err instanceof Error ? err.message : 'Unknown error'
+            } finally {
+                isLoaded.value = true
+                isLoading.value = false
+                initPromise = null
             }
-        } catch (err) {
-            // Network errors or parsing errors - log but don't fail
-            console.warn('Runtime config loading failed:', err)
-            error.value = err instanceof Error ? err.message : 'Unknown error'
-        } finally {
-            isLoaded.value = true
-            isLoading.value = false
-        }
+        })()
+
+        return initPromise
     }
 
     async function refreshConfig() {
         isLoaded.value = false
+        initPromise = null
         await loadRuntimeConfig()
     }
 
@@ -76,10 +84,7 @@ export const useConfigStore = defineStore('config', () => {
         runtimeConfig.value = { ...runtimeConfig.value, ...config }
     }
 
-    // Initialize on first access
-    if (!isLoaded.value && !isLoading.value) {
-        loadRuntimeConfig()
-    }
+    loadRuntimeConfig()
 
     return {
         // State

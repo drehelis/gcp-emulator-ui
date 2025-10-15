@@ -7,7 +7,7 @@ echo "Generating runtime configuration..."
 # Start with empty JSON object
 CONFIG_JSON="{}"
 
-if [ ! -z "$PUBSUB_PRE_CONFIGURED_MSG_ATTR" ]; then
+if [ -n "$PUBSUB_PRE_CONFIGURED_MSG_ATTR" ]; then
     echo "Processing PUBSUB_PRE_CONFIGURED_MSG_ATTR..."
     
     if echo "$PUBSUB_PRE_CONFIGURED_MSG_ATTR" | jq empty 2>/dev/null; then

@@ -224,7 +224,7 @@
               viewBox="0 0 24 24"
             >
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0 1 4 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             {{ hasOriginalTemplate ? 'Save' : 'Save as Template' }}
           </button>
@@ -270,7 +270,7 @@
               viewBox="0 0 24 24"
             >
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0 1 4 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             {{ publishCount > 1 ? `Publish ${publishCount} Messages` : 'Publish Message' }}
           </button>
@@ -350,7 +350,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, watchEffect, onMounted, onUnmounted } from 'vue'
+import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
 import {
   ExclamationTriangleIcon,
   DocumentDuplicateIcon,
@@ -400,7 +400,7 @@ const isOpen = computed({
 
 // Message state
 const messageData = ref('')
-const messageAttributes = ref<Array<{ key: string, value: string }>>([])
+const messageAttributes = ref<Array<{ key: string, value: string }>>([{ key: '', value: '' }])
 const templateVariables = ref<Array<{ name: string, value: string }>>([{ name: '', value: '' }])
 const formatAsJson = ref(true)
 const publishCount = ref(1)
@@ -520,27 +520,28 @@ const initializeFromTemplate = async () => {
   
   if (props.initialTemplate) {
     messageData.value = props.initialTemplate.data
-    
+
     // Convert attributes object to array
-    messageAttributes.value = Object.entries(props.initialTemplate.attributes)
+    const templateAttrs = Object.entries(props.initialTemplate.attributes)
       .map(([key, value]) => ({ key, value }))
-    if (messageAttributes.value.length === 0) {
-      // Use reactive pre-configured attributes
-      const preconfiguredAttrs = preconfiguredAttributes.value
-      if (preconfiguredAttrs.length > 0) {
-        messageAttributes.value = [...preconfiguredAttrs, { key: '', value: '' }]
-      } else {
-        messageAttributes.value = [{ key: '', value: '' }]
-      }
+
+    // Always include preconfigured attributes, then template attributes, then empty row
+    const preconfiguredAttrs = preconfiguredAttributes.value
+    if (templateAttrs.length > 0) {
+      messageAttributes.value = [...templateAttrs, { key: '', value: '' }]
+    } else if (preconfiguredAttrs.length > 0) {
+      messageAttributes.value = [...preconfiguredAttrs, { key: '', value: '' }]
+    } else {
+      messageAttributes.value = [{ key: '', value: '' }]
     }
-    
-    // Convert variables object to array  
+
+    // Convert variables object to array
     templateVariables.value = Object.entries(props.initialTemplate.variables)
       .map(([name, value]) => ({ name, value }))
     if (templateVariables.value.length === 0) {
       templateVariables.value = [{ name: '', value: '' }]
     }
-    
+
     // Try to detect if it's JSON
     try {
       JSON.parse(props.initialTemplate.data)
@@ -558,14 +559,6 @@ const initializeFromTemplate = async () => {
     }
   }
 }
-
-// Initialize messageAttributes with preconfigured values when available
-watchEffect(() => {
-  if (messageAttributes.value.length === 0) {
-    const attrs = preconfiguredAttributes.value
-    messageAttributes.value = attrs.length > 0 ? [...attrs, { key: '', value: '' }] : [{ key: '', value: '' }]
-  }
-})
 
 const processMessageData = (data: string): string => {
   if (!data.trim()) return data
