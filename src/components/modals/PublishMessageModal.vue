@@ -130,11 +130,19 @@
           </h4>
           <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
             Add key-value pairs as message attributes
+            <span v-if="preconfiguredKeys.length > 0" class="inline-flex items-center gap-1 ml-1">
+              •
+              <svg class="h-3 w-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <span class="text-blue-600 dark:text-blue-400">Auto</span> attributes are pre-configured
+            </span>
           </p>
         </div>
         <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-gray-700">
           <MessageAttributeInput
             :attributes="messageAttributes"
+            :preconfigured-keys="preconfiguredKeys"
             @update:attributes="messageAttributes = $event"
           />
         </div>
@@ -224,7 +232,7 @@
               viewBox="0 0 24 24"
             >
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0 1 4 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             {{ hasOriginalTemplate ? 'Save' : 'Save as Template' }}
           </button>
@@ -270,7 +278,7 @@
               viewBox="0 0 24 24"
             >
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 0 1 4 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
             {{ publishCount > 1 ? `Publish ${publishCount} Messages` : 'Publish Message' }}
           </button>
@@ -367,6 +375,7 @@ import BaseModal from '@/components/ui/BaseModal.vue'
 import TemplateVariableInput from '@/components/ui/TemplateVariableInput.vue'
 import MessageAttributeInput from '@/components/ui/MessageAttributeInput.vue'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
+import { usePreconfiguredMessageAttributes } from '@/utils/pubsubAttributes'
 
 interface Props {
   modelValue: boolean
@@ -431,6 +440,14 @@ const jsonValidationError = computed(() => {
   } catch {
     return 'Invalid JSON format'
   }
+})
+
+// Reactive pre-configured attributes
+const preconfiguredAttributes = usePreconfiguredMessageAttributes()
+
+// Extract preconfigured attribute keys for visual indication
+const preconfiguredKeys = computed(() => {
+  return preconfiguredAttributes.value.map(attr => attr.key).filter(key => key.trim() !== '')
 })
 
 // Check if we have an original template to update
@@ -516,27 +533,42 @@ const initializeFromTemplate = async () => {
   
   if (props.initialTemplate) {
     messageData.value = props.initialTemplate.data
-    
+
     // Convert attributes object to array
-    messageAttributes.value = Object.entries(props.initialTemplate.attributes)
+    const templateAttrs = Object.entries(props.initialTemplate.attributes)
       .map(([key, value]) => ({ key, value }))
-    if (messageAttributes.value.length === 0) {
+
+    // Always include preconfigured attributes, then template attributes, then empty row
+    const preconfiguredAttrs = preconfiguredAttributes.value
+    if (templateAttrs.length > 0) {
+      messageAttributes.value = [...templateAttrs, { key: '', value: '' }]
+    } else if (preconfiguredAttrs.length > 0) {
+      messageAttributes.value = [...preconfiguredAttrs, { key: '', value: '' }]
+    } else {
       messageAttributes.value = [{ key: '', value: '' }]
     }
-    
-    // Convert variables object to array  
+
+    // Convert variables object to array
     templateVariables.value = Object.entries(props.initialTemplate.variables)
       .map(([name, value]) => ({ name, value }))
     if (templateVariables.value.length === 0) {
       templateVariables.value = [{ name: '', value: '' }]
     }
-    
+
     // Try to detect if it's JSON
     try {
       JSON.parse(props.initialTemplate.data)
       formatAsJson.value = true
     } catch {
       formatAsJson.value = false
+    }
+  } else {
+    // No template provided, use reactive pre-configured attributes
+    const preconfiguredAttrs = preconfiguredAttributes.value
+    if (preconfiguredAttrs.length > 0) {
+      messageAttributes.value = [...preconfiguredAttrs, { key: '', value: '' }]
+    } else {
+      messageAttributes.value = [{ key: '', value: '' }]
     }
   }
 }
@@ -751,7 +783,13 @@ const clearTemplateError = () => {
 
 const resetForm = () => {
   messageData.value = ''
-  messageAttributes.value = [{ key: '', value: '' }]
+  // Use reactive pre-configured attributes when available
+  const preconfiguredAttrs = preconfiguredAttributes.value
+  if (preconfiguredAttrs.length > 0) {
+    messageAttributes.value = [...preconfiguredAttrs, { key: '', value: '' }]
+  } else {
+    messageAttributes.value = [{ key: '', value: '' }]
+  }
   templateVariables.value = [{ name: '', value: '' }]
   formatAsJson.value = false
   publishCount.value = 1

@@ -178,6 +178,7 @@
     "useCloned": true,
     "useColorMode": true,
     "useColumnFieldOperations": true,
+    "useConfigStore": true,
     "useConfirmDialog": true,
     "useCountdown": true,
     "useCounter": true,
