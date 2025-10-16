@@ -130,6 +130,11 @@ async function initializeApp() {
     const appStore = useAppStore()
     appStore.initializeApp()
 
+    // Initialize config store for runtime configuration
+    const { useConfigStore } = await import('./stores/config')
+    const configStore = useConfigStore()
+    await configStore.loadRuntimeConfig()
+
     // Mount the app early so we can show UI feedback
     app.mount('#app')
     appMounted = true
