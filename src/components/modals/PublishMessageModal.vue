@@ -130,11 +130,19 @@
           </h4>
           <p class="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
             Add key-value pairs as message attributes
+            <span v-if="preconfiguredKeys.length > 0" class="inline-flex items-center gap-1 ml-1">
+              •
+              <svg class="h-3 w-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <span class="text-blue-600 dark:text-blue-400">Auto</span> attributes are pre-configured
+            </span>
           </p>
         </div>
         <div class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-gray-700">
           <MessageAttributeInput
             :attributes="messageAttributes"
+            :preconfigured-keys="preconfiguredKeys"
             @update:attributes="messageAttributes = $event"
           />
         </div>
@@ -436,6 +444,11 @@ const jsonValidationError = computed(() => {
 
 // Reactive pre-configured attributes
 const preconfiguredAttributes = usePreconfiguredMessageAttributes()
+
+// Extract preconfigured attribute keys for visual indication
+const preconfiguredKeys = computed(() => {
+  return preconfiguredAttributes.value.map(attr => attr.key).filter(key => key.trim() !== '')
+})
 
 // Check if we have an original template to update
 const hasOriginalTemplate = computed(() => !!props.initialTemplate?.originalTemplate)
