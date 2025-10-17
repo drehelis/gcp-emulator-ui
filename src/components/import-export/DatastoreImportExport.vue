@@ -29,7 +29,7 @@
             </p>
           </div>
 
-          <!-- Export Button -->
+          <!-- Export Buttons -->
           <div class="flex flex-col sm:flex-row gap-3">
             <button
               @click="handleExportEntities"
@@ -38,7 +38,16 @@
             >
               <ArrowDownTrayIcon v-if="!isExporting" class="h-4 w-4 mr-2" />
               <ArrowPathIcon v-else class="h-4 w-4 mr-2 animate-spin" />
-              {{ isExporting ? 'Exporting...' : 'Export Entities' }}
+              {{ isExporting ? 'Exporting...' : 'Export to Directory' }}
+            </button>
+            <button
+              @click="handleExportAsJson"
+              :disabled="isExportingJson"
+              class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <ArrowDownTrayIcon v-if="!isExportingJson" class="h-4 w-4 mr-2" />
+              <ArrowPathIcon v-else class="h-4 w-4 mr-2 animate-spin" />
+              {{ isExportingJson ? 'Exporting...' : 'Export as JSON' }}
             </button>
           </div>
         </div>
@@ -49,7 +58,7 @@
     <div class="bg-white dark:bg-gray-800 shadow rounded-lg theme-transition-colors">
       <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 theme-transition-colors">
         <h2 class="text-base sm:text-lg font-medium text-gray-900 dark:text-white">
-          Import Datastore Entities
+          Import from Directory
         </h2>
         <p class="mt-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
           Import entities from a previously exported directory on the emulator host
@@ -189,9 +198,11 @@ const datastoreStore = useDatastoreStore()
 const { checkDatastoreConnection } = useServiceConnections()
 const {
   isExporting,
+  isExportingJson,
   isImporting,
   loadData,
   exportEntities,
+  exportEntitiesAsJson,
   importEntities
 } = useDatastoreImportExport()
 
@@ -381,6 +392,11 @@ const clearSelection = () => {
 const handleExportEntities = async () => {
   if (!exportDirectory.value.trim()) return
   await exportEntities(props.projectId, exportDirectory.value.trim())
+}
+
+const handleExportAsJson = async () => {
+  // Don't pass namespace to export ALL namespaces
+  await exportEntitiesAsJson(props.projectId)
 }
 
 const handleImportEntities = async () => {

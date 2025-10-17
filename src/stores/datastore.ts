@@ -353,6 +353,22 @@ export const useDatastoreStore = defineStore('datastore', () => {
     }
   }
 
+  // Export entities as JSON
+  const exportEntitiesAsJson = async (
+    projectId: string,
+    namespaceId?: string
+  ) => {
+    try {
+      loading.value = true
+      return await datastoreApi.exportEntitiesAsJson(projectId, namespaceId)
+    } catch (error) {
+      console.error('Failed to export entities as JSON:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
   // Clear all data
   const clearData = () => {
     kinds.value = []
@@ -387,6 +403,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
     deleteEntity,
     // Import/Export
     exportEntities,
+    exportEntitiesAsJson,
     importEntities,
     // Utility
     healthCheck,

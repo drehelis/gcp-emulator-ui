@@ -651,6 +651,77 @@ export const datastoreApi = {
     return response.data
   },
 
+  // Export entities as JSON (query all entities and return as JSON)
+  async exportEntitiesAsJson(projectId: string, namespaceId?: string): Promise<any> {
+    try {
+      // Step 1: Get all namespaces (or use the specified one)
+      const namespacesToExport: string[] = []
+      if (namespaceId !== undefined) {
+        // Export only the specified namespace
+        namespacesToExport.push(namespaceId)
+      } else {
+        // Export ALL namespaces
+        const allNamespaces = await this.listNamespaces(projectId)
+        namespacesToExport.push(...allNamespaces)
+      }
+
+      const exportData: any = {
+        projectId,
+        exportDate: new Date().toISOString(),
+        namespaces: []
+      }
+
+      // Step 2: For each namespace, get all kinds and their entities
+      for (const namespace of namespacesToExport) {
+        const namespaceData: any = {
+          namespaceId: namespace,
+          kinds: []
+        }
+
+        // Get all kinds in this namespace
+        const kinds = await this.listKinds(projectId, namespace)
+
+        // For each kind, get all entities
+        for (const kind of kinds) {
+          const partitionId: any = {
+            projectId,
+            namespaceId: namespace || ''
+          }
+
+          const request: RunQueryRequest = {
+            partitionId,
+            query: {
+              kind: [{ name: kind }],
+              limit: 10000  // Large limit to get all entities
+            }
+          }
+
+          const response = await datastoreClient.post(`/v1/projects/${projectId}:runQuery`, request)
+
+          const entities: DatastoreEntity[] = []
+          if (response.data.batch?.entityResults) {
+            response.data.batch.entityResults.forEach((result: any) => {
+              entities.push(result.entity)
+            })
+          }
+
+          namespaceData.kinds.push({
+            kind,
+            count: entities.length,
+            entities
+          })
+        }
+
+        exportData.namespaces.push(namespaceData)
+      }
+
+      return exportData
+    } catch (error) {
+      console.error('[Datastore API] Failed to export entities as JSON:', error)
+      throw error
+    }
+  },
+
   // Helper to create a key
   createKey(projectId: string, kind: string, id?: string | number, namespaceId?: string): DatastoreKey {
     return {
