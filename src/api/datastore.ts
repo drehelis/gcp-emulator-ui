@@ -619,31 +619,31 @@ export const datastoreApi = {
     }
   },
 
-  // Export entities
-  async exportEntities(projectId: string, outputUrlPrefix: string, kinds?: string[], namespaceIds?: string[]): Promise<any> {
+  // Export entities (Datastore emulator API)
+  async exportEntities(projectId: string, exportDirectory: string): Promise<any> {
+    // Build full database path with trailing slash
+    const databasePath = `projects/${projectId}/databases/`
+
     const request = {
-      outputUrlPrefix,
-      entityFilter: {
-        kinds,
-        namespaceIds
-      }
+      database: databasePath,
+      export_directory: exportDirectory
     }
 
-    const response = await datastoreClient.post(`/v1/projects/${projectId}:export`, request)
+    const response = await datastoreClient.post(`/emulator/v1/projects/${projectId}:export`, request)
     return response.data
   },
 
-  // Import entities
-  async importEntities(projectId: string, inputUrl: string, kinds?: string[], namespaceIds?: string[]): Promise<any> {
+  // Import entities (Datastore emulator API)
+  async importEntities(projectId: string, metadataFilePath: string): Promise<any> {
+    // Build full database path with trailing slash
+    const databasePath = `projects/${projectId}/databases/`
+
     const request = {
-      inputUrl,
-      entityFilter: {
-        kinds,
-        namespaceIds
-      }
+      database: databasePath,
+      export_directory: metadataFilePath
     }
 
-    const response = await datastoreClient.post(`/v1/projects/${projectId}:import`, request)
+    const response = await datastoreClient.post(`/emulator/v1/projects/${projectId}:import`, request)
     return response.data
   },
 
