@@ -169,8 +169,8 @@ All icons are used in accordance with the MIT License. See [Heroicons License](h
 ## Feedback and Contributions
 
 Feedback and contributions are welcome! Please feel free to:
-- [Open an issue](https://github.com/drehelis/ILrail-bar/issues) for bug reports or feature requests
-- [Submit a pull request](https://github.com/drehelis/ILrail-bar/pulls) for bug fixes or new features
+- [Open an issue](https://github.com/drehelis/gcp-emulator-ui/issues) for bug reports or feature requests
+- [Submit a pull request](https://github.com/drehelis/gcp-emulator-ui/pulls) for bug fixes or new features
 
 ## License
 

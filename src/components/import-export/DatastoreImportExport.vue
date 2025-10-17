@@ -7,21 +7,11 @@
           Export Datastore Entities
         </h2>
         <p class="mt-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-          Export entities to a directory on the emulator host
+          Dump entire database to a directory on the emulator host
         </p>
       </div>
       <div class="p-6">
         <div class="space-y-4">
-          <!-- Current Selection Info -->
-          <div class="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md p-4">
-            <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Current Selection</h4>
-            <div class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
-              <p><strong>Namespace:</strong> {{ currentNamespace || '(default)' }}</p>
-              <p><strong>Database:</strong> {{ currentDatabase || '(default)' }}</p>
-              <p><strong>Kinds:</strong> {{ kindsCount }} kind{{ kindsCount === 1 ? '' : 's' }}</p>
-            </div>
-          </div>
-
           <!-- Export Directory Input -->
           <div>
             <label for="export-directory" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -31,7 +21,7 @@
               id="export-directory"
               v-model="exportDirectory"
               type="text"
-              placeholder="/tmp/datastore-export"
+              placeholder="/tmp/datastore_bkp"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
             >
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -43,7 +33,7 @@
           <div class="flex flex-col sm:flex-row gap-3">
             <button
               @click="handleExportEntities"
-              :disabled="isExporting || !exportDirectory.trim() || kindsCount === 0"
+              :disabled="isExporting || !exportDirectory.trim()"
               class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ArrowDownTrayIcon v-if="!isExporting" class="h-4 w-4 mr-2" />
@@ -86,7 +76,7 @@
             >
               <div class="space-y-1 text-center">
                 <FolderOpenIcon class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
-                <div class="flex text-sm text-gray-600 dark:text-gray-400">
+                <div class="flex justify-center text-sm text-gray-600 dark:text-gray-400">
                   <label for="folder-upload" class="relative cursor-pointer bg-white dark:bg-gray-800 rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
                     <span>Select folder</span>
                     <input
@@ -206,9 +196,10 @@ const {
 } = useDatastoreImportExport()
 
 // Form state
-const exportDirectory = ref('/tmp/datastore-export')
+const exportDirectory = ref('/tmp/datastore_bkp')
 const importDirectory = ref('')
 const metadataFilePath = ref('')
+const pathPrefix = ref('/tmp/datastore_bkp')
 
 // File upload state
 const isDragOver = ref(false)
@@ -225,6 +216,7 @@ const selectedFolderName = computed(() => {
   if (selectedFiles.value.length === 0) return ''
   // Extract folder name from the first file's path
   const firstFile = selectedFiles.value[0]
+  if (!firstFile) return 'Selected folder'
   const pathParts = firstFile.webkitRelativePath.split('/')
   return pathParts[0] || 'Selected folder'
 })
@@ -265,13 +257,23 @@ const handleDrop = async (e: DragEvent) => {
 
   const files: File[] = []
 
-  // Process dropped items
+  // Process dropped items - handle both files and directories
   for (let i = 0; i < items.length; i++) {
     const item = items[i]
+    if (!item) continue
+
     if (item.kind === 'file') {
-      const file = item.getAsFile()
-      if (file) {
-        files.push(file)
+      const entry = item.webkitGetAsEntry()
+      if (entry) {
+        if (entry.isDirectory) {
+          // Read all files from the directory recursively
+          await readDirectory(entry as any, files, entry.name)
+        } else {
+          const file = item.getAsFile()
+          if (file) {
+            files.push(file)
+          }
+        }
       }
     }
   }
@@ -279,6 +281,48 @@ const handleDrop = async (e: DragEvent) => {
   if (files.length > 0) {
     processFiles(files)
   }
+}
+
+// Helper function to recursively read directory contents
+const readDirectory = async (dirEntry: any, files: File[], path = '') => {
+  const dirReader = dirEntry.createReader()
+
+  return new Promise<void>((resolve) => {
+    const readEntries = () => {
+      dirReader.readEntries(async (entries: any[]) => {
+        if (entries.length === 0) {
+          resolve()
+          return
+        }
+
+        for (const entry of entries) {
+          if (entry.isFile) {
+            const file = await new Promise<File>((resolveFile) => {
+              entry.file((f: File) => {
+                // Create a new File object with the full path
+                const newFile = new File([f], f.name, { type: f.type })
+                // Add webkitRelativePath property
+                Object.defineProperty(newFile, 'webkitRelativePath', {
+                  value: path ? `${path}/${f.name}` : f.name,
+                  writable: false
+                })
+                resolveFile(newFile)
+              })
+            })
+            files.push(file)
+          } else if (entry.isDirectory) {
+            const subPath = path ? `${path}/${entry.name}` : entry.name
+            await readDirectory(entry, files, subPath)
+          }
+        }
+
+        // Continue reading (directories may have more entries than batch size)
+        readEntries()
+      })
+    }
+
+    readEntries()
+  })
 }
 
 const processFiles = (files: File[]) => {
@@ -303,14 +347,11 @@ const processFiles = (files: File[]) => {
   // Extract the directory and metadata file path
   if (metadata.webkitRelativePath) {
     const relativePath = metadata.webkitRelativePath
-    const pathParts = relativePath.split('/')
 
-    // Get the folder name (first part of the path)
-    const folderName = pathParts[0]
-
-    // Build the directory path and full metadata file path
-    importDirectory.value = `/tmp/${folderName}`
-    metadataFilePath.value = `/tmp/${relativePath}`
+    // Build the directory path and full metadata file path using the hardcoded path prefix
+    const prefix = pathPrefix.value.endsWith('/') ? pathPrefix.value.slice(0, -1) : pathPrefix.value
+    importDirectory.value = `${prefix}/${relativePath.split('/')[0]}`
+    metadataFilePath.value = `${prefix}/${relativePath}`
 
     appStore.showToast({
       type: 'info',

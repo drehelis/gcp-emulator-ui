@@ -644,6 +644,10 @@ export const datastoreApi = {
     }
 
     const response = await datastoreClient.post(`/emulator/v1/projects/${projectId}:import`, request)
+
+    // Clear cache after import to ensure fresh data is loaded
+    clearCache(projectId)
+
     return response.data
   },
 

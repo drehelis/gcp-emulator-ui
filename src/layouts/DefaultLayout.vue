@@ -328,6 +328,7 @@ import {
   ArrowsRightLeftIcon,
   ArchiveBoxIcon,
   CircleStackIcon,
+  TableCellsIcon,
   FolderIcon
 } from '@heroicons/vue/24/outline'
 
@@ -527,7 +528,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
           id: 'datastore-namespaces',
           label: 'Namespaces',
           route: `/projects/${currentProject.value}/datastore/namespaces`,
-          icon: FolderIcon,
+          icon: TableCellsIcon,
           disabled: false,
           isSubItem: true
         })
@@ -650,7 +651,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
         id: 'collapsed-datastore-namespaces',
         label: 'Entities',
         route: `/projects/${currentProject.value}/datastore/namespaces`,
-        icon: FolderIcon,
+        icon: TableCellsIcon,
         disabled: false,
         customClasses: !datastoreConnected.value ? 'opacity-50' : ''
       })
