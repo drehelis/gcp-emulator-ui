@@ -39,7 +39,7 @@ This is an unofficial third-party application and is not affiliated with, endors
    > Named database mutation operations not supported by Datastore emulator
    * Create, view, and manage namespaces on `(default)` database.
    * Query/Read operations on named databases
-   * ~~Import/export functionality~~
+   * Import/export functionality
 
 
 ## Quick Start
@@ -166,13 +166,11 @@ This project uses [**Heroicons**](https://heroicons.com/) - a set of free MIT-li
 
 All icons are used in accordance with the MIT License. See [Heroicons License](https://github.com/tailwindlabs/heroicons/blob/master/LICENSE) for details.
 
-## Contributing
+## Feedback and Contributions
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Feedback and contributions are welcome! Please feel free to:
+- [Open an issue](https://github.com/drehelis/gcp-emulator-ui/issues) for bug reports or feature requests
+- [Submit a pull request](https://github.com/drehelis/gcp-emulator-ui/pulls) for bug fixes or new features
 
 ## License
 

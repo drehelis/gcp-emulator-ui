@@ -6,7 +6,7 @@
   </div>
 
   <!-- Services Header (main Services link) -->
-  <div v-else-if="label === 'Services' && !isCollapsed" :class="customClasses">
+  <div v-else-if="label === 'Services' && !isCollapsed && to" :class="customClasses">
     <router-link
       :to="to"
       @click="handleClick"
@@ -25,7 +25,7 @@
 
   <!-- Sub Items (Topics, Subscriptions, etc.) -->
   <router-link
-    v-else-if="!isCollapsed && isSubItem"
+    v-else-if="!isCollapsed && isSubItem && to"
     :to="to"
     @click="handleClick"
     class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg theme-transition-colors"
@@ -42,7 +42,7 @@
 
   <!-- Collapsed Items (icon only) -->
   <router-link
-    v-else-if="isCollapsed"
+    v-else-if="isCollapsed && to"
     :to="to"
     class="flex items-center justify-center w-full px-2 py-2 text-sm font-medium rounded-lg theme-transition-colors"
     :class="[
@@ -54,6 +54,23 @@
     :title="label"
   >
     <component v-if="icon" :is="icon" class="w-5 h-5" />
+  </router-link>
+
+  <!-- Regular Items (fallback for non-sub items like Import/Export) -->
+  <router-link
+    v-else-if="to"
+    :to="to"
+    @click="handleClick"
+    class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg theme-transition-colors"
+    :class="[
+      isActive ?
+        'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
+        'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200',
+      customClasses
+    ]"
+  >
+    <component v-if="icon" :is="icon" class="w-5 h-5 mr-3" />
+    {{ label }}
   </router-link>
 </template>
 

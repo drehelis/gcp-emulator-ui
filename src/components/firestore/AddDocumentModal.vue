@@ -52,7 +52,7 @@
 import { computed, watch, nextTick } from 'vue'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
 import type { FirestoreDocument } from '@/types'
-import DocumentEditor from './DocumentEditor.vue'
+import DocumentEditor from './DocumentEditorForm.vue'
 import SuccessNotification from '@/components/ui/SuccessNotification.vue'
 import { useDocumentForm } from '@/composables/useDocumentForm'
 import { useSaveAndAddAnother } from '@/composables/useSaveAndAddAnother'

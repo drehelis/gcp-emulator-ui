@@ -77,6 +77,11 @@
       <FirestoreImportExport :project-id="currentProjectId" />
     </div>
 
+    <!-- Datastore Tab Content -->
+    <div v-if="availableTabs.length > 0 && activeTab === 'datastore'">
+      <DatastoreImportExport :project-id="currentProjectId" />
+    </div>
+
   </div>
 </template>
 
@@ -89,11 +94,13 @@ import {
   ArrowPathIcon,
   QueueListIcon,
   ArchiveBoxIcon,
-  CircleStackIcon
+  CircleStackIcon,
+  TableCellsIcon
 } from '@heroicons/vue/24/outline'
 import PubSubImportExport from '@/components/import-export/PubSubImportExport.vue'
 import StorageImportExport from '@/components/import-export/StorageImportExport.vue'
 import FirestoreImportExport from '@/components/import-export/FirestoreImportExport.vue'
+import DatastoreImportExport from '@/components/import-export/DatastoreImportExport.vue'
 
 const route = useRoute()
 const appStore = useAppStore()
@@ -101,6 +108,7 @@ const {
   pubsubConnected,
   storageConnected,
   firestoreConnected,
+  datastoreConnected,
   checkAllConnections
 } = useServiceConnections()
 
@@ -141,6 +149,15 @@ const availableTabs = computed(() => {
     })
   }
 
+  // Only show Datastore tab if connected
+  if (datastoreConnected.value) {
+    tabs.push({
+      id: 'datastore',
+      name: 'Datastore',
+      icon: TableCellsIcon
+    })
+  }
+
   return tabs
 })
 
@@ -163,6 +180,7 @@ const checkAllConnectionsAndUpdateTabs = async (showToast = false) => {
         if (status.pubsub) connected.push('Pub/Sub')
         if (status.storage) connected.push('Storage')
         if (status.firestore) connected.push('Firestore')
+        if (status.datastore) connected.push('Datastore')
 
         appStore.showToast({
           type: 'success',

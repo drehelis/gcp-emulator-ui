@@ -316,16 +316,14 @@ export const useDatastoreStore = defineStore('datastore', () => {
     }
   }
 
-  // Export entities
+  // Export entities (Datastore emulator API)
   const exportEntities = async (
     projectId: string,
-    outputUrlPrefix: string,
-    kindNames?: string[],
-    namespaceIds?: string[]
+    exportDirectory: string
   ) => {
     try {
       loading.value = true
-      return await datastoreApi.exportEntities(projectId, outputUrlPrefix, kindNames, namespaceIds)
+      return await datastoreApi.exportEntities(projectId, exportDirectory)
     } catch (error) {
       console.error('Failed to export entities:', error)
       throw error
@@ -334,16 +332,14 @@ export const useDatastoreStore = defineStore('datastore', () => {
     }
   }
 
-  // Import entities
+  // Import entities (Datastore emulator API)
   const importEntities = async (
     projectId: string,
-    inputUrl: string,
-    kindNames?: string[],
-    namespaceIds?: string[]
+    metadataFilePath: string
   ) => {
     try {
       loading.value = true
-      const result = await datastoreApi.importEntities(projectId, inputUrl, kindNames, namespaceIds)
+      const result = await datastoreApi.importEntities(projectId, metadataFilePath)
 
       // Refresh kinds and entities after import
       await loadKinds(projectId)
@@ -351,6 +347,22 @@ export const useDatastoreStore = defineStore('datastore', () => {
       return result
     } catch (error) {
       console.error('Failed to import entities:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // Export entities as JSON
+  const exportEntitiesAsJson = async (
+    projectId: string,
+    namespaceId?: string
+  ) => {
+    try {
+      loading.value = true
+      return await datastoreApi.exportEntitiesAsJson(projectId, namespaceId)
+    } catch (error) {
+      console.error('Failed to export entities as JSON:', error)
       throw error
     } finally {
       loading.value = false
@@ -391,6 +403,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
     deleteEntity,
     // Import/Export
     exportEntities,
+    exportEntitiesAsJson,
     importEntities,
     // Utility
     healthCheck,

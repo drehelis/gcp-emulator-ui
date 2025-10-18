@@ -38,14 +38,16 @@ export interface LayoutConfig {
 export interface NavigationItem {
   id: string
   label: string
-  icon?: Component
+  icon?: Component | null
   route?: string | null
   href?: string
   children?: NavigationItem[]
   badge?: string | number
   disabled?: boolean
   divider?: boolean
+  isSeparator?: boolean
   external?: boolean
+  exact?: boolean
   isServiceHeader?: boolean
   isSubItem?: boolean
   isSectionHeader?: boolean
