@@ -328,8 +328,7 @@ import {
   ArrowsRightLeftIcon,
   ArchiveBoxIcon,
   CircleStackIcon,
-  TableCellsIcon,
-  FolderIcon
+  TableCellsIcon
 } from '@heroicons/vue/24/outline'
 
 import { useAppStore } from '@/stores/app'

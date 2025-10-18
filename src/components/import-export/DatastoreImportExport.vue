@@ -185,7 +185,6 @@ import {
   XMarkIcon
 } from '@heroicons/vue/24/outline'
 import { useDatastoreImportExport } from '@/composables/useDatastoreImportExport'
-import { useDatastoreStore } from '@/stores/datastore'
 import { useServiceConnections } from '@/composables/useServiceConnections'
 import { useAppStore } from '@/stores/app'
 
@@ -194,7 +193,6 @@ const props = defineProps<{
 }>()
 
 const appStore = useAppStore()
-const datastoreStore = useDatastoreStore()
 const { checkDatastoreConnection } = useServiceConnections()
 const {
   isExporting,
@@ -219,10 +217,6 @@ const metadataFile = ref<File | null>(null)
 const folderInput = ref<HTMLInputElement | null>(null)
 
 // Computed properties
-const currentNamespace = computed(() => datastoreStore.getCurrentNamespace())
-const currentDatabase = computed(() => datastoreStore.getCurrentDatabase())
-const kindsCount = computed(() => datastoreStore.kinds.length)
-
 const selectedFolderName = computed(() => {
   if (selectedFiles.value.length === 0) return ''
   // Extract folder name from the first file's path
