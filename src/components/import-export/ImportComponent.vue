@@ -147,7 +147,7 @@
 
       <!-- Import Options -->
       <div class="mt-4 space-y-3">
-        <div v-if="importType === 'config' || importType === 'storage' || importType === 'firestore'">
+        <div v-if="importType === 'config' || importType === 'storage' || importType === 'firestore' || importType === 'datastore'">
           <div class="flex items-center" v-if="importType === 'config'">
             <input
               id="create-topics"
@@ -178,7 +178,7 @@
               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:checked:bg-blue-600"
             />
             <label for="overwrite-existing" class="ml-2 block text-xs sm:text-sm text-gray-900 dark:text-white">
-              {{ importType === 'storage' ? 'Overwrite existing buckets' : importType === 'firestore' ? 'Overwrite existing documents' : 'Overwrite existing configurations' }}
+              {{ importType === 'storage' ? 'Overwrite existing buckets' : importType === 'firestore' ? 'Overwrite existing documents' : importType === 'datastore' ? 'Overwrite existing entities' : 'Overwrite existing configurations' }}
             </label>
           </div>
         </div>
@@ -279,6 +279,8 @@ const getFileTypeLabel = () => {
       return 'Bucket Configuration'
     case 'firestore':
       return 'Firestore Collections'
+    case 'datastore':
+      return 'Datastore Entities'
     default:
       return 'Configuration'
   }
@@ -294,6 +296,8 @@ const getPlaceholderText = () => {
       return 'Paste your JSON bucket configurations here...'
     case 'firestore':
       return 'Paste your JSON collections and documents here...'
+    case 'datastore':
+      return 'Paste your JSON kinds and entities here...'
     default:
       return 'Paste your JSON data here...'
   }
@@ -309,6 +313,8 @@ const getHelpText = () => {
       return 'Paste your JSON array of bucket configurations'
     case 'firestore':
       return 'Paste your JSON array of Firestore collections with documents'
+    case 'datastore':
+      return 'Paste your JSON export of Datastore kinds with entities'
     default:
       return 'Paste your JSON data'
   }
@@ -322,6 +328,8 @@ const getPreviewLabel = () => {
       return 'bucket configuration'
     case 'firestore':
       return 'collection'
+    case 'datastore':
+      return 'kind'
     default:
       return 'configuration'
   }
@@ -335,6 +343,8 @@ const getImportButtonLabel = () => {
       return 'Bucket Configurations'
     case 'firestore':
       return 'Collections'
+    case 'datastore':
+      return 'Entities'
     default:
       return 'Configuration'
   }
@@ -397,6 +407,22 @@ const validateImportData = (configurations: any[]) => {
       for (const item of configurations) {
         if (!item.collectionId || !item.documents) {
           throw new Error('Each collection must have collectionId and documents fields')
+        }
+      }
+      break
+    case 'datastore':
+      // Support both array of kinds format and full export format
+      if (configurations.length === 1 && configurations[0].version && configurations[0].kinds) {
+        // Full export format - unwrap it for preview
+        if (!Array.isArray(configurations[0].kinds)) {
+          throw new Error('Export data must contain kinds array')
+        }
+      } else {
+        // Array of kinds format
+        for (const item of configurations) {
+          if (!item.kind || !item.entities) {
+            throw new Error('Each kind must have kind and entities fields')
+          }
         }
       }
       break

@@ -82,6 +82,7 @@
                 :label="item.label"
                 :badge="item.badge"
                 :disabled="item.disabled"
+                :exact="item.exact"
                 :is-service-header="item.isServiceHeader"
                 :is-sub-item="item.isSubItem"
                 :is-section-header="item.isSectionHeader"
@@ -173,16 +174,22 @@
             </div>
 
             <!-- Other Items (Expanded Mode) -->
-            <div v-else-if="!item.id.includes('-section') && !appStore.layout.sidebar.collapsed" class="mt-4">
-              <router-link
-                :to="item.route"
-                class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white theme-transition-colors"
-                @click="handleMobileNavClick"
-              >
-                <component :is="item.icon" class="w-5 h-5 mr-3" />
-                {{ item.label }}
-              </router-link>
-            </div>
+            <NavItem
+              v-else-if="!item.id.includes('-section') && !appStore.layout.sidebar.collapsed && !item.isSeparator"
+              :to="item.route"
+              :icon="item.icon"
+              :label="item.label"
+              :badge="item.badge"
+              :disabled="item.disabled"
+              :exact="item.exact"
+              :is-service-header="item.isServiceHeader"
+              :is-sub-item="item.isSubItem"
+              :is-section-header="item.isSectionHeader"
+              :connected="item.connected"
+              :is-collapsed="false"
+              :custom-classes="item.customClasses || 'mt-4'"
+              @click="handleMobileNavClick"
+            />
 
             <!-- Collapsed Separator -->
             <div v-else-if="item.isSeparator && appStore.layout.sidebar.collapsed" class="my-3 mx-auto w-8 border-t border-gray-200 dark:border-gray-700 theme-transition-colors"></div>
@@ -321,7 +328,7 @@ import {
   ArrowsRightLeftIcon,
   ArchiveBoxIcon,
   CircleStackIcon,
-  FolderIcon
+  TableCellsIcon
 } from '@heroicons/vue/24/outline'
 
 import { useAppStore } from '@/stores/app'
@@ -369,7 +376,8 @@ const navigationItems = computed<NavigationItem[]>(() => {
       label: 'Services',
       route: `/projects/${currentProject.value}`,
       icon: CubeIcon,
-      disabled: false
+      disabled: false,
+      exact: true
     })
 
     // PubSub services with connection status
@@ -519,7 +527,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
           id: 'datastore-namespaces',
           label: 'Namespaces',
           route: `/projects/${currentProject.value}/datastore/namespaces`,
-          icon: FolderIcon,
+          icon: TableCellsIcon,
           disabled: false,
           isSubItem: true
         })
@@ -642,7 +650,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
         id: 'collapsed-datastore-namespaces',
         label: 'Entities',
         route: `/projects/${currentProject.value}/datastore/namespaces`,
-        icon: FolderIcon,
+        icon: TableCellsIcon,
         disabled: false,
         customClasses: !datastoreConnected.value ? 'opacity-50' : ''
       })

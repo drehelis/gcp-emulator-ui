@@ -165,6 +165,7 @@ declare global {
   const useCurrentElement: typeof import('@vueuse/core')['useCurrentElement']
   const useCycleList: typeof import('@vueuse/core')['useCycleList']
   const useDark: typeof import('@vueuse/core')['useDark']
+  const useDatastoreImportExport: typeof import('./src/composables/useDatastoreImportExport')['useDatastoreImportExport']
   const useDatastoreStore: typeof import('./src/stores/datastore')['useDatastoreStore']
   const useDateFormat: typeof import('@vueuse/core')['useDateFormat']
   const useDebounce: typeof import('@vueuse/core')['useDebounce']

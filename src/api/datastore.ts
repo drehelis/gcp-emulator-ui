@@ -29,6 +29,11 @@ const datastoreClient = axios.create({
   },
 })
 
+const fileServerClient = axios.create({
+  baseURL: import.meta.env.VITE_FILE_SERVER_BASE_URL || '/fs',
+  timeout: 300000, // 5 minutes for large files
+})
+
 // Simple in-memory cache for expensive list operations
 interface CacheEntry<T> {
   data: T
@@ -619,32 +624,107 @@ export const datastoreApi = {
     }
   },
 
-  // Export entities
-  async exportEntities(projectId: string, outputUrlPrefix: string, kinds?: string[], namespaceIds?: string[]): Promise<any> {
+  // Export entities (Datastore emulator API)
+  async exportEntities(projectId: string, exportDirectory: string): Promise<any> {
+    // Build full database path with trailing slash
+    const databasePath = `projects/${projectId}/databases/`
+
     const request = {
-      outputUrlPrefix,
-      entityFilter: {
-        kinds,
-        namespaceIds
-      }
+      database: databasePath,
+      export_directory: exportDirectory
     }
 
-    const response = await datastoreClient.post(`/v1/projects/${projectId}:export`, request)
+    const response = await datastoreClient.post(`/emulator/v1/projects/${projectId}:export`, request)
     return response.data
   },
 
-  // Import entities
-  async importEntities(projectId: string, inputUrl: string, kinds?: string[], namespaceIds?: string[]): Promise<any> {
+  // Import entities (Datastore emulator API)
+  async importEntities(projectId: string, metadataFilePath: string): Promise<any> {
+    // Build full database path with trailing slash
+    const databasePath = `projects/${projectId}/databases/`
+
     const request = {
-      inputUrl,
-      entityFilter: {
-        kinds,
-        namespaceIds
-      }
+      database: databasePath,
+      export_directory: metadataFilePath
     }
 
-    const response = await datastoreClient.post(`/v1/projects/${projectId}:import`, request)
+    const response = await datastoreClient.post(`/emulator/v1/projects/${projectId}:import`, request)
+
+    // Clear cache after import to ensure fresh data is loaded
+    clearCache(projectId)
+
     return response.data
+  },
+
+  // Export entities as JSON (query all entities and return as JSON)
+  async exportEntitiesAsJson(projectId: string, namespaceId?: string): Promise<any> {
+    try {
+      // Step 1: Get all namespaces (or use the specified one)
+      const namespacesToExport: string[] = []
+      if (namespaceId !== undefined) {
+        // Export only the specified namespace
+        namespacesToExport.push(namespaceId)
+      } else {
+        // Export ALL namespaces
+        const allNamespaces = await this.listNamespaces(projectId)
+        namespacesToExport.push(...allNamespaces)
+      }
+
+      const exportData: any = {
+        projectId,
+        exportDate: new Date().toISOString(),
+        namespaces: []
+      }
+
+      // Step 2: For each namespace, get all kinds and their entities
+      for (const namespace of namespacesToExport) {
+        const namespaceData: any = {
+          namespaceId: namespace,
+          kinds: []
+        }
+
+        // Get all kinds in this namespace
+        const kinds = await this.listKinds(projectId, namespace)
+
+        // For each kind, get all entities
+        for (const kind of kinds) {
+          const partitionId: any = {
+            projectId,
+            namespaceId: namespace || ''
+          }
+
+          const request: RunQueryRequest = {
+            partitionId,
+            query: {
+              kind: [{ name: kind }],
+              limit: 10000  // Large limit to get all entities
+            }
+          }
+
+          const response = await datastoreClient.post(`/v1/projects/${projectId}:runQuery`, request)
+
+          const entities: DatastoreEntity[] = []
+          if (response.data.batch?.entityResults) {
+            response.data.batch.entityResults.forEach((result: any) => {
+              entities.push(result.entity)
+            })
+          }
+
+          namespaceData.kinds.push({
+            kind,
+            count: entities.length,
+            entities
+          })
+        }
+
+        exportData.namespaces.push(namespaceData)
+      }
+
+      return exportData
+    } catch (error) {
+      console.error('[Datastore API] Failed to export entities as JSON:', error)
+      throw error
+    }
   },
 
   // Helper to create a key
@@ -678,6 +758,103 @@ export const datastoreApi = {
   // Cache management
   clearCache(pattern?: string): void {
     clearCache(pattern)
+  },
+
+  // File operations for import/export via miniserve
+  async createDirectory(path: string): Promise<void> {
+    const formData = new FormData()
+
+    // Extract parent path and directory name
+    const lastSlashIndex = path.lastIndexOf('/')
+    let parentPath = '/'
+    let dirName = path
+
+    if (lastSlashIndex !== -1) {
+      parentPath = path.substring(0, lastSlashIndex) || '/'
+      dirName = path.substring(lastSlashIndex + 1)
+    }
+
+    formData.append('mkdir', dirName)
+
+    await fileServerClient.post(`/upload?path=${encodeURIComponent(parentPath)}`, formData)
+  },
+
+  async uploadFile(file: File, targetPath?: string): Promise<void> {
+    const formData = new FormData()
+
+    let uploadPath = '/'
+    let filename = file.name
+
+    // If targetPath is provided, split into directory and filename
+    if (targetPath) {
+      const lastSlashIndex = targetPath.lastIndexOf('/')
+      if (lastSlashIndex !== -1) {
+        uploadPath = targetPath.substring(0, lastSlashIndex) || '/'
+        filename = targetPath.substring(lastSlashIndex + 1)
+      } else {
+        filename = targetPath
+      }
+    }
+
+    // Create a new File with just the filename (no directory path)
+    const fileToUpload = new File([file], filename, { type: file.type })
+    formData.append('path', fileToUpload)
+
+    await fileServerClient.post(`/upload?path=${encodeURIComponent(uploadPath)}`, formData)
+  },
+
+  async uploadFiles(files: File[], basePath: string = '/'): Promise<void> {
+    // Step 1: Collect all unique directory paths
+    const directories = new Set<string>()
+
+    for (const file of files) {
+      // Skip .DS_Store and other hidden system files
+      if (file.name === '.DS_Store' || file.name.startsWith('._')) {
+        continue
+      }
+
+      const relativePath = file.webkitRelativePath || file.name
+      const fullPath = basePath === '/' ? relativePath : `${basePath}/${relativePath}`
+
+      // Extract all parent directories
+      const parts = fullPath.split('/')
+      for (let i = 0; i < parts.length - 1; i++) {
+        const dirPath = parts.slice(0, i + 1).join('/')
+        if (dirPath) {
+          directories.add(dirPath)
+        }
+      }
+    }
+
+    // Step 2: Create directories in order (parent before child)
+    const sortedDirs = Array.from(directories).sort()
+    for (const dir of sortedDirs) {
+      try {
+        await this.createDirectory(dir)
+      } catch (error) {
+        // Directory might already exist, continue
+        console.warn(`Failed to create directory ${dir}:`, error)
+      }
+    }
+
+    // Step 3: Upload files
+    for (const file of files) {
+      // Skip .DS_Store and other hidden system files
+      if (file.name === '.DS_Store' || file.name.startsWith('._')) {
+        continue
+      }
+
+      const relativePath = file.webkitRelativePath || file.name
+      const fullPath = basePath === '/' ? relativePath : `${basePath}/${relativePath}`
+      await this.uploadFile(file, fullPath)
+    }
+  },
+
+  async downloadFile(filename: string): Promise<Blob> {
+    const response = await fileServerClient.get(`/${filename}`, {
+      responseType: 'blob'
+    })
+    return response.data
   }
 }
 
