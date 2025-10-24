@@ -1,25 +1,35 @@
-version: '3.8'
-
 services:
   pubsub-emulator:
-    image: gcr.io/google.com/cloudsdktool/cloud-sdk:emulators
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
     command: sh -c 'gcloud beta emulators pubsub start --host-port=0.0.0.0:8085'
     ports:
       - "8085:8085"
     restart: unless-stopped
 
   firestore-emulator:
-    image: gcr.io/google.com/cloudsdktool/cloud-sdk:emulators
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
     command: sh -c 'gcloud beta emulators firestore start --host-port=0.0.0.0:8086'
     ports:
       - "8086:8086"
     restart: unless-stopped
 
   firestore-datastore-emulator:
-    image: gcr.io/google.com/cloudsdktool/cloud-sdk:emulators
-    command: sh -c 'gcloud beta emulators firestore start --database-mode=datastore-mode --host-port=0.0.0.0:8087'
+    image: gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators
+    environment:
+      - MINISERVE_VERSION=0.32.0
+      - MINISERVE_PATH=/usr/local/bin/miniserve
+    command:
+      - sh
+      - -c
+      - |
+        curl -L https://github.com/svenstaro/miniserve/releases/download/v$${MINISERVE_VERSION}/miniserve-$${MINISERVE_VERSION}-$(arch)-unknown-linux-gnu -o $${MINISERVE_PATH} &&
+        chmod +x $${MINISERVE_PATH} &&
+        mkdir -p /srv &&
+        $${MINISERVE_PATH} --port 9999 --upload-files --mkdir --enable-tar-gz --on-duplicate-files=overwrite --route-prefix /fs /srv &
+        gcloud beta emulators firestore start --database-mode=datastore-mode --host-port=0.0.0.0:8087
     ports:
       - "8087:8087"
+      - "9999:9999"
     restart: unless-stopped
 
   storage-emulator:
@@ -30,13 +40,17 @@ services:
     restart: unless-stopped
 
   gcp-emulator-ui:
-    image: ghcr.io/drehelis/gcp-emulator-ui:main
+    # image: ghcr.io/drehelis/gcp-emulator-ui:main
+    build:
+      context: .
+      dockerfile: deployments/Dockerfile
     ports:
       - "9090:80"
     environment:
       - PUBSUB_EMULATOR_URL=host.docker.internal:8085
       - FIRESTORE_EMULATOR_URL=host.docker.internal:8086
       - DATASTORE_EMULATOR_URL=host.docker.internal:8087
+      - DATASTORE_FILE_SERVER_URL=host.docker.internal:9999
       - STORAGE_EMULATOR_URL=host.docker.internal:4443
     depends_on:
       - pubsub-emulator

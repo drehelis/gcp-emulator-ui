@@ -753,6 +753,117 @@ export const datastoreApi = {
   // Cache management
   clearCache(pattern?: string): void {
     clearCache(pattern)
+  },
+
+  // File operations for import/export via miniserve
+  async createDirectory(path: string): Promise<void> {
+    const formData = new FormData()
+
+    // Extract parent path and directory name
+    const lastSlashIndex = path.lastIndexOf('/')
+    let parentPath = '/'
+    let dirName = path
+
+    if (lastSlashIndex !== -1) {
+      parentPath = path.substring(0, lastSlashIndex) || '/'
+      dirName = path.substring(lastSlashIndex + 1)
+    }
+
+    formData.append('mkdir', dirName)
+
+    const fileServerClient = axios.create({
+      baseURL: '/fs',
+      timeout: 30000,
+    })
+
+    await fileServerClient.post(`/upload?path=${encodeURIComponent(parentPath)}`, formData)
+  },
+
+  async uploadFile(file: File, targetPath?: string): Promise<void> {
+    const formData = new FormData()
+
+    let uploadPath = '/'
+    let filename = file.name
+
+    // If targetPath is provided, split into directory and filename
+    if (targetPath) {
+      const lastSlashIndex = targetPath.lastIndexOf('/')
+      if (lastSlashIndex !== -1) {
+        uploadPath = targetPath.substring(0, lastSlashIndex) || '/'
+        filename = targetPath.substring(lastSlashIndex + 1)
+      } else {
+        filename = targetPath
+      }
+    }
+
+    // Create a new File with just the filename (no directory path)
+    const fileToUpload = new File([file], filename, { type: file.type })
+    formData.append('path', fileToUpload)
+
+    const fileServerClient = axios.create({
+      baseURL: '/fs',
+      timeout: 300000, // 5 minutes for large files
+    })
+
+    await fileServerClient.post(`/upload?path=${encodeURIComponent(uploadPath)}`, formData)
+  },
+
+  async uploadFiles(files: File[], basePath: string = '/'): Promise<void> {
+    // Step 1: Collect all unique directory paths
+    const directories = new Set<string>()
+
+    for (const file of files) {
+      // Skip .DS_Store and other hidden system files
+      if (file.name === '.DS_Store' || file.name.startsWith('._')) {
+        continue
+      }
+
+      const relativePath = file.webkitRelativePath || file.name
+      const fullPath = basePath === '/' ? relativePath : `${basePath}/${relativePath}`
+
+      // Extract all parent directories
+      const parts = fullPath.split('/')
+      for (let i = 0; i < parts.length - 1; i++) {
+        const dirPath = parts.slice(0, i + 1).join('/')
+        if (dirPath) {
+          directories.add(dirPath)
+        }
+      }
+    }
+
+    // Step 2: Create directories in order (parent before child)
+    const sortedDirs = Array.from(directories).sort()
+    for (const dir of sortedDirs) {
+      try {
+        await this.createDirectory(dir)
+      } catch (error) {
+        // Directory might already exist, continue
+        console.warn(`Failed to create directory ${dir}:`, error)
+      }
+    }
+
+    // Step 3: Upload files
+    for (const file of files) {
+      // Skip .DS_Store and other hidden system files
+      if (file.name === '.DS_Store' || file.name.startsWith('._')) {
+        continue
+      }
+
+      const relativePath = file.webkitRelativePath || file.name
+      const fullPath = basePath === '/' ? relativePath : `${basePath}/${relativePath}`
+      await this.uploadFile(file, fullPath)
+    }
+  },
+
+  async downloadFile(filename: string): Promise<Blob> {
+    const fileServerClient = axios.create({
+      baseURL: '/fs',
+      timeout: 300000,
+      responseType: 'blob',
+    })
+
+    const response = await fileServerClient.get(`/${filename}`)
+    return response.data
   }
 }
 

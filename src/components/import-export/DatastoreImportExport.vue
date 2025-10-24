@@ -7,38 +7,21 @@
           Export Datastore Entities
         </h2>
         <p class="mt-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-          Dump entire database to a directory on the emulator host
+          Export entities and download via file server
         </p>
       </div>
       <div class="p-6">
         <div class="space-y-4">
-          <!-- Export Directory Input -->
-          <div>
-            <label for="export-directory" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Export Directory Path
-            </label>
-            <input
-              id="export-directory"
-              v-model="exportDirectory"
-              type="text"
-              placeholder="/tmp/datastore_bkp"
-              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
-            >
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Absolute path on the emulator host where export files will be created
-            </p>
-          </div>
-
           <!-- Export Buttons -->
           <div class="flex flex-col sm:flex-row gap-3">
             <button
               @click="handleExportEntities"
-              :disabled="isExporting || !exportDirectory.trim()"
+              :disabled="isExporting"
               class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <ArrowDownTrayIcon v-if="!isExporting" class="h-4 w-4 mr-2" />
               <ArrowPathIcon v-else class="h-4 w-4 mr-2 animate-spin" />
-              {{ isExporting ? 'Exporting...' : 'Export to Directory' }}
+              {{ isExporting ? 'Exporting...' : 'Export Files' }}
             </button>
             <button
               @click="handleExportAsJson"
@@ -129,27 +112,20 @@
               <div class="text-sm text-gray-600 dark:text-gray-400">
                 <p><strong>Files:</strong> {{ selectedFiles.length }}</p>
                 <p v-if="metadataFile"><strong>Metadata:</strong> {{ metadataFile.name }}</p>
-                <p v-if="metadataFilePath"><strong>Path:</strong> <code class="text-xs bg-gray-200 dark:bg-gray-800 px-1 rounded">{{ metadataFilePath }}</code></p>
               </div>
 
               <!-- Info Message -->
-              <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-3">
+              <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-3">
                 <div class="flex">
                   <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                     </svg>
                   </div>
                   <div class="ml-3 flex-1">
-                    <h3 class="text-sm font-medium text-blue-800 dark:text-blue-200">
-                      Important
-                    </h3>
-                    <div class="mt-1 text-xs text-blue-700 dark:text-blue-300">
-                      <p>The selected folder path must be accessible to the emulator container. Mount it using Docker volumes:</p>
-                      <code class="block mt-2 bg-blue-100 dark:bg-blue-900 px-2 py-1 rounded text-xs overflow-x-auto">
-                        docker run -v {{ importDirectory }}/:{{ importDirectory }}/ ...
-                      </code>
-                    </div>
+                    <p class="text-sm text-green-700 dark:text-green-300">
+                      Files will be uploaded to the emulator and imported automatically
+                    </p>
                   </div>
                 </div>
               </div>
@@ -160,12 +136,12 @@
           <div class="pt-4">
             <button
               @click="handleImportEntities"
-              :disabled="isImporting || !metadataFilePath.trim()"
+              :disabled="isImporting || selectedFiles.length === 0"
               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              <ArrowUpTrayIcon v-if="!isImporting" class="h-4 w-4 mr-2" />
+              <ArrowUpTrayIcon v-if="!isImporting && !isUploading" class="h-4 w-4 mr-2" />
               <ArrowPathIcon v-else class="h-4 w-4 mr-2 animate-spin" />
-              {{ isImporting ? 'Importing...' : 'Import Entities' }}
+              {{ isUploading ? 'Uploading...' : isImporting ? 'Importing...' : 'Upload & Import' }}
             </button>
           </div>
         </div>
@@ -198,17 +174,12 @@ const {
   isExporting,
   isExportingJson,
   isImporting,
+  isUploading,
   loadData,
   exportEntities,
   exportEntitiesAsJson,
   importEntities
 } = useDatastoreImportExport()
-
-// Form state
-const exportDirectory = ref('/tmp/datastore_bkp')
-const importDirectory = ref('')
-const metadataFilePath = ref('')
-const pathPrefix = ref('/tmp/datastore_bkp')
 
 // File upload state
 const isDragOver = ref(false)
@@ -348,44 +319,18 @@ const processFiles = (files: File[]) => {
     })
     return
   }
-
-  // Extract the directory and metadata file path
-  if (metadata.webkitRelativePath) {
-    const relativePath = metadata.webkitRelativePath
-
-    // Build the directory path and full metadata file path using the hardcoded path prefix
-    const prefix = pathPrefix.value.endsWith('/') ? pathPrefix.value.slice(0, -1) : pathPrefix.value
-    importDirectory.value = `${prefix}/${relativePath.split('/')[0]}`
-    metadataFilePath.value = `${prefix}/${relativePath}`
-
-    appStore.showToast({
-      type: 'info',
-      title: 'Folder selected',
-      message: `Found ${files.length} files. Ready to import.`
-    })
-  } else {
-    // If webkitRelativePath is not available
-    appStore.showToast({
-      type: 'warning',
-      title: 'Files selected',
-      message: `Cannot determine file paths. Please enter the metadata file path manually.`
-    })
-  }
 }
 
 const clearSelection = () => {
   selectedFiles.value = []
   metadataFile.value = null
-  importDirectory.value = ''
-  metadataFilePath.value = ''
   if (folderInput.value) {
     folderInput.value.value = ''
   }
 }
 
 const handleExportEntities = async () => {
-  if (!exportDirectory.value.trim()) return
-  await exportEntities(props.projectId, exportDirectory.value.trim())
+  await exportEntities(props.projectId)
 }
 
 const handleExportAsJson = async () => {
@@ -394,8 +339,8 @@ const handleExportAsJson = async () => {
 }
 
 const handleImportEntities = async () => {
-  if (!metadataFilePath.value.trim()) return
-  await importEntities(props.projectId, metadataFilePath.value.trim())
+  if (selectedFiles.value.length === 0) return
+  await importEntities(props.projectId, selectedFiles.value, metadataFile.value)
 }
 
 onMounted(async () => {

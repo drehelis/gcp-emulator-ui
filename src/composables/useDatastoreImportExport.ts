@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { useDatastoreStore } from '@/stores/datastore'
+import datastoreApi from '@/api/datastore'
 
 export function useDatastoreImportExport() {
   const appStore = useAppStore()
@@ -9,6 +10,7 @@ export function useDatastoreImportExport() {
   const isExporting = ref(false)
   const isExportingJson = ref(false)
   const isImporting = ref(false)
+  const isUploading = ref(false)
 
   // Load data
   const loadData = async (projectId: string) => {
@@ -22,17 +24,32 @@ export function useDatastoreImportExport() {
     }
   }
 
-  // Export entities to a directory on the emulator host
-  const exportEntities = async (projectId: string, exportDirectory: string) => {
+  // Export entities to /srv directory and provide download link
+  const exportEntities = async (projectId: string) => {
     isExporting.value = true
     try {
-      // Call the Datastore emulator export API
+      // Export to /srv directory (accessible via /fs)
+      const exportDirectory = '/srv'
       await datastoreStore.exportEntities(projectId, exportDirectory)
+
+      // The export API returns empty {}, so we need to construct the directory name
+      // The emulator creates directories with format: datastore_export_{unix_timestamp_in_seconds}
+      const exportDirName = `datastore_export_${Math.floor(Date.now() / 1000)}`
+
+      // Trigger download via miniserve's tar.gz download feature
+      // Miniserve with --enable-tar-gz compresses folders on the fly
+      // Use a temporary anchor element to trigger download
+      const link = document.createElement('a')
+      link.href = `/fs/${exportDirName}/?download=tar_gz`
+      link.download = `${exportDirName}.tar.gz`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
 
       appStore.showToast({
         type: 'success',
-        title: 'Datastore export started',
-        message: `Exporting to ${exportDirectory}`
+        title: 'Download started',
+        message: `Downloading ${exportDirName}.tar.gz`
       })
     } catch (error) {
       console.error('Datastore export failed:', error)
@@ -91,20 +108,39 @@ export function useDatastoreImportExport() {
     }
   }
 
-  // Import entities from a metadata file path
-  const importEntities = async (projectId: string, metadataFilePath: string) => {
+  // Upload files and import entities
+  const importEntities = async (projectId: string, files: File[], metadataFile: File | null) => {
     isImporting.value = true
+    isUploading.value = true
     try {
-      // Call the Datastore emulator import API
-      await datastoreStore.importEntities(projectId, metadataFilePath)
+      if (!metadataFile) {
+        throw new Error('No metadata file provided')
+      }
 
-      // Reload data
+      // Step 1: Detect the root folder name from file paths
+      let rootFolder = ''
+      if (files.length > 0 && files[0]?.webkitRelativePath) {
+        const parts = files[0].webkitRelativePath.split('/')
+        rootFolder = parts[0] || ''
+      }
+
+      // Step 2: Upload files to /srv via miniserve
+      await datastoreApi.uploadFiles(files, '/')
+
+      isUploading.value = false
+
+      // Step 3: Call the Datastore emulator import API
+      // Import path must point to the metadata file
+      const importPath = rootFolder ? `/srv/${rootFolder}/${metadataFile.name}` : `/srv/${metadataFile.name}`
+      await datastoreStore.importEntities(projectId, importPath)
+
+      // Step 4: Reload data
       await loadData(projectId)
 
       appStore.showToast({
         type: 'success',
-        title: 'Datastore import completed',
-        message: 'Datastore entities imported'
+        title: 'Import completed',
+        message: `Successfully imported ${files.length} file(s)`
       })
     } catch (error) {
       console.error('Datastore import failed:', error)
@@ -116,6 +152,7 @@ export function useDatastoreImportExport() {
       throw error
     } finally {
       isImporting.value = false
+      isUploading.value = false
     }
   }
 
@@ -123,6 +160,7 @@ export function useDatastoreImportExport() {
     isExporting,
     isExportingJson,
     isImporting,
+    isUploading,
     loadData,
     exportEntities,
     exportEntitiesAsJson,
