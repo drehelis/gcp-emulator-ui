@@ -29,6 +29,11 @@ const datastoreClient = axios.create({
   },
 })
 
+const fileServerClient = axios.create({
+  baseURL: import.meta.env.VITE_FILE_SERVER_BASE_URL || '/fs',
+  timeout: 300000, // 5 minutes for large files
+})
+
 // Simple in-memory cache for expensive list operations
 interface CacheEntry<T> {
   data: T
@@ -771,11 +776,6 @@ export const datastoreApi = {
 
     formData.append('mkdir', dirName)
 
-    const fileServerClient = axios.create({
-      baseURL: '/fs',
-      timeout: 30000,
-    })
-
     await fileServerClient.post(`/upload?path=${encodeURIComponent(parentPath)}`, formData)
   },
 
@@ -799,11 +799,6 @@ export const datastoreApi = {
     // Create a new File with just the filename (no directory path)
     const fileToUpload = new File([file], filename, { type: file.type })
     formData.append('path', fileToUpload)
-
-    const fileServerClient = axios.create({
-      baseURL: '/fs',
-      timeout: 300000, // 5 minutes for large files
-    })
 
     await fileServerClient.post(`/upload?path=${encodeURIComponent(uploadPath)}`, formData)
   },
@@ -856,13 +851,9 @@ export const datastoreApi = {
   },
 
   async downloadFile(filename: string): Promise<Blob> {
-    const fileServerClient = axios.create({
-      baseURL: '/fs',
-      timeout: 300000,
-      responseType: 'blob',
+    const response = await fileServerClient.get(`/${filename}`, {
+      responseType: 'blob'
     })
-
-    const response = await fileServerClient.get(`/${filename}`)
     return response.data
   }
 }

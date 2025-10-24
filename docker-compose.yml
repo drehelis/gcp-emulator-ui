@@ -25,7 +25,16 @@ services:
         curl -L https://github.com/svenstaro/miniserve/releases/download/v$${MINISERVE_VERSION}/miniserve-$${MINISERVE_VERSION}-$(arch)-unknown-linux-gnu -o $${MINISERVE_PATH} &&
         chmod +x $${MINISERVE_PATH} &&
         mkdir -p /srv &&
-        $${MINISERVE_PATH} --port 9999 --upload-files --mkdir --enable-tar-gz --on-duplicate-files=overwrite --route-prefix /fs /srv &
+        $${MINISERVE_PATH} --port 9999                                              \
+          --upload-files                                                            \
+          --mkdir                                                                   \
+          --enable-tar-gz                                                           \
+          --on-duplicate-files=overwrite                                            \
+          --route-prefix /fs                                                        \
+          --header "Access-Control-Allow-Origin: *"                                 \
+          --header "Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS"  \
+          --header "Access-Control-Allow-Headers: *"                                \
+          /srv &
         gcloud beta emulators firestore start --database-mode=datastore-mode --host-port=0.0.0.0:8087
     ports:
       - "8087:8087"
