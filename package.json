@@ -50,7 +50,7 @@
     "workbox-strategies": "^7.0.0"
   },
   "devDependencies": {
-    "@rushstack/eslint-patch": "^1.14.0",
+    "@rushstack/eslint-patch": "^1.14.1",
     "@tsconfig/node20": "^20.1.4",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^24.9.1",
@@ -73,7 +73,7 @@
     "vite": "^7.1.12",
     "vite-plugin-pwa": "^1.1.0",
     "vite-plugin-windicss": "^1.9.3",
-    "vue-tsc": "^3.1.1",
+    "vue-tsc": "^3.1.2",
     "workbox-build": "^7.1.0"
   }
 }
