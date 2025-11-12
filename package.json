@@ -17,7 +17,7 @@
     "@headlessui/vue": "^1.7.22",
     "@heroicons/vue": "^2.1.5",
     "@tailwindcss/postcss": "^4.1.17",
-    "@tanstack/vue-query": "^5.90.7",
+    "@tanstack/vue-query": "^5.91.0",
     "@vueuse/core": "^14.0.0",
     "@vueuse/head": "^2.0.0",
     "@vueuse/integrations": "^14.0.0",
@@ -50,10 +50,10 @@
     "workbox-strategies": "^7.0.0"
   },
   "devDependencies": {
-    "@rushstack/eslint-patch": "^1.14.1",
+    "@rushstack/eslint-patch": "^1.15.0",
     "@tsconfig/node20": "^20.1.4",
     "@types/lodash-es": "^4.17.12",
-    "@types/node": "^24.10.0",
+    "@types/node": "^24.10.1",
     "@types/uuid": "^11.0.0",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vitejs/plugin-vue-jsx": "^5.1.1",
