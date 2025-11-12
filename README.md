@@ -91,6 +91,8 @@ docker run \
 
 Browse to http://localhost:9090
 
+> For advanced configuration including Datastore restore functionality, refer to the [docker-compose.yml](docker-compose.yml) file.
+
 ### Development Setup
 
 1. **Clone and install dependencies**
