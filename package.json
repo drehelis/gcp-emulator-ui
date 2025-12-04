@@ -17,7 +17,7 @@
     "@headlessui/vue": "^1.7.22",
     "@heroicons/vue": "^2.1.5",
     "@tailwindcss/postcss": "^4.1.17",
-    "@tanstack/vue-query": "^5.92.0",
+    "@tanstack/vue-query": "^5.92.1",
     "@vueuse/core": "^14.1.0",
     "@vueuse/head": "^2.0.0",
     "@vueuse/integrations": "^14.1.0",
