@@ -73,7 +73,7 @@
     "vite": "^7.2.7",
     "vite-plugin-pwa": "^1.2.0",
     "vite-plugin-windicss": "^1.9.3",
-    "vue-tsc": "^3.1.7",
+    "vue-tsc": "^3.1.8",
     "workbox-build": "^7.4.0"
   }
 }
