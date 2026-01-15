@@ -58,19 +58,19 @@ docker-compose up
 docker run \
    --rm \
    --publish 8085:8085 \
-   gcr.io/google.com/cloudsdktool/cloud-sdk:emulators sh -c 'gcloud beta emulators pubsub start --host-port=0.0.0.0:8085'
+   gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators sh -c 'gcloud beta emulators pubsub start --host-port=0.0.0.0:8085'
 
 # Start Google Firestore emulator
 docker run \
    --rm \
    --publish 8086:8086 \
-   gcr.io/google.com/cloudsdktool/cloud-sdk:emulators sh -c 'gcloud beta emulators firestore start --host-port=0.0.0.0:8086'
+   gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators sh -c 'gcloud beta emulators firestore start --host-port=0.0.0.0:8086'
 
 # Start Google Firestore datastore-mode emulator
 docker run \
    --rm \
    --publish 8087:8087 \
-   gcr.io/google.com/cloudsdktool/cloud-sdk:emulators sh -c 'gcloud beta emulators firestore start --database-mode=datastore-mode --host-port=0.0.0.0:8087'
+   gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators sh -c 'gcloud beta emulators firestore start --database-mode=datastore-mode --host-port=0.0.0.0:8087'
 
 # Start fake-gcs emulator
 docker run \
