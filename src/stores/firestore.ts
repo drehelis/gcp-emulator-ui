@@ -203,7 +203,7 @@ export const useFirestoreStore = defineStore('firestore', () => {
       return createdDocument
     } catch (error) {
       console.error('Failed to create document:', error)
-      return false
+      throw error
     } finally {
       loading.value = false
     }
@@ -223,7 +223,7 @@ export const useFirestoreStore = defineStore('firestore', () => {
       return createdDocument
     } catch (error) {
       console.error('Failed to create subcollection document:', error)
-      return false
+      throw error
     } finally {
       loading.value = false
     }
