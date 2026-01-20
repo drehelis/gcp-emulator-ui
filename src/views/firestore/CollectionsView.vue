@@ -942,8 +942,64 @@ const getSelectedDocumentId = (): string => {
 
 // Core methods
 const refreshCollections = async () => {
+  // Capture current state before reload
+  const isAtRoot = navigation.isAtRoot.value && !navigation.currentLevel.value?.selectedItem
+  
   await firestoreStore.loadCollections(currentProjectId.value)
-  navigation.initializeWithCollections(collections.value)
+  
+  if (isAtRoot) {
+    navigation.initializeWithCollections(collections.value)
+  } else {
+    // Preserve state: Update stack items in-place
+    
+    // 1. Update root level collections
+    if (navigation.navigationStack.value.length > 0) {
+      navigation.navigationStack.value[0].items = collections.value
+      
+      // Update selected item reference in root level
+      const currentSelected = navigation.navigationStack.value[0].selectedItem
+      if (currentSelected && 'id' in currentSelected) {
+        const newSelected = collections.value.find(c => c.id === currentSelected.id)
+        if (newSelected) {
+          navigation.navigationStack.value[0].selectedItem = newSelected
+        }
+      }
+    }
+    
+    // 2. Refresh documents for active levels
+    for (let i = 1; i <= navigation.currentStackIndex.value; i++) {
+      const level = navigation.navigationStack.value[i]
+      
+      if (level.type === 'collection' && level.collectionId) {
+        // Refresh collection documents
+        await firestoreStore.loadDocuments(currentProjectId.value, level.collectionId)
+        const documents = firestoreStore.getDocumentsByCollection(level.collectionId)
+        level.items = documents
+        
+        // Update selected document reference
+        if (level.selectedItem && 'name' in level.selectedItem) {
+          const docName = level.selectedItem.name
+          const newDoc = documents.find(d => d.name === docName)
+          if (newDoc) {
+             level.selectedItem = newDoc
+          }
+        }
+      } else if (level.type === 'subcollection' && level.parentPath && level.collectionId) {
+        // Refresh subcollection documents
+        const documents = await navigation.loadSubcollectionDocuments(level.parentPath, level.collectionId)
+        level.items = documents
+        
+        // Update selected document reference
+        if (level.selectedItem && 'name' in level.selectedItem) {
+          const docName = level.selectedItem.name
+          const newDoc = documents.find(d => d.name === docName)
+          if (newDoc) {
+             level.selectedItem = newDoc
+          }
+        }
+      }
+    }
+  }
 }
 
 const initializeData = async () => {
