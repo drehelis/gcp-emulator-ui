@@ -34,6 +34,8 @@ export interface FirestoreValue {
 // Collection Types
 export interface FirestoreCollection {
   name: string
+  id?: string
+  path?: string
   documentCount?: number
   lastModified?: string
 }
@@ -268,6 +270,7 @@ export interface FirestoreCollectionWithMetadata extends FirestoreCollection {
   parentDocument?: string
   statistics?: CollectionStatistics
   isExpanded?: boolean
+  nextPageToken?: string
 }
 
 // Query Builder Types

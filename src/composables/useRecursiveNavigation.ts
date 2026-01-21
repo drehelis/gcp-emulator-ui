@@ -11,6 +11,7 @@ export interface NavigationLevel {
   header: string
   parentPath?: string
   collectionId?: string
+  nextPageToken?: string
 }
 
 export function useRecursiveNavigation() {
@@ -225,14 +226,17 @@ export function useRecursiveNavigation() {
     }
   }
 
-  // Load documents for a subcollection
-  const loadSubcollectionDocuments = async (parentPath: string, collectionId: string): Promise<FirestoreDocument[]> => {
+  // Load documents for a subcollection (with pagination support)
+  const loadSubcollectionDocuments = async (parentPath: string, collectionId: string, nextPageToken?: string, pageSize: number = 30): Promise<{ documents: FirestoreDocument[], nextPageToken?: string }> => {
     try {
-      const response = await firestoreApi.listSubcollectionDocuments(parentPath, collectionId)
-      return response.documents || []
+      const response = await firestoreApi.listSubcollectionDocuments(parentPath, collectionId, pageSize, nextPageToken)
+      return {
+        documents: response.documents || [],
+        nextPageToken: response.nextPageToken
+      }
     } catch (error) {
       console.error('Failed to load subcollection documents:', error)
-      return []
+      return { documents: [] }
     }
   }
 
@@ -293,8 +297,8 @@ export function useRecursiveNavigation() {
 
               if (subcollection) {
                 // Load documents for this subcollection
-                const subcollectionDocs = await loadSubcollectionDocuments(document.name, subcollection.id)
-                await navigateToSubcollection(subcollection, subcollectionDocs)
+                const subcollectionDocsResult = await loadSubcollectionDocuments(document.name, subcollection.id)
+                await navigateToSubcollection(subcollection, subcollectionDocsResult.documents)
 
                 // Skip the subcollection segment since we handled it
                 i += 1

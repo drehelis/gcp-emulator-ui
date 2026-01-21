@@ -25,6 +25,13 @@
         </div>
       </div>
 
+      <!-- Error Notification -->
+      <ErrorNotification
+        :show="!!errorMessage"
+        :message="errorMessage"
+        @clear="errorMessage = ''"
+      />
+
       <!-- Success Notification -->
       <SuccessNotification
         :show="!!saveAndAddAnother.lastSavedId.value"
@@ -49,11 +56,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, watch, nextTick } from 'vue'
+import { computed, watch, nextTick, ref } from 'vue'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
 import type { FirestoreDocument } from '@/types'
 import DocumentEditor from './DocumentEditorForm.vue'
 import SuccessNotification from '@/components/ui/SuccessNotification.vue'
+import ErrorNotification from '@/components/ui/ErrorNotification.vue'
 import { useDocumentForm } from '@/composables/useDocumentForm'
 import { useSaveAndAddAnother } from '@/composables/useSaveAndAddAnother'
 import { useFirestoreStore } from '@/stores/firestore'
@@ -76,6 +84,8 @@ const emit = defineEmits<Emits>()
 
 // Use document form composable
 const documentForm = useDocumentForm()
+
+const errorMessage = ref('')
 
 // Use save and add another composable
 const saveAndAddAnother = useSaveAndAddAnother()
@@ -126,16 +136,19 @@ const modalActions = computed<ModalAction[]>(() => [
 const resetForm = () => {
   documentForm.resetForm()
   saveAndAddAnother.clearNotification()
+  errorMessage.value = ''
 }
 
 const handleClearFields = () => {
   documentForm.resetForm()
   saveAndAddAnother.clearNotification()
+  errorMessage.value = ''
 }
 
 const handleSave = async () => {
   try {
     documentForm.loading.value = true
+    errorMessage.value = ''
 
     // Import the store dynamically to avoid circular dependency
     const { useFirestoreStore } = await import('@/stores/firestore')
@@ -176,8 +189,13 @@ const handleSave = async () => {
       isOpen.value = false
       resetForm()
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to create document:', error)
+    if (error.response?.status === 409) {
+      errorMessage.value = 'Document with this ID already exists.'
+    } else {
+      errorMessage.value = error.message || 'Failed to create document.'
+    }
   } finally {
     documentForm.loading.value = false
   }
@@ -186,6 +204,7 @@ const handleSave = async () => {
 const handleSaveAndAddAnother = async () => {
   try {
     documentForm.loading.value = true
+    errorMessage.value = ''
 
     // Import the store dynamically to avoid circular dependency
     const { useFirestoreStore } = await import('@/stores/firestore')
@@ -232,8 +251,13 @@ const handleSaveAndAddAnother = async () => {
       // Emit created event but DON'T close the modal
       emit('created', finalDocumentId)
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to create document:', error)
+    if (error.response?.status === 409) {
+      errorMessage.value = 'Document with this ID already exists.'
+    } else {
+      errorMessage.value = error.message || 'Failed to create document.'
+    }
   } finally {
     documentForm.loading.value = false
   }
