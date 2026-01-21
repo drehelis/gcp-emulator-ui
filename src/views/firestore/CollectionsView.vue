@@ -1207,7 +1207,9 @@ const confirmDeleteCollection = async () => {
       console.log('Deleting subcollection at path:', subcollectionPath)
 
       // Get all documents in the subcollection
-      const response = await firestoreApi.listSubcollectionDocuments(documentPath, collectionId)
+      // Use the full parentPath (includes projects/.../databases/.../documents/...) 
+      // because listSubcollectionDocuments expects the complete document path
+      const response = await firestoreApi.listSubcollectionDocuments(parentPath, collectionId)
       const documents = response.documents || []
 
       console.log('Found', documents.length, 'documents to delete in subcollection')
