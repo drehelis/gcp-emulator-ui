@@ -127,8 +127,10 @@
             :empty-state-text="getColumnOneEmptyStateText(levelIndex)"
             :loading="firestoreStore.loading"
             :show-right-border="levelIndex === 0 && !level.selectedItem"
+            :next-page-token="getColumnOneNextPageToken(levelIndex)"
             @add-item="handleColumnOneAddItem(levelIndex)"
             @select-item="handleColumnOneSelectItem(levelIndex, $event)"
+            @load-more="handleColumnOneLoadMore(levelIndex)"
           />
 
           <!-- At root level with no collection selected: show merged columns 2+3 as empty state -->
@@ -142,6 +144,7 @@
               :header="level.header"
               :items="level.items"
               :selected-item="level.selectedItem"
+              :next-page-token="level.nextPageToken"
               :show-add-button="getColumnTwoShowAddButton(levelIndex)"
               :add-button-text="getColumnTwoAddButtonText(levelIndex)"
               :empty-state-text="getColumnTwoEmptyStateText(levelIndex)"
@@ -151,6 +154,7 @@
               @add-item="handleColumnTwoAddItem(levelIndex)"
               @select-item="handleColumnTwoSelectItem(levelIndex, $event)"
               @delete-collection="() => handleColumnTwoDeleteCollection(levelIndex)"
+              @load-more="handleLoadMore(levelIndex)"
             />
 
             <!-- Column 3: Document Editor or empty state -->
@@ -479,6 +483,14 @@ const getColumnOneEmptyStateText = (levelIndex: number): string => {
     : 'No items in the previous level.'
 }
 
+const getColumnOneNextPageToken = (levelIndex: number): string | undefined => {
+  if (levelIndex === 0) return firestoreStore.collectionsNextPageToken
+  
+  const prevLevel = navigation.navigationStack.value[levelIndex - 1]
+  return prevLevel?.nextPageToken
+}
+
+
 const getColumnTwoShowAddButton = (levelIndex: number): boolean => {
   const level = navigation.navigationStack.value[levelIndex]
   return level?.type === 'collection' || level?.type === 'subcollection'
@@ -684,7 +696,8 @@ const handleMobileNavigateToSubcollection = async (subcollection: FirestoreColle
 
   // Load subcollection documents - use the full document path as parent
   const parentDocumentPath = currentLevel.document.name
-  const documents = await navigation.loadSubcollectionDocuments(parentDocumentPath, subcollection.id)
+  const subcollectionResult = await navigation.loadSubcollectionDocuments(parentDocumentPath, subcollection.id)
+  const documents = subcollectionResult.documents || []
 
   // Preload subcollections for all subcollection documents to show accurate counts
   await Promise.all(documents.map(async (document) => {
@@ -751,8 +764,16 @@ const handleColumnOneSelectItem = async (levelIndex: number, item: NavigationIte
       }
 
       // Selected a collection - navigate to it
+      // Selected a collection - navigate to it
       const documents = await loadDocumentsForCollection(item.id)
       await navigation.navigateToCollection(item, documents)
+
+      // Update nextPageToken for the new level
+      const currentLevel = navigation.navigationStack.value[navigation.currentStackIndex.value]
+      const collection = collections.value.find(c => c.id === item.id)
+      if (currentLevel && collection) {
+         currentLevel.nextPageToken = collection.nextPageToken
+      }
 
       // If there are documents, auto-select the first one
       if (documents.length > 0) {
@@ -767,6 +788,25 @@ const handleColumnOneSelectItem = async (levelIndex: number, item: NavigationIte
     }
   }
   // For other levels, this shouldn't normally happen since Column 1 shows previous level items
+}
+
+const handleColumnOneLoadMore = async (levelIndex: number) => {
+  if (levelIndex === 0) {
+    // Root collections pagination
+    const token = firestoreStore.collectionsNextPageToken
+    if (token) {
+      await firestoreStore.loadCollections(currentProjectId.value, token)
+      
+      // Update navigation stack root items because the store replaces the array reference
+      if (navigation.navigationStack.value.length > 0) {
+         navigation.navigationStack.value[0].items = collections.value
+      }
+    }
+    return
+  }
+
+  // Delegate to standard load more handler for the previous level
+  await handleLoadMore(levelIndex - 1)
 }
 
 const handleColumnTwoAddItem = async (levelIndex: number) => {
@@ -796,6 +836,13 @@ const handleColumnTwoSelectItem = async (levelIndex: number, item: NavigationIte
       // Selected a collection - navigate to it
       const documents = await loadDocumentsForCollection(item.id)
       await navigation.navigateToCollection(item, documents)
+
+      // Update nextPageToken for the new level
+      const currentLevel = navigation.navigationStack.value[navigation.currentStackIndex.value]
+      const collection = collections.value.find(c => c.id === item.id)
+      if (currentLevel && collection) {
+         currentLevel.nextPageToken = collection.nextPageToken
+      }
     }
   } else {
     // Selected a document - load its subcollections and cache them
@@ -875,12 +922,20 @@ const handleNavigateToSubcollection = async (levelIndex: number, subcollection: 
     // We need to remove the last part (subcollection-id) to get the parent document path
     const parentDocumentPath = subcollection.path.split('/').slice(0, -1).join('/')
 
-    const documents = await navigation.loadSubcollectionDocuments(
+    const result = await navigation.loadSubcollectionDocuments(
       parentDocumentPath,
       subcollection.id
     )
-
+    
+    const documents = result.documents || []
+    
     await navigation.navigateToSubcollectionFromDocument(parentDocumentPath, subcollection, documents)
+
+    // Update nextPageToken for the new level
+    const currentLevel = navigation.navigationStack.value[navigation.currentStackIndex.value]
+    if (currentLevel && currentLevel.type === 'subcollection') {
+       currentLevel.nextPageToken = result.nextPageToken
+    }
 
     // Auto-select the first document if any exist in the subcollection
     if (documents.length > 0) {
@@ -945,7 +1000,9 @@ const refreshCollections = async () => {
   // Capture current state before reload
   const isAtRoot = navigation.isAtRoot.value && !navigation.currentLevel.value?.selectedItem
   
-  await firestoreStore.loadCollections(currentProjectId.value)
+  // 1. Update root level collections
+  const currentCollectionsCount = Math.max(collections.value.length, 30) // Ensure at least 30
+  await firestoreStore.loadCollections(currentProjectId.value, undefined, currentCollectionsCount)
   
   if (isAtRoot) {
     navigation.initializeWithCollections(collections.value)
@@ -971,10 +1028,27 @@ const refreshCollections = async () => {
       const level = navigation.navigationStack.value[i]
       
       if (level.type === 'collection' && level.collectionId) {
-        // Refresh collection documents
-        await firestoreStore.loadDocuments(currentProjectId.value, level.collectionId)
+        // Preserve "all items loaded" state - if no token before, user had loaded everything
+        const hadAllItemsLoaded = !level.nextPageToken
+        const previousItemCount = level.items.length
+        
+        // Refresh collection documents - maintain count
+        const currentCount = Math.max(level.items.length, 30) // Ensure at least 30
+        await firestoreStore.loadDocuments(currentProjectId.value, level.collectionId, undefined, currentCount)
         const documents = firestoreStore.getDocumentsByCollection(level.collectionId)
         level.items = documents
+        
+        // Update nextPageToken - but preserve "all loaded" state if applicable
+        const collection = collections.value.find(c => c.id === level.collectionId)
+        if (collection) {
+          // If user had loaded all items and we got the same or fewer items back,
+          // keep nextPageToken as undefined to preserve the "all loaded" state
+          if (hadAllItemsLoaded && documents.length <= previousItemCount) {
+            level.nextPageToken = undefined
+          } else {
+            level.nextPageToken = collection.nextPageToken
+          }
+        }
         
         // Update selected document reference
         if (level.selectedItem && 'name' in level.selectedItem) {
@@ -985,14 +1059,27 @@ const refreshCollections = async () => {
           }
         }
       } else if (level.type === 'subcollection' && level.parentPath && level.collectionId) {
-        // Refresh subcollection documents
-        const documents = await navigation.loadSubcollectionDocuments(level.parentPath, level.collectionId)
-        level.items = documents
+        // Preserve "all items loaded" state - if no token before, user had loaded everything
+        const hadAllItemsLoaded = !level.nextPageToken
+        const previousItemCount = level.items.length
+        
+        // Refresh subcollection documents - maintain count
+        const currentCount = Math.max(level.items.length, 30)
+        const result = await navigation.loadSubcollectionDocuments(level.parentPath, level.collectionId, undefined, currentCount)
+        level.items = result.documents
+        
+        // If user had loaded all items and we got the same or fewer items back,
+        // keep nextPageToken as undefined to preserve the "all loaded" state
+        if (hadAllItemsLoaded && result.documents.length <= previousItemCount) {
+          level.nextPageToken = undefined
+        } else {
+          level.nextPageToken = result.nextPageToken
+        }
         
         // Update selected document reference
         if (level.selectedItem && 'name' in level.selectedItem) {
           const docName = level.selectedItem.name
-          const newDoc = documents.find(d => d.name === docName)
+          const newDoc = result.documents.find(d => d.name === docName)
           if (newDoc) {
              level.selectedItem = newDoc
           }
@@ -1030,6 +1117,52 @@ const handleEditField = (data: { path: string; fieldName: string; fieldValue: an
     fieldType: getFieldType(data.fieldValue),
     editableValue: getEditableValue(data.fieldValue)
   })
+}
+
+// Pagination handler
+// Helper to deduplicate and merge documents
+const mergeUniqueDocuments = (existing: FirestoreDocument[], incoming: FirestoreDocument[]): FirestoreDocument[] => {
+  const docsMap = new Map()
+  existing.forEach(doc => docsMap.set(doc.name, doc))
+  incoming.forEach(doc => docsMap.set(doc.name, doc))
+  return Array.from(docsMap.values())
+}
+
+// Pagination handler
+const handleLoadMore = async (levelIndex: number) => {
+  const level = navigation.navigationStack.value[levelIndex]
+  if (!level || !level.nextPageToken) return
+
+  if (level.type === 'collection' && level.collectionId) {
+    // Load more document for collection
+    await firestoreStore.loadDocuments(currentProjectId.value, level.collectionId, level.nextPageToken)
+    
+    // Update items and nextPageToken from store
+    const collection = collections.value.find(c => c.id === level.collectionId)
+    if (collection) {
+      // Get all documents from store. Store deduplication might be loose, so we enforce it here for view
+      // Since store returns all docs, we treat them as "incoming" and merge with empty "existing" 
+      // or effectively just dedupe the store list itself.
+      const allDocs = firestoreStore.getDocumentsByCollection(level.collectionId)
+      level.items = mergeUniqueDocuments([], allDocs)
+      
+      level.nextPageToken = collection.nextPageToken
+    }
+  } else if (level.type === 'subcollection' && level.parentPath && level.collectionId) {
+    // Load more documents for subcollection
+    const result = await navigation.loadSubcollectionDocuments(
+      level.parentPath, 
+      level.collectionId, 
+      level.nextPageToken
+    )
+    
+    // Update items and nextPageToken
+    const existingItems = level.items as FirestoreDocument[]
+    const newItems = result.documents || []
+    
+    level.items = mergeUniqueDocuments(existingItems, newItems)
+    level.nextPageToken = result.nextPageToken
+  }
 }
 
 // Confirmation handlers (simplified versions - implement full logic as needed)
@@ -1148,14 +1281,14 @@ const confirmDeleteDocument = async () => {
       if (collectionId) {
         if (currentLevel.type === 'subcollection' && currentLevel.parentPath) {
           // For subcollections, reload the subcollection documents
-          const subcollectionDocs = await navigation.loadSubcollectionDocuments(
+          const subcollectionDocsResult = await navigation.loadSubcollectionDocuments(
             currentLevel.parentPath,
             collectionId
           )
           // Update the current level items properly
           const currentNavLevel = navigation.navigationStack.value[navigation.currentStackIndex.value]
           if (currentNavLevel) {
-            currentNavLevel.items = subcollectionDocs
+            currentNavLevel.items = subcollectionDocsResult.documents || []
           }
         } else {
           // For regular collections, reload the collection documents
@@ -1353,7 +1486,8 @@ const handleCollectionCreated = async (collectionId: string) => {
       // Find the newly created subcollection and navigate to it
       const newSubcollection = subcollections.find(sc => sc.id === collectionId)
       if (newSubcollection) {
-        const documents = await navigation.loadSubcollectionDocuments(targetDocumentPath, collectionId)
+        const subcollectionResult = await navigation.loadSubcollectionDocuments(targetDocumentPath, collectionId)
+        const documents = subcollectionResult.documents || []
         await navigation.navigateToSubcollectionFromDocument(targetDocumentPath, newSubcollection, documents)
 
         // Auto-select the first document if any exist
@@ -1391,10 +1525,11 @@ const handleDocumentCreated = async (documentId: string) => {
       }
     } else if (currentLevel.type === 'subcollection') {
       // Refresh subcollection documents
-      const documents = await navigation.loadSubcollectionDocuments(
+      const subcollectionResult = await navigation.loadSubcollectionDocuments(
         currentLevel.parentPath || '',
         currentLevel.collectionId || ''
       )
+      const documents = subcollectionResult.documents || []
       currentLevel.items = documents
 
       // Auto-select the new document
@@ -1413,7 +1548,8 @@ const handleDocumentCreated = async (documentId: string) => {
     mobileLevel.documents = firestoreStore.getDocumentsByCollection(mobileLevel.collection.id)
     mobileLevel.subtitle = `${mobileLevel.documents.length} documents`
   } else if (mobileLevel.view === 'subcollection' && mobileLevel.subcollection && mobileLevel.parentDocumentPath) {
-    const documents = await navigation.loadSubcollectionDocuments(mobileLevel.parentDocumentPath, mobileLevel.subcollection.id)
+    const subcollectionResult = await navigation.loadSubcollectionDocuments(mobileLevel.parentDocumentPath, mobileLevel.subcollection.id)
+    const documents = subcollectionResult.documents || []
     // Update the current level with new documents
     mobileLevel.documents = documents
     mobileLevel.subtitle = `${documents.length} documents`

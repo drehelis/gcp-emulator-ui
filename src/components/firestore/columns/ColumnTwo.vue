@@ -58,6 +58,18 @@
           <span class="truncate">{{ getItemDisplayName(item) }}</span>
         </div>
       </div>
+      
+      <!-- Load More Button -->
+      <div v-if="nextPageToken" class="mt-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+        <button
+          @click="$emit('load-more')"
+          class="w-full py-2 px-3 text-xs font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700 rounded transition-colors flex items-center justify-center"
+          :disabled="loading"
+        >
+          <span v-if="loading">Loading...</span>
+          <span v-else>Load more...</span>
+        </button>
+      </div>
 
 
 
@@ -84,6 +96,7 @@ interface Props {
   selectionPromptText?: string
   selectionPromptIcon?: any
   showCollectionMenu?: boolean
+  nextPageToken?: string
 }
 
 withDefaults(defineProps<Props>(), {
@@ -100,6 +113,7 @@ const emit = defineEmits<{
   'add-item': []
   'select-item': [item: NavigationItem]
   'delete-collection': []
+  'load-more': []
 }>()
 
 const showCollectionMenuDropdown = ref(false)

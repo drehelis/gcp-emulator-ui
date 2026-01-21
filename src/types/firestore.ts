@@ -268,6 +268,7 @@ export interface FirestoreCollectionWithMetadata extends FirestoreCollection {
   parentDocument?: string
   statistics?: CollectionStatistics
   isExpanded?: boolean
+  nextPageToken?: string
 }
 
 // Query Builder Types
