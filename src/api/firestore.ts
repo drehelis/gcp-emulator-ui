@@ -126,9 +126,9 @@ export const firestoreApi = {
 
       const collectionIds = response.data.collectionIds || []
       const collections = collectionIds.map((id: string) => ({
-        id: id,
-        path: `${parent}/documents/${id}`, // Consistent with usage
-        name: `${parent}/documents/${id}`
+        id,
+        path: `${target}/${id}`, // Use target for consistency with API path
+        name: `${target}/${id}`
       }))
 
       return { 

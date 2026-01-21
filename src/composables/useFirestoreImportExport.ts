@@ -27,7 +27,7 @@ export function useFirestoreImportExport() {
 
   // Helper function to fetch all documents with pagination
   const fetchAllDocumentsWithPagination = async (
-    fetchFn: (_pageSize: number, _pageToken?: string) => Promise<{ documents: FirestoreDocument[]; nextPageToken?: string }>
+    fetchFn: (pageSize: number, pageToken?: string) => Promise<{ documents: FirestoreDocument[]; nextPageToken?: string }>
   ): Promise<FirestoreDocument[]> => {
     const allDocuments: FirestoreDocument[] = []
     let pageToken: string | undefined
