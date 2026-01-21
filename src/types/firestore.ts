@@ -34,6 +34,8 @@ export interface FirestoreValue {
 // Collection Types
 export interface FirestoreCollection {
   name: string
+  id?: string
+  path?: string
   documentCount?: number
   lastModified?: string
 }

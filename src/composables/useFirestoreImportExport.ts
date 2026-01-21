@@ -22,6 +22,39 @@ export function useFirestoreImportExport() {
   const isExporting = ref(false)
   const isImporting = ref(false)
 
+  // Page size for export - use a large value to minimize API calls
+  const EXPORT_PAGE_SIZE = 500
+
+  // Helper function to fetch all documents with pagination
+  const fetchAllDocumentsWithPagination = async (
+    fetchFn: (pageSize: number, pageToken?: string) => Promise<{ documents: FirestoreDocument[]; nextPageToken?: string }>
+  ): Promise<FirestoreDocument[]> => {
+    const allDocuments: FirestoreDocument[] = []
+    let pageToken: string | undefined
+
+    do {
+      const response = await fetchFn(EXPORT_PAGE_SIZE, pageToken)
+      allDocuments.push(...response.documents)
+      pageToken = response.nextPageToken
+    } while (pageToken)
+
+    return allDocuments
+  }
+
+  // Helper function to fetch all collections
+  // Note: When empty body {} is sent, Firestore emulator returns ALL collections
+  const fetchAllCollections = async (
+    databasePath: string
+  ): Promise<{ id: string; name: string }[]> => {
+    // Call without pageSize to get all collections in one request
+    const response = await firestoreApi.listCollections(databasePath)
+    
+    return response.collections.map(collection => ({
+      id: collection.id || collection.name.split('/').pop() || '',
+      name: collection.name
+    }))
+  }
+
   // Load data
   const loadData = async (projectId: string) => {
     try {
@@ -53,12 +86,14 @@ export function useFirestoreImportExport() {
           try {
             const subcollectionId = subcollection.id || subcollection.name.split('/').pop() || ''
 
-            // Get all documents in this subcollection
-            const docsResponse = await firestoreApi.listSubcollectionDocuments(documentPath, subcollectionId)
+            // Get ALL documents in this subcollection using pagination
+            const allSubcollectionDocs = await fetchAllDocumentsWithPagination(
+              (pageSize, pageToken) => firestoreApi.listSubcollectionDocuments(documentPath, subcollectionId, pageSize, pageToken)
+            )
             const subcollectionDocs: FirestoreDocumentExport[] = []
 
             // Recursively export each document with its subcollections
-            for (const subDoc of docsResponse.documents) {
+            for (const subDoc of allSubcollectionDocs) {
               const subDocExport = await exportDocumentWithSubcollections(subDoc.name, subDoc)
               subcollectionDocs.push(subDocExport)
             }
@@ -87,8 +122,8 @@ export function useFirestoreImportExport() {
       const exportData: FirestoreCollectionExport[] = []
       const databasePath = firestoreStore.getCurrentDatabasePath(projectId)
 
-      // Get all top-level collections
-      const collections = firestoreStore.collections
+      // Fetch ALL top-level collections using pagination (not from store cache)
+      const collections = await fetchAllCollections(databasePath)
 
       if (collections.length === 0) {
         appStore.showToast({
@@ -104,11 +139,14 @@ export function useFirestoreImportExport() {
       // Export each collection with its documents (including subcollections recursively)
       for (const collection of collections) {
         try {
-          const response = await firestoreApi.listDocuments(databasePath, collection.id)
+          // Fetch ALL documents using pagination
+          const allDocs = await fetchAllDocumentsWithPagination(
+            (pageSize, pageToken) => firestoreApi.listDocuments(databasePath, collection.id, pageSize, pageToken)
+          )
           const collectionDocs: FirestoreDocumentExport[] = []
 
           // For each document, recursively export with subcollections
-          for (const doc of response.documents) {
+          for (const doc of allDocs) {
             const docExport = await exportDocumentWithSubcollections(doc.name, doc)
             collectionDocs.push(docExport)
             totalDocuments++
@@ -133,7 +171,7 @@ export function useFirestoreImportExport() {
       appStore.showToast({
         type: 'success',
         title: 'Firestore collections exported',
-        message: `Exported ${exportData.length} collection${exportData.length === 1 ? '' : 's'} with ${totalDocuments} document${totalDocuments === 1 ? '' : 's'}`
+        message: `Exported ${collections.length} collection${collections.length === 1 ? '' : 's'} with ${totalDocuments} document${totalDocuments === 1 ? '' : 's'}`
       })
     } catch (error) {
       console.error('Firestore export failed:', error)

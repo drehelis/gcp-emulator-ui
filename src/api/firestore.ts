@@ -106,17 +106,23 @@ export const firestoreApi = {
   },
 
   // Discover collections by listing collection IDs
-  async listCollections(parent: string, pageSize: number = 30, pageToken?: string): Promise<ListCollectionsResponse> {
+  async listCollections(parent: string, pageSize?: number, pageToken?: string): Promise<ListCollectionsResponse> {
     try {
       // The :listCollectionIds endpoint must be called on the parent document.
       // For root collections, the parent is ".../databases/{db}/documents".
       // If 'parent' is just ".../databases/{db}", we must append "/documents".
       const target = parent.endsWith('/documents') ? parent : `${parent}/documents`
       
-      const response = await firestoreClient.post(`/v1/${target}:listCollectionIds`, {
-        pageSize,
-        pageToken
-      })
+      // Only include pageSize and pageToken in request body if provided
+      const requestBody: { pageSize?: number; pageToken?: string } = {}
+      if (pageSize !== undefined) {
+        requestBody.pageSize = pageSize
+      }
+      if (pageToken !== undefined) {
+        requestBody.pageToken = pageToken
+      }
+      
+      const response = await firestoreClient.post(`/v1/${target}:listCollectionIds`, requestBody)
 
       const collectionIds = response.data.collectionIds || []
       const collections = collectionIds.map((id: string) => ({
