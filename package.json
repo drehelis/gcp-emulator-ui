@@ -17,7 +17,7 @@
     "@headlessui/vue": "^1.7.22",
     "@heroicons/vue": "^2.1.5",
     "@tailwindcss/postcss": "^4.1.18",
-    "@tanstack/vue-query": "^5.92.8",
+    "@tanstack/vue-query": "^5.92.9",
     "@vueuse/core": "^14.1.0",
     "@vueuse/head": "^2.0.0",
     "@vueuse/integrations": "^14.1.0",
@@ -73,7 +73,7 @@
     "vite": "^7.3.1",
     "vite-plugin-pwa": "^1.2.0",
     "vite-plugin-windicss": "^1.9.3",
-    "vue-tsc": "^3.2.2",
+    "vue-tsc": "^3.2.3",
     "workbox-build": "^7.4.0"
   }
 }
