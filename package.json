@@ -22,7 +22,7 @@
     "@vueuse/head": "^2.0.0",
     "@vueuse/integrations": "^14.1.0",
     "apexcharts": "^5.3.6",
-    "axios": "^1.13.3",
+    "axios": "^1.13.4",
     "chart.js": "^4.5.1",
     "chartjs-adapter-date-fns": "^3.0.0",
     "date-fns": "^4.1.0",
