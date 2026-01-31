@@ -79,6 +79,7 @@ docker run \
    fsouza/fake-gcs-server -scheme http
 
 # Now start the UI
+## For unused emulators, specify 'localhost:8080'
 docker run \
    --rm \
    --env PUBSUB_EMULATOR_URL="host.docker.internal:8085"    \
