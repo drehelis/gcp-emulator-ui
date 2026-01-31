@@ -8,6 +8,8 @@ import type { ApiResponse, ApiError } from '@/types'
 
 let apiClient: AxiosInstance
 
+let resourceGone = false
+
 export function setupApiClient() {
   // Create axios instance
   apiClient = axios.create({
@@ -21,6 +23,10 @@ export function setupApiClient() {
   // Request interceptor
   apiClient.interceptors.request.use(
     (config) => {
+      if (resourceGone) {
+        return Promise.reject(new Error('Resource is marked as gone'))
+      }
+
       const token = localStorage.getItem('auth-token')
       if (token) {
         config.headers.Authorization = `Bearer ${token}`
@@ -32,7 +38,7 @@ export function setupApiClient() {
       return config
     },
     (error) => {
-      console.error('Request interceptor error:', error)
+      if (!resourceGone) console.error('Request interceptor error:', error)
       return Promise.reject(error)
     }
   )
@@ -67,6 +73,10 @@ export function setupApiClient() {
             // Forbidden
             console.warn('Access denied')
             break
+          case 410:
+            // Resource gone
+            resourceGone = true
+            break
           case 429:
             // Rate limited
             console.warn('Rate limit exceeded')
@@ -98,7 +108,7 @@ export function setupApiClient() {
           timestamp: new Date()
         }
 
-        console.error('Unknown error:', unknownError)
+        if (!resourceGone) console.error('Unknown error:', unknownError)
         return Promise.reject(unknownError)
       }
     }
