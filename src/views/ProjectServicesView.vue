@@ -93,13 +93,18 @@
                   v-if="pubsubConnected"
                   class="w-4 h-4 text-gray-400 dark:text-gray-500"
                 />
-                <ArrowPathIcon
+                <button
                   v-else
-                  class="w-4 h-4 text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 cursor-pointer"
-                  :class="{ 'animate-spin': reconnectingService === 'pubsub' }"
-                  title="Click to reconnect"
+                  type="button"
+                  aria-label="Reconnect Pub/Sub emulator"
+                  class="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500"
                   @click.stop="reconnectService('pubsub')"
-                />
+                >
+                  <ArrowPathIcon
+                    class="w-4 h-4 text-amber-600 dark:text-amber-400"
+                    :class="{ 'animate-spin': reconnectingService === 'pubsub' }"
+                  />
+                </button>
               </div>
             </div>
           </div>
@@ -180,13 +185,18 @@
                   v-if="storageConnected"
                   class="w-4 h-4 text-gray-400 dark:text-gray-500"
                 />
-                <ArrowPathIcon
+                <button
                   v-else
-                  class="w-4 h-4 text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 cursor-pointer"
-                  :class="{ 'animate-spin': reconnectingService === 'storage' }"
-                  title="Click to reconnect"
+                  type="button"
+                  aria-label="Reconnect Storage emulator"
+                  class="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500"
                   @click.stop="reconnectService('storage')"
-                />
+                >
+                  <ArrowPathIcon
+                    class="w-4 h-4 text-amber-600 dark:text-amber-400"
+                    :class="{ 'animate-spin': reconnectingService === 'storage' }"
+                  />
+                </button>
               </div>
             </div>
           </div>
@@ -258,13 +268,18 @@
                   v-if="firestoreConnected"
                   class="w-4 h-4 text-gray-400 dark:text-gray-500"
                 />
-                <ArrowPathIcon
+                <button
                   v-else
-                  class="w-4 h-4 text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 cursor-pointer"
-                  :class="{ 'animate-spin': reconnectingService === 'firestore' }"
-                  title="Click to reconnect"
+                  type="button"
+                  aria-label="Reconnect Firestore emulator"
+                  class="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500"
                   @click.stop="reconnectService('firestore')"
-                />
+                >
+                  <ArrowPathIcon
+                    class="w-4 h-4 text-amber-600 dark:text-amber-400"
+                    :class="{ 'animate-spin': reconnectingService === 'firestore' }"
+                  />
+                </button>
               </div>
             </div>
           </div>
@@ -361,13 +376,18 @@
                   v-if="datastoreConnected"
                   class="w-4 h-4 text-gray-400 dark:text-gray-500"
                 />
-                <ArrowPathIcon
+                <button
                   v-else
-                  class="w-4 h-4 text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 cursor-pointer"
-                  :class="{ 'animate-spin': reconnectingService === 'datastore' }"
-                  title="Click to reconnect"
+                  type="button"
+                  aria-label="Reconnect Datastore emulator"
+                  class="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-amber-500"
                   @click.stop="reconnectService('datastore')"
-                />
+                >
+                  <ArrowPathIcon
+                    class="w-4 h-4 text-amber-600 dark:text-amber-400"
+                    :class="{ 'animate-spin': reconnectingService === 'datastore' }"
+                  />
+                </button>
               </div>
             </div>
           </div>
