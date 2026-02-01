@@ -26,7 +26,7 @@
             :class="{ 'opacity-75': !pubsubConnected }"
             @click="navigateToService('pubsub')"
           >
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between cursor-pointer">
               <div class="flex items-center space-x-4">
                 <div
                   class="w-10 h-10 rounded-lg flex items-center justify-center"
@@ -93,9 +93,12 @@
                   v-if="pubsubConnected"
                   class="w-4 h-4 text-gray-400 dark:text-gray-500"
                 />
-                <ExclamationTriangleIcon
+                <ArrowPathIcon
                   v-else
-                  class="w-4 h-4 text-red-600 dark:text-red-400"
+                  class="w-4 h-4 text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 cursor-pointer"
+                  :class="{ 'animate-spin': reconnectingService === 'pubsub' }"
+                  title="Click to reconnect"
+                  @click.stop="reconnectService('pubsub')"
                 />
               </div>
             </div>
@@ -107,7 +110,7 @@
             :class="{ 'opacity-75': !storageConnected }"
             @click="navigateToService('storage')"
           >
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between cursor-pointer">
               <div class="flex items-center space-x-4">
                 <div
                   class="w-10 h-10 rounded-lg flex items-center justify-center"
@@ -177,9 +180,12 @@
                   v-if="storageConnected"
                   class="w-4 h-4 text-gray-400 dark:text-gray-500"
                 />
-                <ExclamationTriangleIcon
+                <ArrowPathIcon
                   v-else
-                  class="w-4 h-4 text-red-600 dark:text-red-400"
+                  class="w-4 h-4 text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 cursor-pointer"
+                  :class="{ 'animate-spin': reconnectingService === 'storage' }"
+                  title="Click to reconnect"
+                  @click.stop="reconnectService('storage')"
                 />
               </div>
             </div>
@@ -191,7 +197,7 @@
             :class="{ 'opacity-75': !firestoreConnected }"
             @click="navigateToService('firestore')"
           >
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between cursor-pointer">
               <div class="flex items-center space-x-4">
                 <div
                   class="w-10 h-10 rounded-lg flex items-center justify-center"
@@ -252,9 +258,12 @@
                   v-if="firestoreConnected"
                   class="w-4 h-4 text-gray-400 dark:text-gray-500"
                 />
-                <ExclamationTriangleIcon
+                <ArrowPathIcon
                   v-else
-                  class="w-4 h-4 text-red-600 dark:text-red-400"
+                  class="w-4 h-4 text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 cursor-pointer"
+                  :class="{ 'animate-spin': reconnectingService === 'firestore' }"
+                  title="Click to reconnect"
+                  @click.stop="reconnectService('firestore')"
                 />
               </div>
             </div>
@@ -266,7 +275,7 @@
             :class="{ 'opacity-75': !datastoreConnected }"
             @click="navigateToService('datastore')"
           >
-            <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between cursor-pointer">
               <div class="flex items-center space-x-4">
                 <div
                   class="w-10 h-10 rounded-lg flex items-center justify-center"
@@ -352,9 +361,12 @@
                   v-if="datastoreConnected"
                   class="w-4 h-4 text-gray-400 dark:text-gray-500"
                 />
-                <ExclamationTriangleIcon
+                <ArrowPathIcon
                   v-else
-                  class="w-4 h-4 text-red-600 dark:text-red-400"
+                  class="w-4 h-4 text-amber-600 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 cursor-pointer"
+                  :class="{ 'animate-spin': reconnectingService === 'datastore' }"
+                  title="Click to reconnect"
+                  @click.stop="reconnectService('datastore')"
                 />
               </div>
             </div>
@@ -370,7 +382,7 @@ import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ArrowTopRightOnSquareIcon,
-  ExclamationTriangleIcon
+  ArrowPathIcon
 } from '@heroicons/vue/24/outline'
 import { useAppStore } from '@/stores/app'
 import { useProjectsStore } from '@/stores/projects'
@@ -385,16 +397,39 @@ const {
   storageConnected,
   firestoreConnected,
   datastoreConnected,
-  checkAllConnections
+  checkAllConnections,
+  checkServiceConnection
 } = useServiceConnections()
 
 // UI state
 const isCheckingConnections = ref(false)
+const reconnectingService = ref<string | null>(null)
 
 const currentProjectId = computed(() => {
   return route.params.projectId as string || projectsStore.selectedProjectId || 'Unknown'
 })
 
+const reconnectService = async (service: 'pubsub' | 'storage' | 'firestore' | 'datastore') => {
+  reconnectingService.value = service
+  try {
+    const connected = await checkServiceConnection(service)
+    if (connected) {
+      appStore.showToast({
+        type: 'success',
+        title: 'Connected',
+        message: `${service.charAt(0).toUpperCase() + service.slice(1)} emulator is now connected`
+      })
+    } else {
+      appStore.showToast({
+        type: 'error',
+        title: 'Connection Failed',
+        message: `${service.charAt(0).toUpperCase() + service.slice(1)} emulator is still unreachable`
+      })
+    }
+  } finally {
+    reconnectingService.value = null
+  }
+}
 
 const checkAllConnectionsWithLoading = async () => {
   isCheckingConnections.value = true
@@ -406,40 +441,24 @@ const checkAllConnectionsWithLoading = async () => {
 }
 
 const navigateToService = (service: 'pubsub' | 'storage' | 'firestore' | 'datastore') => {
-  // Don't navigate if service is disconnected
+  // If service is disconnected, attempt reconnect instead of navigating
   if (service === 'pubsub' && !pubsubConnected.value) {
-    appStore.showToast({
-      type: 'error',
-      title: 'Service Unavailable',
-      message: 'Pub/Sub emulator is not running or unreachable'
-    })
+    reconnectService('pubsub')
     return
   }
 
   if (service === 'storage' && !storageConnected.value) {
-    appStore.showToast({
-      type: 'error',
-      title: 'Service Unavailable',
-      message: 'Storage emulator is not running or unreachable'
-    })
+    reconnectService('storage')
     return
   }
 
   if (service === 'firestore' && !firestoreConnected.value) {
-    appStore.showToast({
-      type: 'error',
-      title: 'Service Unavailable',
-      message: 'Firestore emulator is not running or unreachable'
-    })
+    reconnectService('firestore')
     return
   }
 
   if (service === 'datastore' && !datastoreConnected.value) {
-    appStore.showToast({
-      type: 'error',
-      title: 'Service Unavailable',
-      message: 'Datastore emulator is not running or unreachable'
-    })
+    reconnectService('datastore')
     return
   }
 

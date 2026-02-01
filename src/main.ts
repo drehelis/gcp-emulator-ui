@@ -142,15 +142,16 @@ async function initializeApp() {
     // Log startup information
     console.log(`GCP Emulator UI v${app.config.globalProperties.$APP_VERSION}`)
 
-    // Initialize API connection monitoring
-    const { useApiConnection } = await import('./composables/useApiConnection')
-    const { checkConnection, startPeriodicCheck } = useApiConnection()
+    // Initialize connection monitoring using unified service connections
+    const { useServiceConnections } = await import('./composables/useServiceConnections')
+    const { checkAllConnections, startPeriodicCheck } = useServiceConnections()
 
-    // Check API connection
-    const isApiConnected = await checkConnection()
+    // Check all emulator connections
+    const connectionResult = await checkAllConnections()
+    const hasAnyConnection = Object.values(connectionResult).some(Boolean)
 
-    if (isApiConnected) {
-      // Initialize projects store only if API is connected
+    if (hasAnyConnection) {
+      // Initialize projects store only if at least one emulator is connected
       try {
         const projectsStore = useProjectsStore()
         projectsStore.initialize()
@@ -158,7 +159,7 @@ async function initializeApp() {
         // Start periodic connection monitoring
         startPeriodicCheck()
       } catch (storeError) {
-        console.warn('Failed to initialize projects store:', storeError)
+        console.debug('Failed to initialize projects store:', storeError)
         appStore.showToast({
           type: 'warning',
           title: 'Partial initialization',
@@ -170,7 +171,7 @@ async function initializeApp() {
         startPeriodicCheck()
       }
     } else {
-      console.warn('API connection failed during initialization - app will load with connection warnings')
+      console.debug('No emulator connections during initialization - app will load with connection warnings')
 
       // Start periodic checks to allow recovery
       startPeriodicCheck()
