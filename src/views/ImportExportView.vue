@@ -26,17 +26,9 @@
           </svg>
         </div>
         <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-2">No Emulators Running</h3>
-        <p class="text-gray-600 dark:text-gray-400 mb-4">
+        <p class="text-gray-600 dark:text-gray-400">
           Start an emulator to use the import/export functionality.
         </p>
-        <button
-          @click="checkAllConnectionsAndUpdateTabs(true)"
-          :disabled="isCheckingConnections"
-          class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <ArrowPathIcon :class="['h-4 w-4 mr-2', isCheckingConnections && 'animate-spin']" />
-          {{ isCheckingConnections ? 'Checking...' : 'Check Connections' }}
-        </button>
       </div>
     </div>
 
@@ -88,10 +80,8 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { useAppStore } from '@/stores/app'
 import { useServiceConnections } from '@/composables/useServiceConnections'
 import {
-  ArrowPathIcon,
   QueueListIcon,
   ArchiveBoxIcon,
   CircleStackIcon,
@@ -103,7 +93,6 @@ import FirestoreImportExport from '@/components/import-export/FirestoreImportExp
 import DatastoreImportExport from '@/components/import-export/DatastoreImportExport.vue'
 
 const route = useRoute()
-const appStore = useAppStore()
 const {
   pubsubConnected,
   storageConnected,
@@ -112,9 +101,7 @@ const {
   checkAllConnections
 } = useServiceConnections()
 
-// Component state
 const activeTab = ref('pubsub')
-const isCheckingConnections = ref(false)
 
 // Computed properties
 const currentProjectId = computed(() => route.params.projectId as string)
@@ -161,48 +148,6 @@ const availableTabs = computed(() => {
   return tabs
 })
 
-// Method to check all connections and handle tab switching
-const checkAllConnectionsAndUpdateTabs = async (showToast = false) => {
-  isCheckingConnections.value = true
-  try {
-    const status = await checkAllConnections()
-
-    // Switch to first available tab if current tab is not available
-    if (availableTabs.value.length > 0) {
-      const currentTabAvailable = availableTabs.value.some(tab => tab.id === activeTab.value)
-      if (!currentTabAvailable) {
-        activeTab.value = availableTabs.value[0].id
-      }
-
-      // Show success message with what's connected (only if showToast is true)
-      if (showToast) {
-        const connected = []
-        if (status.pubsub) connected.push('Pub/Sub')
-        if (status.storage) connected.push('Storage')
-        if (status.firestore) connected.push('Firestore')
-        if (status.datastore) connected.push('Datastore')
-
-        appStore.showToast({
-          type: 'success',
-          title: 'Emulators found',
-          message: `Connected to: ${connected.join(', ')}`
-        })
-      }
-    } else {
-      // Show info message if still no connections (only if showToast is true)
-      if (showToast) {
-        appStore.showToast({
-          type: 'info',
-          title: 'No emulators detected',
-          message: 'Make sure an emulator is running and try again'
-        })
-      }
-    }
-  } finally {
-    isCheckingConnections.value = false
-  }
-}
-
 // Watch availableTabs to switch to first available tab
 watch(availableTabs, (newTabs) => {
   if (newTabs.length > 0) {
@@ -213,9 +158,7 @@ watch(availableTabs, (newTabs) => {
   }
 }, { immediate: true })
 
-// Lifecycle
-onMounted(async () => {
-  // Check connections first
-  await checkAllConnectionsAndUpdateTabs()
+onMounted(() => {
+  checkAllConnections()
 })
 </script>

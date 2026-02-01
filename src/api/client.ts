@@ -87,7 +87,7 @@ export function setupApiClient() {
           timestamp: new Date()
         }
 
-        console.error('Network error:', networkError)
+        console.debug('Network error:', networkError)
         return Promise.reject(networkError)
       } else {
         // Other error
@@ -98,7 +98,7 @@ export function setupApiClient() {
           timestamp: new Date()
         }
 
-        console.error('Unknown error:', unknownError)
+        console.debug('Unknown error:', unknownError)
         return Promise.reject(unknownError)
       }
     }

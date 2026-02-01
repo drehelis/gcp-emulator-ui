@@ -103,6 +103,7 @@ import { useMessageTemplatesStore } from '@/stores/messageTemplates'
 import { useTopicsStore } from '@/stores/topics'
 import { useStorageStore } from '@/stores/storage'
 import { useFirestoreStore } from '@/stores/firestore'
+import { useServiceConnections } from '@/composables/useServiceConnections'
 import type { PubSubTopic, PubSubSubscription, MessageTemplate, StorageBucket, StorageObjectWithPreview } from '@/types'
 import type { FirestoreCollectionWithMetadata } from '@/types/firestore'
 
@@ -126,6 +127,7 @@ const messageTemplatesStore = useMessageTemplatesStore()
 const topicsStore = useTopicsStore()
 const storageStore = useStorageStore()
 const firestoreStore = useFirestoreStore()
+const { pubsubConnected, storageConnected, firestoreConnected } = useServiceConnections()
 
 const searchInput = ref<HTMLInputElement>()
 const searchQuery = ref('')
@@ -198,50 +200,54 @@ const isCacheValid = (cacheEntry: { timestamp: number } | null): boolean => {
 const loadSearchData = async () => {
   if (!currentProjectId.value) return
 
-  // Load topics (PubSub) with caching
-  if (!isCacheValid(dataCache.value.topics)) {
+  // Load topics (PubSub) with caching - skip if not connected
+  if (pubsubConnected.value && !isCacheValid(dataCache.value.topics)) {
     try {
       const topics = await topicsApi.getTopics(currentProjectId.value)
       dataCache.value.topics = { data: topics || [], timestamp: Date.now() }
       allTopics.value = dataCache.value.topics.data
     } catch (error) {
-      console.warn('Failed to load topics:', error)
+      console.debug('Failed to load topics:', error)
       allTopics.value = []
     }
+  } else if (pubsubConnected.value) {
+    allTopics.value = dataCache.value.topics?.data || []
   } else {
-    allTopics.value = dataCache.value.topics.data
+    allTopics.value = []
   }
 
-  // Load subscriptions (PubSub) with caching
-  if (!isCacheValid(dataCache.value.subscriptions)) {
+  // Load subscriptions (PubSub) with caching - skip if not connected
+  if (pubsubConnected.value && !isCacheValid(dataCache.value.subscriptions)) {
     try {
       const subscriptions = await subscriptionsApi.getSubscriptions(currentProjectId.value)
       dataCache.value.subscriptions = { data: Array.isArray(subscriptions) ? subscriptions : [], timestamp: Date.now() }
       allSubscriptions.value = dataCache.value.subscriptions.data
     } catch (error) {
-      console.warn('Failed to load subscriptions:', error)
+      console.debug('Failed to load subscriptions:', error)
       allSubscriptions.value = []
     }
+  } else if (pubsubConnected.value) {
+    allSubscriptions.value = dataCache.value.subscriptions?.data || []
   } else {
-    allSubscriptions.value = dataCache.value.subscriptions.data
+    allSubscriptions.value = []
   }
 
-  // Load message templates (local storage) with caching
+  // Load message templates (local storage) with caching - always available
   if (!isCacheValid(dataCache.value.templates)) {
     try {
       await messageTemplatesStore.loadTemplates()
       dataCache.value.templates = { data: messageTemplatesStore.templates || [], timestamp: Date.now() }
       allTemplates.value = dataCache.value.templates.data
     } catch (error) {
-      console.warn('Failed to load templates:', error)
+      console.debug('Failed to load templates:', error)
       allTemplates.value = []
     }
   } else {
     allTemplates.value = dataCache.value.templates.data
   }
 
-  // Load storage buckets with caching
-  if (!isCacheValid(dataCache.value.buckets)) {
+  // Load storage buckets with caching - skip if not connected
+  if (storageConnected.value && !isCacheValid(dataCache.value.buckets)) {
     try {
       const bucketsResponse = await storageApi.listBuckets({
         project: currentProjectId.value
@@ -249,25 +255,29 @@ const loadSearchData = async () => {
       dataCache.value.buckets = { data: bucketsResponse.items || [], timestamp: Date.now() }
       allBuckets.value = dataCache.value.buckets.data
     } catch (error) {
-      console.warn('Failed to load storage buckets:', error)
+      console.debug('Failed to load storage buckets:', error)
       allBuckets.value = []
     }
+  } else if (storageConnected.value) {
+    allBuckets.value = dataCache.value.buckets?.data || []
   } else {
-    allBuckets.value = dataCache.value.buckets.data
+    allBuckets.value = []
   }
 
-  // Load Firestore collections with caching
-  if (!isCacheValid(dataCache.value.collections)) {
+  // Load Firestore collections with caching - skip if not connected
+  if (firestoreConnected.value && !isCacheValid(dataCache.value.collections)) {
     try {
       await firestoreStore.loadCollections(currentProjectId.value)
       dataCache.value.collections = { data: firestoreStore.collections || [], timestamp: Date.now() }
       allCollections.value = dataCache.value.collections.data
     } catch (error) {
-      console.warn('Failed to load Firestore collections:', error)
+      console.debug('Failed to load Firestore collections:', error)
       allCollections.value = []
     }
+  } else if (firestoreConnected.value) {
+    allCollections.value = dataCache.value.collections?.data || []
   } else {
-    allCollections.value = dataCache.value.collections.data
+    allCollections.value = []
   }
 
   // DON'T load all objects immediately - only load when searching for objects
@@ -441,7 +451,7 @@ const loadDocumentsForSearch = async (query: string): Promise<SearchResult[]> =>
         }
       }
     } catch (error) {
-      console.warn(`Failed to search collection ${collectionId}:`, error)
+      console.debug(`Failed to search collection ${collectionId}:`, error)
     }
   }
 
@@ -541,7 +551,7 @@ const loadObjectsForSearch = async (query: string): Promise<StorageObjectWithPre
         objects.push(...objectsWithBucket)
       }
     } catch (error) {
-      console.warn(`Failed to load objects from bucket ${bucket.name}:`, error)
+      console.debug(`Failed to load objects from bucket ${bucket.name}:`, error)
     }
   }
 
@@ -671,7 +681,7 @@ const performSearch = async (query: string) => {
         }
       })
     } catch (error) {
-      console.warn('Failed to search storage objects:', error)
+      console.debug('Failed to search storage objects:', error)
     }
   }
 
@@ -702,7 +712,7 @@ const performSearch = async (query: string) => {
       const documentResults = await loadDocumentsForSearch(query)
       results.push(...documentResults)
     } catch (error) {
-      console.warn('Failed to search Firestore documents:', error)
+      console.debug('Failed to search Firestore documents:', error)
     }
   }
 
