@@ -7,7 +7,6 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 describe('errorSetup', () => {
   let mockApp: any
-  let originalEnv: any
   
   beforeEach(() => {
     vi.clearAllMocks()
@@ -18,9 +17,6 @@ describe('errorSetup', () => {
         errorHandler: null
       }
     }
-
-    // Store original env
-    originalEnv = import.meta.env.PROD
   })
 
   afterEach(() => {
@@ -81,11 +77,11 @@ describe('errorSetup', () => {
 
     it('unhandledrejection handler logs and prevents default', async () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-      let capturedHandler: ((event: PromiseRejectionEvent) => void) | null = null
+      let capturedHandler: ((_event: PromiseRejectionEvent) => void) | null = null
       
-      vi.spyOn(window, 'addEventListener').mockImplementation((event, handler) => {
-        if (event === 'unhandledrejection') {
-          capturedHandler = handler as (event: PromiseRejectionEvent) => void
+      vi.spyOn(window, 'addEventListener').mockImplementation((_event, handler) => {
+        if (_event === 'unhandledrejection') {
+          capturedHandler = handler as (_event: PromiseRejectionEvent) => void
         }
       })
 
@@ -106,11 +102,11 @@ describe('errorSetup', () => {
 
     it('global error handler logs error details', async () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-      let capturedHandler: ((event: ErrorEvent) => void) | null = null
+      let capturedHandler: ((_event: ErrorEvent) => void) | null = null
       
-      vi.spyOn(window, 'addEventListener').mockImplementation((event, handler) => {
-        if (event === 'error') {
-          capturedHandler = handler as (event: ErrorEvent) => void
+      vi.spyOn(window, 'addEventListener').mockImplementation((_event, handler) => {
+        if (_event === 'error') {
+          capturedHandler = handler as (_event: ErrorEvent) => void
         }
       })
 

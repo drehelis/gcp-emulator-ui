@@ -91,7 +91,7 @@ describe('useFirestoreStore', () => {
     })
 
     it('removeDatabase removes from available databases', () => {
-      const store = useFirestoreStore()
+      useFirestoreStore()
       // Add a database first by manipulating localStorage
       localStorage.setItem('firestore-databases', JSON.stringify(['(default)', 'to-remove']))
       
