@@ -679,6 +679,7 @@ export const useTopicsStore = defineStore('topics', () => {
     state,
     topics,
     selectedTopic,
+    topicCache,
     topicMetrics,
     filters,
     pagination,

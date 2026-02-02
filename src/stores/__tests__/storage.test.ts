@@ -428,5 +428,111 @@ describe('useStorageStore', () => {
       expect(store.currentProjectId).toBeNull()
     })
   })
+
+  describe('fetchObjects', () => {
+    it('fetches objects and prefixes', async () => {
+      vi.mocked(storageApi.listObjects).mockResolvedValue({
+        items: [
+          { name: 'file1.txt', size: '100', contentType: 'text/plain', bucket: 'my-bucket', storageClass: 'STANDARD', timeCreated: '', updated: '' }
+        ],
+        prefixes: ['folder1/']
+      })
+      vi.mocked(storageApi.getObjectDownloadUrl).mockReturnValue('http://mock-download-url')
+
+      const store = useStorageStore()
+      await store.fetchObjects('my-bucket')
+      
+      expect(store.objects).toHaveLength(2)
+      // Folder should be first (due to sorting logic)
+      expect(store.objects[0].isFolder).toBe(true)
+      expect(store.objects[0].name).toBe('folder1')
+      
+      expect(store.objects[1].isFolder).toBe(false)
+      expect(store.objects[1].name).toBe('file1.txt')
+      expect(store.objects[1].downloadUrl).toBe('http://mock-download-url')
+    })
+
+    it('updates breadcrumbs', async () => {
+      vi.mocked(storageApi.listObjects).mockResolvedValue({ items: [], prefixes: [] })
+      
+      const store = useStorageStore()
+      await store.fetchObjects('my-bucket', 'folder1/subfolder/')
+      
+      expect(store.breadcrumbs).toHaveLength(2)
+      expect(store.breadcrumbs[0].name).toBe('folder1')
+      expect(store.currentPath).toBe('folder1/subfolder/')
+    })
+
+    it('calculates bucket statistics', async () => {
+      vi.mocked(storageApi.listObjects).mockResolvedValue({
+        items: [
+          { name: 'file1.txt', size: '100', contentType: 'text/plain', bucket: 'test', storageClass: 'STANDARD', timeCreated: '', updated: '' },
+          { name: 'file2.jpg', size: '200', contentType: 'image/jpeg', bucket: 'test', storageClass: 'STANDARD', timeCreated: '', updated: '' }
+        ]
+      })
+
+      const store = useStorageStore()
+      await store.fetchObjects('my-bucket')
+      
+      expect(store.bucketStatistics).not.toBeNull()
+      expect(store.bucketStatistics?.objectCount).toBe(2)
+      expect(store.bucketStatistics?.totalSize).toBe(300)
+    })
+  })
+
+  describe('uploadFiles', () => {
+    it('uploads files and refreshes list', async () => {
+      const file = new File(['content'], 'test.txt', { type: 'text/plain' })
+      vi.mocked(storageApi.uploadObject).mockImplementation((file, req, onProgress) => {
+        if (onProgress) onProgress({ loaded: 100, total: 100, percentage: 100 })
+        return Promise.resolve({ 
+            name: 'test.txt', bucket: 'bucket', contentType: 'text/plain', 
+            size: '100', storageClass: 'STANDARD', timeCreated: '', updated: '' 
+        })
+      })
+      vi.mocked(storageApi.listObjects).mockResolvedValue({ items: [], prefixes: [] })
+
+      const store = useStorageStore()
+      await store.uploadFiles([file], 'my-bucket')
+      
+      expect(storageApi.uploadObject).toHaveBeenCalled()
+      expect(storageApi.listObjects).toHaveBeenCalled() // Should refresh
+      expect(store.state.error).toBeNull()
+    })
+
+    it('handles upload errors', async () => {
+      const file = new File(['content'], 'test.txt', { type: 'text/plain' })
+      vi.mocked(storageApi.uploadObject).mockRejectedValue(new Error('Upload failed'))
+
+      const store = useStorageStore()
+      await expect(store.uploadFiles([file], 'my-bucket')).rejects.toThrow('Upload failed')
+      
+      expect(store.state.error).toBe('Upload failed')
+    })
+  })
+
+  describe('deleteObjects', () => {
+    it('deletes multiple objects and updates list', async () => {
+       // Mock fetchObject to populate initial state
+       vi.mocked(storageApi.listObjects).mockResolvedValue({
+        items: [
+          { name: 'file1.txt', size: '100', contentType: 'text/plain', bucket: 'my-bucket', storageClass: 'STANDARD', timeCreated: '', updated: '' },
+          { name: 'file2.txt', size: '100', contentType: 'text/plain', bucket: 'my-bucket', storageClass: 'STANDARD', timeCreated: '', updated: '' }
+        ]
+      })
+      vi.mocked(storageApi.deleteMultipleObjects).mockResolvedValue({ success: ['file1.txt'], errors: [] })
+
+      const store = useStorageStore()
+      await store.fetchObjects('my-bucket')
+      expect(store.objects).toHaveLength(2)
+
+      await store.deleteObjects('my-bucket', ['file1.txt'])
+      
+      expect(storageApi.deleteMultipleObjects).toHaveBeenCalled()
+      // Should remove from local state
+      expect(store.objects).toHaveLength(1)
+      expect(store.objects[0].name).toBe('file2.txt')
+    })
+  })
 })
 
