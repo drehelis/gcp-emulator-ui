@@ -7,6 +7,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useStorageStore } from '../storage'
 import { useProjectsStore } from '../projects'
+import storageApi from '@/api/storage'
 
 // Mock vue-toastification
 vi.mock('vue-toastification', () => ({
@@ -235,8 +236,7 @@ describe('useStorageStore', () => {
 
   describe('fetchBuckets', () => {
     it('populates buckets from API', async () => {
-      const storageApi = await import('@/api/storage')
-      vi.mocked(storageApi.default.listBuckets).mockResolvedValue({
+      vi.mocked(storageApi.listBuckets).mockResolvedValue({
         items: [
           { name: 'bucket1', selfLink: '', timeCreated: '', updated: '' },
           { name: 'bucket2', selfLink: '', timeCreated: '', updated: '' }
@@ -251,8 +251,7 @@ describe('useStorageStore', () => {
     })
 
     it('handles empty response', async () => {
-      const storageApi = await import('@/api/storage')
-      vi.mocked(storageApi.default.listBuckets).mockResolvedValue({})
+      vi.mocked(storageApi.listBuckets).mockResolvedValue({})
 
       const store = useStorageStore()
       await store.fetchBuckets()
@@ -261,8 +260,7 @@ describe('useStorageStore', () => {
     })
 
     it('sets error state on failure', async () => {
-      const storageApi = await import('@/api/storage')
-      vi.mocked(storageApi.default.listBuckets).mockRejectedValue(new Error('API error'))
+      vi.mocked(storageApi.listBuckets).mockRejectedValue(new Error('API error'))
 
       const store = useStorageStore()
       await store.fetchBuckets()
@@ -273,9 +271,8 @@ describe('useStorageStore', () => {
 
   describe('fetchBucket', () => {
     it('sets current bucket from API', async () => {
-      const storageApi = await import('@/api/storage')
       const mockBucket = { name: 'my-bucket', selfLink: '', timeCreated: '', updated: '' }
-      vi.mocked(storageApi.default.getBucket).mockResolvedValue(mockBucket)
+      vi.mocked(storageApi.getBucket).mockResolvedValue(mockBucket)
 
       const store = useStorageStore()
       await store.fetchBucket('my-bucket')
@@ -285,9 +282,8 @@ describe('useStorageStore', () => {
     })
 
     it('adds bucket to list if not exists', async () => {
-      const storageApi = await import('@/api/storage')
       const mockBucket = { name: 'new-bucket', selfLink: '', timeCreated: '', updated: '' }
-      vi.mocked(storageApi.default.getBucket).mockResolvedValue(mockBucket)
+      vi.mocked(storageApi.getBucket).mockResolvedValue(mockBucket)
 
       const store = useStorageStore()
       await store.fetchBucket('new-bucket')
@@ -299,9 +295,8 @@ describe('useStorageStore', () => {
 
   describe('createBucket', () => {
     it('creates bucket and adds to list', async () => {
-      const storageApi = await import('@/api/storage')
       const mockBucket = { name: 'new-bucket', selfLink: '', timeCreated: '', updated: '' }
-      vi.mocked(storageApi.default.createBucket).mockResolvedValue(mockBucket)
+      vi.mocked(storageApi.createBucket).mockResolvedValue(mockBucket)
 
       const store = useStorageStore()
       await store.createBucket({ name: 'new-bucket' })
@@ -311,8 +306,7 @@ describe('useStorageStore', () => {
     })
 
     it('throws on API error', async () => {
-      const storageApi = await import('@/api/storage')
-      vi.mocked(storageApi.default.createBucket).mockRejectedValue(new Error('Creation failed'))
+      vi.mocked(storageApi.createBucket).mockRejectedValue(new Error('Creation failed'))
 
       const store = useStorageStore()
       
@@ -359,13 +353,12 @@ describe('useStorageStore', () => {
 
   describe('deleteBucket', () => {
     it('removes bucket from list on success', async () => {
-      const storageApi = await import('@/api/storage')
       const mockBucket = { name: 'bucket-to-delete', selfLink: '', timeCreated: '', updated: '' }
       
-      vi.mocked(storageApi.default.createBucket).mockResolvedValue(mockBucket)
-      vi.mocked(storageApi.default.listObjects).mockResolvedValue({ items: [], prefixes: [] })
-      vi.mocked(storageApi.default.deleteMultipleObjects).mockResolvedValue({ success: [], errors: [] })
-      vi.mocked(storageApi.default.deleteBucket).mockResolvedValue()
+      vi.mocked(storageApi.createBucket).mockResolvedValue(mockBucket)
+      vi.mocked(storageApi.listObjects).mockResolvedValue({ items: [], prefixes: [] })
+      vi.mocked(storageApi.deleteMultipleObjects).mockResolvedValue({ success: [], errors: [] })
+      vi.mocked(storageApi.deleteBucket).mockResolvedValue()
 
       const store = useStorageStore()
       await store.createBucket({ name: 'bucket-to-delete' })
@@ -376,10 +369,9 @@ describe('useStorageStore', () => {
     })
   })
 
-  describe('fetchBuckets', () => {
+  describe('fetchBuckets error handling', () => {
     it('handles API error gracefully', async () => {
-      const storageApi = await import('@/api/storage')
-      vi.mocked(storageApi.default.listBuckets).mockRejectedValue(new Error('Network error'))
+      vi.mocked(storageApi.listBuckets).mockRejectedValue(new Error('Network error'))
 
       const store = useStorageStore()
       await store.fetchBuckets()
@@ -388,12 +380,11 @@ describe('useStorageStore', () => {
     })
   })
 
-  describe('fetchBucket', () => {
+  describe('fetchBucket details', () => {
     it('fetches single bucket and sets as current', async () => {
-      const storageApi = await import('@/api/storage')
       const mockBucket = { name: 'my-bucket', selfLink: '', timeCreated: '', updated: '' }
-      vi.mocked(storageApi.default.getBucket).mockResolvedValue(mockBucket)
-      vi.mocked(storageApi.default.listObjects).mockResolvedValue({ items: [], prefixes: [] })
+      vi.mocked(storageApi.getBucket).mockResolvedValue(mockBucket)
+      vi.mocked(storageApi.listObjects).mockResolvedValue({ items: [], prefixes: [] })
 
       const store = useStorageStore()
       await store.fetchBucket('my-bucket')
