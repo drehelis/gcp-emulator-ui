@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { templateStorage, type MessageTemplate, type CreateTemplateForm } from '../templateStorage'
+import { templateStorage, type CreateTemplateForm } from '../templateStorage'
 
 // Mock IndexedDB
 const mockObjectStore = {
@@ -39,7 +39,7 @@ const mockRequest = {
 
 const mockOpenRequest = {
   ...mockRequest,
-  onupgradeneeded: null as ((event: any) => void) | null
+  onupgradeneeded: null as ((_event: any) => void) | null
 }
 
 // Mock indexedDB globally

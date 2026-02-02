@@ -6,7 +6,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useStorageStore } from '../storage'
-import { useProjectsStore } from '../projects'
 import storageApi from '@/api/storage'
 
 // Mock vue-toastification

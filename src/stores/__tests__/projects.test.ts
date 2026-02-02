@@ -445,7 +445,7 @@ describe('useProjectsStore', () => {
       const store = useProjectsStore()
       
       // First call to cache
-      const project = await store.fetchProject('cached-project')
+      await store.fetchProject('cached-project')
       
       // Second call should return cached
       const cached = await store.fetchProject('cached-project')
