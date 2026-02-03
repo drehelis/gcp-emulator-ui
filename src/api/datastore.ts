@@ -73,8 +73,8 @@ function clearCache(pattern?: string): void {
 
 export const datastoreApi = {
   // Lookup entities by keys
-  async lookup(request: LookupRequest): Promise<LookupResponse> {
-    const response = await datastoreClient.post('/v1/projects/{projectId}:lookup', request)
+  async lookup(projectId: string, request: LookupRequest): Promise<LookupResponse> {
+    const response = await datastoreClient.post(`/v1/projects/${projectId}:lookup`, request)
     return response.data
   },
 
