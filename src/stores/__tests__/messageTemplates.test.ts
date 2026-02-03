@@ -176,18 +176,24 @@ describe('useMessageTemplatesStore', () => {
 
     it('handles import errors gracefully', async () => {
          const store = useMessageTemplatesStore()
-         // We can't easily force error inside loop unless we mock something that fails within the loop
-         // But the logic is "try catch" around the loop body.
-         // If we pass malformed data, maybe? 
-         // But Typescript prevents malformed data usually.
-         // However, we can inspect `importTemplates` implementation.
-         // It generates ID and pushes to array. It doesn't call external API inside loop.
-         // So it won't fail unless memory issue.
-         // Wait, the implementation does: `try { ... } catch (error) { errors.push(...) }`
-         // It's mostly synchronous logic.
-         // We can simulate an error if we freeze the array?
-         // Or if we mock `templates.value.push` to throw?
-         // It's hard to target specific iteration.
+         const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+         
+         // Create an object that throws when accessed to simulate runtime error during processing
+         const badTemplate = new Proxy({} as any, { 
+             get: (target, prop) => { 
+                 if (prop === 'then') return undefined // Promise safety
+                 throw new Error('Processing fail') 
+             } 
+         })
+         
+         const count = await store.importTemplates([badTemplate])
+         
+         expect(count).toBe(0)
+         expect(store.state.state).toBe('success') // Overall op succeeds even if items fail
+         expect(consoleSpy).toHaveBeenCalled()
+         expect(consoleSpy.mock.calls[0][0]).toContain('Import errors:')
+         
+         consoleSpy.mockRestore()
     })
   })
   
@@ -242,10 +248,13 @@ describe('useMessageTemplatesStore', () => {
           const store = useMessageTemplatesStore()
           await store.loadTemplates()
           
+          store.selectTemplate(t1 as any)
+          
           await store.clearProjectTemplates('p1')
           
           expect(store.templates).toHaveLength(1)
           expect(store.templates[0].id).toBe('2')
+          expect(store.selectedTemplate).toBeNull()
           expect(templateStorage.clearTemplates).toHaveBeenCalledWith('p1')
       })
   })

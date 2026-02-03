@@ -341,10 +341,30 @@ describe('useTopicsStore', () => {
             { projectId: 'p2', name: 't2', fullName: 'projects/p2/topics/t2' }
         ] as any
         
+        // Populate cache and metrics with p1 and p2 data
+        store.topicCache.set('projects/p1/topics/t1', {} as any)
+        store.topicCache.set('projects/p2/topics/t2', {} as any)
+        
+        store.topicMetrics.set('projects/p1/topics/t1', {} as any)
+        store.topicMetrics.set('projects/p2/topics/t2', {} as any)
+        
+        // Set selection to p1
+        store.selectedTopic = { projectId: 'p1' } as any
+        
         store.clearProjectData('p1')
         
         expect(store.topics).toHaveLength(1)
         expect(store.topics[0].projectId).toBe('p2')
+        
+        // Verify cache/metrics cleared for p1 but kept for p2
+        expect(store.topicCache.has('projects/p1/topics/t1')).toBe(false)
+        expect(store.topicCache.has('projects/p2/topics/t2')).toBe(true)
+        
+        expect(store.topicMetrics.has('projects/p1/topics/t1')).toBe(false)
+        expect(store.topicMetrics.has('projects/p2/topics/t2')).toBe(true)
+        
+        // Verify selection cleared
+        expect(store.selectedTopic).toBeNull()
     })
   })
   describe('fetchTopic', () => {
