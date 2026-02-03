@@ -179,14 +179,13 @@ describe('useMessageTemplatesStore', () => {
          const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
          
          // Create an object that throws when accessed to simulate runtime error during processing
-         const badTemplate = new Proxy({} as any, { 
-             get: (target, prop) => { 
-                 if (prop === 'then') return undefined // Promise safety
-                 throw new Error('Processing fail') 
-             } 
+         const badTemplate = { name: 'bad-template' }
+         Object.defineProperty(badTemplate, 'projectId', {
+             get() { throw new Error('Processing fail') },
+             enumerable: true
          })
          
-         const count = await store.importTemplates([badTemplate])
+         const count = await store.importTemplates([badTemplate as any])
          
          expect(count).toBe(0)
          expect(store.state.state).toBe('success') // Overall op succeeds even if items fail
