@@ -78,8 +78,9 @@ describe('useServiceConnections', () => {
           // Mock fetch to fail for one service
           fetchSpy.mockImplementation(async (input) => {
               const url = String(input)
-              console.log('DEBUG: Fetching URL:', url)
-              if (url.includes('8085')) return { ok: false }
+              // console.log('DEBUG: Fetching URL:', url)
+              // Fail for Storage to create partial state (Storage path always includes 'healthcheck')
+              if (url.includes('healthcheck')) return { ok: false }
               return { ok: true }
           })
           
