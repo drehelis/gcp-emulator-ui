@@ -213,6 +213,22 @@
                   </label>
                 </div>
 
+                <!-- Filter Expression -->
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Filter Expression (Optional)
+                  </label>
+                  <textarea
+                    v-model="newSubscription.filter"
+                    rows="2"
+                    placeholder='e.g., attributes.region = "us-west" AND attributes.priority = "high"'
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm font-mono text-xs"
+                  ></textarea>
+                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    Filter messages based on attributes. Only matching messages will be delivered to this subscription.
+                  </p>
+                </div>
+
                 <!-- Dead Letter Policy -->
                 <div class="md:col-span-2">
                   <label class="flex items-center mb-2">
@@ -326,16 +342,24 @@
                 </span>
               </div>
               <div class="flex items-center justify-center">
-                <span class="font-medium">Ack Deadline:</span> {{ subscription?.ackDeadlineSeconds || 60 }}s
+                <span class="font-medium">Ack Deadline:</span>&nbsp;{{ subscription?.ackDeadlineSeconds || 60 }}s
               </div>
               <div v-if="subscription?.pushConfig?.pushEndpoint" class="flex items-center justify-center">
-                <span class="font-medium">Endpoint:</span> {{ subscription.pushConfig.pushEndpoint }}
+                <span class="font-medium">Endpoint:</span>&nbsp;{{ subscription.pushConfig.pushEndpoint }}
               </div>
               <div v-else-if="subscription?.bigqueryConfig" class="flex items-center justify-center">
-                <span class="font-medium">BigQuery Table:</span> {{ subscription.bigqueryConfig.table }}
+                <span class="font-medium">BigQuery Table:</span>&nbsp;{{ subscription.bigqueryConfig.table }}
               </div>
               <div class="flex items-center justify-center">
-                <span class="font-medium">Ordering:</span> {{ subscription?.enableMessageOrdering ? 'Enabled' : 'Disabled' }}
+                <span class="font-medium">Ordering:</span>&nbsp;{{ subscription?.enableMessageOrdering ? 'Enabled' : 'Disabled' }}
+              </div>
+            </div>
+            
+            <!-- Filter Expression Display -->
+            <div v-if="subscription?.filter" class="mt-2 text-xs">
+              <div class="bg-gray-50 dark:bg-gray-700 rounded px-2 py-1.5 border border-gray-200 dark:border-gray-600">
+                <span class="font-medium text-gray-700 dark:text-gray-300">Filter:</span> 
+                <code class="ml-1 text-gray-900 dark:text-gray-100">{{ subscription.filter }}</code>
               </div>
             </div>
             
@@ -456,6 +480,22 @@
                 />
                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Enable Message Ordering</span>
               </label>
+            </div>
+
+            <!-- Filter Expression -->
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Filter Expression (Optional)
+              </label>
+              <textarea
+                v-model="newSubscription.filter"
+                rows="2"
+                placeholder='e.g., attributes.region = "us-west" AND attributes.priority = "high"'
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm font-mono text-xs"
+              ></textarea>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Filter messages based on attributes. Only matching messages will be delivered to this subscription.
+              </p>
             </div>
             
             <!-- Dead Letter Policy -->
@@ -652,6 +692,22 @@
                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Enable Message Ordering</span>
               </label>
             </div>
+
+            <!-- Filter Expression -->
+            <div class="md:col-span-2">
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Filter Expression (Optional)
+              </label>
+              <textarea
+                v-model="newSubscription.filter"
+                rows="2"
+                placeholder='e.g., attributes.region = "us-west" AND attributes.priority = "high"'
+                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm font-mono text-xs"
+              ></textarea>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Filter messages based on attributes. Only matching messages will be delivered to this subscription.
+              </p>
+            </div>
             
             <!-- Dead Letter Policy -->
             <div class="md:col-span-2">
@@ -784,6 +840,7 @@ interface SubscriptionForm {
   writeMetadata?: boolean
   ackDeadlineSeconds: number
   enableMessageOrdering: boolean
+  filter?: string
   enableDeadLetter: boolean
   deadLetterTopic?: string
   maxDeliveryAttempts?: number
@@ -832,6 +889,7 @@ const newSubscription = ref<SubscriptionForm>({
   deliveryType: 'pull',
   ackDeadlineSeconds: 60,
   enableMessageOrdering: false,
+  filter: '',
   enableDeadLetter: false,
   maxDeliveryAttempts: 5,
   enableRetryPolicy: false,
@@ -1069,6 +1127,7 @@ const editSubscription = (subscription: PubSubSubscription) => {
     deliveryType,
     ackDeadlineSeconds: subscription.ackDeadlineSeconds || 60,
     enableMessageOrdering: subscription.enableMessageOrdering || false,
+    filter: subscription.filter || '',
     pushEndpoint: subscription.pushConfig?.pushEndpoint || '',
     bigqueryTable: subscription.bigqueryConfig?.table || '',
     useTopicSchema: subscription.bigqueryConfig?.useTopicSchema || false,
@@ -1094,6 +1153,7 @@ const addSubscription = () => {
     deliveryType: 'pull',
     ackDeadlineSeconds: 60,
     enableMessageOrdering: false,
+    filter: '',
     enableDeadLetter: false,
     maxDeliveryAttempts: 5,
     enableRetryPolicy: false,
@@ -1111,6 +1171,7 @@ const cancelSubscriptionForm = () => {
     deliveryType: 'pull',
     ackDeadlineSeconds: 60,
     enableMessageOrdering: false,
+    filter: '',
     enableDeadLetter: false,
     maxDeliveryAttempts: 5,
     enableRetryPolicy: false,
@@ -1172,7 +1233,8 @@ const saveNewSubscription = async () => {
       name: newSubscription.value.name.trim(),
       topic: topic.value.name,
       ackDeadlineSeconds: newSubscription.value.ackDeadlineSeconds,
-      enableMessageOrdering: newSubscription.value.enableMessageOrdering
+      enableMessageOrdering: newSubscription.value.enableMessageOrdering,
+      ...(newSubscription.value.filter && newSubscription.value.filter.trim() && { filter: newSubscription.value.filter.trim() })
     }
     
     if (newSubscription.value.deliveryType === 'push' && newSubscription.value.pushEndpoint) {
@@ -1382,7 +1444,8 @@ const saveEditedSubscription = async () => {
       name: subscriptionName, // Just the name, not the full path
       topic: editingSubscription.value.topic,
       ackDeadlineSeconds: newSubscription.value.ackDeadlineSeconds,
-      enableMessageOrdering: newSubscription.value.enableMessageOrdering
+      enableMessageOrdering: newSubscription.value.enableMessageOrdering,
+      ...(newSubscription.value.filter && newSubscription.value.filter.trim() && { filter: newSubscription.value.filter.trim() })
     }
     
     // Add delivery-specific config

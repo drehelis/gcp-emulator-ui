@@ -243,6 +243,7 @@ export const subscriptionsApi = {
       retainAckedMessages: request.retainAckedMessages || false,
       messageRetentionDuration: request.messageRetentionDuration || '604800s',
       enableMessageOrdering: request.enableMessageOrdering || false,
+      filter: request.filter ?? response.data.filter,
       detached: false,
       labels: request.labels || {},
       pushConfig: request.pushConfig,
