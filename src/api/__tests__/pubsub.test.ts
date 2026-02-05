@@ -296,7 +296,7 @@ describe('Pub/Sub API', () => {
       mockPut.mockResolvedValue({ data: {} })
 
       const { subscriptionsApi } = await import('@/api/pubsub')
-      const sub = await subscriptionsApi.createSubscription('my-project', {
+      await subscriptionsApi.createSubscription('my-project', {
         name: 'no-filter-sub',
         topic: 'my-topic'
       })
