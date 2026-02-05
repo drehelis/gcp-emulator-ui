@@ -455,6 +455,7 @@ export interface CreateSubscriptionRequest {
   messageRetentionDuration?: string
   enableMessageOrdering?: boolean
   labels?: Record<string, string>
+  filter?: string
   pushConfig?: {
     pushEndpoint: string
     attributes?: Record<string, string>

@@ -258,6 +258,110 @@ describe('Pub/Sub API', () => {
         { ackIds: ['ack1', 'ack2'] }
       )
     })
+
+    it('creates subscription with filter expression', async () => {
+      mockPut.mockResolvedValue({ data: {} })
+
+      const { subscriptionsApi } = await import('@/api/pubsub')
+      const sub = await subscriptionsApi.createSubscription('my-project', {
+        name: 'filtered-sub',
+        topic: 'my-topic',
+        filter: 'attributes.region = "us-west"'
+      })
+      
+      expect(mockPut).toHaveBeenCalled()
+      const callArgs = mockPut.mock.calls[0]
+      expect(callArgs[1]).toHaveProperty('filter', 'attributes.region = "us-west"')
+      expect(sub.filter).toBe('attributes.region = "us-west"')
+    })
+
+    it('creates subscription with complex filter expression', async () => {
+      mockPut.mockResolvedValue({ data: {} })
+
+      const { subscriptionsApi } = await import('@/api/pubsub')
+      const complexFilter = 'attributes.region = "us-west" AND attributes.priority = "high"'
+      const sub = await subscriptionsApi.createSubscription('my-project', {
+        name: 'complex-filtered-sub',
+        topic: 'my-topic',
+        filter: complexFilter
+      })
+      
+      expect(mockPut).toHaveBeenCalled()
+      const callArgs = mockPut.mock.calls[0]
+      expect(callArgs[1]).toHaveProperty('filter', complexFilter)
+      expect(sub.filter).toBe(complexFilter)
+    })
+
+    it('creates subscription without filter when not provided', async () => {
+      mockPut.mockResolvedValue({ data: {} })
+
+      const { subscriptionsApi } = await import('@/api/pubsub')
+      const sub = await subscriptionsApi.createSubscription('my-project', {
+        name: 'no-filter-sub',
+        topic: 'my-topic'
+      })
+      
+      expect(mockPut).toHaveBeenCalled()
+      const callArgs = mockPut.mock.calls[0]
+      expect(callArgs[1]).not.toHaveProperty('filter')
+    })
+
+    it('preserves filter from emulator response when present', async () => {
+      mockPut.mockResolvedValue({ 
+        data: { 
+          filter: 'attributes.environment = "production"' 
+        } 
+      })
+
+      const { subscriptionsApi } = await import('@/api/pubsub')
+      const sub = await subscriptionsApi.createSubscription('my-project', {
+        name: 'emulator-filter-sub',
+        topic: 'my-topic'
+      })
+      
+      expect(sub.filter).toBe('attributes.environment = "production"')
+    })
+
+    it('request filter overrides emulator response filter', async () => {
+      mockPut.mockResolvedValue({ 
+        data: { 
+          filter: 'attributes.old = "value"' 
+        } 
+      })
+
+      const { subscriptionsApi } = await import('@/api/pubsub')
+      const sub = await subscriptionsApi.createSubscription('my-project', {
+        name: 'override-filter-sub',
+        topic: 'my-topic',
+        filter: 'attributes.new = "value"'
+      })
+      
+      expect(sub.filter).toBe('attributes.new = "value"')
+    })
+
+    it('creates subscription with filter and other config', async () => {
+      mockPut.mockResolvedValue({ data: {} })
+
+      const { subscriptionsApi } = await import('@/api/pubsub')
+      const sub = await subscriptionsApi.createSubscription('my-project', {
+        name: 'full-config-sub',
+        topic: 'my-topic',
+        filter: 'attributes.type = "order"',
+        ackDeadlineSeconds: 30,
+        enableMessageOrdering: true,
+        pushConfig: {
+          pushEndpoint: 'https://example.com/webhook'
+        }
+      })
+      
+      expect(mockPut).toHaveBeenCalled()
+      const callArgs = mockPut.mock.calls[0]
+      expect(callArgs[1]).toHaveProperty('filter', 'attributes.type = "order"')
+      expect(callArgs[1]).toHaveProperty('ackDeadlineSeconds', 30)
+      expect(callArgs[1]).toHaveProperty('enableMessageOrdering', true)
+      expect(sub.filter).toBe('attributes.type = "order"')
+      expect(sub.ackDeadlineSeconds).toBe(30)
+    })
   })
 
   describe('schemasApi', () => {

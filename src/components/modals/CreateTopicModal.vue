@@ -2,7 +2,7 @@
   <BaseModal
     v-model="modelValue"
     title="Create Topic"
-    size="xl"
+    size="5xl"
     :actions="modalActions"
     @close="handleClose"
   >
@@ -260,6 +260,22 @@
                 </label>
               </div>
 
+              <!-- Filter Expression -->
+              <div class="lg:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Filter Expression (Optional)
+                </label>
+                <textarea
+                  v-model="subscription.filter"
+                  rows="2"
+                  placeholder='e.g., attributes.region = "us-west" AND attributes.priority = "high"'
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm font-mono text-xs"
+                ></textarea>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Filter messages based on attributes. Only matching messages will be delivered to this subscription.
+                </p>
+              </div>
+
               <!-- Dead Letter Topic -->
               <div class="lg:col-span-2">
                 <label class="flex items-center mb-2">
@@ -370,6 +386,7 @@ interface SubscriptionForm {
   writeMetadata?: boolean
   ackDeadlineSeconds: number
   enableMessageOrdering: boolean
+  filter?: string
   useDeadLetter: boolean
   deadLetterTopic?: string
   maxDeliveryAttempts?: number
@@ -515,6 +532,7 @@ const handleSubmit = async () => {
         topic: `projects/${currentProjectId.value}/topics/${topicForm.value.name.trim()}`,
         ackDeadlineSeconds: subscription.ackDeadlineSeconds,
         enableMessageOrdering: subscription.enableMessageOrdering,
+        ...(subscription.filter && subscription.filter.trim() && { filter: subscription.filter.trim() }),
         pushConfig: subscription.deliveryType === 'push' ? {
           pushEndpoint: subscription.pushEndpoint
         } : undefined,
