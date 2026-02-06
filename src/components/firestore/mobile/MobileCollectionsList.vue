@@ -4,7 +4,9 @@
     <div class="flex-shrink-0 p-4 border-b border-gray-200 dark:border-gray-700">
       <div class="flex items-center justify-between">
         <h1 class="text-lg font-semibold text-gray-900 dark:text-white">Collections</h1>
-        <span class="text-sm text-gray-500 dark:text-gray-400">{{ collections.length }} collections</span>
+        <span class="text-sm text-gray-500 dark:text-gray-400"
+          >{{ collections.length }} collections</span
+        >
       </div>
     </div>
 
@@ -32,7 +34,9 @@
       <div v-else-if="collections.length === 0" class="p-8 text-center">
         <CircleStackIcon class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
         <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">No collections</h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400">Get started by creating your first collection.</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Get started by creating your first collection.
+        </p>
       </div>
 
       <div v-else class="p-4 space-y-2">
@@ -64,7 +68,7 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
-  loading: false
+  loading: false,
 })
 
 defineEmits<{

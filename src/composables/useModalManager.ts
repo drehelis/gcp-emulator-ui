@@ -29,7 +29,7 @@ export const useModalManager = () => {
     fieldValue: '',
     fieldPath: '',
     isNew: false,
-    parentPath: ''
+    parentPath: '',
   })
   const showDeleteFieldModal = ref(false)
   const isDeletingField = ref(false)
@@ -111,12 +111,18 @@ export const useModalManager = () => {
       fieldValue: '',
       fieldPath: '',
       isNew: true,
-      parentPath: ''
+      parentPath: '',
     }
     showFieldModal.value = true
   }
 
-  const openEditFieldModal = (data: { path: string; fieldName: string; fieldValue: any; fieldType: string; editableValue: any }) => {
+  const openEditFieldModal = (data: {
+    path: string
+    fieldName: string
+    fieldValue: any
+    fieldType: string
+    editableValue: any
+  }) => {
     fieldModalMode.value = 'edit'
     fieldModalData.value = {
       fieldName: data.fieldName,
@@ -124,7 +130,7 @@ export const useModalManager = () => {
       fieldValue: data.editableValue,
       fieldPath: data.path,
       isNew: false,
-      parentPath: ''
+      parentPath: '',
     }
     showFieldModal.value = true
   }
@@ -137,7 +143,7 @@ export const useModalManager = () => {
       fieldValue: '',
       fieldPath: `${fieldPath}.newField`,
       isNew: true,
-      parentPath: fieldPath
+      parentPath: fieldPath,
     }
     showFieldModal.value = true
   }
@@ -150,7 +156,7 @@ export const useModalManager = () => {
       fieldValue: '',
       fieldPath: `${fieldPath}[new]`,
       isNew: true,
-      parentPath: fieldPath
+      parentPath: fieldPath,
     }
     showFieldModal.value = true
   }
@@ -215,6 +221,6 @@ export const useModalManager = () => {
     openAddToArrayModal,
     closeFieldModal,
     openDeleteFieldModal,
-    closeDeleteFieldModal
+    closeDeleteFieldModal,
   }
 }

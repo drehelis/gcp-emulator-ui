@@ -12,7 +12,7 @@ import type {
   SearchFilters,
   PaginationOptions,
   BaseStoreState,
-  BatchOperation
+  BatchOperation,
 } from '@/types'
 import { useProjectsStore } from './projects'
 import { topicsApi, subscriptionsApi } from '@/api/pubsub'
@@ -24,7 +24,7 @@ export const useTopicsStore = defineStore('topics', () => {
   const state = ref<BaseStoreState>({
     state: 'idle',
     error: null,
-    lastUpdated: null
+    lastUpdated: null,
   })
 
   const topics = ref<PubSubTopic[]>([])
@@ -36,14 +36,14 @@ export const useTopicsStore = defineStore('topics', () => {
     namePattern: '',
     labels: {},
     states: [],
-    dateRange: undefined
+    dateRange: undefined,
   })
 
   const pagination = ref<PaginationOptions>({
     pageSize: 50,
     pageToken: undefined,
     orderBy: 'name',
-    filter: ''
+    filter: '',
   })
 
   const batchOperations = ref<Map<string, BatchOperation<any>>>(new Map())
@@ -55,7 +55,9 @@ export const useTopicsStore = defineStore('topics', () => {
   // Getters
   const currentProjectTopics = computed(() => {
     if (!projectsStore.selectedProject) return []
-    return topics.value.filter(topic => topic.projectId === projectsStore.selectedProject!.projectId)
+    return topics.value.filter(
+      topic => topic.projectId === projectsStore.selectedProject!.projectId
+    )
   })
 
   const filteredTopics = computed(() => {
@@ -64,9 +66,10 @@ export const useTopicsStore = defineStore('topics', () => {
     // Apply name filter
     if (filters.value.namePattern) {
       const pattern = filters.value.namePattern.toLowerCase()
-      filtered = filtered.filter(topic =>
-        topic.name.toLowerCase().includes(pattern) ||
-        topic.fullName.toLowerCase().includes(pattern)
+      filtered = filtered.filter(
+        topic =>
+          topic.name.toLowerCase().includes(pattern) ||
+          topic.fullName.toLowerCase().includes(pattern)
       )
     }
 
@@ -74,16 +77,16 @@ export const useTopicsStore = defineStore('topics', () => {
     if (filters.value.labels && Object.keys(filters.value.labels).length > 0) {
       filtered = filtered.filter(topic => {
         if (!topic.labels) return false
-        return Object.entries(filters.value.labels!).every(([key, value]) =>
-          topic.labels![key] === value
+        return Object.entries(filters.value.labels!).every(
+          ([key, value]) => topic.labels![key] === value
         )
       })
     }
 
     // Apply state filter
     if (filters.value.states && filters.value.states.length > 0) {
-      filtered = filtered.filter(topic =>
-        topic.state && filters.value.states!.includes(topic.state)
+      filtered = filtered.filter(
+        topic => topic.state && filters.value.states!.includes(topic.state)
       )
     }
 
@@ -91,8 +94,9 @@ export const useTopicsStore = defineStore('topics', () => {
     if (filters.value.dateRange) {
       filtered = filtered.filter(topic => {
         const createdAt = new Date(topic.createdAt)
-        return createdAt >= filters.value.dateRange!.start &&
-          createdAt <= filters.value.dateRange!.end
+        return (
+          createdAt >= filters.value.dateRange!.start && createdAt <= filters.value.dateRange!.end
+        )
       })
     }
 
@@ -105,15 +109,18 @@ export const useTopicsStore = defineStore('topics', () => {
     withSchema: currentProjectTopics.value.filter(t => t.schemaSettings).length,
     withKms: currentProjectTopics.value.filter(t => t.kmsKeyName).length,
     totalMessages: currentProjectTopics.value.reduce((sum, t) => sum + (t.messageCount || 0), 0),
-    totalSubscriptions: currentProjectTopics.value.reduce((sum, t) => sum + (t.subscriptionsCount || 0), 0)
+    totalSubscriptions: currentProjectTopics.value.reduce(
+      (sum, t) => sum + (t.subscriptionsCount || 0),
+      0
+    ),
   }))
 
   const isLoading = computed(() => state.value.state === 'loading')
   const hasError = computed(() => state.value.state === 'error')
 
   const activeBatchOperations = computed(() =>
-    Array.from(batchOperations.value.values()).filter(op =>
-      op.status === 'PENDING' || op.status === 'RUNNING'
+    Array.from(batchOperations.value.values()).filter(
+      op => op.status === 'PENDING' || op.status === 'RUNNING'
     )
   )
 
@@ -133,18 +140,18 @@ export const useTopicsStore = defineStore('topics', () => {
 
       // Use real API call
       const apiTopics = await topicsApi.getTopics(targetProjectId)
-      
+
       // Transform API topics to ensure they have the correct projectId
       const transformedTopics: PubSubTopic[] = apiTopics.map(topic => {
         // Ensure projectId is set correctly
         const projectId = topic.projectId || targetProjectId
-        
+
         // Extract topic name from full name if needed
         let topicName = topic.name
         if (topic.name && topic.name.includes('/topics/')) {
           topicName = topic.name.split('/topics/')[1]
         }
-        
+
         return {
           ...topic,
           projectId,
@@ -155,7 +162,7 @@ export const useTopicsStore = defineStore('topics', () => {
           updatedAt: topic.updatedAt || new Date(),
           state: topic.state || 'ACTIVE',
           messageCount: topic.messageCount || 0,
-          subscriptionsCount: topic.subscriptionsCount || 0
+          subscriptionsCount: topic.subscriptionsCount || 0,
         }
       })
 
@@ -170,7 +177,6 @@ export const useTopicsStore = defineStore('topics', () => {
 
       state.value.state = 'success'
       state.value.lastUpdated = new Date()
-
     } catch (error) {
       state.value.state = 'error'
       state.value.error = (error as Error).message
@@ -208,7 +214,7 @@ export const useTopicsStore = defineStore('topics', () => {
         labels: {},
         state: 'ACTIVE',
         messageCount: Math.floor(Math.random() * 10000),
-        subscriptionsCount: Math.floor(Math.random() * 10)
+        subscriptionsCount: Math.floor(Math.random() * 10),
       }
 
       // Simulate API delay
@@ -229,7 +235,6 @@ export const useTopicsStore = defineStore('topics', () => {
       state.value.lastUpdated = new Date()
 
       return mockTopic
-
     } catch (error) {
       state.value.state = 'error'
       state.value.error = (error as Error).message
@@ -263,7 +268,7 @@ export const useTopicsStore = defineStore('topics', () => {
         schemaSettings: topicData.schemaSettings,
         state: 'ACTIVE',
         messageCount: 0,
-        subscriptionsCount: 0
+        subscriptionsCount: 0,
       }
 
       // Simulate API delay
@@ -277,7 +282,6 @@ export const useTopicsStore = defineStore('topics', () => {
       state.value.lastUpdated = new Date()
 
       return newTopic
-
     } catch (error) {
       state.value.state = 'error'
       state.value.error = (error as Error).message
@@ -285,7 +289,11 @@ export const useTopicsStore = defineStore('topics', () => {
     }
   }
 
-  async function updateTopic(topicName: string, updates: Partial<PubSubTopic>, projectId?: string): Promise<PubSubTopic> {
+  async function updateTopic(
+    topicName: string,
+    updates: Partial<PubSubTopic>,
+    projectId?: string
+  ): Promise<PubSubTopic> {
     try {
       const targetProjectId = projectId || projectsStore.selectedProject?.projectId
       if (!targetProjectId) {
@@ -309,7 +317,7 @@ export const useTopicsStore = defineStore('topics', () => {
       const updatedTopic: PubSubTopic = {
         ...topics.value[existingIndex],
         ...updates,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       }
 
       // Simulate API delay
@@ -323,7 +331,6 @@ export const useTopicsStore = defineStore('topics', () => {
       state.value.lastUpdated = new Date()
 
       return updatedTopic
-
     } catch (error) {
       state.value.state = 'error'
       state.value.error = (error as Error).message
@@ -353,12 +360,16 @@ export const useTopicsStore = defineStore('topics', () => {
         const allSubscriptions = await subscriptionsApi.getSubscriptions(targetProjectId)
         const relatedSubscriptions = allSubscriptions.filter(subscription => {
           // Check both topic and topicName properties since API might return either format
-          const subTopicName = subscription.topicName || (subscription as any).topic?.replace(/^projects\/[^/]+\/topics\//, '')
+          const subTopicName =
+            subscription.topicName ||
+            (subscription as any).topic?.replace(/^projects\/[^/]+\/topics\//, '')
           const subTopicFullName = subscription.topicName || (subscription as any).topic
 
-          return subTopicName === simpleName ||
+          return (
+            subTopicName === simpleName ||
             subTopicFullName === `projects/${targetProjectId}/topics/${simpleName}` ||
             (subscription as any).topic === `projects/${targetProjectId}/topics/${simpleName}`
+          )
         })
 
         // Also find and delete orphaned subscriptions that have "_deleted-topic_" as their topic
@@ -369,8 +380,8 @@ export const useTopicsStore = defineStore('topics', () => {
         })
 
         const allSubscriptionsToDelete = [...relatedSubscriptions, ...orphanedSubscriptions]
-        const uniqueSubscriptionsToDelete = allSubscriptionsToDelete.filter((sub, index, arr) =>
-          index === arr.findIndex(s => s.name === sub.name)
+        const uniqueSubscriptionsToDelete = allSubscriptionsToDelete.filter(
+          (sub, index, arr) => index === arr.findIndex(s => s.name === sub.name)
         )
 
         for (const subscription of uniqueSubscriptionsToDelete) {
@@ -406,7 +417,6 @@ export const useTopicsStore = defineStore('topics', () => {
 
       state.value.state = 'success'
       state.value.lastUpdated = new Date()
-
     } catch (error) {
       state.value.state = 'error'
       state.value.error = (error as Error).message
@@ -414,7 +424,11 @@ export const useTopicsStore = defineStore('topics', () => {
     }
   }
 
-  async function fetchTopicMetrics(topicName: string, projectId?: string, timeRange?: { start: Date; end: Date }): Promise<TopicMetrics> {
+  async function fetchTopicMetrics(
+    topicName: string,
+    projectId?: string,
+    timeRange?: { start: Date; end: Date }
+  ): Promise<TopicMetrics> {
     const targetProjectId = projectId || projectsStore.selectedProject?.projectId
     if (!targetProjectId) {
       throw new Error('No project selected')
@@ -430,7 +444,7 @@ export const useTopicsStore = defineStore('topics', () => {
       messageBytes: generateMockMetrics(1024, timeRange),
       publishMessageCount: generateMockMetrics(30, timeRange),
       publishedMessageBytes: generateMockMetrics(512, timeRange),
-      publishRequestCount: generateMockMetrics(20, timeRange)
+      publishRequestCount: generateMockMetrics(20, timeRange),
     }
 
     // Simulate API delay
@@ -451,7 +465,7 @@ export const useTopicsStore = defineStore('topics', () => {
       items: topics,
       progress: 0,
       errors: [],
-      createdAt: new Date()
+      createdAt: new Date(),
     }
 
     batchOperations.value.set(batchId, operation)
@@ -469,7 +483,7 @@ export const useTopicsStore = defineStore('topics', () => {
             code: 500,
             message: (error as Error).message,
             details: [topics[i]],
-            timestamp: new Date()
+            timestamp: new Date(),
           })
         }
       }
@@ -496,7 +510,7 @@ export const useTopicsStore = defineStore('topics', () => {
       items: topicNames,
       progress: 0,
       errors: [],
-      createdAt: new Date()
+      createdAt: new Date(),
     }
 
     batchOperations.value.set(batchId, operation)
@@ -514,7 +528,7 @@ export const useTopicsStore = defineStore('topics', () => {
             code: 500,
             message: (error as Error).message,
             details: [topicNames[i]],
-            timestamp: new Date()
+            timestamp: new Date(),
           })
         }
       }
@@ -549,7 +563,7 @@ export const useTopicsStore = defineStore('topics', () => {
       namePattern: '',
       labels: {},
       states: [],
-      dateRange: undefined
+      dateRange: undefined,
     }
   }
 
@@ -636,25 +650,28 @@ export const useTopicsStore = defineStore('topics', () => {
       namePattern: '',
       labels: {},
       states: [],
-      dateRange: undefined
+      dateRange: undefined,
     }
     pagination.value = {
       pageSize: 50,
       pageToken: undefined,
       orderBy: 'name',
-      filter: ''
+      filter: '',
     }
     batchOperations.value.clear()
     topicCache.value.clear()
     state.value = {
       state: 'idle',
       error: null,
-      lastUpdated: null
+      lastUpdated: null,
     }
   }
 
   // Helper function to generate mock metrics data
-  function generateMockMetrics(scale: number, timeRange?: { start: Date; end: Date }): Array<{ timestamp: Date; value: number }> {
+  function generateMockMetrics(
+    scale: number,
+    timeRange?: { start: Date; end: Date }
+  ): Array<{ timestamp: Date; value: number }> {
     const now = new Date()
     const start = timeRange?.start || new Date(now.getTime() - 24 * 60 * 60 * 1000) // Last 24 hours
     const end = timeRange?.end || now
@@ -663,7 +680,7 @@ export const useTopicsStore = defineStore('topics', () => {
 
     const metrics = []
     for (let i = 0; i <= points; i++) {
-      const timestamp = new Date(start.getTime() + (i * interval))
+      const timestamp = new Date(start.getTime() + i * interval)
       const baseValue = Math.floor(Math.random() * scale)
       const variation = Math.sin(i * 0.1) * (scale * 0.3) // Add some wave pattern
       const value = Math.max(0, baseValue + variation)
@@ -716,6 +733,6 @@ export const useTopicsStore = defineStore('topics', () => {
     getTopicMetrics,
     clearCache,
     clearProjectData,
-    reset
+    reset,
   }
 })

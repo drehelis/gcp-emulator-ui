@@ -33,7 +33,7 @@
             'w-full flex items-center justify-between px-3 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors',
             selectedDatabase === database
               ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-              : 'text-gray-700 dark:text-gray-300'
+              : 'text-gray-700 dark:text-gray-300',
           ]"
         >
           <div class="flex items-center min-w-0 flex-1">
@@ -77,11 +77,7 @@
     </div>
 
     <!-- Click outside to close -->
-    <div
-      v-if="showDropdown"
-      class="fixed inset-0 z-40"
-      @click="showDropdown = false"
-    ></div>
+    <div v-if="showDropdown" class="fixed inset-0 z-40" @click="showDropdown = false"></div>
   </div>
 </template>
 

@@ -12,7 +12,7 @@
       <p class="text-sm text-gray-600 dark:text-gray-400">
         {{ message }}
       </p>
-      
+
       <div v-if="details" class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
         <p class="text-sm font-medium text-gray-900 dark:text-white mb-1">
           {{ details.title }}
@@ -21,16 +21,15 @@
           {{ details.description }}
         </p>
       </div>
-      
-      <div v-if="showWarning" class="flex items-start space-x-2 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+
+      <div
+        v-if="showWarning"
+        class="flex items-start space-x-2 p-3 bg-red-50 dark:bg-red-900/20 rounded-lg"
+      >
         <ExclamationTriangleIcon class="w-5 h-5 text-red-500 mt-0.5 shrink-0" />
         <div>
-          <p class="text-sm font-medium text-red-800 dark:text-red-200">
-            Warning
-          </p>
-          <p class="text-xs text-red-600 dark:text-red-300 mt-1">
-            This action cannot be undone.
-          </p>
+          <p class="text-sm font-medium text-red-800 dark:text-red-200">Warning</p>
+          <p class="text-xs text-red-600 dark:text-red-300 mt-1">This action cannot be undone.</p>
         </div>
       </div>
     </div>
@@ -59,37 +58,37 @@ interface Props {
 
 interface Emits {
   'update:modelValue': [value: boolean]
-  'confirm': []
-  'cancel': []
+  confirm: []
+  cancel: []
 }
 
 const props = withDefaults(defineProps<Props>(), {
   confirmLabel: 'Delete',
   cancelLabel: 'Cancel',
   isLoading: false,
-  showWarning: true
+  showWarning: true,
 })
 
 const emit = defineEmits<Emits>()
 
 const modelValue = computed({
   get: () => props.modelValue,
-  set: (value: boolean) => emit('update:modelValue', value)
+  set: (value: boolean) => emit('update:modelValue', value),
 })
 
 const modalActions = computed<ModalAction[]>(() => [
   {
     label: props.cancelLabel,
     handler: handleCancel,
-    variant: 'secondary'
+    variant: 'secondary',
   },
   {
     label: props.confirmLabel,
     handler: handleConfirm,
     variant: 'danger',
     loading: props.isLoading,
-    disabled: props.isLoading
-  }
+    disabled: props.isLoading,
+  },
 ])
 
 const handleConfirm = () => {

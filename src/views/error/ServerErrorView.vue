@@ -1,18 +1,12 @@
 <template>
   <div class="space-y-6">
     <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 theme-transition-bg">
-      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-        Server Error
-      </h1>
-      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-        Server Error page
-      </p>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Server Error</h1>
+      <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Server Error page</p>
     </div>
 
     <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6 theme-transition-bg">
-      <p class="text-gray-500 dark:text-gray-400">
-        Server Error - Coming soon...
-      </p>
+      <p class="text-gray-500 dark:text-gray-400">Server Error - Coming soon...</p>
     </div>
   </div>
 </template>

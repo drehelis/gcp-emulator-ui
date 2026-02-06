@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "lint": "eslint . --fix",
     "lint:style": "stylelint **/*.{css,scss,vue} --fix",
-    "format": "prettier --write src/",
+    "format:write": "prettier --write src/",
+    "format:check": "prettier --check src/",
     "type-check": "vue-tsc --noEmit --skipLibCheck",
     "test": "vitest",
     "test:coverage": "vitest run --coverage"
@@ -56,7 +57,7 @@
     "@rushstack/eslint-patch": "^1.15.0",
     "@tsconfig/node20": "^20.1.9",
     "@types/lodash-es": "^4.17.12",
-    "@types/node": "^25.2.0",
+    "@types/node": "^25.2.1",
     "@types/uuid": "^11.0.0",
     "@vitejs/plugin-vue": "^6.0.4",
     "@vitejs/plugin-vue-jsx": "^5.1.4",

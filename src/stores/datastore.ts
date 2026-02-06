@@ -4,11 +4,7 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type {
-  DatastoreEntity,
-  DatastoreKey,
-  DatastoreKindWithMetadata,
-} from '@/types'
+import type { DatastoreEntity, DatastoreKey, DatastoreKindWithMetadata } from '@/types'
 import datastoreApi from '@/api/datastore'
 import { useProjectsStore } from './projects'
 
@@ -55,7 +51,10 @@ export const useDatastoreStore = defineStore('datastore', () => {
 
       // Set default database if not selected (only auto-select if value is exactly undefined)
       // Empty string '' is a valid database selection (default database)
-      if ((selectedDatabase.value === undefined || selectedDatabase.value === '') && databaseList.length > 0) {
+      if (
+        (selectedDatabase.value === undefined || selectedDatabase.value === '') &&
+        databaseList.length > 0
+      ) {
         selectedDatabase.value = databaseList[0]
       }
     } catch (error) {
@@ -102,13 +101,13 @@ export const useDatastoreStore = defineStore('datastore', () => {
         entityCount: 0,
         bytes: 0,
         namespace: selectedNamespace.value,
-        isExpanded: false
+        isExpanded: false,
       }))
 
       // Load entity counts in background (don't block UI)
       // Use smaller limit for faster counting
       Promise.all(
-        kinds.value.map(async (kind) => {
+        kinds.value.map(async kind => {
           try {
             const result = await datastoreApi.getEntitiesByKind(
               projectId,
@@ -182,7 +181,10 @@ export const useDatastoreStore = defineStore('datastore', () => {
   }
 
   // Get a single entity by key
-  const getEntity = async (projectId: string, key: DatastoreKey): Promise<DatastoreEntity | null> => {
+  const getEntity = async (
+    projectId: string,
+    key: DatastoreKey
+  ): Promise<DatastoreEntity | null> => {
     try {
       return await datastoreApi.getEntity(projectId, key)
     } catch (error) {
@@ -213,7 +215,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
           entityCount: 1,
           bytes: 0,
           namespace: selectedNamespace.value,
-          isExpanded: false
+          isExpanded: false,
         })
       }
 
@@ -290,7 +292,12 @@ export const useDatastoreStore = defineStore('datastore', () => {
   const deleteKind = async (projectId: string, kind: string) => {
     try {
       loading.value = true
-      await datastoreApi.deleteKind(projectId, kind, selectedNamespace.value, selectedDatabase.value)
+      await datastoreApi.deleteKind(
+        projectId,
+        kind,
+        selectedNamespace.value,
+        selectedDatabase.value
+      )
 
       // Remove from local state
       kinds.value = kinds.value.filter(k => k.name !== kind)
@@ -317,10 +324,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
   }
 
   // Export entities (Datastore emulator API)
-  const exportEntities = async (
-    projectId: string,
-    exportDirectory: string
-  ) => {
+  const exportEntities = async (projectId: string, exportDirectory: string) => {
     try {
       loading.value = true
       return await datastoreApi.exportEntities(projectId, exportDirectory)
@@ -333,10 +337,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
   }
 
   // Import entities (Datastore emulator API)
-  const importEntities = async (
-    projectId: string,
-    metadataFilePath: string
-  ) => {
+  const importEntities = async (projectId: string, metadataFilePath: string) => {
     try {
       loading.value = true
       const result = await datastoreApi.importEntities(projectId, metadataFilePath)
@@ -354,10 +355,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
   }
 
   // Export entities as JSON
-  const exportEntitiesAsJson = async (
-    projectId: string,
-    namespaceId?: string
-  ) => {
+  const exportEntitiesAsJson = async (projectId: string, namespaceId?: string) => {
     try {
       loading.value = true
       return await datastoreApi.exportEntitiesAsJson(projectId, namespaceId)
@@ -407,6 +405,6 @@ export const useDatastoreStore = defineStore('datastore', () => {
     importEntities,
     // Utility
     healthCheck,
-    clearData
+    clearData,
   }
 })

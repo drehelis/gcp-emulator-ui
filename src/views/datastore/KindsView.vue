@@ -58,7 +58,9 @@
               :disabled="databases.length === 0 && namespaces.length === 0"
               placeholder="Select database..."
               searchable
-              :empty-text="databases.length === 0 ? 'No databases in this namespace' : 'Select database...'"
+              :empty-text="
+                databases.length === 0 ? 'No databases in this namespace' : 'Select database...'
+              "
               :empty-icon="InboxIcon"
               @update:model-value="handleDatabaseChange"
             />
@@ -114,7 +116,9 @@
           <div class="flex items-center gap-3">
             <!-- Query Builder Dropdown -->
             <Menu as="div" class="relative inline-block text-left">
-              <MenuButton class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors shadow-sm">
+              <MenuButton
+                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors shadow-sm"
+              >
                 <FunnelIcon class="w-3.5 h-3.5 mr-1.5" />
                 Add to query
                 <ChevronDownIcon class="w-3.5 h-3.5 ml-1" />
@@ -128,11 +132,15 @@
                 leave-from-class="opacity-100"
                 leave-to-class="opacity-0"
               >
-                <MenuItems class="absolute left-0 z-10 mt-1.5 w-72 origin-top-left rounded-lg bg-white dark:bg-gray-800 shadow-xl focus:!outline-none border !border-gray-200 dark:!border-gray-700">
+                <MenuItems
+                  class="absolute left-0 z-10 mt-1.5 w-72 origin-top-left rounded-lg bg-white dark:bg-gray-800 shadow-xl focus:!outline-none border !border-gray-200 dark:!border-gray-700"
+                >
                   <div class="p-1.5">
                     <!-- Selection Section -->
                     <div class="px-2 py-1.5">
-                      <h3 class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                      <h3
+                        class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide"
+                      >
                         Selection
                       </h3>
                     </div>
@@ -142,11 +150,24 @@
                         @click="addQueryClause('where')"
                         :class="[
                           'w-full text-left px-2.5 py-1.5 rounded-md transition-colors group',
-                          active ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                          active ? 'bg-blue-50 dark:bg-blue-900/20' : '',
                         ]"
                       >
-                        <div :class="['font-medium text-xs', active ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white']">WHERE</div>
-                        <div class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5">Match conditions with operators</div>
+                        <div
+                          :class="[
+                            'font-medium text-xs',
+                            active
+                              ? 'text-blue-700 dark:text-blue-300'
+                              : 'text-gray-900 dark:text-white',
+                          ]"
+                        >
+                          WHERE
+                        </div>
+                        <div
+                          class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5"
+                        >
+                          Match conditions with operators
+                        </div>
                       </button>
                     </MenuItem>
 
@@ -155,11 +176,24 @@
                         @click="addQueryClause('orderBy')"
                         :class="[
                           'w-full text-left px-2.5 py-1.5 rounded-md transition-colors group',
-                          active ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                          active ? 'bg-blue-50 dark:bg-blue-900/20' : '',
                         ]"
                       >
-                        <div :class="['font-medium text-xs', active ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white']">ORDER BY</div>
-                        <div class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5">Sort by property</div>
+                        <div
+                          :class="[
+                            'font-medium text-xs',
+                            active
+                              ? 'text-blue-700 dark:text-blue-300'
+                              : 'text-gray-900 dark:text-white',
+                          ]"
+                        >
+                          ORDER BY
+                        </div>
+                        <div
+                          class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5"
+                        >
+                          Sort by property
+                        </div>
                       </button>
                     </MenuItem>
 
@@ -168,11 +202,24 @@
                         @click="addQueryClause('limit')"
                         :class="[
                           'w-full text-left px-2.5 py-1.5 rounded-md transition-colors group',
-                          active ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                          active ? 'bg-blue-50 dark:bg-blue-900/20' : '',
                         ]"
                       >
-                        <div :class="['font-medium text-xs', active ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white']">LIMIT</div>
-                        <div class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5">Limit result count</div>
+                        <div
+                          :class="[
+                            'font-medium text-xs',
+                            active
+                              ? 'text-blue-700 dark:text-blue-300'
+                              : 'text-gray-900 dark:text-white',
+                          ]"
+                        >
+                          LIMIT
+                        </div>
+                        <div
+                          class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5"
+                        >
+                          Limit result count
+                        </div>
                       </button>
                     </MenuItem>
 
@@ -181,7 +228,9 @@
 
                     <!-- Aggregation Section -->
                     <div class="px-2 py-1.5">
-                      <h3 class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                      <h3
+                        class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide"
+                      >
                         Aggregation
                       </h3>
                     </div>
@@ -191,11 +240,24 @@
                         @click="addQueryClause('avg')"
                         :class="[
                           'w-full text-left px-2.5 py-1.5 rounded-md transition-colors group',
-                          active ? 'bg-purple-50 dark:bg-purple-900/20' : ''
+                          active ? 'bg-purple-50 dark:bg-purple-900/20' : '',
                         ]"
                       >
-                        <div :class="['font-medium text-xs', active ? 'text-purple-700 dark:text-purple-300' : 'text-gray-900 dark:text-white']">AVG</div>
-                        <div class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5">Average of numeric values</div>
+                        <div
+                          :class="[
+                            'font-medium text-xs',
+                            active
+                              ? 'text-purple-700 dark:text-purple-300'
+                              : 'text-gray-900 dark:text-white',
+                          ]"
+                        >
+                          AVG
+                        </div>
+                        <div
+                          class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5"
+                        >
+                          Average of numeric values
+                        </div>
                       </button>
                     </MenuItem>
 
@@ -204,11 +266,24 @@
                         @click="addQueryClause('count')"
                         :class="[
                           'w-full text-left px-2.5 py-1.5 rounded-md transition-colors group',
-                          active ? 'bg-purple-50 dark:bg-purple-900/20' : ''
+                          active ? 'bg-purple-50 dark:bg-purple-900/20' : '',
                         ]"
                       >
-                        <div :class="['font-medium text-xs', active ? 'text-purple-700 dark:text-purple-300' : 'text-gray-900 dark:text-white']">COUNT</div>
-                        <div class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5">Count matching documents</div>
+                        <div
+                          :class="[
+                            'font-medium text-xs',
+                            active
+                              ? 'text-purple-700 dark:text-purple-300'
+                              : 'text-gray-900 dark:text-white',
+                          ]"
+                        >
+                          COUNT
+                        </div>
+                        <div
+                          class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5"
+                        >
+                          Count matching documents
+                        </div>
                       </button>
                     </MenuItem>
 
@@ -217,11 +292,24 @@
                         @click="addQueryClause('sum')"
                         :class="[
                           'w-full text-left px-2.5 py-1.5 rounded-md transition-colors group',
-                          active ? 'bg-purple-50 dark:bg-purple-900/20' : ''
+                          active ? 'bg-purple-50 dark:bg-purple-900/20' : '',
                         ]"
                       >
-                        <div :class="['font-medium text-xs', active ? 'text-purple-700 dark:text-purple-300' : 'text-gray-900 dark:text-white']">SUM</div>
-                        <div class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5">Sum of numeric values</div>
+                        <div
+                          :class="[
+                            'font-medium text-xs',
+                            active
+                              ? 'text-purple-700 dark:text-purple-300'
+                              : 'text-gray-900 dark:text-white',
+                          ]"
+                        >
+                          SUM
+                        </div>
+                        <div
+                          class="text-[11px] text-gray-500 dark:text-gray-400 leading-tight mt-0.5"
+                        >
+                          Sum of numeric values
+                        </div>
                       </button>
                     </MenuItem>
                   </div>
@@ -234,9 +322,11 @@
               @click="clearQueryAndReload"
               :disabled="queryClauses.length === 0"
               class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-              :class="queryClauses.length > 0
-                ? 'text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer'
-                : 'text-gray-400 dark:text-gray-600 bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 cursor-not-allowed'"
+              :class="
+                queryClauses.length > 0
+                  ? 'text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer'
+                  : 'text-gray-400 dark:text-gray-600 bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 cursor-not-allowed'
+              "
             >
               <XMarkIcon class="w-3.5 h-3.5 mr-1.5" />
               Clear
@@ -247,10 +337,16 @@
         <!-- Query Builder Display -->
         <div v-if="queryClauses.length > 0" class="mt-3 space-y-2">
           <!-- LIMIT Clause -->
-          <div v-for="(clause, index) in queryClauses.filter(c => c.type === 'limit')" :key="'limit-' + index" class="group relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+          <div
+            v-for="(clause, index) in queryClauses.filter(c => c.type === 'limit')"
+            :key="'limit-' + index"
+            class="group relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg"
+          >
             <div class="flex items-center gap-3 p-3">
               <div class="flex-shrink-0">
-                <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-xs font-semibold tracking-wide">
+                <span
+                  class="inline-flex items-center px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-xs font-semibold tracking-wide"
+                >
                   LIMIT
                 </span>
               </div>
@@ -273,10 +369,16 @@
           </div>
 
           <!-- WHERE Clause -->
-          <div v-for="(clause, index) in queryClauses.filter(c => c.type === 'where')" :key="'where-' + index" class="group relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+          <div
+            v-for="(clause, index) in queryClauses.filter(c => c.type === 'where')"
+            :key="'where-' + index"
+            class="group relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg"
+          >
             <div class="flex items-center gap-3 p-3">
               <div class="flex-shrink-0">
-                <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-xs font-semibold tracking-wide">
+                <span
+                  class="inline-flex items-center px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-xs font-semibold tracking-wide"
+                >
                   WHERE
                 </span>
               </div>
@@ -298,7 +400,7 @@
                       { label: '<', value: '<' },
                       { label: '<=', value: '<=' },
                       { label: '>', value: '>' },
-                      { label: '>=', value: '>=' }
+                      { label: '>=', value: '>=' },
                     ]"
                     placeholder="=="
                   />
@@ -312,7 +414,7 @@
                       { label: 'Double', value: 'double' },
                       { label: 'Boolean', value: 'boolean' },
                       { label: 'Timestamp', value: 'timestamp' },
-                      { label: 'Null', value: 'null' }
+                      { label: 'Null', value: 'null' },
                     ]"
                     placeholder="Type"
                   />
@@ -338,10 +440,16 @@
           </div>
 
           <!-- ORDER BY Clause -->
-          <div v-for="(clause, index) in queryClauses.filter(c => c.type === 'orderBy')" :key="'orderby-' + index" class="group relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+          <div
+            v-for="(clause, index) in queryClauses.filter(c => c.type === 'orderBy')"
+            :key="'orderby-' + index"
+            class="group relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg"
+          >
             <div class="flex items-center gap-3 p-3">
               <div class="flex-shrink-0">
-                <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-xs font-semibold tracking-wide">
+                <span
+                  class="inline-flex items-center px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 text-xs font-semibold tracking-wide"
+                >
                   ORDER BY
                 </span>
               </div>
@@ -356,7 +464,7 @@
                   v-model="clause.order"
                   :options="[
                     { label: 'Ascending', value: 'ascending' },
-                    { label: 'Descending', value: 'descending' }
+                    { label: 'Descending', value: 'descending' },
                   ]"
                   placeholder="Order"
                 />
@@ -372,7 +480,13 @@
           </div>
 
           <!-- Aggregation Clauses (AVG, COUNT, SUM) -->
-          <div v-for="(clause, index) in queryClauses.filter(c => ['avg', 'count', 'sum'].includes(c.type))" :key="clause.type + '-' + index" class="group relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+          <div
+            v-for="(clause, index) in queryClauses.filter(c =>
+              ['avg', 'count', 'sum'].includes(c.type)
+            )"
+            :key="clause.type + '-' + index"
+            class="group relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg"
+          >
             <div class="flex items-center gap-3 p-3">
               <div class="flex-shrink-0">
                 <CustomSelect
@@ -380,13 +494,15 @@
                   :options="[
                     { label: 'AVG', value: 'avg' },
                     { label: 'COUNT', value: 'count' },
-                    { label: 'SUM', value: 'sum' }
+                    { label: 'SUM', value: 'sum' },
                   ]"
                   placeholder="Function"
                   class="w-24"
                 >
                   <template #selected="{ label }">
-                    <span class="inline-flex items-center px-2.5 py-1 rounded-md bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 text-xs font-semibold tracking-wide">
+                    <span
+                      class="inline-flex items-center px-2.5 py-1 rounded-md bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 text-xs font-semibold tracking-wide"
+                    >
                       {{ label }}
                     </span>
                   </template>
@@ -416,9 +532,11 @@
               @click="runQuery"
               :disabled="!canRunQuery"
               class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md transition-colors shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-              :class="canRunQuery
-                ? 'text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer'
-                : 'text-gray-400 dark:text-gray-600 bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 cursor-not-allowed'"
+              :class="
+                canRunQuery
+                  ? 'text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer'
+                  : 'text-gray-400 dark:text-gray-600 bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-800 cursor-not-allowed'
+              "
             >
               <PlayIcon class="w-3.5 h-3.5 mr-1.5" />
               Run Query
@@ -427,16 +545,23 @@
         </div>
 
         <!-- Info Banner - No databases in namespace -->
-        <div v-if="selectedNamespace && databases.length === 0 && !loading" class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+        <div
+          v-if="selectedNamespace && databases.length === 0 && !loading"
+          class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg"
+        >
           <div class="flex">
-            <InformationCircleIcon class="w-5 h-5 text-blue-600 dark:text-blue-400 mr-3 flex-shrink-0" />
+            <InformationCircleIcon
+              class="w-5 h-5 text-blue-600 dark:text-blue-400 mr-3 flex-shrink-0"
+            />
             <div class="text-sm text-blue-700 dark:text-blue-300">
               <p class="font-medium">No databases found in this namespace</p>
-              <p class="mt-1">Databases are auto-discovered from entities. Click <strong>Refresh</strong> or ensure entities exist in namespace "{{ selectedNamespace || '(default)' }}".</p>
+              <p class="mt-1">
+                Databases are auto-discovered from entities. Click <strong>Refresh</strong> or
+                ensure entities exist in namespace "{{ selectedNamespace || '(default)' }}".
+              </p>
             </div>
           </div>
         </div>
-
       </div>
     </div>
 
@@ -450,7 +575,8 @@
             Select an entity kind
           </h3>
           <p class="mt-2 text-gray-600 dark:text-gray-400">
-            Choose a namespace, database, and entity kind from the filters above to view and manage entities.
+            Choose a namespace, database, and entity kind from the filters above to view and manage
+            entities.
           </p>
         </div>
       </div>
@@ -472,7 +598,9 @@
             <div class="flex items-center gap-2">
               <!-- Column Picker Dropdown -->
               <Menu as="div" class="relative inline-block text-left">
-                <MenuButton class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none transition-colors">
+                <MenuButton
+                  class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none transition-colors"
+                >
                   <ViewColumnsIcon class="w-4 h-4 mr-2" />
                   Columns
                   <ChevronDownIcon class="w-4 h-4 ml-1" />
@@ -486,11 +614,17 @@
                   leave-from-class="transform opacity-100 scale-100"
                   leave-to-class="transform opacity-0 scale-95"
                 >
-                  <MenuItems class="absolute right-0 z-10 mt-2 w-80 origin-top-right rounded-md bg-white dark:bg-gray-800 shadow-lg focus:!outline-none border !border-gray-200 dark:!border-gray-700">
+                  <MenuItems
+                    class="absolute right-0 z-10 mt-2 w-80 origin-top-right rounded-md bg-white dark:bg-gray-800 shadow-lg focus:!outline-none border !border-gray-200 dark:!border-gray-700"
+                  >
                     <div class="p-3">
                       <!-- Header with actions -->
-                      <div class="flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-600">
-                        <h3 class="text-sm font-medium text-gray-900 dark:text-white">Display Columns</h3>
+                      <div
+                        class="flex items-center justify-between mb-3 pb-2 border-b border-gray-200 dark:border-gray-600"
+                      >
+                        <h3 class="text-sm font-medium text-gray-900 dark:text-white">
+                          Display Columns
+                        </h3>
                         <div class="flex items-center gap-2">
                           <button
                             @click="toggleAllColumns(true)"
@@ -512,8 +646,14 @@
                       <div class="max-h-96 overflow-y-auto space-y-1">
                         <!-- Fixed columns section -->
                         <div class="mb-2">
-                          <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1 px-1">Fixed</h4>
-                          <label class="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                          <h4
+                            class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1 px-1"
+                          >
+                            Fixed
+                          </h4>
+                          <label
+                            class="flex items-center p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                          >
                             <input
                               type="checkbox"
                               v-model="showParentColumn"
@@ -525,7 +665,11 @@
 
                         <!-- Property columns section -->
                         <div v-if="columns.length > 0">
-                          <h4 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1 px-1">Properties</h4>
+                          <h4
+                            class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-1 px-1"
+                          >
+                            Properties
+                          </h4>
                           <label
                             v-for="col in columns"
                             :key="col.key"
@@ -536,11 +680,16 @@
                               v-model="col.visible"
                               class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 mr-2"
                             />
-                            <span class="text-sm text-gray-700 dark:text-gray-300 truncate">{{ col.label }}</span>
+                            <span class="text-sm text-gray-700 dark:text-gray-300 truncate">{{
+                              col.label
+                            }}</span>
                           </label>
                         </div>
 
-                        <div v-if="columns.length === 0" class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+                        <div
+                          v-if="columns.length === 0"
+                          class="text-sm text-gray-500 dark:text-gray-400 text-center py-4"
+                        >
                           No property columns
                         </div>
                       </div>
@@ -556,26 +705,42 @@
         <div class="flex-1 overflow-auto">
           <div v-if="loading" class="flex items-center justify-center h-64">
             <div class="text-center">
-              <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <div
+                class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"
+              ></div>
               <p class="text-sm text-gray-500 dark:text-gray-400">Loading entities...</p>
             </div>
           </div>
 
           <!-- Aggregation Results Table -->
-          <table v-else-if="aggregationResults.length > 0" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <table
+            v-else-if="aggregationResults.length > 0"
+            class="min-w-full divide-y divide-gray-200 dark:divide-gray-700"
+          >
             <thead class="bg-gray-50 dark:bg-gray-900 sticky top-0">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-gray-50 dark:bg-gray-900">
+                <th
+                  class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-gray-50 dark:bg-gray-900"
+                >
                   Query results
                 </th>
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              <tr v-for="result in aggregationResults" :key="result.label" class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+              <tr
+                v-for="result in aggregationResults"
+                :key="result.label"
+                class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
                 <td class="px-6 py-4 whitespace-nowrap">
                   <div class="flex items-baseline gap-3">
-                    <span class="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[80px]">{{ result.label }}</span>
-                    <span class="text-base text-gray-900 dark:text-white font-medium">{{ result.value }}</span>
+                    <span
+                      class="text-sm font-medium text-gray-600 dark:text-gray-400 min-w-[80px]"
+                      >{{ result.label }}</span
+                    >
+                    <span class="text-base text-gray-900 dark:text-white font-medium">{{
+                      result.value
+                    }}</span>
                   </div>
                 </td>
               </tr>
@@ -606,7 +771,9 @@
           <table v-else class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead class="bg-gray-50 dark:bg-gray-900 sticky top-0">
               <tr>
-                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th
+                  class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                >
                   <input
                     type="checkbox"
                     :checked="allSelected"
@@ -614,10 +781,15 @@
                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                 </th>
-                <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th
+                  class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                >
                   Key / ID
                 </th>
-                <th v-if="showParentColumn" class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th
+                  v-if="showParentColumn"
+                  class="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider"
+                >
                   Parent
                 </th>
                 <th
@@ -647,7 +819,10 @@
                     class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                 </td>
-                <td class="px-3 py-2 whitespace-nowrap cursor-pointer" @click="openEntityDetails(entity)">
+                <td
+                  class="px-3 py-2 whitespace-nowrap cursor-pointer"
+                  @click="openEntityDetails(entity)"
+                >
                   <div
                     class="text-sm font-mono font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
                     :title="getEntityId(entity)"
@@ -655,7 +830,11 @@
                     {{ getDisplayEntityId(entity) }}
                   </div>
                 </td>
-                <td v-if="showParentColumn" class="px-3 py-2 whitespace-nowrap cursor-pointer" @click="getEntityParent(entity) ? openEntityDetails(entity) : null">
+                <td
+                  v-if="showParentColumn"
+                  class="px-3 py-2 whitespace-nowrap cursor-pointer"
+                  @click="getEntityParent(entity) ? openEntityDetails(entity) : null"
+                >
                   <div
                     v-if="getEntityParent(entity)"
                     class="text-sm font-mono text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
@@ -663,16 +842,14 @@
                   >
                     {{ getDisplayEntityParent(entity) }}
                   </div>
-                  <div v-else class="text-sm text-gray-400 dark:text-gray-600">
-                    —
-                  </div>
+                  <div v-else class="text-sm text-gray-400 dark:text-gray-600">—</div>
                 </td>
                 <td
                   v-for="col in visibleColumns"
                   :key="col.key"
                   class="group/cell px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white max-w-xs cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
                   :title="getEntityColumnValue(entity, col.key)"
-                  @click="copyToClipboard(getEntityId(entity), col.key, getEntityColumnValue(entity, col.key), $event)"
+                  @click="handleCopyCell(entity, col, $event)"
                 >
                   <div class="flex items-center gap-2">
                     <span class="truncate">{{ getEntityColumnValue(entity, col.key) }}</span>
@@ -777,7 +954,7 @@
       :is-loading="isDeleting"
       :details="{
         title: 'What will happen:',
-        description: 'The selected entities will be permanently deleted from the datastore.'
+        description: 'The selected entities will be permanently deleted from the datastore.',
       }"
       @confirm="confirmDelete"
       @cancel="cancelDelete"
@@ -807,7 +984,7 @@ import {
   XMarkIcon,
   PlayIcon,
   ClipboardIcon,
-  CheckIcon
+  CheckIcon,
 } from '@heroicons/vue/24/outline'
 import { useDatastoreStore } from '@/stores/datastore'
 import { useAppStore } from '@/stores/app'
@@ -871,16 +1048,16 @@ const kinds = computed(() => datastoreStore.kinds)
 
 const selectedDatabase = computed({
   get: () => datastoreStore.selectedDatabase,
-  set: (value) => {
+  set: value => {
     datastoreStore.setSelectedDatabase(value)
-  }
+  },
 })
 
 const selectedNamespace = computed({
   get: () => datastoreStore.selectedNamespace,
-  set: (value) => {
+  set: value => {
     datastoreStore.setSelectedNamespace(value)
-  }
+  },
 })
 
 const visibleColumns = computed(() => columns.value.filter(col => col.visible))
@@ -892,13 +1069,12 @@ const availableProperties = computed(() => {
     .filter(col => !col.fixed) // Exclude fixed columns like Key/ID
     .map(col => ({
       label: col.label,
-      value: col.key
+      value: col.key,
     }))
 })
 
-const allSelected = computed(() =>
-  entities.value.length > 0 &&
-  selectedEntities.value.length === entities.value.length
+const allSelected = computed(
+  () => entities.value.length > 0 && selectedEntities.value.length === entities.value.length
 )
 
 // Check if query can be run (all required fields are filled)
@@ -946,7 +1122,7 @@ const namespaceOptions = computed<SelectOption[]>(() =>
   namespaces.value.map(ns => ({
     value: ns,
     label: ns || '(default)',
-    icon: FolderIcon
+    icon: FolderIcon,
   }))
 )
 
@@ -954,7 +1130,7 @@ const databaseOptions = computed<SelectOption[]>(() =>
   databases.value.map(db => ({
     value: db,
     label: db || '(default)',
-    icon: CircleStackIcon
+    icon: CircleStackIcon,
   }))
 )
 
@@ -969,7 +1145,7 @@ const kindOptions = computed<SelectOption[]>(() =>
       value: kind.name,
       label: kind.name,
       badge,
-      icon: CubeIcon
+      icon: CubeIcon,
     }
   })
 )
@@ -1046,8 +1222,8 @@ const handleNamespaceChange = async () => {
   // Update URL to remove database and kind when namespace changes
   router.push({
     query: {
-      ns: selectedNamespace.value || undefined
-    }
+      ns: selectedNamespace.value || undefined,
+    },
   })
 
   // Clear kinds immediately when namespace changes to prevent showing stale data
@@ -1102,8 +1278,8 @@ const handleDatabaseChange = async () => {
   router.push({
     query: {
       ns: selectedNamespace.value || undefined,
-      db: selectedDatabase.value || undefined
-    }
+      db: selectedDatabase.value || undefined,
+    },
   })
 
   // Load kinds for the selected database
@@ -1125,8 +1301,8 @@ const handleKindChange = async () => {
     query: {
       ns: selectedNamespace.value || undefined,
       db: selectedDatabase.value || undefined,
-      kind: selectedKind.value || undefined
-    }
+      kind: selectedKind.value || undefined,
+    },
   })
 
   if (selectedKind.value) {
@@ -1145,8 +1321,8 @@ const loadEntities = async () => {
     // Use offset-based pagination when database is selected (emulator limitation)
     // Otherwise use cursor-based pagination
     const paginationParam = selectedDatabase.value
-      ? (currentPage.value - 1) * queryLimit.value  // offset
-      : currentCursor.value  // cursor
+      ? (currentPage.value - 1) * queryLimit.value // offset
+      : currentCursor.value // cursor
 
     const result = await datastoreApi.getEntitiesByKind(
       currentProjectId.value,
@@ -1183,7 +1359,7 @@ const loadEntities = async () => {
         .map(prop => ({
           key: prop,
           label: prop,
-          visible: true
+          visible: true,
         }))
     }
   } catch (error) {
@@ -1225,7 +1401,8 @@ const previousPage = async () => {
 
     currentPage.value--
     // Use the cursor for the previous page (or undefined for page 1)
-    currentCursor.value = currentPage.value === 1 ? undefined : pageCursors.value[currentPage.value - 2]
+    currentCursor.value =
+      currentPage.value === 1 ? undefined : pageCursors.value[currentPage.value - 2]
     await loadEntities()
 
     // Restore scroll position after loading
@@ -1244,12 +1421,12 @@ const addQueryClause = (clauseType: string) => {
     limit: 'Return up to a specific number of results',
     avg: 'Return the average of the numeric values that match the specified criterion',
     count: 'Return the number of documents that match the specified criterion',
-    sum: 'Return the sum of the numeric values that match the specified criterion'
+    sum: 'Return the sum of the numeric values that match the specified criterion',
   }
 
   const newClause: QueryClause = {
     type: clauseType,
-    description: descriptions[clauseType] || 'Query clause'
+    description: descriptions[clauseType] || 'Query clause',
   }
 
   // Initialize with default values based on type
@@ -1298,7 +1475,7 @@ const runQuery = async () => {
 
     // Build the query from clauses
     const query: any = {
-      kind: [{ name: selectedKind.value }]
+      kind: [{ name: selectedKind.value }],
     }
 
     // Process WHERE clauses (filters)
@@ -1312,7 +1489,7 @@ const runQuery = async () => {
           '<': 'LESS_THAN',
           '<=': 'LESS_THAN_OR_EQUAL',
           '>': 'GREATER_THAN',
-          '>=': 'GREATER_THAN_OR_EQUAL'
+          '>=': 'GREATER_THAN_OR_EQUAL',
         }
 
         // Build value object based on type
@@ -1344,8 +1521,8 @@ const runQuery = async () => {
           propertyFilter: {
             property: { name: clause.property },
             op: operatorMap[clause.operator || '=='],
-            value: valueObj
-          }
+            value: valueObj,
+          },
         }
       })
 
@@ -1354,8 +1531,8 @@ const runQuery = async () => {
         query.filter = {
           compositeFilter: {
             op: 'AND',
-            filters
-          }
+            filters,
+          },
         }
       } else {
         query.filter = filters[0]
@@ -1367,7 +1544,7 @@ const runQuery = async () => {
     if (orderByClauses.length > 0) {
       query.order = orderByClauses.map(clause => ({
         property: { name: clause.property },
-        direction: clause.order === 'ascending' ? 'ASCENDING' : 'DESCENDING'
+        direction: clause.order === 'ascending' ? 'ASCENDING' : 'DESCENDING',
       }))
     }
 
@@ -1380,17 +1557,19 @@ const runQuery = async () => {
     // Build partition ID
     const partitionId: any = {
       projectId: currentProjectId.value,
-      namespaceId: selectedNamespace.value || ''
+      namespaceId: selectedNamespace.value || '',
     }
 
     // Check for aggregation clauses
-    const aggregationClauses = queryClauses.value.filter(c => ['avg', 'count', 'sum'].includes(c.type))
+    const aggregationClauses = queryClauses.value.filter(c =>
+      ['avg', 'count', 'sum'].includes(c.type)
+    )
 
     if (aggregationClauses.length > 0) {
       // Build aggregation query
       const aggregations = aggregationClauses.map(clause => {
         const agg: any = {
-          alias: clause.type
+          alias: clause.type,
         }
 
         if (clause.type === 'count') {
@@ -1408,17 +1587,26 @@ const runQuery = async () => {
         partitionId,
         aggregationQuery: {
           nestedQuery: query,
-          aggregations
-        }
+          aggregations,
+        },
       }
 
-      console.log('[Query Builder] Executing aggregation query:', JSON.stringify(aggregationRequest, null, 2))
+      console.log(
+        '[Query Builder] Executing aggregation query:',
+        JSON.stringify(aggregationRequest, null, 2)
+      )
 
       // Execute aggregation query
-      const aggResponse = await datastoreApi.runAggregationQuery(currentProjectId.value, aggregationRequest)
+      const aggResponse = await datastoreApi.runAggregationQuery(
+        currentProjectId.value,
+        aggregationRequest
+      )
 
       // Display aggregation results
-      if (aggResponse.batch?.aggregationResults && aggResponse.batch.aggregationResults.length > 0) {
+      if (
+        aggResponse.batch?.aggregationResults &&
+        aggResponse.batch.aggregationResults.length > 0
+      ) {
         const result = aggResponse.batch.aggregationResults[0]
 
         aggregationResults.value = aggregationClauses.map(clause => {
@@ -1448,7 +1636,7 @@ const runQuery = async () => {
     // Regular query (non-aggregation)
     const request = {
       partitionId,
-      query
+      query,
     }
 
     console.log('[Query Builder] Executing query:', JSON.stringify(request, null, 2))
@@ -1473,7 +1661,8 @@ const runQuery = async () => {
 
       // Update pagination
       currentPage.value = 1
-      hasNextPage.value = response.batch.moreResults === 'MORE_RESULTS_AFTER_LIMIT' ||
+      hasNextPage.value =
+        response.batch.moreResults === 'MORE_RESULTS_AFTER_LIMIT' ||
         response.batch.moreResults === 'MORE_RESULTS_AFTER_CURSOR'
       currentCursor.value = response.batch.endCursor
 
@@ -1490,7 +1679,7 @@ const runQuery = async () => {
           .map(prop => ({
             key: prop,
             label: prop,
-            visible: true
+            visible: true,
           }))
       }
     } else {
@@ -1528,8 +1717,8 @@ const handleEntityCreated = async (entity: DatastoreEntity) => {
     query: {
       ns: entityNamespace || undefined,
       db: entityDatabase || undefined,
-      kind: entityKind || undefined
-    }
+      kind: entityKind || undefined,
+    },
   })
 
   // Refresh entities list to show the new entity
@@ -1539,6 +1728,10 @@ const handleEntityCreated = async (entity: DatastoreEntity) => {
 const openEntityDetails = (entity: DatastoreEntity) => {
   selectedEntity.value = entity
   showEntityDetailsModal.value = true
+}
+
+const handleCopyCell = (entity: DatastoreEntity, column: { key: string }, event: Event) => {
+  copyToClipboard(getEntityId(entity), column.key, getEntityColumnValue(entity, column.key), event)
 }
 
 const copyToClipboard = async (entityId: string, colKey: string, value: string, event: Event) => {
@@ -1603,7 +1796,7 @@ const confirmDelete = async () => {
     appStore.showToast({
       type: 'success',
       title: 'Entities Deleted',
-      message: `Successfully deleted ${count} ${count === 1 ? 'entity' : 'entities'}`
+      message: `Successfully deleted ${count} ${count === 1 ? 'entity' : 'entities'}`,
     })
 
     // Reload entities
@@ -1615,7 +1808,7 @@ const confirmDelete = async () => {
     appStore.showToast({
       type: 'error',
       title: 'Delete Failed',
-      message: `Failed to delete ${count === 1 ? 'entity' : 'entities'}. Please try again.`
+      message: `Failed to delete ${count === 1 ? 'entity' : 'entities'}. Please try again.`,
     })
   } finally {
     isDeleting.value = false
@@ -1663,7 +1856,7 @@ const getDisplayEntityId = (entity: DatastoreEntity): string => {
   const id = getEntityId(entity)
   // Truncate long IDs for display (show first 20 chars + ellipsis)
   if (id.length > 30) {
-    return `${id.substring(0, 30)  }...`
+    return `${id.substring(0, 30)}...`
   }
   return id
 }
@@ -1676,10 +1869,12 @@ const getEntityParent = (entity: DatastoreEntity): string | null => {
 
   // Build parent path from all elements except the last one
   const parentPath = entity.key.path.slice(0, -1)
-  return parentPath.map(element => {
-    const id = element.name || element.id || ''
-    return `${element.kind}:${id}`
-  }).join('/')
+  return parentPath
+    .map(element => {
+      const id = element.name || element.id || ''
+      return `${element.kind}:${id}`
+    })
+    .join('/')
 }
 
 const getDisplayEntityParent = (entity: DatastoreEntity): string => {
@@ -1688,7 +1883,7 @@ const getDisplayEntityParent = (entity: DatastoreEntity): string => {
 
   // Truncate long parent paths for display
   if (parent.length > 30) {
-    return `${parent.substring(0, 30)  }...`
+    return `${parent.substring(0, 30)}...`
   }
   return parent
 }
@@ -1712,17 +1907,18 @@ const getEntityColumnValue = (entity: DatastoreEntity, columnKey: string): strin
   // Convert array to JSON string to show full content
   if (prop.arrayValue) {
     try {
-      const arrayContent = prop.arrayValue.values?.map((v: any) => {
-        if (v.stringValue !== undefined) return v.stringValue
-        if (v.integerValue !== undefined) return v.integerValue
-        if (v.doubleValue !== undefined) return v.doubleValue
-        if (v.booleanValue !== undefined) return v.booleanValue
-        if (v.timestampValue !== undefined) return v.timestampValue
-        if (v.nullValue !== undefined) return null
-        if (v.entityValue) return convertEntityToObject(v.entityValue)
-        if (v.keyValue) return v.keyValue
-        return v
-      }) || []
+      const arrayContent =
+        prop.arrayValue.values?.map((v: any) => {
+          if (v.stringValue !== undefined) return v.stringValue
+          if (v.integerValue !== undefined) return v.integerValue
+          if (v.doubleValue !== undefined) return v.doubleValue
+          if (v.booleanValue !== undefined) return v.booleanValue
+          if (v.timestampValue !== undefined) return v.timestampValue
+          if (v.nullValue !== undefined) return null
+          if (v.entityValue) return convertEntityToObject(v.entityValue)
+          if (v.keyValue) return v.keyValue
+          return v
+        }) || []
       return JSON.stringify(arrayContent)
     } catch {
       return `[${prop.arrayValue.values?.length || 0} items]`
@@ -1763,14 +1959,16 @@ const convertEntityToObject = (entityValue: any): any => {
     else if (val.booleanValue !== undefined) result[key] = val.booleanValue
     else if (val.timestampValue !== undefined) result[key] = val.timestampValue
     else if (val.nullValue !== undefined) result[key] = null
-    else if (val.arrayValue) result[key] = val.arrayValue.values?.map((v: any) => {
-      if (v.stringValue !== undefined) return v.stringValue
-      if (v.integerValue !== undefined) return v.integerValue
-      if (v.doubleValue !== undefined) return v.doubleValue
-      if (v.booleanValue !== undefined) return v.booleanValue
-      if (v.entityValue) return convertEntityToObject(v.entityValue)
-      return v
-    }) || []
+    else if (val.arrayValue)
+      result[key] =
+        val.arrayValue.values?.map((v: any) => {
+          if (v.stringValue !== undefined) return v.stringValue
+          if (v.integerValue !== undefined) return v.integerValue
+          if (v.doubleValue !== undefined) return v.doubleValue
+          if (v.booleanValue !== undefined) return v.booleanValue
+          if (v.entityValue) return convertEntityToObject(v.entityValue)
+          return v
+        }) || []
     else if (val.entityValue) result[key] = convertEntityToObject(val.entityValue)
     else if (val.keyValue) result[key] = val.keyValue
     else result[key] = val
@@ -1780,41 +1978,54 @@ const convertEntityToObject = (entityValue: any): any => {
 }
 
 // Watchers
-watch(() => currentProjectId.value, async (newProjectId, oldProjectId) => {
-  if (newProjectId !== oldProjectId && oldProjectId) {
-    datastoreStore.clearData()
-    selectedKind.value = ''
-    entities.value = []
-    if (newProjectId) {
-      await initializeData()
+watch(
+  () => currentProjectId.value,
+  async (newProjectId, oldProjectId) => {
+    if (newProjectId !== oldProjectId && oldProjectId) {
+      datastoreStore.clearData()
+      selectedKind.value = ''
+      entities.value = []
+      if (newProjectId) {
+        await initializeData()
+      }
     }
-  }
-}, { immediate: false })
+  },
+  { immediate: false }
+)
 
 // Watch for URL changes and sync to store (but don't trigger handlers that update URL)
-watch(() => route.query.ns, (newNs, oldNs) => {
-  const nsValue = newNs !== undefined ? String(newNs) : ''
-  // Only update store if value actually changed and differs from store
-  if (newNs !== oldNs && datastoreStore.selectedNamespace !== nsValue) {
-    datastoreStore.setSelectedNamespace(nsValue)
+watch(
+  () => route.query.ns,
+  (newNs, oldNs) => {
+    const nsValue = newNs !== undefined ? String(newNs) : ''
+    // Only update store if value actually changed and differs from store
+    if (newNs !== oldNs && datastoreStore.selectedNamespace !== nsValue) {
+      datastoreStore.setSelectedNamespace(nsValue)
+    }
   }
-})
+)
 
-watch(() => route.query.db, (newDb, oldDb) => {
-  const dbValue = newDb !== undefined ? String(newDb) : ''
-  // Only update store if value actually changed and differs from store
-  if (newDb !== oldDb && datastoreStore.selectedDatabase !== dbValue) {
-    datastoreStore.setSelectedDatabase(dbValue)
+watch(
+  () => route.query.db,
+  (newDb, oldDb) => {
+    const dbValue = newDb !== undefined ? String(newDb) : ''
+    // Only update store if value actually changed and differs from store
+    if (newDb !== oldDb && datastoreStore.selectedDatabase !== dbValue) {
+      datastoreStore.setSelectedDatabase(dbValue)
+    }
   }
-})
+)
 
-watch(() => route.query.kind, (newKind, oldKind) => {
-  const kindValue = newKind !== undefined ? String(newKind) : ''
-  // Only update selectedKind if value actually changed
-  if (newKind !== oldKind && selectedKind.value !== kindValue) {
-    selectedKind.value = kindValue
+watch(
+  () => route.query.kind,
+  (newKind, oldKind) => {
+    const kindValue = newKind !== undefined ? String(newKind) : ''
+    // Only update selectedKind if value actually changed
+    if (newKind !== oldKind && selectedKind.value !== kindValue) {
+      selectedKind.value = kindValue
+    }
   }
-})
+)
 
 // Lifecycle
 onMounted(async () => {

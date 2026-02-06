@@ -7,15 +7,15 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
 describe('errorSetup', () => {
   let mockApp: any
-  
+
   beforeEach(() => {
     vi.clearAllMocks()
-    
+
     // Create mock Vue app
     mockApp = {
       config: {
-        errorHandler: null
-      }
+        errorHandler: null,
+      },
     }
   })
 
@@ -26,7 +26,7 @@ describe('errorSetup', () => {
   describe('setupErrorHandling', () => {
     it('sets up Vue error handler', async () => {
       const { setupErrorHandling } = await import('../errorSetup')
-      
+
       setupErrorHandling(mockApp)
 
       expect(mockApp.config.errorHandler).toBeInstanceOf(Function)
@@ -35,7 +35,7 @@ describe('errorSetup', () => {
     it('Vue error handler logs errors', async () => {
       const { setupErrorHandling } = await import('../errorSetup')
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-      
+
       setupErrorHandling(mockApp)
 
       const testError = new Error('Test error')
@@ -51,34 +51,28 @@ describe('errorSetup', () => {
 
     it('adds unhandledrejection event listener', async () => {
       const addEventListenerSpy = vi.spyOn(window, 'addEventListener')
-      
+
       const { setupErrorHandling } = await import('../errorSetup')
-      
+
       setupErrorHandling(mockApp)
 
-      expect(addEventListenerSpy).toHaveBeenCalledWith(
-        'unhandledrejection',
-        expect.any(Function)
-      )
+      expect(addEventListenerSpy).toHaveBeenCalledWith('unhandledrejection', expect.any(Function))
     })
 
     it('adds global error event listener', async () => {
       const addEventListenerSpy = vi.spyOn(window, 'addEventListener')
-      
+
       const { setupErrorHandling } = await import('../errorSetup')
-      
+
       setupErrorHandling(mockApp)
 
-      expect(addEventListenerSpy).toHaveBeenCalledWith(
-        'error',
-        expect.any(Function)
-      )
+      expect(addEventListenerSpy).toHaveBeenCalledWith('error', expect.any(Function))
     })
 
     it('unhandledrejection handler logs and prevents default', async () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
       let capturedHandler: ((_event: PromiseRejectionEvent) => void) | null = null
-      
+
       vi.spyOn(window, 'addEventListener').mockImplementation((_event, handler) => {
         if (_event === 'unhandledrejection') {
           capturedHandler = handler as (_event: PromiseRejectionEvent) => void
@@ -91,7 +85,7 @@ describe('errorSetup', () => {
       // Trigger the handler
       const mockEvent = {
         reason: new Error('Promise rejection'),
-        preventDefault: vi.fn()
+        preventDefault: vi.fn(),
       } as unknown as PromiseRejectionEvent
 
       capturedHandler?.(mockEvent)
@@ -103,7 +97,7 @@ describe('errorSetup', () => {
     it('global error handler logs error details', async () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
       let capturedHandler: ((_event: ErrorEvent) => void) | null = null
-      
+
       vi.spyOn(window, 'addEventListener').mockImplementation((_event, handler) => {
         if (_event === 'error') {
           capturedHandler = handler as (_event: ErrorEvent) => void
@@ -118,7 +112,7 @@ describe('errorSetup', () => {
         error: new Error('Global error'),
         filename: 'test.js',
         lineno: 42,
-        colno: 10
+        colno: 10,
       } as ErrorEvent
 
       capturedHandler?.(mockEvent)

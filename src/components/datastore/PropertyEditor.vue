@@ -1,5 +1,7 @@
 <template>
-  <div class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-900 hover:border-blue-300 dark:hover:border-blue-600 transition-colors">
+  <div
+    class="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden bg-white dark:bg-gray-900 hover:border-blue-300 dark:hover:border-blue-600 transition-colors"
+  >
     <div class="flex items-center justify-between px-4 py-2.5 bg-gray-50 dark:bg-gray-800/50">
       <button
         @click="expanded = !expanded"
@@ -20,7 +22,10 @@
       </button>
     </div>
 
-    <div v-if="expanded" class="p-4 space-y-3 border-t border-gray-200 dark:border-gray-700 animate-fadeIn">
+    <div
+      v-if="expanded"
+      class="p-4 space-y-3 border-t border-gray-200 dark:border-gray-700 animate-fadeIn"
+    >
       <!-- Property Name -->
       <div>
         <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
@@ -89,7 +94,10 @@
           :disabled="readOnly"
           class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
         />
-        <div v-else class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400 italic bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+        <div
+          v-else
+          class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400 italic bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+        >
           Null value (no input needed)
         </div>
       </div>
@@ -103,7 +111,10 @@
           :disabled="readOnly"
           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded disabled:opacity-50 disabled:cursor-not-allowed"
         />
-        <label :for="`index-${propertyId}`" class="ml-2.5 block text-sm text-gray-700 dark:text-gray-300">
+        <label
+          :for="`index-${propertyId}`"
+          class="ml-2.5 block text-sm text-gray-700 dark:text-gray-300"
+        >
           Index this property
         </label>
       </div>
@@ -117,7 +128,18 @@ import { ChevronDownIcon, ChevronRightIcon, TrashIcon } from '@heroicons/vue/24/
 
 export interface PropertyForm {
   name: string
-  type: 'string' | 'text' | 'timestamp' | 'integer' | 'double' | 'boolean' | 'key' | 'geopoint' | 'array' | 'entity' | 'null'
+  type:
+    | 'string'
+    | 'text'
+    | 'timestamp'
+    | 'integer'
+    | 'double'
+    | 'boolean'
+    | 'key'
+    | 'geopoint'
+    | 'array'
+    | 'entity'
+    | 'null'
   value: string
   indexed: boolean
   expanded: boolean
@@ -139,27 +161,27 @@ const emit = defineEmits<{
 
 const expanded = computed({
   get: () => props.property.expanded,
-  set: (value: boolean) => emit('update', { ...props.property, expanded: value })
+  set: (value: boolean) => emit('update', { ...props.property, expanded: value }),
 })
 
 const name = computed({
   get: () => props.property.name,
-  set: (value: string) => emit('update', { ...props.property, name: value })
+  set: (value: string) => emit('update', { ...props.property, name: value }),
 })
 
 const type = computed({
   get: () => props.property.type,
-  set: (value: PropertyForm['type']) => emit('update', { ...props.property, type: value })
+  set: (value: PropertyForm['type']) => emit('update', { ...props.property, type: value }),
 })
 
 const propertyValue = computed({
   get: () => props.property.value,
-  set: (value: string) => emit('update', { ...props.property, value })
+  set: (value: string) => emit('update', { ...props.property, value }),
 })
 
 const indexed = computed({
   get: () => props.property.indexed,
-  set: (value: boolean) => emit('update', { ...props.property, indexed: value })
+  set: (value: boolean) => emit('update', { ...props.property, indexed: value }),
 })
 
 const getInputType = (propertyType: string): string => {

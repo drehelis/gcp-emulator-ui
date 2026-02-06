@@ -13,9 +13,11 @@ export function useDeepNavigation(
     // 2. The current level is a subcollection type
     // 3. There's a previous level with a selected document that contains subcollections
     const currentLevel = navigationStack.value[levelIndex]
-    return levelIndex > 0 &&
-           currentLevel?.type === 'subcollection' &&
-           getColumnOneDocument(levelIndex) !== null
+    return (
+      levelIndex > 0 &&
+      currentLevel?.type === 'subcollection' &&
+      getColumnOneDocument(levelIndex) !== null
+    )
   }
 
   // Get the document that should be shown in Column 1 DocumentEditor
@@ -34,18 +36,20 @@ export function useDeepNavigation(
     if (!document) return []
 
     const subcollections = documentSubcollections.value.get(document.name)
-    return Array.isArray(subcollections) ? subcollections : (subcollections?.collections || [])
+    return Array.isArray(subcollections) ? subcollections : subcollections?.collections || []
   }
 
   // Get the currently selected subcollection for Column 1 DocumentEditor
-  const getColumnOneSelectedSubcollection = (levelIndex: number): FirestoreCollectionWithMetadata | null => {
+  const getColumnOneSelectedSubcollection = (
+    levelIndex: number
+  ): FirestoreCollectionWithMetadata | null => {
     // The selected subcollection is the current level's collection if it's a subcollection
     const currentLevel = navigationStack.value[levelIndex]
     if (currentLevel?.type === 'subcollection') {
       return {
         id: currentLevel.collectionId || currentLevel.header,
         name: currentLevel.header,
-        path: `${currentLevel.parentPath}/${currentLevel.collectionId || currentLevel.header}`
+        path: `${currentLevel.parentPath}/${currentLevel.collectionId || currentLevel.header}`,
       } as FirestoreCollectionWithMetadata
     }
     return null
@@ -55,6 +59,6 @@ export function useDeepNavigation(
     shouldShowDocumentEditorInColumnOne,
     getColumnOneDocument,
     getColumnOneSubcollections,
-    getColumnOneSelectedSubcollection
+    getColumnOneSelectedSubcollection,
   }
 }

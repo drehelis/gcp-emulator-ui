@@ -28,42 +28,47 @@ const getApi = () => storageClient
 
 // Bucket Management
 export const storageApi = {
-  async listBuckets(options: {
-    maxResults?: number
-    pageToken?: string
-    project?: string
-  } = {}): Promise<ListBucketsResponse> {
+  async listBuckets(
+    options: {
+      maxResults?: number
+      pageToken?: string
+      project?: string
+    } = {}
+  ): Promise<ListBucketsResponse> {
     const api = getApi()
     const response = await api.get('/storage/v1/b', {
       params: {
         maxResults: options.maxResults || 1000,
         pageToken: options.pageToken,
-        project: options.project || import.meta.env.VITE_GOOGLE_CLOUD_PROJECT_ID || 'test-project'
-      }
+        project: options.project || import.meta.env.VITE_GOOGLE_CLOUD_PROJECT_ID || 'test-project',
+      },
     })
 
     return {
       kind: response.data.kind || 'storage#buckets',
       items: response.data.items || [],
       nextPageToken: response.data.nextPageToken,
-      prefixes: response.data.prefixes
+      prefixes: response.data.prefixes,
     }
   },
 
-  async getBucket(bucketName: string, options: {
-    projection?: 'full' | 'noAcl'
-    ifMetagenerationMatch?: string
-    ifMetagenerationNotMatch?: string
-    userProject?: string
-  } = {}): Promise<StorageBucket> {
+  async getBucket(
+    bucketName: string,
+    options: {
+      projection?: 'full' | 'noAcl'
+      ifMetagenerationMatch?: string
+      ifMetagenerationNotMatch?: string
+      userProject?: string
+    } = {}
+  ): Promise<StorageBucket> {
     const api = getApi()
     const response = await api.get(`/storage/v1/b/${encodeURIComponent(bucketName)}`, {
       params: {
         projection: options.projection || 'full',
         ifMetagenerationMatch: options.ifMetagenerationMatch,
         ifMetagenerationNotMatch: options.ifMetagenerationNotMatch,
-        userProject: options.userProject
-      }
+        userProject: options.userProject,
+      },
     })
 
     return response.data
@@ -77,7 +82,7 @@ export const storageApi = {
       name,
       location: location || 'US',
       storageClass: storageClass || 'STANDARD',
-      ...(iamConfiguration && { iamConfiguration })
+      ...(iamConfiguration && { iamConfiguration }),
     }
 
     const response = await api.post('/storage/v1/b', bucketData, {
@@ -86,25 +91,28 @@ export const storageApi = {
         predefinedAcl: options.predefinedAcl,
         predefinedDefaultObjectAcl: options.predefinedDefaultObjectAcl,
         projection: options.projection || 'full',
-        userProject: options.userProject
-      }
+        userProject: options.userProject,
+      },
     })
 
     return response.data
   },
 
-  async deleteBucket(bucketName: string, options: {
-    ifMetagenerationMatch?: string
-    ifMetagenerationNotMatch?: string
-    userProject?: string
-  } = {}): Promise<void> {
+  async deleteBucket(
+    bucketName: string,
+    options: {
+      ifMetagenerationMatch?: string
+      ifMetagenerationNotMatch?: string
+      userProject?: string
+    } = {}
+  ): Promise<void> {
     const api = getApi()
     await api.delete(`/storage/v1/b/${encodeURIComponent(bucketName)}`, {
       params: {
         ifMetagenerationMatch: options.ifMetagenerationMatch,
         ifMetagenerationNotMatch: options.ifMetagenerationNotMatch,
-        userProject: options.userProject
-      }
+        userProject: options.userProject,
+      },
     })
   },
 
@@ -119,39 +127,46 @@ export const storageApi = {
         pageToken: request.pageToken,
         projection: request.projection || 'full',
         versions: request.versions,
-        userProject: request.userProject
-      }
+        userProject: request.userProject,
+      },
     })
 
     return {
       kind: response.data.kind || 'storage#objects',
       items: response.data.items || [],
       prefixes: response.data.prefixes || [],
-      nextPageToken: response.data.nextPageToken
+      nextPageToken: response.data.nextPageToken,
     }
   },
 
-  async getObject(bucket: string, objectName: string, options: {
-    generation?: string
-    projection?: 'full' | 'noAcl'
-    ifGenerationMatch?: string
-    ifGenerationNotMatch?: string
-    ifMetagenerationMatch?: string
-    ifMetagenerationNotMatch?: string
-    userProject?: string
-  } = {}): Promise<StorageObject> {
+  async getObject(
+    bucket: string,
+    objectName: string,
+    options: {
+      generation?: string
+      projection?: 'full' | 'noAcl'
+      ifGenerationMatch?: string
+      ifGenerationNotMatch?: string
+      ifMetagenerationMatch?: string
+      ifMetagenerationNotMatch?: string
+      userProject?: string
+    } = {}
+  ): Promise<StorageObject> {
     const api = getApi()
-    const response = await api.get(`/storage/v1/b/${encodeURIComponent(bucket)}/o/${encodeURIComponent(objectName)}`, {
-      params: {
-        generation: options.generation,
-        projection: options.projection || 'full',
-        ifGenerationMatch: options.ifGenerationMatch,
-        ifGenerationNotMatch: options.ifGenerationNotMatch,
-        ifMetagenerationMatch: options.ifMetagenerationMatch,
-        ifMetagenerationNotMatch: options.ifMetagenerationNotMatch,
-        userProject: options.userProject
+    const response = await api.get(
+      `/storage/v1/b/${encodeURIComponent(bucket)}/o/${encodeURIComponent(objectName)}`,
+      {
+        params: {
+          generation: options.generation,
+          projection: options.projection || 'full',
+          ifGenerationMatch: options.ifGenerationMatch,
+          ifGenerationNotMatch: options.ifGenerationNotMatch,
+          ifMetagenerationMatch: options.ifMetagenerationMatch,
+          ifMetagenerationNotMatch: options.ifMetagenerationNotMatch,
+          userProject: options.userProject,
+        },
       }
-    })
+    )
 
     return response.data
   },
@@ -181,13 +196,13 @@ export const storageApi = {
             ifMetagenerationMatch: request.ifMetagenerationMatch,
             ifMetagenerationNotMatch: request.ifMetagenerationNotMatch,
             kmsKeyName: request.kmsKeyName,
-            userProject: request.userProject
+            userProject: request.userProject,
           },
           onUploadProgress: () => {
             if (onProgress) {
               onProgress()
             }
-          }
+          },
         }
       )
 
@@ -203,7 +218,7 @@ export const storageApi = {
         name: request.name,
         contentType: request.contentType || file.type,
         ...(request.contentEncoding && { contentEncoding: request.contentEncoding }),
-        ...(request.metadata && { metadata: request.metadata })
+        ...(request.metadata && { metadata: request.metadata }),
       }
 
       formData.append('file', file)
@@ -224,13 +239,13 @@ export const storageApi = {
             ifMetagenerationMatch: request.ifMetagenerationMatch,
             ifMetagenerationNotMatch: request.ifMetagenerationNotMatch,
             kmsKeyName: request.kmsKeyName,
-            userProject: request.userProject
+            userProject: request.userProject,
           },
           onUploadProgress: () => {
             if (onProgress) {
               onProgress()
             }
-          }
+          },
         }
       )
 
@@ -240,35 +255,41 @@ export const storageApi = {
 
   async downloadObject(request: DownloadObjectRequest): Promise<Blob> {
     const api = getApi()
-    const response = await api.get(`/storage/v1/b/${encodeURIComponent(request.bucket)}/o/${encodeURIComponent(request.object)}`, {
-      params: {
-        alt: request.alt || 'media',
-        generation: request.generation,
-        ifGenerationMatch: request.ifGenerationMatch,
-        ifGenerationNotMatch: request.ifGenerationNotMatch,
-        ifMetagenerationMatch: request.ifMetagenerationMatch,
-        ifMetagenerationNotMatch: request.ifMetagenerationNotMatch,
-        projection: request.projection,
-        userProject: request.userProject
-      },
-      responseType: 'blob'
-    })
+    const response = await api.get(
+      `/storage/v1/b/${encodeURIComponent(request.bucket)}/o/${encodeURIComponent(request.object)}`,
+      {
+        params: {
+          alt: request.alt || 'media',
+          generation: request.generation,
+          ifGenerationMatch: request.ifGenerationMatch,
+          ifGenerationNotMatch: request.ifGenerationNotMatch,
+          ifMetagenerationMatch: request.ifMetagenerationMatch,
+          ifMetagenerationNotMatch: request.ifMetagenerationNotMatch,
+          projection: request.projection,
+          userProject: request.userProject,
+        },
+        responseType: 'blob',
+      }
+    )
 
     return response.data
   },
 
   async deleteObject(request: DeleteObjectRequest): Promise<void> {
     const api = getApi()
-    await api.delete(`/storage/v1/b/${encodeURIComponent(request.bucket)}/o/${encodeURIComponent(request.object)}`, {
-      params: {
-        generation: request.generation,
-        ifGenerationMatch: request.ifGenerationMatch,
-        ifGenerationNotMatch: request.ifGenerationNotMatch,
-        ifMetagenerationMatch: request.ifMetagenerationMatch,
-        ifMetagenerationNotMatch: request.ifMetagenerationNotMatch,
-        userProject: request.userProject
+    await api.delete(
+      `/storage/v1/b/${encodeURIComponent(request.bucket)}/o/${encodeURIComponent(request.object)}`,
+      {
+        params: {
+          generation: request.generation,
+          ifGenerationMatch: request.ifGenerationMatch,
+          ifGenerationNotMatch: request.ifGenerationNotMatch,
+          ifMetagenerationMatch: request.ifMetagenerationMatch,
+          ifMetagenerationNotMatch: request.ifMetagenerationNotMatch,
+          userProject: request.userProject,
+        },
       }
-    })
+    )
   },
 
   async copyObject(
@@ -313,8 +334,8 @@ export const storageApi = {
           ifSourceMetagenerationNotMatch: options.ifSourceMetagenerationNotMatch,
           projection: options.projection || 'full',
           sourceGeneration: options.sourceGeneration,
-          userProject: options.userProject
-        }
+          userProject: options.userProject,
+        },
       }
     )
 
@@ -347,12 +368,12 @@ export const storageApi = {
     options: Omit<UploadObjectRequest, 'bucket' | 'name'> = {},
     onProgress?: () => void
   ): Promise<StorageObject[]> {
-    const uploadPromises = files.map(async (file) => {
+    const uploadPromises = files.map(async file => {
       const request: UploadObjectRequest = {
         ...options,
         bucket,
         name: file.name,
-        contentType: file.type
+        contentType: file.type,
       }
 
       return this.uploadObject(file, request, () => {
@@ -389,7 +410,7 @@ export const storageApi = {
         onProgress({
           current: i + 1,
           total: objectNames.length,
-          currentFile: objectName
+          currentFile: objectName,
         })
       }
 
@@ -397,7 +418,7 @@ export const storageApi = {
         // Download the object as blob
         const blob = await this.downloadObject({
           bucket: bucketName,
-          object: objectName || ''
+          object: objectName || '',
         })
 
         // Add to ZIP with proper folder structure
@@ -447,7 +468,7 @@ export const storageApi = {
       console.warn('Storage emulator health check failed:', error)
       return false
     }
-  }
+  },
 }
 
 export default storageApi

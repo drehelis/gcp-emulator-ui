@@ -6,7 +6,6 @@ export interface FieldOperationContext {
   column: 'column-one' | 'column-three'
 }
 
- 
 export function useColumnFieldOperations(
   modalManager: any,
   deepNavigation: any,
@@ -17,7 +16,7 @@ export function useColumnFieldOperations(
   // Track which document context is being edited
   const activeFieldOperationContext = ref<FieldOperationContext>({
     document: null,
-    column: 'column-three'
+    column: 'column-three',
   })
 
   // Context-aware field operation handlers for Column One
@@ -44,7 +43,7 @@ export function useColumnFieldOperations(
         activeFieldOperationContext.value = { document, column: 'column-one' }
         modalManager.openDeleteFieldModal(data)
       }
-    }
+    },
   }
 
   // Context-aware field operation handlers for Column Three
@@ -71,12 +70,12 @@ export function useColumnFieldOperations(
         activeFieldOperationContext.value = { document, column: 'column-three' }
         modalManager.openDeleteFieldModal(data)
       }
-    }
+    },
   }
 
   return {
     activeFieldOperationContext,
     handleColumnOneFieldOperations,
-    handleColumnThreeFieldOperations
+    handleColumnThreeFieldOperations,
   }
 }

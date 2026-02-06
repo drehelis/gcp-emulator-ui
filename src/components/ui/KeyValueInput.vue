@@ -1,10 +1,6 @@
 <template>
   <div class="space-y-3">
-    <div
-      v-for="(item, index) in items"
-      :key="index"
-      class="flex items-end space-x-4"
-    >
+    <div v-for="(item, index) in items" :key="index" class="flex items-end space-x-4">
       <div class="flex-1 space-y-2">
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 px-1">
           {{ keyLabel }}
@@ -37,7 +33,7 @@
         <TrashIcon class="h-4 w-4" />
       </button>
     </div>
-    
+
     <button
       @click="addItem"
       class="flex items-center text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
@@ -80,7 +76,7 @@ const getItemKey = (item: T): string => {
 const updateItem = (index: number, field: 'key' | 'value', value: string) => {
   const updatedItems = [...props.items]
   const currentItem = updatedItems[index]
-  
+
   if (field === 'key') {
     if ('key' in currentItem) {
       updatedItems[index] = { ...currentItem, key: value } as T
@@ -90,20 +86,20 @@ const updateItem = (index: number, field: 'key' | 'value', value: string) => {
   } else {
     updatedItems[index] = { ...currentItem, value } as T
   }
-  
+
   emit('update:items', updatedItems)
 }
 
 const addItem = () => {
   const sampleItem = props.items[0]
   let newItem: T
-  
+
   if ('key' in sampleItem) {
     newItem = { key: '', value: '' } as T
   } else {
     newItem = { name: '', value: '' } as T
   }
-  
+
   emit('update:items', [...props.items, newItem])
 }
 
@@ -114,13 +110,13 @@ const removeItem = (index: number) => {
   } else {
     const sampleItem = props.items[0]
     let resetItem: T
-    
+
     if ('key' in sampleItem) {
       resetItem = { key: '', value: '' } as T
     } else {
       resetItem = { name: '', value: '' } as T
     }
-    
+
     emit('update:items', [resetItem])
   }
 }

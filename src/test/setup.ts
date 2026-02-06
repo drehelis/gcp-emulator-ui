@@ -16,14 +16,14 @@ beforeEach(() => {
 global.ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
-  disconnect: vi.fn()
+  disconnect: vi.fn(),
 }))
 
 // Mock IntersectionObserver (not available in jsdom)
 global.IntersectionObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
-  disconnect: vi.fn()
+  disconnect: vi.fn(),
 }))
 
 // Mock matchMedia (not available in jsdom)
@@ -37,8 +37,8 @@ Object.defineProperty(window, 'matchMedia', {
     removeListener: vi.fn(),
     addEventListener: vi.fn(),
     removeEventListener: vi.fn(),
-    dispatchEvent: vi.fn()
-  }))
+    dispatchEvent: vi.fn(),
+  })),
 })
 
 // Mock fetch globally
@@ -51,7 +51,7 @@ global.URL.revokeObjectURL = vi.fn()
 // Configure Vue Test Utils
 config.global.stubs = {
   // Stub teleport to prevent portal issues in tests
-  teleport: true
+  teleport: true,
 }
 
 // Export for use in tests

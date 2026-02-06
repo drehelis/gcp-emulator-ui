@@ -51,7 +51,9 @@
         <div class="space-y-6">
           <!-- Import Type Selection -->
           <div>
-            <label class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+            <label
+              class="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-3"
+            >
               What would you like to import?
             </label>
             <div class="space-y-2">
@@ -63,7 +65,10 @@
                   type="radio"
                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600"
                 />
-                <label for="import-pubsub-config" class="ml-2 block text-xs sm:text-sm text-gray-900 dark:text-white">
+                <label
+                  for="import-pubsub-config"
+                  class="ml-2 block text-xs sm:text-sm text-gray-900 dark:text-white"
+                >
                   Topics & Subscriptions
                 </label>
               </div>
@@ -75,7 +80,10 @@
                   type="radio"
                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600"
                 />
-                <label for="import-pubsub-templates" class="ml-2 block text-xs sm:text-sm text-gray-900 dark:text-white">
+                <label
+                  for="import-pubsub-templates"
+                  class="ml-2 block text-xs sm:text-sm text-gray-900 dark:text-white"
+                >
                   Message Templates
                 </label>
               </div>
@@ -113,7 +121,7 @@ const {
   exportConfiguration,
   exportTemplates,
   importConfiguration,
-  importTemplates
+  importTemplates,
 } = usePubSubImportExport()
 
 const importType = ref<'config' | 'templates'>('config')
@@ -127,7 +135,7 @@ const handleExportTemplates = async () => {
   await exportTemplates(props.projectId)
 }
 
-const handleImport = async (data: { importData: any[], options: any }) => {
+const handleImport = async (data: { importData: any[]; options: any }) => {
   if (importType.value === 'templates') {
     await importTemplates(props.projectId, data.importData, data.options)
   } else {

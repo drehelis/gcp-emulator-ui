@@ -8,8 +8,16 @@ import { nextTick } from 'vue'
  */
 export const applyFocusHighlight = async (element: HTMLElement) => {
   // Add a smooth fade-out highlight effect using CSS variable
-  const duration = window.getComputedStyle(document.documentElement).getPropertyValue('--highlight-transition-duration').trim() || '1.5s'
-  const timing = window.getComputedStyle(document.documentElement).getPropertyValue('--highlight-transition-timing').trim() || 'ease-out'
+  const duration =
+    window
+      .getComputedStyle(document.documentElement)
+      .getPropertyValue('--highlight-transition-duration')
+      .trim() || '1.5s'
+  const timing =
+    window
+      .getComputedStyle(document.documentElement)
+      .getPropertyValue('--highlight-transition-timing')
+      .trim() || 'ease-out'
   element.style.transition = `background-color ${duration} ${timing}`
   element.style.backgroundColor = 'rgba(59, 130, 246, 0.25)'
 
@@ -32,7 +40,10 @@ export const applyFocusHighlight = async (element: HTMLElement) => {
 /**
  * Handles focus targeting for topics, subscriptions, and buckets
  */
-export const handleFocusTarget = async (targetName: string, targetType: 'topic' | 'subscription' | 'bucket' = 'topic') => {
+export const handleFocusTarget = async (
+  targetName: string,
+  targetType: 'topic' | 'subscription' | 'bucket' = 'topic'
+) => {
   // Wait for DOM to be ready
   await nextTick()
 
@@ -63,7 +74,6 @@ export const handleTopicFocus = async (
   expandedTopics: Set<string>,
   getTopicDisplayName: TopicNameExtractor
 ) => {
-
   if (!hash || subscriptionsByTopic.size === 0) {
     return
   }

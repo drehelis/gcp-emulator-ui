@@ -69,7 +69,9 @@ describe('useFirestoreFields', () => {
     })
 
     it('identifies reference value', () => {
-      expect(fields.getFieldType({ referenceValue: 'projects/p/databases/d/documents/c/d' })).toBe('reference')
+      expect(fields.getFieldType({ referenceValue: 'projects/p/databases/d/documents/c/d' })).toBe(
+        'reference'
+      )
     })
 
     it('identifies map value', () => {
@@ -116,8 +118,8 @@ describe('useFirestoreFields', () => {
     })
 
     it('formats array value with item count', () => {
-      const result = fields.formatFieldValue({ 
-        arrayValue: { values: [{ stringValue: 'a' }, { stringValue: 'b' }] } 
+      const result = fields.formatFieldValue({
+        arrayValue: { values: [{ stringValue: 'a' }, { stringValue: 'b' }] },
       })
       expect(result).toBe('2 items')
     })
@@ -174,7 +176,10 @@ describe('useFirestoreFields', () => {
     })
 
     it('creates geopoint value', () => {
-      const result = fields.createFirestoreValue('geopoint', { latitude: 37.77, longitude: -122.42 })
+      const result = fields.createFirestoreValue('geopoint', {
+        latitude: 37.77,
+        longitude: -122.42,
+      })
       expect(result.geoPointValue).toEqual({ latitude: 37.77, longitude: -122.42 })
     })
   })
@@ -201,10 +206,10 @@ describe('useFirestoreFields', () => {
     })
 
     it('converts array value', () => {
-      const input = { 
-        arrayValue: { 
-          values: [{ stringValue: 'a' }, { integerValue: '1' }] 
-        } 
+      const input = {
+        arrayValue: {
+          values: [{ stringValue: 'a' }, { integerValue: '1' }],
+        },
       }
       const result = fields.convertFromFirestoreValue(input)
       expect(result).toEqual(['a', 1])
@@ -215,9 +220,9 @@ describe('useFirestoreFields', () => {
         mapValue: {
           fields: {
             name: { stringValue: 'test' },
-            count: { integerValue: '5' }
-          }
-        }
+            count: { integerValue: '5' },
+          },
+        },
       }
       const result = fields.convertFromFirestoreValue(input)
       expect(result).toEqual({ name: 'test', count: 5 })
@@ -308,7 +313,10 @@ describe('useFirestoreFields', () => {
     })
 
     it('creates reference value', () => {
-      const result = fields.createFirestoreValue('reference', 'projects/p/databases/d/documents/c/d')
+      const result = fields.createFirestoreValue(
+        'reference',
+        'projects/p/databases/d/documents/c/d'
+      )
       expect(result.referenceValue).toBe('projects/p/databases/d/documents/c/d')
     })
 
@@ -403,7 +411,9 @@ describe('useFirestoreFields', () => {
     })
 
     it('converts geopoint value', () => {
-      const result = fields.convertFromFirestoreValue({ geoPointValue: { latitude: 37, longitude: -122 } })
+      const result = fields.convertFromFirestoreValue({
+        geoPointValue: { latitude: 37, longitude: -122 },
+      })
       expect(result.latitude).toBe(37)
       expect(result.longitude).toBe(-122)
     })
@@ -415,7 +425,9 @@ describe('useFirestoreFields', () => {
     })
 
     it('converts reference value', () => {
-      const result = fields.convertFromFirestoreValue({ referenceValue: 'projects/p/databases/d/documents/c/d' })
+      const result = fields.convertFromFirestoreValue({
+        referenceValue: 'projects/p/databases/d/documents/c/d',
+      })
       expect(result).toBe('projects/p/databases/d/documents/c/d')
     })
 
@@ -450,4 +462,3 @@ describe('useFirestoreFields', () => {
     })
   })
 })
-

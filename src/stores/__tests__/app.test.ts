@@ -13,8 +13,8 @@ vi.mock('vue-toastification', () => ({
     success: vi.fn(),
     error: vi.fn(),
     warning: vi.fn(),
-    info: vi.fn()
-  })
+    info: vi.fn(),
+  }),
 }))
 
 describe('useAppStore', () => {
@@ -84,20 +84,20 @@ describe('useAppStore', () => {
     it('toggles sidebar collapsed state', () => {
       const store = useAppStore()
       const initial = store.layout.sidebar.collapsed
-      
+
       store.toggleSidebar()
       expect(store.layout.sidebar.collapsed).toBe(!initial)
-      
+
       store.toggleSidebar()
       expect(store.layout.sidebar.collapsed).toBe(initial)
     })
 
     it('sets sidebar collapsed state directly', () => {
       const store = useAppStore()
-      
+
       store.setSidebarCollapsed(true)
       expect(store.layout.sidebar.collapsed).toBe(true)
-      
+
       store.setSidebarCollapsed(false)
       expect(store.layout.sidebar.collapsed).toBe(false)
     })
@@ -106,30 +106,30 @@ describe('useAppStore', () => {
   describe('loading state', () => {
     it('sets global loading state', () => {
       const store = useAppStore()
-      
+
       store.setGlobalLoading(true)
       expect(store.loading.global).toBe(true)
-      
+
       store.setGlobalLoading(false)
       expect(store.loading.global).toBe(false)
     })
 
     it('sets component loading state', () => {
       const store = useAppStore()
-      
+
       store.setComponentLoading('topics', true)
       expect(store.loading.components.topics).toBe(true)
-      
+
       store.setComponentLoading('topics', false)
       expect(store.loading.components.topics).toBeUndefined()
     })
 
     it('sets operation loading state', () => {
       const store = useAppStore()
-      
+
       store.setOperationLoading('createTopic', true)
       expect(store.loading.operations.createTopic).toBe(true)
-      
+
       store.setOperationLoading('createTopic', false)
       expect(store.loading.operations.createTopic).toBeUndefined()
     })
@@ -140,9 +140,9 @@ describe('useAppStore', () => {
       const store = useAppStore()
       const items = [
         { label: 'Home', route: '/' },
-        { label: 'Topics', route: '/topics' }
+        { label: 'Topics', route: '/topics' },
       ]
-      
+
       store.setBreadcrumbs(items)
       expect(store.breadcrumbs).toEqual(items)
     })
@@ -165,7 +165,7 @@ describe('useAppStore', () => {
   describe('preferences', () => {
     it('updates preferences', () => {
       const store = useAppStore()
-      
+
       store.updatePreferences({ compactMode: true })
       expect(store.preferences.compactMode).toBe(true)
     })
@@ -173,7 +173,7 @@ describe('useAppStore', () => {
     it('merges preference updates', () => {
       const store = useAppStore()
       const initialAnimations = store.preferences.enableAnimations
-      
+
       store.updatePreferences({ compactMode: true })
       expect(store.preferences.enableAnimations).toBe(initialAnimations)
     })
@@ -183,7 +183,7 @@ describe('useAppStore', () => {
     it('toggles feature flag', () => {
       const store = useAppStore()
       const initialValue = store.featureFlags.enableAdvancedSearch
-      
+
       store.toggleFeatureFlag('enableAdvancedSearch')
       expect(store.featureFlags.enableAdvancedSearch).toBe(!initialValue)
     })
@@ -191,7 +191,7 @@ describe('useAppStore', () => {
     it('enables feature', () => {
       const store = useAppStore()
       store.disableFeature('enableAdvancedSearch')
-      
+
       store.enableFeature('enableAdvancedSearch')
       expect(store.featureFlags.enableAdvancedSearch).toBe(true)
     })
@@ -199,7 +199,7 @@ describe('useAppStore', () => {
     it('disables feature', () => {
       const store = useAppStore()
       store.enableFeature('enableBulkOperations')
-      
+
       store.disableFeature('enableBulkOperations')
       expect(store.featureFlags.enableBulkOperations).toBe(false)
     })
@@ -220,10 +220,10 @@ describe('useAppStore', () => {
 
     it('calculates sidebarWidth based on collapsed state', () => {
       const store = useAppStore()
-      
+
       store.setSidebarCollapsed(false)
       expect(store.sidebarWidth).toBe(store.layout.sidebar.width)
-      
+
       store.setSidebarCollapsed(true)
       expect(store.sidebarWidth).toBe(store.layout.sidebar.collapsedWidth)
     })
@@ -231,7 +231,7 @@ describe('useAppStore', () => {
     it('calculates isLoading from global state', () => {
       const store = useAppStore()
       expect(store.isLoading).toBe(false)
-      
+
       store.setGlobalLoading(true)
       expect(store.isLoading).toBe(true)
     })
@@ -240,12 +240,12 @@ describe('useAppStore', () => {
   describe('modals', () => {
     it('opens modal and returns id', () => {
       const store = useAppStore()
-      
+
       const id = store.openModal({
         title: 'Test Modal',
-        component: 'TestComponent'
+        component: 'TestComponent',
       })
-      
+
       expect(id).toBeDefined()
       expect(store.modals.length).toBe(1)
       expect(store.hasActiveModals).toBe(true)
@@ -253,12 +253,12 @@ describe('useAppStore', () => {
 
     it('closes modal by id', () => {
       const store = useAppStore()
-      
+
       const id = store.openModal({
         title: 'Test Modal',
-        component: 'TestComponent'
+        component: 'TestComponent',
       })
-      
+
       store.closeModal(id)
       expect(store.modals.length).toBe(0)
       expect(store.hasActiveModals).toBe(false)
@@ -266,12 +266,12 @@ describe('useAppStore', () => {
 
     it('closes all modals', () => {
       const store = useAppStore()
-      
+
       store.openModal({ title: 'Modal 1', component: 'Test1' })
       store.openModal({ title: 'Modal 2', component: 'Test2' })
-      
+
       expect(store.modals.length).toBe(2)
-      
+
       store.closeAllModals()
       expect(store.modals.length).toBe(0)
     })
@@ -280,13 +280,13 @@ describe('useAppStore', () => {
   describe('toast notifications', () => {
     it('returns toast id when showing toast', () => {
       const store = useAppStore()
-      
+
       const id = store.showToast({
         type: 'success',
         title: 'Success',
-        message: 'Operation completed'
+        message: 'Operation completed',
       })
-      
+
       // showToast uses vue-toastification directly and returns an id
       expect(id).toBeDefined()
       expect(typeof id).toBe('string')
@@ -303,7 +303,7 @@ describe('useAppStore', () => {
       const id = store.showToast({
         type: 'error',
         title: 'Error',
-        message: 'Something went wrong'
+        message: 'Something went wrong',
       })
       expect(id).toBeDefined()
     })
@@ -313,7 +313,7 @@ describe('useAppStore', () => {
       const id = store.showToast({
         type: 'warning',
         title: 'Warning',
-        message: 'Be careful'
+        message: 'Be careful',
       })
       expect(id).toBeDefined()
     })
@@ -323,7 +323,7 @@ describe('useAppStore', () => {
       const id = store.showToast({
         type: 'info',
         title: 'Info',
-        message: 'FYI'
+        message: 'FYI',
       })
       expect(id).toBeDefined()
     })
@@ -346,13 +346,13 @@ describe('useAppStore', () => {
     it('respects enableToasts setting', () => {
       const store = useAppStore()
       store.$patch({ notifications: { ...store.notifications, enableToasts: false } })
-      
+
       const result = store.showToast({
         type: 'success',
         title: 'Test',
-        message: 'Should not show'
+        message: 'Should not show',
       })
-      
+
       expect(result).toBeUndefined()
     })
   })
@@ -431,9 +431,9 @@ describe('useAppStore', () => {
     it('returns modal and result when closing', () => {
       const store = useAppStore()
       const id = store.openModal({ title: 'Test', component: 'TestComp' })
-      
+
       const result = store.closeModal(id, { confirmed: true })
-      
+
       expect(result?.modal.title).toBe('Test')
       expect(result?.result.confirmed).toBe(true)
     })
@@ -445,4 +445,3 @@ describe('useAppStore', () => {
     })
   })
 })
-

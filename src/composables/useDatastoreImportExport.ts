@@ -49,14 +49,14 @@ export function useDatastoreImportExport() {
       appStore.showToast({
         type: 'success',
         title: 'Download started',
-        message: `Downloading ${exportDirName}.tar.gz`
+        message: `Downloading ${exportDirName}.tar.gz`,
       })
     } catch (error) {
       console.error('Datastore export failed:', error)
       appStore.showToast({
         type: 'error',
         title: 'Export failed',
-        message: (error as Error).message
+        message: (error as Error).message,
       })
       throw error
     } finally {
@@ -84,23 +84,27 @@ export function useDatastoreImportExport() {
 
       // Calculate totals
       const totalNamespaces = jsonData.namespaces.length
-      const totalKinds = jsonData.namespaces.reduce((sum: number, ns: any) => sum + ns.kinds.length, 0)
+      const totalKinds = jsonData.namespaces.reduce(
+        (sum: number, ns: any) => sum + ns.kinds.length,
+        0
+      )
       const totalEntities = jsonData.namespaces.reduce(
-        (sum: number, ns: any) => sum + ns.kinds.reduce((kindSum: number, k: any) => kindSum + k.count, 0),
+        (sum: number, ns: any) =>
+          sum + ns.kinds.reduce((kindSum: number, k: any) => kindSum + k.count, 0),
         0
       )
 
       appStore.showToast({
         type: 'success',
         title: 'JSON export completed',
-        message: `Downloaded ${totalNamespaces} namespace(s), ${totalKinds} kind(s), ${totalEntities} entitie(s)`
+        message: `Downloaded ${totalNamespaces} namespace(s), ${totalKinds} kind(s), ${totalEntities} entitie(s)`,
       })
     } catch (error) {
       console.error('JSON export failed:', error)
       appStore.showToast({
         type: 'error',
         title: 'JSON export failed',
-        message: (error as Error).message
+        message: (error as Error).message,
       })
       throw error
     } finally {
@@ -131,7 +135,9 @@ export function useDatastoreImportExport() {
 
       // Step 3: Call the Datastore emulator import API
       // Import path must point to the metadata file
-      const importPath = rootFolder ? `/srv/${rootFolder}/${metadataFile.name}` : `/srv/${metadataFile.name}`
+      const importPath = rootFolder
+        ? `/srv/${rootFolder}/${metadataFile.name}`
+        : `/srv/${metadataFile.name}`
       await datastoreStore.importEntities(projectId, importPath)
 
       // Step 4: Reload data
@@ -140,14 +146,14 @@ export function useDatastoreImportExport() {
       appStore.showToast({
         type: 'success',
         title: 'Import completed',
-        message: `Successfully imported ${files.length} file(s)`
+        message: `Successfully imported ${files.length} file(s)`,
       })
     } catch (error) {
       console.error('Datastore import failed:', error)
       appStore.showToast({
         type: 'error',
         title: 'Import failed',
-        message: (error as Error).message
+        message: (error as Error).message,
       })
       throw error
     } finally {
@@ -164,6 +170,6 @@ export function useDatastoreImportExport() {
     loadData,
     exportEntities,
     exportEntitiesAsJson,
-    importEntities
+    importEntities,
   }
 }

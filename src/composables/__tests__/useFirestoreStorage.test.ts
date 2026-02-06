@@ -85,7 +85,7 @@ describe('useFirestoreStorage', () => {
       storage.saveDatabasesToStorage(['(default)'])
       storage.addDatabaseToStorage('zebra-db')
       const result = storage.addDatabaseToStorage('alpha-db')
-      
+
       expect(result[0]).toBe('(default)')
       expect(result[1]).toBe('alpha-db')
       expect(result[2]).toBe('zebra-db')
@@ -108,9 +108,9 @@ describe('useFirestoreStorage', () => {
     it('switches to default if removed db was selected', () => {
       storage.saveDatabasesToStorage(['(default)', 'selected-db'])
       storage.saveSelectedDatabaseToStorage('selected-db')
-      
+
       storage.removeDatabaseFromStorage('selected-db')
-      
+
       const selected = storage.loadSelectedDatabaseFromStorage()
       expect(selected).toBe('(default)')
     })
@@ -120,9 +120,9 @@ describe('useFirestoreStorage', () => {
     it('clears all firestore storage data', () => {
       storage.saveDatabasesToStorage(['(default)', 'db1', 'db2'])
       storage.saveSelectedDatabaseToStorage('db1')
-      
+
       storage.clearFirestoreStorage()
-      
+
       expect(localStorage.getItem('firestore-databases')).toBeNull()
       expect(localStorage.getItem('firestore-selected-database')).toBeNull()
     })
@@ -132,9 +132,9 @@ describe('useFirestoreStorage', () => {
     it('returns all storage data', () => {
       storage.saveDatabasesToStorage(['(default)', 'my-db'])
       storage.saveSelectedDatabaseToStorage('my-db')
-      
+
       const data = storage.getFirestoreStorageData()
-      
+
       expect(data.databases).toEqual(['(default)', 'my-db'])
       expect(data.selectedDatabase).toBe('my-db')
     })

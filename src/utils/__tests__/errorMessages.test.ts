@@ -4,7 +4,11 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { getMeaningfulErrorMessage, getPubSubErrorMessage, getStorageErrorMessage } from '../errorMessages'
+import {
+  getMeaningfulErrorMessage,
+  getPubSubErrorMessage,
+  getStorageErrorMessage,
+} from '../errorMessages'
 
 describe('getMeaningfulErrorMessage', () => {
   describe('HTTP status codes', () => {

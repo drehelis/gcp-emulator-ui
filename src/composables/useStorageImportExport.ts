@@ -41,10 +41,11 @@ export function useStorageImportExport() {
         name: bucket.name,
         location: bucket.location || 'US',
         storageClass: bucket.storageClass || 'STANDARD',
-        uniformBucketLevelAccess: bucket.iamConfiguration?.uniformBucketLevelAccess?.enabled || false,
+        uniformBucketLevelAccess:
+          bucket.iamConfiguration?.uniformBucketLevelAccess?.enabled || false,
         publicAccessPrevention: bucket.iamConfiguration?.publicAccessPrevention || 'inherited',
         versioning: bucket.versioning?.enabled || false,
-        labels: bucket.labels || {}
+        labels: bucket.labels || {},
       }))
 
       // Download the file
@@ -57,14 +58,14 @@ export function useStorageImportExport() {
       appStore.showToast({
         type: 'success',
         title: 'Storage configuration exported',
-        message: `Exported ${exportData.length} bucket configuration${exportData.length === 1 ? '' : 's'}`
+        message: `Exported ${exportData.length} bucket configuration${exportData.length === 1 ? '' : 's'}`,
       })
     } catch (error) {
       console.error('Storage export failed:', error)
       appStore.showToast({
         type: 'error',
         title: 'Export failed',
-        message: (error as Error).message
+        message: (error as Error).message,
       })
     } finally {
       isExporting.value = false
@@ -93,10 +94,10 @@ export function useStorageImportExport() {
             storageClass: bucketConfig.storageClass || 'STANDARD',
             iamConfiguration: {
               uniformBucketLevelAccess: {
-                enabled: bucketConfig.uniformBucketLevelAccess || false
+                enabled: bucketConfig.uniformBucketLevelAccess || false,
               },
-              publicAccessPrevention: bucketConfig.publicAccessPrevention || 'inherited'
-            }
+              publicAccessPrevention: bucketConfig.publicAccessPrevention || 'inherited',
+            },
           }
 
           await storageStore.createBucket(bucketRequest, true) // Silent mode to prevent spam notifications
@@ -114,19 +115,19 @@ export function useStorageImportExport() {
         appStore.showToast({
           type: 'success',
           title: 'Storage import completed successfully',
-          message: `${successCount} bucket${successCount === 1 ? '' : 's'} imported`
+          message: `${successCount} bucket${successCount === 1 ? '' : 's'} imported`,
         })
       } else if (successCount > 0 && errorCount > 0) {
         appStore.showToast({
           type: 'warning',
           title: 'Storage import completed with errors',
-          message: `${successCount} successful, ${errorCount} failed`
+          message: `${successCount} successful, ${errorCount} failed`,
         })
       } else {
         appStore.showToast({
           type: 'error',
           title: 'Storage import failed',
-          message: `All ${errorCount} bucket${errorCount === 1 ? '' : 's'} failed to import`
+          message: `All ${errorCount} bucket${errorCount === 1 ? '' : 's'} failed to import`,
         })
       }
     } catch (error) {
@@ -134,7 +135,7 @@ export function useStorageImportExport() {
       appStore.showToast({
         type: 'error',
         title: 'Import failed',
-        message: (error as Error).message
+        message: (error as Error).message,
       })
     } finally {
       isImporting.value = false
@@ -147,6 +148,6 @@ export function useStorageImportExport() {
     isImporting,
     loadData,
     exportConfiguration,
-    importConfiguration
+    importConfiguration,
   }
 }

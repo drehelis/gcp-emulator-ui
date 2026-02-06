@@ -20,15 +20,15 @@ describe('pubsubAttributes', () => {
       // Mock fetch to return empty config
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve({})
+        json: () => Promise.resolve({}),
       } as Response)
 
       const { usePreconfiguredMessageAttributes } = await import('@/utils/pubsubAttributes')
       const { useConfigStore } = await import('@/stores/config')
-      
+
       const configStore = useConfigStore()
       await configStore.loadRuntimeConfig()
-      
+
       const attributes = usePreconfiguredMessageAttributes()
       expect(attributes.value).toEqual([])
     })
@@ -37,47 +37,49 @@ describe('pubsubAttributes', () => {
       // Mock fetch to return config with pubsub attributes
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve({
-          pubsub: {
-            pubsubPreConfiguredMsgAttr: {
-              'Content-Type': 'application/json',
-              'X-Custom-Header': 'custom-value'
-            }
-          }
-        })
+        json: () =>
+          Promise.resolve({
+            pubsub: {
+              pubsubPreConfiguredMsgAttr: {
+                'Content-Type': 'application/json',
+                'X-Custom-Header': 'custom-value',
+              },
+            },
+          }),
       } as Response)
 
       const { usePreconfiguredMessageAttributes } = await import('@/utils/pubsubAttributes')
       const { useConfigStore } = await import('@/stores/config')
-      
+
       const configStore = useConfigStore()
       await configStore.loadRuntimeConfig()
-      
+
       const attributes = usePreconfiguredMessageAttributes()
       expect(attributes.value).toEqual([
         { key: 'Content-Type', value: 'application/json' },
-        { key: 'X-Custom-Header', value: 'custom-value' }
+        { key: 'X-Custom-Header', value: 'custom-value' },
       ])
     })
 
     it('trims whitespace from keys and values', async () => {
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve({
-          pubsub: {
-            pubsubPreConfiguredMsgAttr: {
-              '  key-with-spaces  ': '  value-with-spaces  '
-            }
-          }
-        })
+        json: () =>
+          Promise.resolve({
+            pubsub: {
+              pubsubPreConfiguredMsgAttr: {
+                '  key-with-spaces  ': '  value-with-spaces  ',
+              },
+            },
+          }),
       } as Response)
 
       const { usePreconfiguredMessageAttributes } = await import('@/utils/pubsubAttributes')
       const { useConfigStore } = await import('@/stores/config')
-      
+
       const configStore = useConfigStore()
       await configStore.loadRuntimeConfig()
-      
+
       const attributes = usePreconfiguredMessageAttributes()
       expect(attributes.value[0].key).toBe('key-with-spaces')
       expect(attributes.value[0].value).toBe('value-with-spaces')
@@ -86,23 +88,24 @@ describe('pubsubAttributes', () => {
     it('filters out entries with empty keys', async () => {
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve({
-          pubsub: {
-            pubsubPreConfiguredMsgAttr: {
-              '': 'empty-key-value',
-              '   ': 'whitespace-key-value',
-              'valid-key': 'valid-value'
-            }
-          }
-        })
+        json: () =>
+          Promise.resolve({
+            pubsub: {
+              pubsubPreConfiguredMsgAttr: {
+                '': 'empty-key-value',
+                '   ': 'whitespace-key-value',
+                'valid-key': 'valid-value',
+              },
+            },
+          }),
       } as Response)
 
       const { usePreconfiguredMessageAttributes } = await import('@/utils/pubsubAttributes')
       const { useConfigStore } = await import('@/stores/config')
-      
+
       const configStore = useConfigStore()
       await configStore.loadRuntimeConfig()
-      
+
       const attributes = usePreconfiguredMessageAttributes()
       expect(attributes.value).toHaveLength(1)
       expect(attributes.value[0].key).toBe('valid-key')
@@ -111,21 +114,22 @@ describe('pubsubAttributes', () => {
     it('allows empty values', async () => {
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve({
-          pubsub: {
-            pubsubPreConfiguredMsgAttr: {
-              'key-with-empty-value': ''
-            }
-          }
-        })
+        json: () =>
+          Promise.resolve({
+            pubsub: {
+              pubsubPreConfiguredMsgAttr: {
+                'key-with-empty-value': '',
+              },
+            },
+          }),
       } as Response)
 
       const { usePreconfiguredMessageAttributes } = await import('@/utils/pubsubAttributes')
       const { useConfigStore } = await import('@/stores/config')
-      
+
       const configStore = useConfigStore()
       await configStore.loadRuntimeConfig()
-      
+
       const attributes = usePreconfiguredMessageAttributes()
       expect(attributes.value).toHaveLength(1)
       expect(attributes.value[0]).toEqual({ key: 'key-with-empty-value', value: '' })
@@ -134,19 +138,20 @@ describe('pubsubAttributes', () => {
     it('returns empty array when attributes is null', async () => {
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve({
-          pubsub: {
-            pubsubPreConfiguredMsgAttr: null
-          }
-        })
+        json: () =>
+          Promise.resolve({
+            pubsub: {
+              pubsubPreConfiguredMsgAttr: null,
+            },
+          }),
       } as Response)
 
       const { usePreconfiguredMessageAttributes } = await import('@/utils/pubsubAttributes')
       const { useConfigStore } = await import('@/stores/config')
-      
+
       const configStore = useConfigStore()
       await configStore.loadRuntimeConfig()
-      
+
       const attributes = usePreconfiguredMessageAttributes()
       expect(attributes.value).toEqual([])
     })
@@ -154,19 +159,20 @@ describe('pubsubAttributes', () => {
     it('returns empty array when attributes is an array instead of object', async () => {
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve({
-          pubsub: {
-            pubsubPreConfiguredMsgAttr: ['should', 'be', 'object']
-          }
-        })
+        json: () =>
+          Promise.resolve({
+            pubsub: {
+              pubsubPreConfiguredMsgAttr: ['should', 'be', 'object'],
+            },
+          }),
       } as Response)
 
       const { usePreconfiguredMessageAttributes } = await import('@/utils/pubsubAttributes')
       const { useConfigStore } = await import('@/stores/config')
-      
+
       const configStore = useConfigStore()
       await configStore.loadRuntimeConfig()
-      
+
       const attributes = usePreconfiguredMessageAttributes()
       expect(attributes.value).toEqual([])
     })
@@ -174,24 +180,25 @@ describe('pubsubAttributes', () => {
     it('handles mixed valid and invalid attribute types', async () => {
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve({
-          pubsub: {
-            pubsubPreConfiguredMsgAttr: {
-              'valid-key': 'valid-value',
-              'number-value': 123,  // Should be filtered out
-              'null-value': null,   // Should be filtered out
-              'another-valid': 'value'
-            }
-          }
-        })
+        json: () =>
+          Promise.resolve({
+            pubsub: {
+              pubsubPreConfiguredMsgAttr: {
+                'valid-key': 'valid-value',
+                'number-value': 123, // Should be filtered out
+                'null-value': null, // Should be filtered out
+                'another-valid': 'value',
+              },
+            },
+          }),
       } as Response)
 
       const { usePreconfiguredMessageAttributes } = await import('@/utils/pubsubAttributes')
       const { useConfigStore } = await import('@/stores/config')
-      
+
       const configStore = useConfigStore()
       await configStore.loadRuntimeConfig()
-      
+
       const attributes = usePreconfiguredMessageAttributes()
       // Should only contain valid string key-value pairs
       expect(attributes.value.length).toBeGreaterThanOrEqual(1)
@@ -201,17 +208,18 @@ describe('pubsubAttributes', () => {
     it('returns empty array when pubsub config is undefined', async () => {
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve({
-          // No pubsub section at all
-        })
+        json: () =>
+          Promise.resolve({
+            // No pubsub section at all
+          }),
       } as Response)
 
       const { usePreconfiguredMessageAttributes } = await import('@/utils/pubsubAttributes')
       const { useConfigStore } = await import('@/stores/config')
-      
+
       const configStore = useConfigStore()
       await configStore.loadRuntimeConfig()
-      
+
       const attributes = usePreconfiguredMessageAttributes()
       expect(attributes.value).toEqual([])
     })
@@ -219,15 +227,15 @@ describe('pubsubAttributes', () => {
     it('is reactive to config store changes', async () => {
       vi.mocked(fetch).mockResolvedValue({
         ok: true,
-        json: () => Promise.resolve({})
+        json: () => Promise.resolve({}),
       } as Response)
 
       const { usePreconfiguredMessageAttributes } = await import('@/utils/pubsubAttributes')
       const { useConfigStore } = await import('@/stores/config')
-      
+
       const configStore = useConfigStore()
       await configStore.loadRuntimeConfig()
-      
+
       const attributes = usePreconfiguredMessageAttributes()
       expect(attributes.value).toEqual([])
 
@@ -235,9 +243,9 @@ describe('pubsubAttributes', () => {
       configStore.updateRuntimeConfig({
         pubsub: {
           pubsubPreConfiguredMsgAttr: {
-            'new-key': 'new-value'
-          }
-        }
+            'new-key': 'new-value',
+          },
+        },
       })
 
       // Computed should update reactively

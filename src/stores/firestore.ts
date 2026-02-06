@@ -24,7 +24,7 @@ export const useFirestoreStore = defineStore('firestore', () => {
     loadSelectedDatabaseFromStorage,
     addDatabaseToStorage,
     removeDatabaseFromStorage,
-    saveSelectedDatabaseToStorage
+    saveSelectedDatabaseToStorage,
   } = useFirestoreStorage()
 
   const availableDatabases = ref<string[]>(loadDatabasesFromStorage())
@@ -80,7 +80,11 @@ export const useFirestoreStore = defineStore('firestore', () => {
   const collectionsNextPageToken = ref<string | undefined>(undefined)
 
   // Load collections
-  const loadCollections = async (projectId: string, nextPageToken?: string, pageSize: number = 30) => {
+  const loadCollections = async (
+    projectId: string,
+    nextPageToken?: string,
+    pageSize: number = 30
+  ) => {
     try {
       loading.value = true
       const databasePath = getCurrentDatabasePath(projectId)
@@ -96,8 +100,8 @@ export const useFirestoreStore = defineStore('firestore', () => {
           name: collection.name,
           documentCount: 0,
           totalSize: 0,
-          lastModified: new Date()
-        }
+          lastModified: new Date(),
+        },
       })) as FirestoreCollectionWithMetadata[] // assert type to include missing properties if any
 
       if (nextPageToken) {
@@ -107,7 +111,7 @@ export const useFirestoreStore = defineStore('firestore', () => {
         // Replace
         collections.value = newCollections
       }
-      
+
       collectionsNextPageToken.value = response.nextPageToken
     } catch (error) {
       console.warn('Failed to load collections:', error)
@@ -117,7 +121,12 @@ export const useFirestoreStore = defineStore('firestore', () => {
   }
 
   // Create collection
-  const createCollection = async (projectId: string, collectionId: string, initialDocument?: any, documentId?: string) => {
+  const createCollection = async (
+    projectId: string,
+    collectionId: string,
+    initialDocument?: any,
+    documentId?: string
+  ) => {
     try {
       loading.value = true
       const databasePath = getCurrentDatabasePath(projectId)
@@ -126,7 +135,9 @@ export const useFirestoreStore = defineStore('firestore', () => {
         parent: databasePath,
         collectionId,
         documentId,
-        document: initialDocument || { fields: { placeholder: { stringValue: 'Initial document' } } }
+        document: initialDocument || {
+          fields: { placeholder: { stringValue: 'Initial document' } },
+        },
       }
 
       await firestoreApi.createDocument(request)
@@ -142,8 +153,8 @@ export const useFirestoreStore = defineStore('firestore', () => {
           name: `${databasePath}/documents/${collectionId}`,
           documentCount: 1,
           totalSize: 0,
-          lastModified: new Date()
-        }
+          lastModified: new Date(),
+        },
       }
 
       if (!collections.value.find(c => c.id === collectionId)) {
@@ -169,14 +180,11 @@ export const useFirestoreStore = defineStore('firestore', () => {
     try {
       loading.value = true
 
-      const document = initialDocument || { fields: { placeholder: { stringValue: 'Initial document' } } }
+      const document = initialDocument || {
+        fields: { placeholder: { stringValue: 'Initial document' } },
+      }
 
-      await firestoreApi.createSubcollection(
-        parentDocumentPath,
-        collectionId,
-        document,
-        documentId
-      )
+      await firestoreApi.createSubcollection(parentDocumentPath, collectionId, document, documentId)
 
       return true
     } catch (error) {
@@ -188,7 +196,12 @@ export const useFirestoreStore = defineStore('firestore', () => {
   }
 
   // Create document in existing collection
-  const createDocument = async (projectId: string, collectionId: string, document: any, documentId?: string) => {
+  const createDocument = async (
+    projectId: string,
+    collectionId: string,
+    document: any,
+    documentId?: string
+  ) => {
     try {
       loading.value = true
       const databasePath = getCurrentDatabasePath(projectId)
@@ -197,7 +210,7 @@ export const useFirestoreStore = defineStore('firestore', () => {
         parent: databasePath,
         collectionId,
         documentId,
-        document
+        document,
       }
 
       const createdDocument = await firestoreApi.createDocument(request)
@@ -222,7 +235,12 @@ export const useFirestoreStore = defineStore('firestore', () => {
   }
 
   // Create document in subcollection
-  const createSubcollectionDocument = async (parentDocumentPath: string, collectionId: string, document: any, documentId?: string) => {
+  const createSubcollectionDocument = async (
+    parentDocumentPath: string,
+    collectionId: string,
+    document: any,
+    documentId?: string
+  ) => {
     try {
       loading.value = true
 
@@ -242,15 +260,24 @@ export const useFirestoreStore = defineStore('firestore', () => {
   }
 
   // Load documents
-  const loadDocuments = async (projectId: string, collectionId: string, nextPageToken?: string, pageSize: number = 30) => {
+  const loadDocuments = async (
+    projectId: string,
+    collectionId: string,
+    nextPageToken?: string,
+    pageSize: number = 30
+  ) => {
     try {
       loading.value = true
       const databasePath = getCurrentDatabasePath(projectId)
-      const response = await firestoreApi.listDocuments(databasePath, collectionId, pageSize, nextPageToken)
+      const response = await firestoreApi.listDocuments(
+        databasePath,
+        collectionId,
+        pageSize,
+        nextPageToken
+      )
 
-      
       const newDocs = response.documents || []
-      
+
       if (nextPageToken) {
         // Append docs if loading more
         const currentDocs = documents.value.get(collectionId) || []
@@ -279,7 +306,12 @@ export const useFirestoreStore = defineStore('firestore', () => {
   }
 
   // Update document
-  const updateDocument = async (projectId: string, collectionId: string, documentId: string, document: any) => {
+  const updateDocument = async (
+    projectId: string,
+    collectionId: string,
+    documentId: string,
+    document: any
+  ) => {
     try {
       loading.value = true
       const databasePath = getCurrentDatabasePath(projectId)
@@ -371,8 +403,8 @@ export const useFirestoreStore = defineStore('firestore', () => {
           name: collection.name,
           documentCount: 0,
           totalSize: 0,
-          lastModified: new Date()
-        }
+          lastModified: new Date(),
+        },
       }))
     } catch (error) {
       console.error('Failed to load subcollections:', error)
@@ -411,6 +443,6 @@ export const useFirestoreStore = defineStore('firestore', () => {
     deleteDocument,
     deleteCollection,
     healthCheck,
-    clearData
+    clearData,
   }
 })

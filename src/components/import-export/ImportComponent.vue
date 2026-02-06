@@ -14,7 +14,10 @@
             type="radio"
             class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600"
           />
-          <label for="import-file" class="ml-2 block text-xs sm:text-sm text-gray-900 dark:text-white">
+          <label
+            for="import-file"
+            class="ml-2 block text-xs sm:text-sm text-gray-900 dark:text-white"
+          >
             Upload File
           </label>
         </div>
@@ -26,7 +29,10 @@
             type="radio"
             class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600"
           />
-          <label for="import-paste" class="ml-2 block text-xs sm:text-sm text-gray-900 dark:text-white">
+          <label
+            for="import-paste"
+            class="ml-2 block text-xs sm:text-sm text-gray-900 dark:text-white"
+          >
             Paste JSON
           </label>
         </div>
@@ -40,9 +46,11 @@
       </label>
       <div
         class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md transition-colors"
-        :class="isDragOver ?
-          'border-blue-400 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-500' :
-          'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'"
+        :class="
+          isDragOver
+            ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-500'
+            : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+        "
         @drop="handleDrop"
         @dragover="handleDragOver"
         @dragenter="handleDragEnter"
@@ -51,7 +59,10 @@
         <div class="space-y-1 text-center">
           <DocumentIcon class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
           <div class="flex text-sm text-gray-600 dark:text-gray-400">
-            <label for="file-upload" class="relative cursor-pointer bg-white dark:bg-gray-800 rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+            <label
+              for="file-upload"
+              class="relative cursor-pointer bg-white dark:bg-gray-800 rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+            >
               <span>Upload a file</span>
               <input
                 id="file-upload"
@@ -64,9 +75,7 @@
             </label>
             <p class="pl-1">or drag and drop</p>
           </div>
-          <p class="text-xs text-gray-500 dark:text-gray-400">
-            JSON files only
-          </p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">JSON files only</p>
         </div>
       </div>
     </div>
@@ -86,7 +95,7 @@
             'w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus:outline-none dark:bg-gray-700 dark:text-white text-sm font-mono json-textarea',
             jsonError
               ? 'border-red-300 dark:border-red-500 focus:ring-red-500 focus:border-red-500'
-              : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500'
+              : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500 focus:border-blue-500',
           ]"
         />
 
@@ -115,13 +124,19 @@
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center">
           <DocumentIcon v-if="importMode === 'file'" class="h-5 w-5 text-gray-400 mr-2" />
-          <span v-if="importMode === 'file'" class="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
+          <span
+            v-if="importMode === 'file'"
+            class="text-xs sm:text-sm font-medium text-gray-900 dark:text-white"
+          >
             {{ importFile?.name }}
           </span>
           <span v-if="importMode === 'file'" class="ml-2 text-xs text-gray-500 dark:text-gray-400">
             ({{ importFile ? formatFileSize(importFile.size) : '' }})
           </span>
-          <span v-if="importMode === 'paste'" class="text-xs sm:text-sm font-medium text-gray-900 dark:text-white">
+          <span
+            v-if="importMode === 'paste'"
+            class="text-xs sm:text-sm font-medium text-gray-900 dark:text-white"
+          >
             📋 Pasted JSON {{ getFileTypeLabel() }}
           </span>
         </div>
@@ -135,19 +150,33 @@
 
       <div class="space-y-2">
         <div class="text-sm text-gray-600 dark:text-gray-400">
-          Preview: {{ importPreview.length }} {{ getPreviewLabel() }}{{ importPreview.length === 1 ? '' : 's' }}
+          Preview: {{ importPreview.length }} {{ getPreviewLabel()
+          }}{{ importPreview.length === 1 ? '' : 's' }}
         </div>
         <div class="bg-white dark:bg-gray-800 rounded border p-3 max-h-40 overflow-y-auto">
-          <pre class="text-xs text-gray-700 dark:text-gray-300">{{ JSON.stringify(importPreview.slice(0, 3), null, 2) }}</pre>
-          <div v-if="importPreview.length > 3" class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-            ... and {{ importPreview.length - 3 }} more {{ getPreviewLabel() }}{{ importPreview.length - 3 === 1 ? '' : 's' }}
+          <pre class="text-xs text-gray-700 dark:text-gray-300">{{
+            JSON.stringify(importPreview.slice(0, 3), null, 2)
+          }}</pre>
+          <div
+            v-if="importPreview.length > 3"
+            class="text-xs text-gray-500 dark:text-gray-400 mt-2"
+          >
+            ... and {{ importPreview.length - 3 }} more {{ getPreviewLabel()
+            }}{{ importPreview.length - 3 === 1 ? '' : 's' }}
           </div>
         </div>
       </div>
 
       <!-- Import Options -->
       <div class="mt-4 space-y-3">
-        <div v-if="importType === 'config' || importType === 'storage' || importType === 'firestore' || importType === 'datastore'">
+        <div
+          v-if="
+            importType === 'config' ||
+            importType === 'storage' ||
+            importType === 'firestore' ||
+            importType === 'datastore'
+          "
+        >
           <div class="flex items-center" v-if="importType === 'config'">
             <input
               id="create-topics"
@@ -155,7 +184,10 @@
               type="checkbox"
               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:checked:bg-blue-600"
             />
-            <label for="create-topics" class="ml-2 block text-xs sm:text-sm text-gray-900 dark:text-white">
+            <label
+              for="create-topics"
+              class="ml-2 block text-xs sm:text-sm text-gray-900 dark:text-white"
+            >
               Create topics if they don't exist
             </label>
           </div>
@@ -166,7 +198,10 @@
               type="checkbox"
               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:checked:bg-blue-600"
             />
-            <label for="create-subscriptions" class="ml-2 block text-xs sm:text-sm text-gray-900 dark:text-white">
+            <label
+              for="create-subscriptions"
+              class="ml-2 block text-xs sm:text-sm text-gray-900 dark:text-white"
+            >
               Create subscriptions if they don't exist
             </label>
           </div>
@@ -177,8 +212,19 @@
               type="checkbox"
               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:checked:bg-blue-600"
             />
-            <label for="overwrite-existing" class="ml-2 block text-xs sm:text-sm text-gray-900 dark:text-white">
-              {{ importType === 'storage' ? 'Overwrite existing buckets' : importType === 'firestore' ? 'Overwrite existing documents' : importType === 'datastore' ? 'Overwrite existing entities' : 'Overwrite existing configurations' }}
+            <label
+              for="overwrite-existing"
+              class="ml-2 block text-xs sm:text-sm text-gray-900 dark:text-white"
+            >
+              {{
+                importType === 'storage'
+                  ? 'Overwrite existing buckets'
+                  : importType === 'firestore'
+                    ? 'Overwrite existing documents'
+                    : importType === 'datastore'
+                      ? 'Overwrite existing entities'
+                      : 'Overwrite existing configurations'
+              }}
             </label>
           </div>
         </div>
@@ -190,7 +236,10 @@
               type="checkbox"
               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:checked:bg-blue-600"
             />
-            <label for="overwrite-templates" class="ml-2 block text-xs sm:text-sm text-gray-900 dark:text-white">
+            <label
+              for="overwrite-templates"
+              class="ml-2 block text-xs sm:text-sm text-gray-900 dark:text-white"
+            >
               Overwrite existing templates with same name
             </label>
           </div>
@@ -201,7 +250,10 @@
               type="checkbox"
               class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 rounded dark:bg-gray-700 dark:checked:bg-blue-600"
             />
-            <label for="preserve-ids" class="ml-2 block text-xs sm:text-sm text-gray-900 dark:text-white">
+            <label
+              for="preserve-ids"
+              class="ml-2 block text-xs sm:text-sm text-gray-900 dark:text-white"
+            >
               Preserve template IDs (may cause conflicts)
             </label>
           </div>
@@ -226,12 +278,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
-import {
-  ArrowUpTrayIcon,
-  ArrowPathIcon,
-  DocumentIcon,
-  XMarkIcon
-} from '@heroicons/vue/24/outline'
+import { ArrowUpTrayIcon, ArrowPathIcon, DocumentIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 
 interface Props {
   importType: string
@@ -240,7 +287,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const emit = defineEmits<{
-  import: [data: { importData: any[], options: any }]
+  import: [data: { importData: any[]; options: any }]
 }>()
 
 // Component state
@@ -257,7 +304,7 @@ const importOptions = ref({
   createSubscriptions: true,
   overwriteExisting: false,
   overwriteTemplates: false,
-  preserveTemplateIds: false
+  preserveTemplateIds: false,
 })
 
 // Computed properties
@@ -445,7 +492,7 @@ const handleFileUpload = async (event: Event) => {
 const readFileContent = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
-    reader.onload = (e) => resolve(e.target?.result as string)
+    reader.onload = e => resolve(e.target?.result as string)
     reader.onerror = () => reject(new Error('Failed to read file'))
     reader.readAsText(file)
   })
@@ -545,7 +592,7 @@ const handleImport = () => {
   if (importPreview.value) {
     emit('import', {
       importData: importPreview.value,
-      options: importOptions.value
+      options: importOptions.value,
     })
   }
 }
@@ -560,9 +607,12 @@ const formatFileSize = (bytes: number): string => {
 }
 
 // Watch for import type changes
-watch(() => props.importType, () => {
-  clearImportData()
-})
+watch(
+  () => props.importType,
+  () => {
+    clearImportData()
+  }
+)
 </script>
 
 <style scoped>

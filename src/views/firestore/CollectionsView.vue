@@ -13,8 +13,12 @@
         v-if="isNavigatingToPath"
         class="absolute top-4 left-1/2 transform -translate-x-1/2 z-50"
       >
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center space-x-3 theme-transition-colors">
-          <div class="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-500"></div>
+        <div
+          class="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center space-x-3 theme-transition-colors"
+        >
+          <div
+            class="animate-spin rounded-full h-5 w-5 border-2 border-gray-300 border-t-blue-500"
+          ></div>
           <p class="text-sm text-gray-700 dark:text-gray-300">Navigating to document...</p>
         </div>
       </div>
@@ -49,7 +53,9 @@
     </div>
 
     <!-- Mobile Navigation Header -->
-    <div class="lg:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 theme-transition-colors">
+    <div
+      class="lg:hidden bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 theme-transition-colors"
+    >
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-2">
           <!-- Back Button -->
@@ -66,7 +72,10 @@
             <span class="text-sm font-medium text-gray-900 dark:text-white truncate">
               {{ mobileCurrentLevel.title }}
             </span>
-            <span v-if="mobileCurrentLevel.subtitle" class="text-xs text-gray-500 dark:text-gray-400 truncate">
+            <span
+              v-if="mobileCurrentLevel.subtitle"
+              class="text-xs text-gray-500 dark:text-gray-400 truncate"
+            >
               {{ mobileCurrentLevel.subtitle }}
             </span>
           </div>
@@ -81,7 +90,7 @@
               'w-2 h-2 rounded-full transition-colors',
               index === mobileNavigationStack.length - 1
                 ? 'bg-blue-500'
-                : 'bg-gray-300 dark:bg-gray-600'
+                : 'bg-gray-300 dark:bg-gray-600',
             ]"
           ></div>
         </div>
@@ -100,23 +109,23 @@
           <!-- Column 1: Previous level items, collections, or document editor for deep navigation -->
           <DocumentEditor
             v-if="deepNavigation.shouldShowDocumentEditorInColumnOne(levelIndex)"
-              :selected-document="deepNavigation.getColumnOneDocument(levelIndex)"
-              :subcollections="deepNavigation.getColumnOneSubcollections(levelIndex)"
-              :selected-subcollection="deepNavigation.getColumnOneSelectedSubcollection(levelIndex)"
-              :expanded-fields="expandedMapFields"
-              :column-mode="true"
-              @start-subcollection="handleStartSubcollection('column-one')"
-              @navigate-to-subcollection="handleNavigateToSubcollection(levelIndex, $event)"
-              @add-field="handleColumnOneFieldOperations.addField"
-              @toggle-field="toggleMapField"
-              @edit-field="handleColumnOneFieldOperations.editField"
-              @delete-field="handleColumnOneFieldOperations.deleteField"
-              @add-to-map="modalManager.openAddToMapModal"
-              @add-to-array="modalManager.openAddToArrayModal"
-              @clone-document="handleCloneDocument"
-              @delete-all-fields="modalManager.openDeleteAllFieldsModal"
-              @delete-document="handleDeleteDocument"
-            />
+            :selected-document="deepNavigation.getColumnOneDocument(levelIndex)"
+            :subcollections="deepNavigation.getColumnOneSubcollections(levelIndex)"
+            :selected-subcollection="deepNavigation.getColumnOneSelectedSubcollection(levelIndex)"
+            :expanded-fields="expandedMapFields"
+            :column-mode="true"
+            @start-subcollection="handleStartSubcollection('column-one')"
+            @navigate-to-subcollection="handleNavigateToSubcollection(levelIndex, $event)"
+            @add-field="handleColumnOneFieldOperations.addField"
+            @toggle-field="toggleMapField"
+            @edit-field="handleColumnOneFieldOperations.editField"
+            @delete-field="handleColumnOneFieldOperations.deleteField"
+            @add-to-map="modalManager.openAddToMapModal"
+            @add-to-array="modalManager.openAddToArrayModal"
+            @clone-document="handleCloneDocument"
+            @delete-all-fields="modalManager.openDeleteAllFieldsModal"
+            @delete-document="handleDeleteDocument"
+          />
           <ColumnOne
             v-else
             :header="getColumnOneHeader(levelIndex)"
@@ -134,8 +143,10 @@
           />
 
           <!-- At root level with no collection selected: show merged columns 2+3 as empty state -->
-          <div v-if="levelIndex === 0 && !level.selectedItem" class="w-2/3 h-full bg-white dark:bg-gray-800">
-          </div>
+          <div
+            v-if="levelIndex === 0 && !level.selectedItem"
+            class="w-2/3 h-full bg-white dark:bg-gray-800"
+          ></div>
 
           <!-- Normal 3-column layout for deeper levels or when collection is selected -->
           <template v-else>
@@ -160,27 +171,26 @@
             <!-- Column 3: Document Editor or empty state -->
             <DocumentEditor
               v-if="getColumnThreeDocument(levelIndex)"
-                :selected-document="getColumnThreeDocument(levelIndex)"
-                :subcollections="getColumnThreeSubcollections(levelIndex)"
-                :selected-subcollection="getColumnThreeSelectedSubcollection(levelIndex)"
-                :expanded-fields="expandedMapFields"
-                :column-mode="true"
-                @start-subcollection="handleStartSubcollection('column-three')"
-                @navigate-to-subcollection="handleNavigateToSubcollection(levelIndex, $event)"
-                @add-field="handleColumnThreeFieldOperations.addField"
-                @toggle-field="toggleMapField"
-                @edit-field="handleColumnThreeFieldOperations.editField"
-                @delete-field="handleColumnThreeFieldOperations.deleteField"
-                @add-to-map="modalManager.openAddToMapModal"
-                @add-to-array="modalManager.openAddToArrayModal"
-                @clone-document="handleCloneDocument"
-                @delete-all-fields="modalManager.openDeleteAllFieldsModal"
-                @delete-document="handleDeleteDocument"
-              />
+              :selected-document="getColumnThreeDocument(levelIndex)"
+              :subcollections="getColumnThreeSubcollections(levelIndex)"
+              :selected-subcollection="getColumnThreeSelectedSubcollection(levelIndex)"
+              :expanded-fields="expandedMapFields"
+              :column-mode="true"
+              @start-subcollection="handleStartSubcollection('column-three')"
+              @navigate-to-subcollection="handleNavigateToSubcollection(levelIndex, $event)"
+              @add-field="handleColumnThreeFieldOperations.addField"
+              @toggle-field="toggleMapField"
+              @edit-field="handleColumnThreeFieldOperations.editField"
+              @delete-field="handleColumnThreeFieldOperations.deleteField"
+              @add-to-map="modalManager.openAddToMapModal"
+              @add-to-array="modalManager.openAddToArrayModal"
+              @clone-document="handleCloneDocument"
+              @delete-all-fields="modalManager.openDeleteAllFieldsModal"
+              @delete-document="handleDeleteDocument"
+            />
 
             <!-- Column 3: Empty state when no document selected -->
-            <div v-else class="w-1/3 h-full bg-white dark:bg-gray-800">
-            </div>
+            <div v-else class="w-1/3 h-full bg-white dark:bg-gray-800"></div>
           </template>
         </div>
       </SlidingContainer>
@@ -271,7 +281,11 @@
       :message="`Are you sure you want to delete collection '${modalManager.collectionToDelete.value?.id || ''}'?`"
       confirm-label="Delete Collection"
       :is-loading="modalManager.isDeletingCollection.value"
-      :details="{ title: 'What will happen:', description: 'The collection and all its documents will be permanently deleted. This action cannot be undone.' }"
+      :details="{
+        title: 'What will happen:',
+        description:
+          'The collection and all its documents will be permanently deleted. This action cannot be undone.',
+      }"
       @confirm="confirmDeleteCollection"
       @cancel="modalManager.closeDeleteCollectionModal"
     />
@@ -282,7 +296,10 @@
       :message="`Are you sure you want to delete document '${modalManager.documentToDelete.value ? getDocumentId(modalManager.documentToDelete.value.name) : ''}'?`"
       confirm-label="Delete Document"
       :is-loading="modalManager.isDeletingDocument.value"
-      :details="{ title: 'What will happen:', description: 'The document will be permanently deleted. This action cannot be undone.' }"
+      :details="{
+        title: 'What will happen:',
+        description: 'The document will be permanently deleted. This action cannot be undone.',
+      }"
       @confirm="confirmDeleteDocument"
       @cancel="modalManager.closeDeleteDocumentModal"
     />
@@ -293,7 +310,11 @@
       :message="`Are you sure you want to delete all fields from document '${getSelectedDocumentId()}'?`"
       confirm-label="Delete All Fields"
       :is-loading="modalManager.isDeletingAllFields.value"
-      :details="{ title: 'What will happen:', description: 'All fields in the document will be deleted, leaving an empty document. This action cannot be undone.' }"
+      :details="{
+        title: 'What will happen:',
+        description:
+          'All fields in the document will be deleted, leaving an empty document. This action cannot be undone.',
+      }"
       @confirm="confirmDeleteAllFields"
       @cancel="modalManager.closeDeleteAllFieldsModal"
     />
@@ -304,7 +325,11 @@
       :message="`Are you sure you want to delete field '${modalManager.fieldToDelete.value?.displayName || ''}'?`"
       confirm-label="Delete Field"
       :is-loading="modalManager.isDeletingField.value"
-      :details="{ title: 'What will happen:', description: 'The field will be permanently removed from this document. This action cannot be undone.' }"
+      :details="{
+        title: 'What will happen:',
+        description:
+          'The field will be permanently removed from this document. This action cannot be undone.',
+      }"
       @confirm="confirmDeleteField"
       @cancel="modalManager.closeDeleteFieldModal"
     />
@@ -364,16 +389,11 @@ import { useColumnFieldOperations } from '@/composables/useColumnFieldOperations
 import { useDocumentUtils } from '@/composables/useDocumentUtils'
 import { useFirestoreFields } from '@/composables/useFirestoreFields'
 
-
 const route = useRoute()
 const firestoreStore = useFirestoreStore()
 
 // Composables
-const {
-  expandedMapFields,
-  toggleMapField,
-  clearExpandedFields
-} = useFieldOperations()
+const { expandedMapFields, toggleMapField, clearExpandedFields } = useFieldOperations()
 
 const navigation = useRecursiveNavigation()
 const modalManager = useModalManager()
@@ -396,21 +416,22 @@ interface MobileNavigationLevel {
   document?: FirestoreDocument
   subcollection?: FirestoreCollectionWithMetadata
   parentDocumentPath?: string
-  documents?: FirestoreDocument[]  // Store documents for this level
+  documents?: FirestoreDocument[] // Store documents for this level
   title: string
   subtitle?: string
 }
 
-const mobileNavigationStack = ref<MobileNavigationLevel[]>([{
-  view: 'collections',
-  title: 'Collections',
-  subtitle: ''
-}])
+const mobileNavigationStack = ref<MobileNavigationLevel[]>([
+  {
+    view: 'collections',
+    title: 'Collections',
+    subtitle: '',
+  },
+])
 
 const mobileCurrentLevel = computed(() => {
   return mobileNavigationStack.value[mobileNavigationStack.value.length - 1]
 })
-
 
 // Computed properties
 const currentProjectId = computed(() => route.params.projectId as string)
@@ -445,7 +466,6 @@ const handleRemoveDatabase = (databaseId: string) => {
   firestoreStore.removeDatabase(databaseId)
 }
 
-
 // Helper functions for column configuration
 const getColumnOneHeader = (levelIndex: number): string => {
   if (levelIndex === 0) return firestoreStore.selectedDatabase
@@ -474,7 +494,7 @@ const getColumnOneShowAddButton = (levelIndex: number): boolean => {
 }
 
 const getColumnOneAddButtonText = (levelIndex: number): string => {
-  return (levelIndex === 0 || levelIndex === 1) ? 'Start collection' : 'Add document'
+  return levelIndex === 0 || levelIndex === 1 ? 'Start collection' : 'Add document'
 }
 
 const getColumnOneEmptyStateText = (levelIndex: number): string => {
@@ -485,11 +505,10 @@ const getColumnOneEmptyStateText = (levelIndex: number): string => {
 
 const getColumnOneNextPageToken = (levelIndex: number): string | undefined => {
   if (levelIndex === 0) return firestoreStore.collectionsNextPageToken
-  
+
   const prevLevel = navigation.navigationStack.value[levelIndex - 1]
   return prevLevel?.nextPageToken
 }
-
 
 const getColumnTwoShowAddButton = (levelIndex: number): boolean => {
   const level = navigation.navigationStack.value[levelIndex]
@@ -527,7 +546,6 @@ const getColumnThreeDocument = (levelIndex: number): FirestoreDocument | null =>
   return null
 }
 
-
 const getColumnThreeSubcollections = (levelIndex: number): FirestoreCollectionWithMetadata[] => {
   const level = navigation.navigationStack.value[levelIndex]
   const selectedDocument = level?.selectedItem
@@ -540,7 +558,10 @@ const getColumnThreeSubcollections = (levelIndex: number): FirestoreCollectionWi
     // Handle both array format (legacy) and response object format
     if (Array.isArray(subcollectionsResponse)) {
       return subcollectionsResponse
-    } else if (subcollectionsResponse?.collections && Array.isArray(subcollectionsResponse.collections)) {
+    } else if (
+      subcollectionsResponse?.collections &&
+      Array.isArray(subcollectionsResponse.collections)
+    ) {
       return subcollectionsResponse.collections
     }
 
@@ -549,17 +570,18 @@ const getColumnThreeSubcollections = (levelIndex: number): FirestoreCollectionWi
   return []
 }
 
-const getColumnThreeSelectedSubcollection = (levelIndex: number): FirestoreCollectionWithMetadata | null => {
+const getColumnThreeSelectedSubcollection = (
+  levelIndex: number
+): FirestoreCollectionWithMetadata | null => {
   // Check if there's a next level in the navigation stack that's a subcollection
   const nextLevel = navigation.navigationStack.value[levelIndex + 1]
-  if (nextLevel && (nextLevel.type === 'subcollection')) {
+  if (nextLevel && nextLevel.type === 'subcollection') {
     // Find the subcollection that matches the next level's collectionId
     const subcollections = getColumnThreeSubcollections(levelIndex)
     return subcollections.find(sub => sub.id === nextLevel.collectionId) || null
   }
   return null
 }
-
 
 // Mobile navigation functions
 const pushMobileLevel = (level: MobileNavigationLevel) => {
@@ -573,11 +595,13 @@ const popMobileLevel = () => {
 }
 
 const resetMobileNavigation = () => {
-  mobileNavigationStack.value = [{
-    view: 'collections',
-    title: 'Collections',
-    subtitle: ''
-  }]
+  mobileNavigationStack.value = [
+    {
+      view: 'collections',
+      title: 'Collections',
+      subtitle: '',
+    },
+  ]
 }
 
 // Mobile event handlers
@@ -587,20 +611,22 @@ const handleMobileSelectCollection = async (collection: FirestoreCollectionWithM
   const documents = firestoreStore.getDocumentsByCollection(collection.id)
 
   // Preload subcollections for all documents to show accurate counts
-  await Promise.all(documents.map(async (document) => {
-    if (!documentSubcollections.value.has(document.name)) {
-      const subcollectionsResponse = await navigation.loadSubcollections(document.name)
-      const subcollections = subcollectionsResponse || []
-      documentSubcollections.value.set(document.name, subcollections)
-    }
-  }))
+  await Promise.all(
+    documents.map(async document => {
+      if (!documentSubcollections.value.has(document.name)) {
+        const subcollectionsResponse = await navigation.loadSubcollections(document.name)
+        const subcollections = subcollectionsResponse || []
+        documentSubcollections.value.set(document.name, subcollections)
+      }
+    })
+  )
 
   pushMobileLevel({
     view: 'documents',
     collection,
     documents,
     title: collection.id,
-    subtitle: `${documents.length} documents`
+    subtitle: `${documents.length} documents`,
   })
 }
 
@@ -615,7 +641,7 @@ const handleMobileSelectDocument = async (document: FirestoreDocument) => {
     view: 'document',
     document,
     title: getDocumentId(document.name),
-    subtitle: `${fieldsCount} fields, ${subcollections.length} subcollections`
+    subtitle: `${fieldsCount} fields, ${subcollections.length} subcollections`,
   })
 }
 
@@ -630,7 +656,7 @@ const handleMobileSelectSubcollectionDocument = async (document: FirestoreDocume
     view: 'document',
     document,
     title: getDocumentId(document.name),
-    subtitle: `${fieldsCount} fields, ${subcollections.length} subcollections`
+    subtitle: `${fieldsCount} fields, ${subcollections.length} subcollections`,
   })
 }
 
@@ -658,11 +684,11 @@ const handleMobileAddField = () => {
     // Set the mobile context for field operations
     activeFieldOperationContext.value = {
       document: currentLevel.document,
-      column: 'mobile'
+      column: 'mobile',
     }
     modalManager.openAddFieldModal({
       document: currentLevel.document,
-      column: 'mobile'
+      column: 'mobile',
     })
   }
 }
@@ -673,7 +699,7 @@ const handleMobileEditField = (data: { path: string; fieldName: string; fieldVal
     fieldName: data.fieldName,
     fieldValue: data.fieldValue,
     fieldType: getFieldType(data.fieldValue),
-    editableValue: getEditableValue(data.fieldValue)
+    editableValue: getEditableValue(data.fieldValue),
   })
 }
 
@@ -690,23 +716,30 @@ const handleMobileStartSubcollection = () => {
   }
 }
 
-const handleMobileNavigateToSubcollection = async (subcollection: FirestoreCollectionWithMetadata) => {
+const handleMobileNavigateToSubcollection = async (
+  subcollection: FirestoreCollectionWithMetadata
+) => {
   const currentLevel = mobileCurrentLevel.value
   if (!currentLevel.document) return
 
   // Load subcollection documents - use the full document path as parent
   const parentDocumentPath = currentLevel.document.name
-  const subcollectionResult = await navigation.loadSubcollectionDocuments(parentDocumentPath, subcollection.id)
+  const subcollectionResult = await navigation.loadSubcollectionDocuments(
+    parentDocumentPath,
+    subcollection.id
+  )
   const documents = subcollectionResult.documents || []
 
   // Preload subcollections for all subcollection documents to show accurate counts
-  await Promise.all(documents.map(async (document) => {
-    if (!documentSubcollections.value.has(document.name)) {
-      const subcollectionsResponse = await navigation.loadSubcollections(document.name)
-      const subcollections = subcollectionsResponse || []
-      documentSubcollections.value.set(document.name, subcollections)
-    }
-  }))
+  await Promise.all(
+    documents.map(async document => {
+      if (!documentSubcollections.value.has(document.name)) {
+        const subcollectionsResponse = await navigation.loadSubcollections(document.name)
+        const subcollections = subcollectionsResponse || []
+        documentSubcollections.value.set(document.name, subcollections)
+      }
+    })
+  )
 
   pushMobileLevel({
     view: 'subcollection',
@@ -714,7 +747,7 @@ const handleMobileNavigateToSubcollection = async (subcollection: FirestoreColle
     parentDocumentPath,
     documents,
     title: subcollection.id,
-    subtitle: `${documents.length} documents`
+    subtitle: `${documents.length} documents`,
   })
 }
 
@@ -731,7 +764,9 @@ const getMobileDocumentSubcollections = (): FirestoreCollectionWithMetadata[] =>
   if (!currentLevel.document) return []
 
   const subcollectionsResponse = documentSubcollections.value.get(currentLevel.document.name)
-  return Array.isArray(subcollectionsResponse) ? subcollectionsResponse : (subcollectionsResponse?.collections || [])
+  return Array.isArray(subcollectionsResponse)
+    ? subcollectionsResponse
+    : subcollectionsResponse?.collections || []
 }
 
 const getMobileSubcollectionDocuments = (): FirestoreDocument[] => {
@@ -749,9 +784,12 @@ const handleColumnOneAddItem = async (levelIndex: number) => {
 const handleColumnOneSelectItem = async (levelIndex: number, item: NavigationItem) => {
   if (levelIndex === 0 || levelIndex === 1) {
     // Check if this collection is already selected at the root level
-    if ('id' in item && navigation.navigationStack.value[0]?.selectedItem &&
-        'id' in navigation.navigationStack.value[0].selectedItem &&
-        navigation.navigationStack.value[0].selectedItem.id === item.id) {
+    if (
+      'id' in item &&
+      navigation.navigationStack.value[0]?.selectedItem &&
+      'id' in navigation.navigationStack.value[0].selectedItem &&
+      navigation.navigationStack.value[0].selectedItem.id === item.id
+    ) {
       // Already viewing this collection, do nothing
       return
     }
@@ -772,7 +810,7 @@ const handleColumnOneSelectItem = async (levelIndex: number, item: NavigationIte
       const currentLevel = navigation.navigationStack.value[navigation.currentStackIndex.value]
       const collection = collections.value.find(c => c.id === item.id)
       if (currentLevel && collection) {
-         currentLevel.nextPageToken = collection.nextPageToken
+        currentLevel.nextPageToken = collection.nextPageToken
       }
 
       // If there are documents, auto-select the first one
@@ -796,10 +834,10 @@ const handleColumnOneLoadMore = async (levelIndex: number) => {
     const token = firestoreStore.collectionsNextPageToken
     if (token) {
       await firestoreStore.loadCollections(currentProjectId.value, token)
-      
+
       // Update navigation stack root items because the store replaces the array reference
       if (navigation.navigationStack.value.length > 0) {
-         navigation.navigationStack.value[0].items = collections.value
+        navigation.navigationStack.value[0].items = collections.value
       }
     }
     return
@@ -827,7 +865,8 @@ const handleColumnTwoSelectItem = async (levelIndex: number, item: NavigationIte
   if ('id' in item) {
     // Check if we're already at the next level with this collection
     const nextLevel = navigation.navigationStack.value[levelIndex + 1]
-    const isAlreadyAtThisCollection = nextLevel &&
+    const isAlreadyAtThisCollection =
+      nextLevel &&
       nextLevel.collectionId === item.id &&
       navigation.currentStackIndex.value === levelIndex + 1
 
@@ -841,7 +880,7 @@ const handleColumnTwoSelectItem = async (levelIndex: number, item: NavigationIte
       const currentLevel = navigation.navigationStack.value[navigation.currentStackIndex.value]
       const collection = collections.value.find(c => c.id === item.id)
       if (currentLevel && collection) {
-         currentLevel.nextPageToken = collection.nextPageToken
+        currentLevel.nextPageToken = collection.nextPageToken
       }
     }
   } else {
@@ -864,14 +903,18 @@ const handleColumnTwoDeleteCollection = (levelIndex: number) => {
     const previousLevel = navigation.navigationStack.value[levelIndex - 1]
     if (previousLevel?.selectedItem && 'id' in previousLevel.selectedItem) {
       console.log('Deleting collection:', previousLevel.selectedItem)
-      modalManager.openDeleteCollectionModal(previousLevel.selectedItem as FirestoreCollectionWithMetadata)
+      modalManager.openDeleteCollectionModal(
+        previousLevel.selectedItem as FirestoreCollectionWithMetadata
+      )
     }
   } else if (level?.type === 'subcollection') {
     // For subcollection level, we want to delete the subcollection itself (not the selected document)
     // The subcollection info is in the level header and collectionId
     const subcollectionToDelete: FirestoreCollectionWithMetadata = {
       id: level.collectionId || level.header,
-      path: level.parentPath ? `${level.parentPath}/${level.collectionId || level.header}` : level.header
+      path: level.parentPath
+        ? `${level.parentPath}/${level.collectionId || level.header}`
+        : level.header,
     }
 
     console.log('Deleting subcollection from level info:', subcollectionToDelete)
@@ -907,11 +950,14 @@ const handleStartSubcollection = (column: string) => {
   modalManager.openCreateCollectionModal()
 }
 
-
-const handleNavigateToSubcollection = async (levelIndex: number, subcollection: FirestoreCollectionWithMetadata) => {
+const handleNavigateToSubcollection = async (
+  levelIndex: number,
+  subcollection: FirestoreCollectionWithMetadata
+) => {
   // Check if we're already at this subcollection level
   const currentLevel = navigation.navigationStack.value[navigation.currentStackIndex.value]
-  const isAlreadyAtThisSubcollection = currentLevel &&
+  const isAlreadyAtThisSubcollection =
+    currentLevel &&
     currentLevel.type === 'subcollection' &&
     currentLevel.collectionId === subcollection.id
 
@@ -922,19 +968,20 @@ const handleNavigateToSubcollection = async (levelIndex: number, subcollection: 
     // We need to remove the last part (subcollection-id) to get the parent document path
     const parentDocumentPath = subcollection.path.split('/').slice(0, -1).join('/')
 
-    const result = await navigation.loadSubcollectionDocuments(
-      parentDocumentPath,
-      subcollection.id
-    )
-    
+    const result = await navigation.loadSubcollectionDocuments(parentDocumentPath, subcollection.id)
+
     const documents = result.documents || []
-    
-    await navigation.navigateToSubcollectionFromDocument(parentDocumentPath, subcollection, documents)
+
+    await navigation.navigateToSubcollectionFromDocument(
+      parentDocumentPath,
+      subcollection,
+      documents
+    )
 
     // Update nextPageToken for the new level
     const currentLevel = navigation.navigationStack.value[navigation.currentStackIndex.value]
     if (currentLevel && currentLevel.type === 'subcollection') {
-       currentLevel.nextPageToken = result.nextPageToken
+      currentLevel.nextPageToken = result.nextPageToken
     }
 
     // Auto-select the first document if any exist in the subcollection
@@ -954,7 +1001,12 @@ const handleNavigateToSubcollection = async (levelIndex: number, subcollection: 
 const handleNavigateToPath = async (pathString: string) => {
   isNavigatingToPath.value = true
   try {
-    await navigation.navigateToPath(pathString, firestoreStore, currentProjectId.value, documentSubcollections)
+    await navigation.navigateToPath(
+      pathString,
+      firestoreStore,
+      currentProjectId.value,
+      documentSubcollections
+    )
   } finally {
     isNavigatingToPath.value = false
   }
@@ -979,7 +1031,6 @@ const getSubcollectionPath = (levelIndex: number): string => {
   return level?.parentPath ? `${level.parentPath}/${level.collectionId}` : ''
 }
 
-
 const getModalCollectionId = (): string => {
   const currentLevel = navigation.currentLevel.value
   return currentLevel?.collectionId || ''
@@ -994,25 +1045,24 @@ const getSelectedDocumentId = (): string => {
   return currentDoc ? getDocumentId(currentDoc.name) : ''
 }
 
-
 // Core methods
 const refreshCollections = async () => {
   // Capture current state before reload
   const isAtRoot = navigation.isAtRoot.value && !navigation.currentLevel.value?.selectedItem
-  
+
   // 1. Update root level collections
   const currentCollectionsCount = Math.max(collections.value.length, 30) // Ensure at least 30
   await firestoreStore.loadCollections(currentProjectId.value, undefined, currentCollectionsCount)
-  
+
   if (isAtRoot) {
     navigation.initializeWithCollections(collections.value)
   } else {
     // Preserve state: Update stack items in-place
-    
+
     // 1. Update root level collections
     if (navigation.navigationStack.value.length > 0) {
       navigation.navigationStack.value[0].items = collections.value
-      
+
       // Update selected item reference in root level
       const currentSelected = navigation.navigationStack.value[0].selectedItem
       if (currentSelected && 'id' in currentSelected) {
@@ -1022,22 +1072,27 @@ const refreshCollections = async () => {
         }
       }
     }
-    
+
     // 2. Refresh documents for active levels
     for (let i = 1; i <= navigation.currentStackIndex.value; i++) {
       const level = navigation.navigationStack.value[i]
-      
+
       if (level.type === 'collection' && level.collectionId) {
         // Preserve "all items loaded" state - if no token before, user had loaded everything
         const hadAllItemsLoaded = !level.nextPageToken
         const previousItemCount = level.items.length
-        
+
         // Refresh collection documents - maintain count
         const currentCount = Math.max(level.items.length, 30) // Ensure at least 30
-        await firestoreStore.loadDocuments(currentProjectId.value, level.collectionId, undefined, currentCount)
+        await firestoreStore.loadDocuments(
+          currentProjectId.value,
+          level.collectionId,
+          undefined,
+          currentCount
+        )
         const documents = firestoreStore.getDocumentsByCollection(level.collectionId)
         level.items = documents
-        
+
         // Update nextPageToken - but preserve "all loaded" state if applicable
         const collection = collections.value.find(c => c.id === level.collectionId)
         if (collection) {
@@ -1049,25 +1104,30 @@ const refreshCollections = async () => {
             level.nextPageToken = collection.nextPageToken
           }
         }
-        
+
         // Update selected document reference
         if (level.selectedItem && 'name' in level.selectedItem) {
           const docName = level.selectedItem.name
           const newDoc = documents.find(d => d.name === docName)
           if (newDoc) {
-             level.selectedItem = newDoc
+            level.selectedItem = newDoc
           }
         }
       } else if (level.type === 'subcollection' && level.parentPath && level.collectionId) {
         // Preserve "all items loaded" state - if no token before, user had loaded everything
         const hadAllItemsLoaded = !level.nextPageToken
         const previousItemCount = level.items.length
-        
+
         // Refresh subcollection documents - maintain count
         const currentCount = Math.max(level.items.length, 30)
-        const result = await navigation.loadSubcollectionDocuments(level.parentPath, level.collectionId, undefined, currentCount)
+        const result = await navigation.loadSubcollectionDocuments(
+          level.parentPath,
+          level.collectionId,
+          undefined,
+          currentCount
+        )
         level.items = result.documents
-        
+
         // If user had loaded all items and we got the same or fewer items back,
         // keep nextPageToken as undefined to preserve the "all loaded" state
         if (hadAllItemsLoaded && result.documents.length <= previousItemCount) {
@@ -1075,13 +1135,13 @@ const refreshCollections = async () => {
         } else {
           level.nextPageToken = result.nextPageToken
         }
-        
+
         // Update selected document reference
         if (level.selectedItem && 'name' in level.selectedItem) {
           const docName = level.selectedItem.name
           const newDoc = result.documents.find(d => d.name === docName)
           if (newDoc) {
-             level.selectedItem = newDoc
+            level.selectedItem = newDoc
           }
         }
       }
@@ -1115,13 +1175,16 @@ const handleEditField = (data: { path: string; fieldName: string; fieldValue: an
     fieldName: data.fieldName,
     fieldValue: data.fieldValue,
     fieldType: getFieldType(data.fieldValue),
-    editableValue: getEditableValue(data.fieldValue)
+    editableValue: getEditableValue(data.fieldValue),
   })
 }
 
 // Pagination handler
 // Helper to deduplicate and merge documents
-const mergeUniqueDocuments = (existing: FirestoreDocument[], incoming: FirestoreDocument[]): FirestoreDocument[] => {
+const mergeUniqueDocuments = (
+  existing: FirestoreDocument[],
+  incoming: FirestoreDocument[]
+): FirestoreDocument[] => {
   const docsMap = new Map()
   existing.forEach(doc => docsMap.set(doc.name, doc))
   incoming.forEach(doc => docsMap.set(doc.name, doc))
@@ -1135,31 +1198,35 @@ const handleLoadMore = async (levelIndex: number) => {
 
   if (level.type === 'collection' && level.collectionId) {
     // Load more document for collection
-    await firestoreStore.loadDocuments(currentProjectId.value, level.collectionId, level.nextPageToken)
-    
+    await firestoreStore.loadDocuments(
+      currentProjectId.value,
+      level.collectionId,
+      level.nextPageToken
+    )
+
     // Update items and nextPageToken from store
     const collection = collections.value.find(c => c.id === level.collectionId)
     if (collection) {
       // Get all documents from store. Store deduplication might be loose, so we enforce it here for view
-      // Since store returns all docs, we treat them as "incoming" and merge with empty "existing" 
+      // Since store returns all docs, we treat them as "incoming" and merge with empty "existing"
       // or effectively just dedupe the store list itself.
       const allDocs = firestoreStore.getDocumentsByCollection(level.collectionId)
       level.items = mergeUniqueDocuments([], allDocs)
-      
+
       level.nextPageToken = collection.nextPageToken
     }
   } else if (level.type === 'subcollection' && level.parentPath && level.collectionId) {
     // Load more documents for subcollection
     const result = await navigation.loadSubcollectionDocuments(
-      level.parentPath, 
-      level.collectionId, 
+      level.parentPath,
+      level.collectionId,
       level.nextPageToken
     )
-    
+
     // Update items and nextPageToken
     const existingItems = level.items as FirestoreDocument[]
     const newItems = result.documents || []
-    
+
     level.items = mergeUniqueDocuments(existingItems, newItems)
     level.nextPageToken = result.nextPageToken
   }
@@ -1177,9 +1244,10 @@ const confirmDeleteCollection = async () => {
     // Check if this is a subcollection or root collection
     // Subcollections have paths like: "projects/.../documents/collection-1/doc-id/sub-collection-1"
     // Root collections have paths like: "projects/.../documents/collection-1"
-    const isSubcollection = collectionToDelete.path &&
-                           collectionToDelete.path.includes('/documents/') &&
-                           collectionToDelete.path.split('/documents/')[1].includes('/')
+    const isSubcollection =
+      collectionToDelete.path &&
+      collectionToDelete.path.includes('/documents/') &&
+      collectionToDelete.path.split('/documents/')[1].includes('/')
 
     if (isSubcollection) {
       // This is a subcollection - extract parent path and collection ID
@@ -1207,7 +1275,7 @@ const confirmDeleteCollection = async () => {
       console.log('Deleting subcollection at path:', subcollectionPath)
 
       // Get all documents in the subcollection
-      // Use the full parentPath (includes projects/.../databases/.../documents/...) 
+      // Use the full parentPath (includes projects/.../databases/.../documents/...)
       // because listSubcollectionDocuments expects the complete document path
       const response = await firestoreApi.listSubcollectionDocuments(parentPath, collectionId)
       const documents = response.documents || []
@@ -1215,9 +1283,7 @@ const confirmDeleteCollection = async () => {
       console.log('Found', documents.length, 'documents to delete in subcollection')
 
       // Delete each document individually
-      const deletePromises = documents.map((doc: any) =>
-        firestoreApi.deleteDocument(doc.name)
-      )
+      const deletePromises = documents.map((doc: any) => firestoreApi.deleteDocument(doc.name))
 
       await Promise.all(deletePromises)
       console.log('Successfully deleted all documents in subcollection')
@@ -1231,7 +1297,9 @@ const confirmDeleteCollection = async () => {
 
       // Reload subcollections for the parent document
       const subcollectionsResponse = await navigation.loadSubcollections(parentPath)
-      const subcollections = Array.isArray(subcollectionsResponse) ? subcollectionsResponse : (subcollectionsResponse?.collections || [])
+      const subcollections = Array.isArray(subcollectionsResponse)
+        ? subcollectionsResponse
+        : subcollectionsResponse?.collections || []
       documentSubcollections.value.set(parentPath, subcollections)
     } else {
       // This is a root collection
@@ -1239,8 +1307,11 @@ const confirmDeleteCollection = async () => {
 
       // Navigate back if we deleted a currently selected collection
       const currentLevel = navigation.currentLevel.value
-      if (currentLevel?.selectedItem && 'id' in currentLevel.selectedItem &&
-          currentLevel.selectedItem.id === collectionToDelete.id) {
+      if (
+        currentLevel?.selectedItem &&
+        'id' in currentLevel.selectedItem &&
+        currentLevel.selectedItem.id === collectionToDelete.id
+      ) {
         navigation.navigateToRoot()
       }
 
@@ -1274,8 +1345,11 @@ const confirmDeleteDocument = async () => {
     await firestoreStore.deleteDocument(documentPath, collectionId)
 
     // Clear selection and refresh documents if we deleted the currently selected document
-    if (currentLevel?.selectedItem && 'name' in currentLevel.selectedItem &&
-        currentLevel.selectedItem.name === documentPath) {
+    if (
+      currentLevel?.selectedItem &&
+      'name' in currentLevel.selectedItem &&
+      currentLevel.selectedItem.name === documentPath
+    ) {
       // Clear the selection to show empty third column
       navigation.selectItem(null as any)
 
@@ -1288,7 +1362,8 @@ const confirmDeleteDocument = async () => {
             collectionId
           )
           // Update the current level items properly
-          const currentNavLevel = navigation.navigationStack.value[navigation.currentStackIndex.value]
+          const currentNavLevel =
+            navigation.navigationStack.value[navigation.currentStackIndex.value]
           if (currentNavLevel) {
             currentNavLevel.items = subcollectionDocsResult.documents || []
           }
@@ -1297,14 +1372,14 @@ const confirmDeleteDocument = async () => {
           await firestoreStore.loadDocuments(currentProjectId.value, collectionId)
           const refreshedDocuments = firestoreStore.getDocumentsByCollection(collectionId)
           // Update the current level items properly
-          const currentNavLevel = navigation.navigationStack.value[navigation.currentStackIndex.value]
+          const currentNavLevel =
+            navigation.navigationStack.value[navigation.currentStackIndex.value]
           if (currentNavLevel) {
             currentNavLevel.items = refreshedDocuments
           }
         }
       }
     }
-
   } catch (error) {
     console.error('Failed to delete document:', error)
   } finally {
@@ -1327,7 +1402,9 @@ const confirmDeleteAllFields = async () => {
     const collectionId = pathParts[pathParts.length - 2]
 
     // Update the document with empty fields (keeping the document in place)
-    await firestoreStore.updateDocument(currentProjectId.value, collectionId, documentId, { fields: {} })
+    await firestoreStore.updateDocument(currentProjectId.value, collectionId, documentId, {
+      fields: {},
+    })
 
     // Refresh the specific collection's documents without resetting navigation
     await firestoreStore.loadDocuments(currentProjectId.value, collectionId)
@@ -1338,7 +1415,6 @@ const confirmDeleteAllFields = async () => {
     if (refreshedDocument) {
       navigation.selectItem(refreshedDocument)
     }
-
   } catch (error) {
     console.error('Failed to delete all fields:', error)
   } finally {
@@ -1350,7 +1426,10 @@ const confirmDeleteAllFields = async () => {
 const confirmDeleteField = async () => {
   if (!modalManager.fieldToDelete.value) return
 
-  console.log('confirmDeleteField - activeFieldOperationContext:', activeFieldOperationContext.value)
+  console.log(
+    'confirmDeleteField - activeFieldOperationContext:',
+    activeFieldOperationContext.value
+  )
   const currentDoc = activeFieldOperationContext.value.document
   console.log('confirmDeleteField - currentDoc:', currentDoc?.name, 'path:', currentDoc?.path)
   if (!currentDoc) return
@@ -1393,7 +1472,9 @@ const confirmDeleteField = async () => {
 
     console.log('Delete Field - fullCollectionPath:', fullCollectionPath, 'documentId:', documentId)
 
-    await firestoreStore.updateDocument(currentProjectId.value, fullCollectionPath, documentId, { fields: updatedFields })
+    await firestoreStore.updateDocument(currentProjectId.value, fullCollectionPath, documentId, {
+      fields: updatedFields,
+    })
 
     // Refresh the specific collection's documents without resetting navigation
     await firestoreStore.loadDocuments(currentProjectId.value, fullCollectionPath)
@@ -1406,7 +1487,12 @@ const confirmDeleteField = async () => {
       // Update the navigation stack to reflect the updated document data
       // We need to find which level in the navigation stack contains this document and update it
       const column = activeFieldOperationContext.value.column
-      console.log('Delete Field - Refreshing document in', column, '- document:', refreshedDocument.name)
+      console.log(
+        'Delete Field - Refreshing document in',
+        column,
+        '- document:',
+        refreshedDocument.name
+      )
 
       // Update ALL navigation levels that might contain this document
       const currentStackIndex = navigation.currentStackIndex.value
@@ -1416,9 +1502,17 @@ const confirmDeleteField = async () => {
         const level = navigation.navigationStack.value[i]
 
         // Update selectedItem if it matches
-        if (level?.selectedItem && 'name' in level.selectedItem && level.selectedItem.name === refreshedDocument.name) {
+        if (
+          level?.selectedItem &&
+          'name' in level.selectedItem &&
+          level.selectedItem.name === refreshedDocument.name
+        ) {
           level.selectedItem = refreshedDocument
-          console.log('Delete Field - Updated selectedItem in navigation level', i, 'with refreshed document data')
+          console.log(
+            'Delete Field - Updated selectedItem in navigation level',
+            i,
+            'with refreshed document data'
+          )
           documentUpdated = true
         }
 
@@ -1441,7 +1535,6 @@ const confirmDeleteField = async () => {
         console.log('Delete Field - Used selectItem fallback for Column 3 document')
       }
     }
-
   } catch (error) {
     console.error('Failed to delete field:', error)
   } finally {
@@ -1482,15 +1575,24 @@ const handleCollectionCreated = async (collectionId: string) => {
     if (targetDocumentPath) {
       // Reload subcollections for the target document (not the currently selected one)
       const subcollectionsResponse = await navigation.loadSubcollections(targetDocumentPath)
-      const subcollections = Array.isArray(subcollectionsResponse) ? subcollectionsResponse : (subcollectionsResponse?.collections || [])
+      const subcollections = Array.isArray(subcollectionsResponse)
+        ? subcollectionsResponse
+        : subcollectionsResponse?.collections || []
       documentSubcollections.value.set(targetDocumentPath, subcollections)
 
       // Find the newly created subcollection and navigate to it
       const newSubcollection = subcollections.find(sc => sc.id === collectionId)
       if (newSubcollection) {
-        const subcollectionResult = await navigation.loadSubcollectionDocuments(targetDocumentPath, collectionId)
+        const subcollectionResult = await navigation.loadSubcollectionDocuments(
+          targetDocumentPath,
+          collectionId
+        )
         const documents = subcollectionResult.documents || []
-        await navigation.navigateToSubcollectionFromDocument(targetDocumentPath, newSubcollection, documents)
+        await navigation.navigateToSubcollectionFromDocument(
+          targetDocumentPath,
+          newSubcollection,
+          documents
+        )
 
         // Auto-select the first document if any exist
         if (documents.length > 0) {
@@ -1498,7 +1600,9 @@ const handleCollectionCreated = async (collectionId: string) => {
           navigation.selectItem(firstDocument)
 
           // Load subcollections for the first document of the subcollection
-          const nestedSubcollectionsResponse = await navigation.loadSubcollections(firstDocument.name)
+          const nestedSubcollectionsResponse = await navigation.loadSubcollections(
+            firstDocument.name
+          )
           const nestedSubcollections = nestedSubcollectionsResponse || []
           documentSubcollections.value.set(firstDocument.name, nestedSubcollections)
         }
@@ -1549,8 +1653,15 @@ const handleDocumentCreated = async (documentId: string) => {
     // Update the current level with new documents
     mobileLevel.documents = firestoreStore.getDocumentsByCollection(mobileLevel.collection.id)
     mobileLevel.subtitle = `${mobileLevel.documents.length} documents`
-  } else if (mobileLevel.view === 'subcollection' && mobileLevel.subcollection && mobileLevel.parentDocumentPath) {
-    const subcollectionResult = await navigation.loadSubcollectionDocuments(mobileLevel.parentDocumentPath, mobileLevel.subcollection.id)
+  } else if (
+    mobileLevel.view === 'subcollection' &&
+    mobileLevel.subcollection &&
+    mobileLevel.parentDocumentPath
+  ) {
+    const subcollectionResult = await navigation.loadSubcollectionDocuments(
+      mobileLevel.parentDocumentPath,
+      mobileLevel.subcollection.id
+    )
     const documents = subcollectionResult.documents || []
     // Update the current level with new documents
     mobileLevel.documents = documents
@@ -1558,12 +1669,11 @@ const handleDocumentCreated = async (documentId: string) => {
   }
 }
 
-
 // Column field operations (after functions are defined)
 const {
   activeFieldOperationContext,
   handleColumnOneFieldOperations,
-  handleColumnThreeFieldOperations
+  handleColumnThreeFieldOperations,
 } = useColumnFieldOperations(
   modalManager,
   deepNavigation,
@@ -1573,7 +1683,10 @@ const {
 )
 
 const handleFieldModalSave = async (data: any) => {
-  console.log('handleFieldModalSave - activeFieldOperationContext:', activeFieldOperationContext.value)
+  console.log(
+    'handleFieldModalSave - activeFieldOperationContext:',
+    activeFieldOperationContext.value
+  )
   const currentDoc = activeFieldOperationContext.value.document
   console.log('handleFieldModalSave - currentDoc:', currentDoc?.name, 'path:', currentDoc?.path)
   if (!currentDoc) return
@@ -1613,7 +1726,9 @@ const handleFieldModalSave = async (data: any) => {
     const fullCollectionPath = collectionPathSegments.join('/')
     const documentId = pathSegments[pathSegments.length - 1]
 
-    await firestoreStore.updateDocument(currentProjectId.value, fullCollectionPath, documentId, { fields: updatedFields })
+    await firestoreStore.updateDocument(currentProjectId.value, fullCollectionPath, documentId, {
+      fields: updatedFields,
+    })
 
     // Refresh the specific collection's documents without resetting navigation
     await firestoreStore.loadDocuments(currentProjectId.value, fullCollectionPath)
@@ -1636,7 +1751,11 @@ const handleFieldModalSave = async (data: any) => {
         const level = navigation.navigationStack.value[i]
 
         // Update selectedItem if it matches
-        if (level?.selectedItem && 'name' in level.selectedItem && level.selectedItem.name === refreshedDocument.name) {
+        if (
+          level?.selectedItem &&
+          'name' in level.selectedItem &&
+          level.selectedItem.name === refreshedDocument.name
+        ) {
           level.selectedItem = refreshedDocument
           console.log('Updated selectedItem in navigation level', i, 'with refreshed document data')
           documentUpdated = true
@@ -1661,7 +1780,6 @@ const handleFieldModalSave = async (data: any) => {
         console.log('Used selectItem fallback for Column 3 document')
       }
     }
-
   } catch (error) {
     console.error('Failed to save field:', error)
   } finally {
@@ -1677,19 +1795,23 @@ const handleKeyDown = (event: KeyboardEvent) => {
 }
 
 // Lifecycle
-watch(currentProjectId, async (newProjectId, oldProjectId) => {
-  if (newProjectId !== oldProjectId && oldProjectId) {
-    firestoreStore.clearData()
-    navigation.clearNavigation()
-    clearExpandedFields()
-    documentSubcollections.value.clear()
-    resetMobileNavigation()
+watch(
+  currentProjectId,
+  async (newProjectId, oldProjectId) => {
+    if (newProjectId !== oldProjectId && oldProjectId) {
+      firestoreStore.clearData()
+      navigation.clearNavigation()
+      clearExpandedFields()
+      documentSubcollections.value.clear()
+      resetMobileNavigation()
 
-    if (newProjectId) {
-      await initializeData()
+      if (newProjectId) {
+        await initializeData()
+      }
     }
-  }
-}, { immediate: false })
+  },
+  { immediate: false }
+)
 
 onMounted(async () => {
   document.addEventListener('keydown', handleKeyDown)

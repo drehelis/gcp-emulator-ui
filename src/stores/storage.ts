@@ -16,7 +16,7 @@ import type {
   CreateBucketRequest,
   UploadObjectRequest,
   ListObjectsRequest,
-  BaseStoreState
+  BaseStoreState,
 } from '@/types'
 import { useProjectsStore } from './projects'
 import { useAppStore } from './app'
@@ -31,7 +31,7 @@ export const useStorageStore = defineStore('storage', () => {
   const state = ref<BaseStoreState>({
     state: 'idle',
     error: null,
-    lastUpdated: null
+    lastUpdated: null,
   })
 
   // Core data
@@ -52,22 +52,24 @@ export const useStorageStore = defineStore('storage', () => {
     upload: false,
     download: false,
     delete: false,
-    create: false
+    create: false,
   })
 
   // UI state
   const selectedObjects = ref<string[]>([])
-  const viewMode = ref<'grid' | 'list'>(((): 'grid' | 'list' => {
-    const saved = localStorage.getItem('storage-view-mode')
-    return (saved === 'grid' || saved === 'list') ? saved : 'list'
-  })())
+  const viewMode = ref<'grid' | 'list'>(
+    ((): 'grid' | 'list' => {
+      const saved = localStorage.getItem('storage-view-mode')
+      return saved === 'grid' || saved === 'list' ? saved : 'list'
+    })()
+  )
   const sortBy = ref<'name' | 'size' | 'modified'>('name')
   const sortOrder = ref<'asc' | 'desc'>('asc')
 
   // Pagination
   const pagination = ref({
     hasMore: false,
-    nextPageToken: undefined as string | undefined
+    nextPageToken: undefined as string | undefined,
   })
 
   // Settings
@@ -79,7 +81,7 @@ export const useStorageStore = defineStore('storage', () => {
     corsOrigins: [],
     enableWebsite: false,
     websiteMainPage: undefined,
-    websiteErrorPage: undefined
+    websiteErrorPage: undefined,
   })
 
   // Computed properties
@@ -141,7 +143,7 @@ export const useStorageStore = defineStore('storage', () => {
       state.value.error = null
 
       const response = await storageApi.listBuckets({
-        project: currentProjectId.value || undefined
+        project: currentProjectId.value || undefined,
       })
 
       buckets.value = response.items || []
@@ -155,7 +157,7 @@ export const useStorageStore = defineStore('storage', () => {
       appStore.showToast({
         type: 'error',
         title: 'Error Loading Buckets',
-        message: error.message || 'Failed to fetch buckets'
+        message: error.message || 'Failed to fetch buckets',
       })
     } finally {
       loading.value.buckets = false
@@ -184,7 +186,7 @@ export const useStorageStore = defineStore('storage', () => {
       appStore.showToast({
         type: 'error',
         title: 'Error Loading Bucket',
-        message: error.message || 'Failed to fetch bucket details'
+        message: error.message || 'Failed to fetch bucket details',
       })
     } finally {
       loading.value.buckets = false
@@ -204,7 +206,7 @@ export const useStorageStore = defineStore('storage', () => {
         appStore.showToast({
           type: 'success',
           title: 'Bucket Created',
-          message: `Bucket "${bucket.name}" created successfully`
+          message: `Bucket "${bucket.name}" created successfully`,
         })
       }
     } catch (error: any) {
@@ -216,7 +218,7 @@ export const useStorageStore = defineStore('storage', () => {
         appStore.showToast({
           type: 'error',
           title: 'Error Creating Bucket',
-          message: meaningfulMessage
+          message: meaningfulMessage,
         })
       }
       throw error
@@ -239,7 +241,7 @@ export const useStorageStore = defineStore('storage', () => {
         const response = await storageApi.listObjects({
           bucket: bucketName,
           maxResults: 1000,
-          pageToken
+          pageToken,
         })
 
         if (response.items && response.items.length > 0) {
@@ -273,7 +275,7 @@ export const useStorageStore = defineStore('storage', () => {
       appStore.showToast({
         type: 'success',
         title: 'Bucket Deleted',
-        message: `Bucket "${bucketName}" and all its contents deleted successfully`
+        message: `Bucket "${bucketName}" and all its contents deleted successfully`,
       })
     } catch (error: any) {
       console.error('Error deleting bucket:', error)
@@ -282,7 +284,7 @@ export const useStorageStore = defineStore('storage', () => {
       appStore.showToast({
         type: 'error',
         title: 'Error Deleting Bucket',
-        message: error.message || 'Failed to delete bucket'
+        message: error.message || 'Failed to delete bucket',
       })
       throw error
     } finally {
@@ -290,7 +292,11 @@ export const useStorageStore = defineStore('storage', () => {
     }
   }
 
-  async function fetchObjects(bucketName: string, prefix: string = '', refresh = false): Promise<void> {
+  async function fetchObjects(
+    bucketName: string,
+    prefix: string = '',
+    refresh = false
+  ): Promise<void> {
     if (loading.value.objects && !refresh) return
 
     try {
@@ -302,7 +308,7 @@ export const useStorageStore = defineStore('storage', () => {
         prefix,
         delimiter: '/',
         maxResults: 1000,
-        ...(pagination.value.nextPageToken && { pageToken: pagination.value.nextPageToken })
+        ...(pagination.value.nextPageToken && { pageToken: pagination.value.nextPageToken }),
       }
 
       const response = await storageApi.listObjects(request)
@@ -325,7 +331,7 @@ export const useStorageStore = defineStore('storage', () => {
             bucket: bucketName,
             isFolder: true,
             size: '0',
-            contentType: 'folder'
+            contentType: 'folder',
           })
         }
       }
@@ -343,7 +349,7 @@ export const useStorageStore = defineStore('storage', () => {
             fullPath: item.name, // Keep full path for API operations
             isFolder: false,
             downloadUrl: storageApi.getObjectDownloadUrl(bucketName, item.name),
-            ...(preview && { preview })
+            ...(preview && { preview }),
           })
         }
       }
@@ -374,14 +380,19 @@ export const useStorageStore = defineStore('storage', () => {
       appStore.showToast({
         type: 'error',
         title: 'Error Loading Objects',
-        message: error.message || 'Failed to fetch objects'
+        message: error.message || 'Failed to fetch objects',
       })
     } finally {
       loading.value.objects = false
     }
   }
 
-  async function uploadFiles(files: File[], bucketName: string, prefix: string = '', silent: boolean = false): Promise<void> {
+  async function uploadFiles(
+    files: File[],
+    bucketName: string,
+    prefix: string = '',
+    silent: boolean = false
+  ): Promise<void> {
     try {
       loading.value.upload = true
       state.value.error = null
@@ -392,7 +403,7 @@ export const useStorageStore = defineStore('storage', () => {
         total: file.size,
         percentage: 0,
         file,
-        status: 'pending'
+        status: 'pending',
       }))
 
       const uploadPromises = files.map(async (file, index) => {
@@ -400,7 +411,7 @@ export const useStorageStore = defineStore('storage', () => {
         const request: UploadObjectRequest = {
           bucket: bucketName,
           name: objectName,
-          contentType: file.type
+          contentType: file.type,
         }
 
         try {
@@ -408,7 +419,7 @@ export const useStorageStore = defineStore('storage', () => {
             uploadProgress.value[index].status = 'uploading'
           }
 
-          const result = await storageApi.uploadObject(file, request, (progress) => {
+          const result = await storageApi.uploadObject(file, request, progress => {
             if (uploadProgress.value[index]) {
               uploadProgress.value[index] = { ...progress, status: 'uploading' }
             }
@@ -436,7 +447,7 @@ export const useStorageStore = defineStore('storage', () => {
         appStore.showToast({
           type: 'success',
           title: 'Upload Complete',
-          message: `Successfully uploaded ${files.length} file${files.length === 1 ? '' : 's'}`
+          message: `Successfully uploaded ${files.length} file${files.length === 1 ? '' : 's'}`,
         })
       }
     } catch (error: any) {
@@ -447,7 +458,7 @@ export const useStorageStore = defineStore('storage', () => {
         appStore.showToast({
           type: 'error',
           title: 'Upload Error',
-          message: error.message || 'Failed to upload files'
+          message: error.message || 'Failed to upload files',
         })
       }
       throw error
@@ -467,7 +478,7 @@ export const useStorageStore = defineStore('storage', () => {
 
       const blob = await storageApi.downloadObject({
         bucket: bucketName,
-        object: objectName
+        object: objectName,
       })
 
       // Create download link
@@ -483,7 +494,7 @@ export const useStorageStore = defineStore('storage', () => {
       appStore.showToast({
         type: 'success',
         title: 'Download Complete',
-        message: `Downloaded "${objectName}"`
+        message: `Downloaded "${objectName}"`,
       })
     } catch (error: any) {
       console.error('Error downloading object:', error)
@@ -492,7 +503,7 @@ export const useStorageStore = defineStore('storage', () => {
       appStore.showToast({
         type: 'error',
         title: 'Download Error',
-        message: error.message || 'Failed to download object'
+        message: error.message || 'Failed to download object',
       })
       throw error
     } finally {
@@ -531,7 +542,7 @@ export const useStorageStore = defineStore('storage', () => {
       appStore.showToast({
         type: 'success',
         title: 'Objects Deleted',
-        message: `Successfully deleted ${objectNames.length} objects`
+        message: `Successfully deleted ${objectNames.length} objects`,
       })
     } catch (error: any) {
       console.error('Error deleting objects:', error)
@@ -540,7 +551,7 @@ export const useStorageStore = defineStore('storage', () => {
       appStore.showToast({
         type: 'error',
         title: 'Delete Error',
-        message: error.message || 'Failed to delete objects'
+        message: error.message || 'Failed to delete objects',
       })
       throw error
     } finally {
@@ -564,7 +575,7 @@ export const useStorageStore = defineStore('storage', () => {
         breadcrumbs.value.push({
           name: part,
           path: currentPath,
-          isLast: i === parts.length - 1
+          isLast: i === parts.length - 1,
         })
       }
     }
@@ -591,7 +602,7 @@ export const useStorageStore = defineStore('storage', () => {
       totalSize: 0,
       averageObjectSize: 0,
       storageClasses: {},
-      contentTypes: {}
+      contentTypes: {},
     }
 
     let lastModified: Date | undefined
@@ -653,9 +664,7 @@ export const useStorageStore = defineStore('storage', () => {
   }
 
   function selectAllObjects(): void {
-    selectedObjects.value = objects.value
-      .filter(obj => !obj.isFolder)
-      .map(obj => obj.name)
+    selectedObjects.value = objects.value.filter(obj => !obj.isFolder).map(obj => obj.name)
   }
 
   function clearSelection(): void {
@@ -679,12 +688,12 @@ export const useStorageStore = defineStore('storage', () => {
     uploadProgress.value = []
     pagination.value = {
       hasMore: false,
-      nextPageToken: undefined
+      nextPageToken: undefined,
     }
     state.value = {
       state: 'idle',
       error: null,
-      lastUpdated: null
+      lastUpdated: null,
     }
   }
 
@@ -727,6 +736,6 @@ export const useStorageStore = defineStore('storage', () => {
     selectAllObjects,
     clearSelection,
     clearCurrentPath,
-    reset
+    reset,
   }
 })

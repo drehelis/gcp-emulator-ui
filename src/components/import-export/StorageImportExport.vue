@@ -64,20 +64,15 @@ const props = defineProps<{
 }>()
 
 const { checkStorageConnection } = useServiceConnections()
-const {
-  isExporting,
-  isImporting,
-  loadData,
-  exportConfiguration,
-  importConfiguration
-} = useStorageImportExport()
+const { isExporting, isImporting, loadData, exportConfiguration, importConfiguration } =
+  useStorageImportExport()
 
 const handleExportConfiguration = async () => {
   await loadData()
   await exportConfiguration(props.projectId)
 }
 
-const handleImport = async (data: { importData: any[], options: any }) => {
+const handleImport = async (data: { importData: any[]; options: any }) => {
   await importConfiguration(data.importData, data.options)
 }
 

@@ -33,6 +33,6 @@ export const useFieldOperations = () => {
     restoreExpandedFields,
     formatFieldValue,
     getFieldType,
-    getEditableValue
+    getEditableValue,
   }
 }

@@ -10,7 +10,7 @@ describe('downloadFile', () => {
   beforeEach(() => {
     // Reset mocks
     vi.clearAllMocks()
-    
+
     // Mock document.body methods
     document.body.appendChild = vi.fn()
     document.body.removeChild = vi.fn()
@@ -20,9 +20,9 @@ describe('downloadFile', () => {
     const content = '{"data": "test"}'
     const filename = 'export.json'
     const mimeType = 'application/json'
-    
+
     downloadFile(content, filename, mimeType)
-    
+
     expect(URL.createObjectURL).toHaveBeenCalled()
     expect(document.body.appendChild).toHaveBeenCalled()
     expect(document.body.removeChild).toHaveBeenCalled()
@@ -33,12 +33,12 @@ describe('downloadFile', () => {
     const mockAnchor = {
       href: '',
       download: '',
-      click: vi.fn()
+      click: vi.fn(),
     }
     vi.spyOn(document, 'createElement').mockReturnValue(mockAnchor as any)
-    
+
     downloadFile('content', 'myfile.txt', 'text/plain')
-    
+
     expect(mockAnchor.download).toBe('myfile.txt')
     expect(mockAnchor.click).toHaveBeenCalled()
   })

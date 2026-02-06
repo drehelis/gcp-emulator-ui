@@ -1,10 +1,5 @@
 <template>
-  <BaseModal
-    v-model="isOpen"
-    :title="modalTitle"
-    size="3xl"
-    @close="handleClose"
-  >
+  <BaseModal v-model="isOpen" :title="modalTitle" size="3xl" @close="handleClose">
     <FieldFormComponent
       v-if="isOpen"
       :mode="mode"
@@ -56,21 +51,23 @@ interface Props {
 
 interface Emits {
   'update:modelValue': [value: boolean]
-  'save': [data: {
-    fieldName: string
-    fieldType: string
-    fieldValue: any
-    fieldPath?: string
-    isNewField?: boolean
-    parentPath?: string
-  }]
-  'close': []
+  save: [
+    data: {
+      fieldName: string
+      fieldType: string
+      fieldValue: any
+      fieldPath?: string
+      isNewField?: boolean
+      parentPath?: string
+    },
+  ]
+  close: []
 }
 
 const props = withDefaults(defineProps<Props>(), {
   initialFieldName: '',
   initialFieldType: 'string',
-  initialFieldValue: ''
+  initialFieldValue: '',
 })
 
 const emit = defineEmits<Emits>()
@@ -83,7 +80,7 @@ const fieldValue = ref<any>('')
 // Computed
 const isOpen = computed({
   get: () => props.modelValue,
-  set: (value: boolean) => emit('update:modelValue', value)
+  set: (value: boolean) => emit('update:modelValue', value),
 })
 
 const modalTitle = computed(() => {
@@ -126,17 +123,21 @@ const isFormValid = computed(() => {
 })
 
 // Reset form when modal opens
-watch(() => props.modelValue, (newValue) => {
-  if (newValue) {
-    resetForm()
+watch(
+  () => props.modelValue,
+  newValue => {
+    if (newValue) {
+      resetForm()
+    }
   }
-})
+)
 
 // Helper functions
 const resetForm = () => {
   fieldName.value = props.initialFieldName || ''
   fieldType.value = props.initialFieldType || 'string'
-  fieldValue.value = props.initialFieldValue || getDefaultValueForType(props.initialFieldType || 'string')
+  fieldValue.value =
+    props.initialFieldValue || getDefaultValueForType(props.initialFieldType || 'string')
 }
 
 const getDefaultValueForType = (type: string) => {
@@ -179,7 +180,7 @@ const handleSave = () => {
     fieldValue: fieldValue.value,
     fieldPath: props.fieldPath,
     isNewField: props.isNewField,
-    parentPath: props.parentPath
+    parentPath: props.parentPath,
   })
 }
 </script>

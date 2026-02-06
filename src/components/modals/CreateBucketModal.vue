@@ -9,12 +9,17 @@
     <div class="space-y-4 sm:space-y-6">
       <!-- Bucket Configuration -->
       <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 sm:p-4">
-        <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-3 sm:mb-4">Bucket Configuration</h3>
-        
+        <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-3 sm:mb-4">
+          Bucket Configuration
+        </h3>
+
         <div class="space-y-3 sm:space-y-4">
           <!-- Bucket Name -->
           <div>
-            <label for="bucket-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label
+              for="bucket-name"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >
               Bucket Name *
             </label>
             <input
@@ -24,7 +29,9 @@
               type="text"
               placeholder="Enter bucket name (e.g., my-storage-bucket)"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-              :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-500': bucketErrors.name }"
+              :class="{
+                'border-red-300 focus:border-red-500 focus:ring-red-500': bucketErrors.name,
+              }"
               @input="clearBucketError('name')"
             />
             <p v-if="bucketErrors.name" class="mt-1 text-sm text-red-600 dark:text-red-400">
@@ -37,7 +44,10 @@
 
           <!-- Location -->
           <div>
-            <label for="location" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label
+              for="location"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >
               Location
             </label>
             <select
@@ -58,7 +68,10 @@
 
           <!-- Storage Class -->
           <div>
-            <label for="storage-class" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label
+              for="storage-class"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >
               Default Storage Class
             </label>
             <select
@@ -84,7 +97,9 @@
                 type="checkbox"
                 class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
               />
-              <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Enable public access prevention</span>
+              <span class="ml-2 text-sm text-gray-700 dark:text-gray-300"
+                >Enable public access prevention</span
+              >
             </label>
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
               Prevents public access to bucket objects
@@ -99,7 +114,9 @@
                 type="checkbox"
                 class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
               />
-              <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Enable uniform bucket-level access</span>
+              <span class="ml-2 text-sm text-gray-700 dark:text-gray-300"
+                >Enable uniform bucket-level access</span
+              >
             </label>
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
               Disables ACLs for all objects in this bucket
@@ -139,50 +156,49 @@ const bucketForm = ref({
   location: 'US',
   storageClass: 'STANDARD',
   publicAccessPrevention: true,
-  uniformBucketLevelAccess: true
+  uniformBucketLevelAccess: true,
 })
 
 const bucketErrors = ref<Record<string, string>>({})
 
 const modelValue = computed({
   get: () => props.modelValue,
-  set: (value: boolean) => emit('update:modelValue', value)
+  set: (value: boolean) => emit('update:modelValue', value),
 })
-
 
 const modalActions = computed<ModalAction[]>(() => [
   {
     label: 'Cancel',
     handler: handleClose,
-    variant: 'secondary'
+    variant: 'secondary',
   },
   {
     label: 'Create Bucket',
     handler: handleSubmit,
     variant: 'primary',
     loading: isSubmitting.value,
-    disabled: !bucketForm.value.name.trim() || isSubmitting.value
-  }
+    disabled: !bucketForm.value.name.trim() || isSubmitting.value,
+  },
 ])
 
 const validateBucketName = (name: string): string => {
   if (!name.trim()) {
     return 'Bucket name is required'
   }
-  
+
   // Basic bucket name validation (simplified for emulator)
   if (name.length < 3 || name.length > 63) {
     return 'Bucket name must be between 3 and 63 characters'
   }
-  
+
   if (!/^[a-z0-9][a-z0-9-._]*[a-z0-9]$/.test(name)) {
     return 'Bucket name must start and end with a letter or number, and contain only lowercase letters, numbers, hyphens, periods, and underscores'
   }
-  
+
   if (name.includes('..')) {
     return 'Bucket name cannot contain consecutive periods'
   }
-  
+
   return ''
 }
 
@@ -203,10 +219,10 @@ const handleSubmit = async () => {
       storageClass: bucketForm.value.storageClass,
       iamConfiguration: {
         uniformBucketLevelAccess: {
-          enabled: bucketForm.value.uniformBucketLevelAccess
+          enabled: bucketForm.value.uniformBucketLevelAccess,
         },
-        publicAccessPrevention: bucketForm.value.publicAccessPrevention ? 'enforced' : 'inherited'
-      }
+        publicAccessPrevention: bucketForm.value.publicAccessPrevention ? 'enforced' : 'inherited',
+      },
     }
 
     // Create bucket
@@ -215,20 +231,19 @@ const handleSubmit = async () => {
     appStore.showToast({
       type: 'success',
       title: 'Bucket Created',
-      message: `Bucket "${bucketForm.value.name}" created successfully`
+      message: `Bucket "${bucketForm.value.name}" created successfully`,
     })
 
     // Close modal and emit success
     modelValue.value = false
     emit('bucket-created')
     resetForm()
-
   } catch (err: any) {
     console.error('Error creating bucket:', err)
     appStore.showToast({
       type: 'error',
       title: 'Creation Failed',
-      message: getStorageErrorMessage(err, 'create bucket')
+      message: getStorageErrorMessage(err, 'create bucket'),
     })
   } finally {
     isSubmitting.value = false
@@ -248,7 +263,7 @@ const resetForm = () => {
     location: 'US',
     storageClass: 'STANDARD',
     publicAccessPrevention: true,
-    uniformBucketLevelAccess: true
+    uniformBucketLevelAccess: true,
   }
   bucketErrors.value = {}
   isSubmitting.value = false
@@ -287,10 +302,13 @@ onUnmounted(() => {
 })
 
 // Focus input when modal opens
-watch(() => props.modelValue, async (isOpen) => {
-  if (isOpen) {
-    await nextTick()
-    bucketNameInput.value?.focus()
+watch(
+  () => props.modelValue,
+  async isOpen => {
+    if (isOpen) {
+      await nextTick()
+      bucketNameInput.value?.focus()
+    }
   }
-})
+)
 </script>

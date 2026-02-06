@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
-@import "tailwindcss";
+@import 'tailwindcss';
 
 /* TailwindCSS v4 dark mode variant configuration */
 @custom-variant dark (&:where(.dark, .dark *));
@@ -61,7 +61,9 @@
 }
 
 .transition {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-property:
+    color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow,
+    transform, filter, backdrop-filter;
   transition-timing-function: var(--theme-transition-timing);
   transition-duration: var(--theme-transition-duration);
 }
@@ -145,16 +147,16 @@
 }
 
 /* Search box and input field dark mode styling */
-.dark input[type="search"],
-.dark input[type="text"],
+.dark input[type='search'],
+.dark input[type='text'],
 .dark .search-input {
   background-color: #1f2937;
   border: 1px solid #4b5563;
   color: #f9fafb;
 }
 
-.dark input[type="search"]:focus,
-.dark input[type="text"]:focus,
+.dark input[type='search']:focus,
+.dark input[type='text']:focus,
 .dark .search-input:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 1px #3b82f6;
@@ -166,7 +168,7 @@
 }
 
 /* Fix GlobalSearch component focus border issue */
-.dark input[type="text"]:focus {
+.dark input[type='text']:focus {
   border-color: #3b82f6 !important;
 }
 
@@ -183,17 +185,17 @@
 }
 
 /* Fix dropdown/select component white border in dark mode */
-.dark .relative>div,
+.dark .relative > div,
 .dark .dropdown,
-.dark [role="listbox"],
-.dark [role="combobox"] {
+.dark [role='listbox'],
+.dark [role='combobox'] {
   border-color: #4b5563 !important;
 }
 
-.dark .relative>div:focus,
+.dark .relative > div:focus,
 .dark .dropdown:focus,
-.dark [role="listbox"]:focus,
-.dark [role="combobox"]:focus {
+.dark [role='listbox']:focus,
+.dark [role='combobox']:focus {
   border-color: #3b82f6 !important;
 }
 
@@ -215,7 +217,7 @@ button:focus {
 }
 
 /* Specifically target the project selector button for both modes */
-.relative>button:focus {
+.relative > button:focus {
   --tw-ring-offset-width: 0px !important;
   --tw-ring-offset-color: transparent !important;
   border-color: #3b82f6 !important;
@@ -318,13 +320,15 @@ button:focus {
 /* Button styles */
 .firestore-btn-icon {
   @apply p-2 rounded-md min-h-[44px] min-w-[44px] sm:p-0 sm:min-h-0 sm:min-w-0;
-  transition: color var(--theme-transition-duration) var(--theme-transition-timing),
+  transition:
+    color var(--theme-transition-duration) var(--theme-transition-timing),
     background-color var(--theme-transition-duration) var(--theme-transition-timing);
 }
 
 .firestore-btn-icon-small {
   @apply p-1;
-  transition: color var(--theme-transition-duration) var(--theme-transition-timing),
+  transition:
+    color var(--theme-transition-duration) var(--theme-transition-timing),
     background-color var(--theme-transition-duration) var(--theme-transition-timing);
 }
 

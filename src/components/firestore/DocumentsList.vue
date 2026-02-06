@@ -1,13 +1,19 @@
 <template>
-  <div :class="[
-    'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto',
-    selectedDocument ? 'w-1/3' : 'w-2/3'
-  ]">
+  <div
+    :class="[
+      'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto',
+      selectedDocument ? 'w-1/3' : 'w-2/3',
+    ]"
+  >
     <div class="p-4">
       <!-- Collection Header with Breadcrumb Style -->
       <div class="mb-3">
-        <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 font-mono">
-          <span class="text-gray-900 dark:text-white">{{ selectedCollection ? selectedCollection.id : 'Select a collection' }}</span>
+        <div
+          class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 font-mono"
+        >
+          <span class="text-gray-900 dark:text-white">{{
+            selectedCollection ? selectedCollection.id : 'Select a collection'
+          }}</span>
           <div v-if="selectedCollection" class="relative" data-collection-menu>
             <button
               @click="showCollectionMenu = !showCollectionMenu"
@@ -54,7 +60,7 @@
             'flex items-center justify-between px-3 py-2 text-sm rounded-md cursor-pointer transition-colors',
             selectedDocument?.name === document.name
               ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700',
           ]"
           @click="$emit('select-document', document)"
         >
@@ -68,11 +74,7 @@
       <!-- Display subcollections for current document -->
       <div v-if="selectedDocument && subcollections.length > 0" class="mt-3 space-y-1">
         <div class="border-b border-gray-200 dark:border-gray-600 mb-3"></div>
-        <div
-          v-for="subcollection in subcollections"
-          :key="subcollection.id"
-          class="group"
-        >
+        <div v-for="subcollection in subcollections" :key="subcollection.id" class="group">
           <button
             @click="$emit('navigate-to-subcollection', subcollection)"
             class="flex items-center w-full px-2 py-1.5 text-sm rounded-md cursor-pointer transition-colors text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
@@ -85,14 +87,9 @@
       </div>
 
       <!-- Empty documents state -->
-      <div
-        v-else-if="selectedCollection && documents.length === 0"
-        class="text-center py-8"
-      >
+      <div v-else-if="selectedCollection && documents.length === 0" class="text-center py-8">
         <DocumentIcon class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-          No documents in this collection
-        </p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">No documents in this collection</p>
         <button
           @click="$emit('add-document')"
           class="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-700 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-700 rounded-md hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
@@ -103,10 +100,7 @@
       </div>
 
       <!-- No collection selected placeholder -->
-      <div
-        v-else-if="!selectedCollection"
-        class="text-center py-16"
-      >
+      <div v-else-if="!selectedCollection" class="text-center py-16">
         <CircleStackIcon class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
         <p class="text-sm text-gray-500 dark:text-gray-400">
           Select a collection to view its documents
@@ -123,7 +117,7 @@ import {
   DocumentIcon,
   CircleStackIcon,
   ChevronRightIcon,
-  EllipsisVerticalIcon
+  EllipsisVerticalIcon,
 } from '@heroicons/vue/24/outline'
 import type { FirestoreDocument, FirestoreCollectionWithMetadata } from '@/types'
 

@@ -13,21 +13,21 @@ export function useKeyboardShortcuts() {
 
   function registerShortcut(shortcut: KeyboardShortcut) {
     const key = formatShortcutKey(shortcut)
-    
+
     registeredShortcuts.value.set(key, shortcut)
-    
+
     // Configure hotkeys scope
     const scope = shortcut.global ? 'global' : 'local'
-    
+
     // Register with hotkeys library
-    hotkeys(key, { scope }, (event) => {
+    hotkeys(key, { scope }, event => {
       if (!enabled.value || (shortcut.enabled !== undefined && !shortcut.enabled)) {
         return
       }
-      
+
       // Prevent default behavior
       event.preventDefault()
-      
+
       // Execute action
       try {
         shortcut.action()
@@ -35,7 +35,7 @@ export function useKeyboardShortcuts() {
         console.error('Error executing keyboard shortcut:', error)
       }
     })
-    
+
     console.log(`Registered keyboard shortcut: ${key} - ${shortcut.description}`)
   }
 
@@ -45,7 +45,7 @@ export function useKeyboardShortcuts() {
 
   function unregisterShortcut(shortcut: KeyboardShortcut) {
     const key = formatShortcutKey(shortcut)
-    
+
     if (registeredShortcuts.value.has(key)) {
       hotkeys.unbind(key)
       registeredShortcuts.value.delete(key)
@@ -58,7 +58,7 @@ export function useKeyboardShortcuts() {
       shortcuts.forEach(unregisterShortcut)
     } else {
       // Unregister all shortcuts
-      registeredShortcuts.value.forEach((shortcut) => {
+      registeredShortcuts.value.forEach(shortcut => {
         const key = formatShortcutKey(shortcut)
         hotkeys.unbind(key)
       })
@@ -85,7 +85,7 @@ export function useKeyboardShortcuts() {
   function formatShortcutKey(shortcut: KeyboardShortcut): string {
     const modifiers = shortcut.modifiers || []
     const parts = [...modifiers, shortcut.key.toLowerCase()]
-    
+
     // Normalize modifier names for hotkeys library
     const normalizedParts = parts.map(part => {
       switch (part) {
@@ -105,14 +105,14 @@ export function useKeyboardShortcuts() {
           return part
       }
     })
-    
+
     return normalizedParts.join('+')
   }
 
   function formatDisplayKey(shortcut: KeyboardShortcut): string {
     const modifiers = shortcut.modifiers || []
     const parts = [...modifiers, shortcut.key]
-    
+
     // Format for display (with proper symbols)
     const displayParts = parts.map(part => {
       switch (part.toLowerCase()) {
@@ -158,7 +158,7 @@ export function useKeyboardShortcuts() {
           return part.toUpperCase()
       }
     })
-    
+
     return displayParts.join(' + ')
   }
 
@@ -184,6 +184,6 @@ export function useKeyboardShortcuts() {
     toggleShortcuts,
     getRegisteredShortcuts,
     formatShortcutKey,
-    formatDisplayKey
+    formatDisplayKey,
   }
 }

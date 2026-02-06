@@ -27,7 +27,10 @@ export function useFirestoreImportExport() {
 
   // Helper function to fetch all documents with pagination
   const fetchAllDocumentsWithPagination = async (
-    fetchFn: (_pageSize: number, _pageToken?: string) => Promise<{ documents: FirestoreDocument[]; nextPageToken?: string }>
+    fetchFn: (
+      _pageSize: number,
+      _pageToken?: string
+    ) => Promise<{ documents: FirestoreDocument[]; nextPageToken?: string }>
   ): Promise<FirestoreDocument[]> => {
     const allDocuments: FirestoreDocument[] = []
     let pageToken: string | undefined
@@ -48,10 +51,10 @@ export function useFirestoreImportExport() {
   ): Promise<{ id: string; name: string }[]> => {
     // Call without pageSize to get all collections in one request
     const response = await firestoreApi.listCollections(databasePath)
-    
+
     return response.collections.map(collection => ({
       id: collection.id || collection.name.split('/').pop() || '',
-      name: collection.name
+      name: collection.name,
     }))
   }
 
@@ -71,7 +74,7 @@ export function useFirestoreImportExport() {
     document: FirestoreDocument
   ): Promise<FirestoreDocumentExport> => {
     const documentExport: FirestoreDocumentExport = {
-      document
+      document,
     }
 
     try {
@@ -88,7 +91,13 @@ export function useFirestoreImportExport() {
 
             // Get ALL documents in this subcollection using pagination
             const allSubcollectionDocs = await fetchAllDocumentsWithPagination(
-              (pageSize, pageToken) => firestoreApi.listSubcollectionDocuments(documentPath, subcollectionId, pageSize, pageToken)
+              (pageSize, pageToken) =>
+                firestoreApi.listSubcollectionDocuments(
+                  documentPath,
+                  subcollectionId,
+                  pageSize,
+                  pageToken
+                )
             )
             const subcollectionDocs: FirestoreDocumentExport[] = []
 
@@ -100,7 +109,7 @@ export function useFirestoreImportExport() {
 
             documentExport.subcollections.push({
               collectionId: subcollectionId,
-              documents: subcollectionDocs
+              documents: subcollectionDocs,
             })
           } catch (error) {
             console.error(`Failed to export subcollection:`, error)
@@ -129,7 +138,7 @@ export function useFirestoreImportExport() {
         appStore.showToast({
           type: 'info',
           title: 'No collections to export',
-          message: 'No Firestore collections found in this project'
+          message: 'No Firestore collections found in this project',
         })
         return
       }
@@ -140,8 +149,8 @@ export function useFirestoreImportExport() {
       for (const collection of collections) {
         try {
           // Fetch ALL documents using pagination
-          const allDocs = await fetchAllDocumentsWithPagination(
-            (pageSize, pageToken) => firestoreApi.listDocuments(databasePath, collection.id, pageSize, pageToken)
+          const allDocs = await fetchAllDocumentsWithPagination((pageSize, pageToken) =>
+            firestoreApi.listDocuments(databasePath, collection.id, pageSize, pageToken)
           )
           const collectionDocs: FirestoreDocumentExport[] = []
 
@@ -154,7 +163,7 @@ export function useFirestoreImportExport() {
 
           exportData.push({
             collectionId: collection.id,
-            documents: collectionDocs
+            documents: collectionDocs,
           })
         } catch (error) {
           console.error(`Failed to export collection ${collection.id}:`, error)
@@ -171,14 +180,14 @@ export function useFirestoreImportExport() {
       appStore.showToast({
         type: 'success',
         title: 'Firestore collections exported',
-        message: `Exported ${collections.length} collection${collections.length === 1 ? '' : 's'} with ${totalDocuments} document${totalDocuments === 1 ? '' : 's'}`
+        message: `Exported ${collections.length} collection${collections.length === 1 ? '' : 's'} with ${totalDocuments} document${totalDocuments === 1 ? '' : 's'}`,
       })
     } catch (error) {
       console.error('Firestore export failed:', error)
       appStore.showToast({
         type: 'error',
         title: 'Export failed',
-        message: (error as Error).message
+        message: (error as Error).message,
       })
     } finally {
       isExporting.value = false
@@ -210,12 +219,7 @@ export function useFirestoreImportExport() {
           } catch {
             // If update fails, try creating
             try {
-              await firestoreApi.createSubcollection(
-                parentPath,
-                collectionId,
-                doc,
-                docId
-              )
+              await firestoreApi.createSubcollection(parentPath, collectionId, doc, docId)
               stats.success++
             } catch (createError: any) {
               // Document might already exist, skip it
@@ -229,12 +233,7 @@ export function useFirestoreImportExport() {
         } else {
           // Don't overwrite - try to create, skip if exists
           try {
-            await firestoreApi.createSubcollection(
-              parentPath,
-              collectionId,
-              doc,
-              docId
-            )
+            await firestoreApi.createSubcollection(parentPath, collectionId, doc, docId)
             stats.success++
           } catch (createError: any) {
             // Document already exists, skip it
@@ -260,7 +259,7 @@ export function useFirestoreImportExport() {
                 parent: parentPath,
                 collectionId,
                 documentId: docId,
-                document: doc
+                document: doc,
               })
               stats.success++
             } catch (createError: any) {
@@ -279,7 +278,7 @@ export function useFirestoreImportExport() {
               parent: parentPath,
               collectionId,
               documentId: docId,
-              document: doc
+              document: doc,
             })
             stats.success++
           } catch (createError: any) {
@@ -310,7 +309,7 @@ export function useFirestoreImportExport() {
                 subDocExport,
                 options,
                 stats,
-                true  // This is a subcollection
+                true // This is a subcollection
               )
             }
           } catch (error) {
@@ -326,7 +325,11 @@ export function useFirestoreImportExport() {
   }
 
   // Import collections
-  const importCollections = async (projectId: string, importData: FirestoreCollectionExport[], options: any) => {
+  const importCollections = async (
+    projectId: string,
+    importData: FirestoreCollectionExport[],
+    options: any
+  ) => {
     isImporting.value = true
     try {
       const stats = { success: 0, error: 0 }
@@ -361,25 +364,25 @@ export function useFirestoreImportExport() {
         appStore.showToast({
           type: 'success',
           title: 'Firestore import completed successfully',
-          message: `${stats.success} document${stats.success === 1 ? '' : 's'} imported`
+          message: `${stats.success} document${stats.success === 1 ? '' : 's'} imported`,
         })
       } else if (stats.success > 0 && stats.error > 0) {
         appStore.showToast({
           type: 'warning',
           title: 'Firestore import completed with errors',
-          message: `${stats.success} successful, ${stats.error} failed`
+          message: `${stats.success} successful, ${stats.error} failed`,
         })
       } else if (stats.error > 0) {
         appStore.showToast({
           type: 'error',
           title: 'Firestore import failed',
-          message: `All ${stats.error} document${stats.error === 1 ? '' : 's'} failed to import`
+          message: `All ${stats.error} document${stats.error === 1 ? '' : 's'} failed to import`,
         })
       } else {
         appStore.showToast({
           type: 'info',
           title: 'No documents to import',
-          message: 'The import file contains no documents'
+          message: 'The import file contains no documents',
         })
       }
     } catch (error) {
@@ -387,7 +390,7 @@ export function useFirestoreImportExport() {
       appStore.showToast({
         type: 'error',
         title: 'Import failed',
-        message: (error as Error).message
+        message: (error as Error).message,
       })
     } finally {
       isImporting.value = false
@@ -399,6 +402,6 @@ export function useFirestoreImportExport() {
     isImporting,
     loadData,
     exportCollections,
-    importCollections
+    importCollections,
   }
 }

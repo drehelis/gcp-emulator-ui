@@ -68,7 +68,16 @@ export interface DatastoreFilter {
   }
   propertyFilter?: {
     property: PropertyReference
-    op: 'LESS_THAN' | 'LESS_THAN_OR_EQUAL' | 'GREATER_THAN' | 'GREATER_THAN_OR_EQUAL' | 'EQUAL' | 'HAS_ANCESTOR' | 'IN' | 'NOT_EQUAL' | 'NOT_IN'
+    op:
+      | 'LESS_THAN'
+      | 'LESS_THAN_OR_EQUAL'
+      | 'GREATER_THAN'
+      | 'GREATER_THAN_OR_EQUAL'
+      | 'EQUAL'
+      | 'HAS_ANCESTOR'
+      | 'IN'
+      | 'NOT_EQUAL'
+      | 'NOT_IN'
     value: DatastoreValue
   }
 }
@@ -119,7 +128,11 @@ export interface RunQueryResponse {
 export interface QueryResultBatch {
   entityResults: EntityResult[]
   endCursor?: string
-  moreResults: 'NOT_FINISHED' | 'MORE_RESULTS_AFTER_LIMIT' | 'MORE_RESULTS_AFTER_CURSOR' | 'NO_MORE_RESULTS'
+  moreResults:
+    | 'NOT_FINISHED'
+    | 'MORE_RESULTS_AFTER_LIMIT'
+    | 'MORE_RESULTS_AFTER_CURSOR'
+    | 'NO_MORE_RESULTS'
   skippedResults?: number
   skippedCursor?: string
 }
@@ -162,7 +175,11 @@ export interface AvgAggregation {
 
 export interface AggregationResultBatch {
   aggregationResults: AggregationResult[]
-  moreResults: 'NOT_FINISHED' | 'MORE_RESULTS_AFTER_LIMIT' | 'MORE_RESULTS_AFTER_CURSOR' | 'NO_MORE_RESULTS'
+  moreResults:
+    | 'NOT_FINISHED'
+    | 'MORE_RESULTS_AFTER_LIMIT'
+    | 'MORE_RESULTS_AFTER_CURSOR'
+    | 'NO_MORE_RESULTS'
   readTime?: string
 }
 

@@ -1,6 +1,8 @@
 <template>
   <div v-if="isSectionHeader" class="flex items-center mb-2" :class="customClasses">
-    <p class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider theme-transition-colors">
+    <p
+      class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider theme-transition-colors"
+    >
       {{ label }}
     </p>
   </div>
@@ -12,10 +14,10 @@
       @click="handleClick"
       class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg theme-transition-colors"
       :class="[
-        isActive ?
-          'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
-          'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200',
-        customClasses
+        isActive
+          ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200',
+        customClasses,
       ]"
     >
       <component v-if="icon" :is="icon" class="w-4 h-4 mr-3" />
@@ -30,10 +32,10 @@
     @click="handleClick"
     class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg theme-transition-colors"
     :class="[
-      isActive ?
-        'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
-        'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200',
-      customClasses
+      isActive
+        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200',
+      customClasses,
     ]"
   >
     <component v-if="icon" :is="icon" class="w-4 h-4 mr-3" />
@@ -46,10 +48,10 @@
     :to="to"
     class="flex items-center justify-center w-full px-2 py-2 text-sm font-medium rounded-lg theme-transition-colors"
     :class="[
-      isActive ?
-        'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
-        'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200',
-      customClasses
+      isActive
+        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200',
+      customClasses,
     ]"
     :title="label"
   >
@@ -63,10 +65,10 @@
     @click="handleClick"
     class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg theme-transition-colors"
     :class="[
-      isActive ?
-        'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300' :
-        'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200',
-      customClasses
+      isActive
+        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300'
+        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200',
+      customClasses,
     ]"
   >
     <component v-if="icon" :is="icon" class="w-5 h-5 mr-3" />
@@ -102,7 +104,7 @@ const props = withDefaults(defineProps<Props>(), {
   isSubItem: false,
   isSectionHeader: false,
   connected: true,
-  customClasses: ''
+  customClasses: '',
 })
 
 const emit = defineEmits<{
@@ -113,11 +115,11 @@ const route = useRoute()
 
 const isActive = computed(() => {
   if (!props.to) return false
-  
+
   if (props.exact) {
     return route.path === props.to
   }
-  
+
   return route.path.startsWith(props.to)
 })
 
@@ -133,14 +135,14 @@ const handleClick = () => {
 
 .nav-item {
   @apply flex items-center w-full px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-gray-200;
-  transition: 
+  transition:
     background-color var(--theme-transition-duration) var(--theme-transition-timing),
     color var(--theme-transition-duration) var(--theme-transition-timing);
 }
 
 .nav-item--active {
   @apply bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300;
-  transition: 
+  transition:
     background-color var(--theme-transition-duration) var(--theme-transition-timing),
     color var(--theme-transition-duration) var(--theme-transition-timing);
 }
@@ -163,14 +165,14 @@ const handleClick = () => {
 
 .nav-item__badge {
   @apply ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300;
-  transition: 
+  transition:
     background-color var(--theme-transition-duration) var(--theme-transition-timing),
     color var(--theme-transition-duration) var(--theme-transition-timing);
 }
 
 .nav-item--active .nav-item__badge {
   @apply bg-blue-200 text-blue-800 dark:bg-blue-800 dark:text-blue-200;
-  transition: 
+  transition:
     background-color var(--theme-transition-duration) var(--theme-transition-timing),
     color var(--theme-transition-duration) var(--theme-transition-timing);
 }
@@ -185,7 +187,7 @@ const handleClick = () => {
 
 .nav-item--service-header {
   @apply font-semibold text-gray-700 dark:text-gray-300 text-xs uppercase tracking-wider px-2 py-1 cursor-default;
-  transition: 
+  transition:
     background-color var(--theme-transition-duration) var(--theme-transition-timing),
     color var(--theme-transition-duration) var(--theme-transition-timing);
 }

@@ -3,9 +3,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <!-- Page header -->
       <div class="mb-8">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-          Storage Import/Export
-        </h1>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Storage Import/Export</h1>
         <p class="mt-2 text-gray-600 dark:text-gray-400">
           Export and import Cloud Storage bucket configurations
         </p>
@@ -38,12 +36,30 @@
               </div>
 
               <!-- Export Status -->
-              <div v-if="exportStatus" class="p-3 rounded-md" :class="exportStatus.type === 'success' ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'">
+              <div
+                v-if="exportStatus"
+                class="p-3 rounded-md"
+                :class="
+                  exportStatus.type === 'success'
+                    ? 'bg-green-50 dark:bg-green-900/20'
+                    : 'bg-red-50 dark:bg-red-900/20'
+                "
+              >
                 <div class="flex">
-                  <CheckCircleIcon v-if="exportStatus.type === 'success'" class="h-5 w-5 text-green-400" />
+                  <CheckCircleIcon
+                    v-if="exportStatus.type === 'success'"
+                    class="h-5 w-5 text-green-400"
+                  />
                   <XCircleIcon v-else class="h-5 w-5 text-red-400" />
                   <div class="ml-3">
-                    <h3 class="text-sm font-medium" :class="exportStatus.type === 'success' ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'">
+                    <h3
+                      class="text-sm font-medium"
+                      :class="
+                        exportStatus.type === 'success'
+                          ? 'text-green-800 dark:text-green-200'
+                          : 'text-red-800 dark:text-red-200'
+                      "
+                    >
                       {{ exportStatus.message }}
                     </h3>
                   </div>
@@ -101,7 +117,7 @@
                     'border-2 border-dashed rounded-lg p-6 text-center transition-colors',
                     isDragOver
                       ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                      : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+                      : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500',
                   ]"
                 >
                   <input
@@ -143,13 +159,23 @@
                     Preview ({{ importData.length }} bucket{{ importData.length !== 1 ? 's' : '' }})
                   </h4>
                   <div class="space-y-2">
-                    <div v-for="(bucket, index) in importData.slice(0, 3)" :key="index" class="text-sm">
-                      <span class="font-medium text-gray-900 dark:text-white">{{ bucket.name }}</span>
+                    <div
+                      v-for="(bucket, index) in importData.slice(0, 3)"
+                      :key="index"
+                      class="text-sm"
+                    >
+                      <span class="font-medium text-gray-900 dark:text-white">{{
+                        bucket.name
+                      }}</span>
                       <span class="text-gray-600 dark:text-gray-400 ml-2">
-                        ({{ bucket.location || 'default' }}, {{ bucket.storageClass || 'STANDARD' }})
+                        ({{ bucket.location || 'default' }},
+                        {{ bucket.storageClass || 'STANDARD' }})
                       </span>
                     </div>
-                    <div v-if="importData.length > 3" class="text-sm text-gray-600 dark:text-gray-400">
+                    <div
+                      v-if="importData.length > 3"
+                      class="text-sm text-gray-600 dark:text-gray-400"
+                    >
                       ... and {{ importData.length - 3 }} more
                     </div>
                   </div>
@@ -199,9 +225,7 @@
                 <div class="flex">
                   <XCircleIcon class="h-5 w-5 text-red-400" />
                   <div class="ml-3">
-                    <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
-                      Import Error
-                    </h3>
+                    <h3 class="text-sm font-medium text-red-800 dark:text-red-200">Import Error</h3>
                     <div class="mt-2 text-sm text-red-700 dark:text-red-300">
                       {{ importError }}
                     </div>
@@ -210,15 +234,41 @@
               </div>
 
               <!-- Import Status -->
-              <div v-if="importStatus" class="p-3 rounded-md" :class="importStatus.type === 'success' ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20'">
+              <div
+                v-if="importStatus"
+                class="p-3 rounded-md"
+                :class="
+                  importStatus.type === 'success'
+                    ? 'bg-green-50 dark:bg-green-900/20'
+                    : 'bg-red-50 dark:bg-red-900/20'
+                "
+              >
                 <div class="flex">
-                  <CheckCircleIcon v-if="importStatus.type === 'success'" class="h-5 w-5 text-green-400" />
+                  <CheckCircleIcon
+                    v-if="importStatus.type === 'success'"
+                    class="h-5 w-5 text-green-400"
+                  />
                   <XCircleIcon v-else class="h-5 w-5 text-red-400" />
                   <div class="ml-3">
-                    <h3 class="text-sm font-medium" :class="importStatus.type === 'success' ? 'text-green-800 dark:text-green-200' : 'text-red-800 dark:text-red-200'">
+                    <h3
+                      class="text-sm font-medium"
+                      :class="
+                        importStatus.type === 'success'
+                          ? 'text-green-800 dark:text-green-200'
+                          : 'text-red-800 dark:text-red-200'
+                      "
+                    >
                       {{ importStatus.message }}
                     </h3>
-                    <div v-if="importStatus.details" class="mt-2 text-sm" :class="importStatus.type === 'success' ? 'text-green-700 dark:text-green-300' : 'text-red-700 dark:text-red-300'">
+                    <div
+                      v-if="importStatus.details"
+                      class="mt-2 text-sm"
+                      :class="
+                        importStatus.type === 'success'
+                          ? 'text-green-700 dark:text-green-300'
+                          : 'text-red-700 dark:text-red-300'
+                      "
+                    >
                       {{ importStatus.details }}
                     </div>
                   </div>
@@ -241,7 +291,7 @@ import {
   ArrowPathIcon,
   CloudArrowUpIcon,
   CheckCircleIcon,
-  XCircleIcon
+  XCircleIcon,
 } from '@heroicons/vue/24/outline'
 
 import { useStorageStore } from '@/stores/storage'
@@ -258,13 +308,15 @@ const importJsonText = ref('')
 const importData = ref<any[]>([])
 const importError = ref('')
 const isDragOver = ref(false)
-const exportStatus = ref<{ type: 'success' | 'error', message: string } | null>(null)
-const importStatus = ref<{ type: 'success' | 'error', message: string, details?: string } | null>(null)
+const exportStatus = ref<{ type: 'success' | 'error'; message: string } | null>(null)
+const importStatus = ref<{ type: 'success' | 'error'; message: string; details?: string } | null>(
+  null
+)
 
 // Import options
 const importOptions = ref({
   createBuckets: true,
-  overwriteExisting: false
+  overwriteExisting: false,
 })
 
 // Computed
@@ -287,7 +339,7 @@ const exportBuckets = async () => {
     if (buckets.length === 0) {
       exportStatus.value = {
         type: 'error',
-        message: 'No buckets found to export'
+        message: 'No buckets found to export',
       }
       return
     }
@@ -301,7 +353,7 @@ const exportBuckets = async () => {
       updated: bucket.updated,
       projectNumber: bucket.projectNumber,
       metageneration: bucket.metageneration,
-      etag: bucket.etag
+      etag: bucket.etag,
     }))
 
     // Download as JSON file
@@ -317,14 +369,13 @@ const exportBuckets = async () => {
 
     exportStatus.value = {
       type: 'success',
-      message: `Successfully exported ${buckets.length} bucket configuration${buckets.length !== 1 ? 's' : ''}`
+      message: `Successfully exported ${buckets.length} bucket configuration${buckets.length !== 1 ? 's' : ''}`,
     }
-
   } catch (error) {
     console.error('Export error:', error)
     exportStatus.value = {
       type: 'error',
-      message: 'Failed to export bucket configurations'
+      message: 'Failed to export bucket configurations',
     }
   } finally {
     isExporting.value = false
@@ -350,7 +401,7 @@ const handleDrop = (event: DragEvent) => {
 
 const readJsonFile = (file: File) => {
   const reader = new FileReader()
-  reader.onload = (e) => {
+  reader.onload = e => {
     importJsonText.value = e.target?.result as string
     validateImportData()
   }
@@ -381,7 +432,6 @@ const validateImportData = () => {
 
     importData.value = parsed
     importStatus.value = null
-
   } catch (error) {
     importError.value = error instanceof Error ? error.message : 'Invalid JSON format'
     importData.value = []
@@ -414,7 +464,7 @@ const importConfiguration = async () => {
           await storageStore.createBucket({
             name: bucketConfig.name,
             location: bucketConfig.location || 'US',
-            storageClass: bucketConfig.storageClass || 'STANDARD'
+            storageClass: bucketConfig.storageClass || 'STANDARD',
           })
           createdCount++
         } else if (bucketExists && importOptions.value.overwriteExisting) {
@@ -422,7 +472,6 @@ const importConfiguration = async () => {
           // For now, just count as processed
           createdCount++
         }
-
       } catch (error) {
         console.error(`Error processing bucket ${bucketConfig.name}:`, error)
       }
@@ -434,19 +483,18 @@ const importConfiguration = async () => {
     importStatus.value = {
       type: 'success',
       message: 'Import completed successfully',
-      details: `${createdCount} bucket${createdCount !== 1 ? 's' : ''} processed, ${skippedCount} skipped`
+      details: `${createdCount} bucket${createdCount !== 1 ? 's' : ''} processed, ${skippedCount} skipped`,
     }
 
     // Clear import data after successful import
     importJsonText.value = ''
     importData.value = []
-
   } catch (error) {
     console.error('Import error:', error)
     importStatus.value = {
       type: 'error',
       message: 'Failed to import configurations',
-      details: error instanceof Error ? error.message : 'Unknown error occurred'
+      details: error instanceof Error ? error.message : 'Unknown error occurred',
     }
   } finally {
     isImporting.value = false

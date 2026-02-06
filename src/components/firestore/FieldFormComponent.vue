@@ -4,7 +4,9 @@
     <div class="grid grid-cols-12 gap-4 items-start">
       <!-- Field Name (hidden for array items) -->
       <div v-if="!isArrayItem" class="col-span-4">
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Field Name</label>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >Field Name</label
+        >
         <input
           v-if="mode === 'add'"
           v-model="localFieldName"
@@ -24,7 +26,9 @@
 
       <!-- Field Type Dropdown -->
       <div :class="isArrayItem ? 'col-span-4' : 'col-span-3'">
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Field Type</label>
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >Field Type</label
+        >
         <select
           v-model="localFieldType"
           @change="handleTypeChange"
@@ -43,8 +47,13 @@
       </div>
 
       <!-- Field Value Input (for simple types only) -->
-      <div v-if="localFieldType !== 'map' && localFieldType !== 'array'" :class="isArrayItem ? 'col-span-8' : 'col-span-5'">
-        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Field Value</label>
+      <div
+        v-if="localFieldType !== 'map' && localFieldType !== 'array'"
+        :class="isArrayItem ? 'col-span-8' : 'col-span-5'"
+      >
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+          >Field Value</label
+        >
 
         <!-- String -->
         <textarea
@@ -88,7 +97,10 @@
         />
 
         <!-- Null -->
-        <div v-else-if="localFieldType === 'null'" class="px-3 py-2 bg-gray-100 dark:bg-gray-600 rounded-md text-sm text-gray-500 dark:text-gray-400 italic">
+        <div
+          v-else-if="localFieldType === 'null'"
+          class="px-3 py-2 bg-gray-100 dark:bg-gray-600 rounded-md text-sm text-gray-500 dark:text-gray-400 italic"
+        >
           null
         </div>
 
@@ -105,7 +117,9 @@
               placeholder="Latitude (-90 to 90)"
               :class="[
                 'px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:border-blue-500 dark:bg-gray-700 dark:text-white',
-                isValidLatitude ? 'border-gray-300 dark:border-gray-600 focus:ring-blue-500' : 'border-red-300 dark:border-red-600 focus:ring-red-500'
+                isValidLatitude
+                  ? 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
+                  : 'border-red-300 dark:border-red-600 focus:ring-red-500',
               ]"
             />
             <input
@@ -118,12 +132,15 @@
               placeholder="Longitude (-180 to 180)"
               :class="[
                 'px-3 py-2 border rounded-md text-sm focus:outline-none focus:ring-2 focus:border-blue-500 dark:bg-gray-700 dark:text-white',
-                isValidLongitude ? 'border-gray-300 dark:border-gray-600 focus:ring-blue-500' : 'border-red-300 dark:border-red-600 focus:ring-red-500'
+                isValidLongitude
+                  ? 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
+                  : 'border-red-300 dark:border-red-600 focus:ring-red-500',
               ]"
             />
           </div>
           <div v-if="!isValidGeoPoint" class="text-xs text-red-600 dark:text-red-400">
-            Invalid coordinates: Latitude must be between -90 and 90, Longitude must be between -180 and 180
+            Invalid coordinates: Latitude must be between -90 and 90, Longitude must be between -180
+            and 180
           </div>
         </div>
 
@@ -141,7 +158,9 @@
 
     <!-- Complex Field Value (Map and Array) - Full Width Below -->
     <div v-if="localFieldType === 'map' || localFieldType === 'array'" class="mt-4">
-      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Field Value</label>
+      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+        >Field Value</label
+      >
       <div class="border border-gray-200 dark:border-gray-600 rounded-md">
         <FieldEditor
           :field-name="''"
@@ -183,7 +202,7 @@ const props = withDefaults(defineProps<Props>(), {
   fieldName: '',
   fieldType: 'string',
   fieldValue: '',
-  fieldPath: ''
+  fieldPath: '',
 })
 
 const emit = defineEmits<Emits>()
@@ -215,20 +234,29 @@ const localFieldValue = ref(props.fieldValue)
 const localGeoPoint = ref({ latitude: 0, longitude: 0 })
 
 // Watch for prop changes
-watch(() => props.fieldName, (newVal) => {
-  localFieldName.value = newVal
-})
-
-watch(() => props.fieldType, (newVal) => {
-  localFieldType.value = newVal
-})
-
-watch(() => props.fieldValue, (newVal) => {
-  localFieldValue.value = newVal
-  if (props.fieldType === 'geopoint' && newVal && typeof newVal === 'object') {
-    localGeoPoint.value = { ...newVal }
+watch(
+  () => props.fieldName,
+  newVal => {
+    localFieldName.value = newVal
   }
-})
+)
+
+watch(
+  () => props.fieldType,
+  newVal => {
+    localFieldType.value = newVal
+  }
+)
+
+watch(
+  () => props.fieldValue,
+  newVal => {
+    localFieldValue.value = newVal
+    if (props.fieldType === 'geopoint' && newVal && typeof newVal === 'object') {
+      localGeoPoint.value = { ...newVal }
+    }
+  }
+)
 
 // Helper function to get default value for each type
 const getDefaultValue = (type: string) => {
@@ -278,7 +306,7 @@ const updateGeoPoint = () => {
   emit('update:fieldValue', localFieldValue.value)
 }
 
-const handleFieldEditorUpdate = (event: { path: string[], value: any }) => {
+const handleFieldEditorUpdate = (event: { path: string[]; value: any }) => {
   localFieldValue.value = event.value
   emit('update:fieldValue', event.value)
 }

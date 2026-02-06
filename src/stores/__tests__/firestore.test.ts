@@ -13,15 +13,15 @@ vi.mock('vue-toastification', () => ({
     success: vi.fn(),
     error: vi.fn(),
     warning: vi.fn(),
-    info: vi.fn()
-  })
+    info: vi.fn(),
+  }),
 }))
 
 // Mock firestore API
 vi.mock('@/api/firestore', () => ({
   default: {
-    getDatabasePath: vi.fn((projectId: string, database: string) => 
-      `projects/${projectId}/databases/${database}`
+    getDatabasePath: vi.fn(
+      (projectId: string, database: string) => `projects/${projectId}/databases/${database}`
     ),
     testDatabase: vi.fn(),
     listCollections: vi.fn(),
@@ -32,8 +32,8 @@ vi.mock('@/api/firestore', () => ({
     updateDocument: vi.fn(),
     deleteDocument: vi.fn(),
     deleteCollection: vi.fn(),
-    healthCheck: vi.fn()
-  }
+    healthCheck: vi.fn(),
+  },
 }))
 
 describe('useFirestoreStore', () => {
@@ -85,7 +85,7 @@ describe('useFirestoreStore', () => {
     it('setSelectedDatabase persists to localStorage', () => {
       const store = useFirestoreStore()
       store.setSelectedDatabase('persisted-db')
-      
+
       const stored = localStorage.getItem('firestore-selected-database')
       expect(stored).toBe('persisted-db')
     })
@@ -94,11 +94,11 @@ describe('useFirestoreStore', () => {
       useFirestoreStore()
       // Add a database first by manipulating localStorage
       localStorage.setItem('firestore-databases', JSON.stringify(['(default)', 'to-remove']))
-      
+
       // Create fresh store to load from storage
       setActivePinia(createPinia())
       const freshStore = useFirestoreStore()
-      
+
       freshStore.removeDatabase('to-remove')
       expect(freshStore.availableDatabases).not.toContain('to-remove')
     })
@@ -134,7 +134,7 @@ describe('useFirestoreStore', () => {
       const store = useFirestoreStore()
       const testDocs = [{ name: 'doc1' }, { name: 'doc2' }]
       store.documents.set('my-collection', testDocs as any)
-      
+
       const docs = store.getDocumentsByCollection('my-collection')
       expect(docs).toEqual(testDocs)
     })
@@ -144,7 +144,7 @@ describe('useFirestoreStore', () => {
     it('clears collections', () => {
       const store = useFirestoreStore()
       store.collections.push({ id: 'test' } as any)
-      
+
       store.clearData()
       expect(store.collections).toEqual([])
     })
@@ -152,7 +152,7 @@ describe('useFirestoreStore', () => {
     it('clears documents map', () => {
       const store = useFirestoreStore()
       store.documents.set('collection1', [{ name: 'doc' }] as any)
-      
+
       store.clearData()
       expect(store.documents.size).toBe(0)
     })
@@ -167,7 +167,7 @@ describe('useFirestoreStore', () => {
 
       const store = useFirestoreStore()
       const promise = store.loadCollections('test-project')
-      
+
       expect(store.loading).toBe(true)
       await promise
       expect(store.loading).toBe(false)
@@ -178,13 +178,13 @@ describe('useFirestoreStore', () => {
       vi.mocked(firestoreApi.default.listCollections).mockResolvedValue({
         collections: [
           { id: 'users', name: 'projects/p/databases/d/documents/users' },
-          { id: 'orders', name: 'projects/p/databases/d/documents/orders' }
-        ]
+          { id: 'orders', name: 'projects/p/databases/d/documents/orders' },
+        ],
       })
 
       const store = useFirestoreStore()
       await store.loadCollections('test-project')
-      
+
       expect(store.collections).toHaveLength(2)
       expect(store.collections[0].id).toBe('users')
       expect(store.collections[1].id).toBe('orders')
@@ -195,16 +195,16 @@ describe('useFirestoreStore', () => {
       vi.mocked(firestoreApi.default.listCollections)
         .mockResolvedValueOnce({
           collections: [{ id: 'first', name: 'first' }],
-          nextPageToken: 'token1'
+          nextPageToken: 'token1',
         })
         .mockResolvedValueOnce({
-          collections: [{ id: 'second', name: 'second' }]
+          collections: [{ id: 'second', name: 'second' }],
         })
 
       const store = useFirestoreStore()
       await store.loadCollections('test-project')
       await store.loadCollections('test-project', 'token1')
-      
+
       expect(store.collections).toHaveLength(2)
     })
   })
@@ -215,16 +215,16 @@ describe('useFirestoreStore', () => {
       vi.mocked(firestoreApi.default.listDocuments).mockResolvedValue({
         documents: [
           { name: 'doc1', fields: {} },
-          { name: 'doc2', fields: {} }
-        ]
+          { name: 'doc2', fields: {} },
+        ],
       })
 
       const store = useFirestoreStore()
       // Add collection to update
       store.collections.push({ id: 'users', documentCount: 0 } as any)
-      
+
       await store.loadDocuments('test-project', 'users')
-      
+
       const docs = store.documents.get('users')
       expect(docs).toHaveLength(2)
     })
@@ -232,14 +232,14 @@ describe('useFirestoreStore', () => {
     it('updates collection document count', async () => {
       const firestoreApi = await import('@/api/firestore')
       vi.mocked(firestoreApi.default.listDocuments).mockResolvedValue({
-        documents: [{ name: 'doc1' }, { name: 'doc2' }, { name: 'doc3' }]
+        documents: [{ name: 'doc1' }, { name: 'doc2' }, { name: 'doc3' }],
       })
 
       const store = useFirestoreStore()
       store.collections.push({ id: 'users', documentCount: 0 } as any)
-      
+
       await store.loadDocuments('test-project', 'users')
-      
+
       const collection = store.collections.find(c => c.id === 'users')
       expect(collection?.documentCount).toBe(3)
     })
@@ -275,12 +275,12 @@ describe('useFirestoreStore', () => {
       const firestoreApi = await import('@/api/firestore')
       vi.mocked(firestoreApi.default.listCollections).mockResolvedValue({
         collections: [],
-        nextPageToken: 'next-page'
+        nextPageToken: 'next-page',
       })
 
       const store = useFirestoreStore()
       await store.loadCollections('test-project')
-      
+
       expect(store.collectionsNextPageToken).toBe('next-page')
     })
   })
@@ -290,12 +290,12 @@ describe('useFirestoreStore', () => {
       const firestoreApi = await import('@/api/firestore')
       vi.mocked(firestoreApi.default.createDocument).mockResolvedValue({
         name: 'projects/p/databases/d/documents/new-collection/doc1',
-        fields: {}
+        fields: {},
       })
 
       const store = useFirestoreStore()
       const result = await store.createCollection('test-project', 'new-collection')
-      
+
       expect(result).toBe(true)
       expect(store.collections.find(c => c.id === 'new-collection')).toBeDefined()
     })
@@ -306,7 +306,7 @@ describe('useFirestoreStore', () => {
 
       const store = useFirestoreStore()
       const result = await store.createCollection('test-project', 'fail-collection')
-      
+
       expect(result).toBe(false)
     })
 
@@ -318,7 +318,7 @@ describe('useFirestoreStore', () => {
 
       const store = useFirestoreStore()
       const promise = store.createCollection('test-project', 'test-col')
-      
+
       expect(store.loading).toBe(true)
       await promise
       expect(store.loading).toBe(false)
@@ -333,9 +333,9 @@ describe('useFirestoreStore', () => {
 
       const store = useFirestoreStore()
       store.collections.push({ id: 'users', documentCount: 0 } as any)
-      
+
       const result = await store.createDocument('test-project', 'users', { fields: {} })
-      
+
       expect(result).toEqual(mockDoc)
       expect(store.documents.get('users')).toContainEqual(mockDoc)
     })
@@ -346,9 +346,9 @@ describe('useFirestoreStore', () => {
 
       const store = useFirestoreStore()
       store.collections.push({ id: 'users', documentCount: 5 } as any)
-      
+
       await store.createDocument('test-project', 'users', { fields: {} })
-      
+
       const collection = store.collections.find(c => c.id === 'users')
       expect(collection?.documentCount).toBe(1) // Reset to current count from map
     })
@@ -358,20 +358,24 @@ describe('useFirestoreStore', () => {
       vi.mocked(firestoreApi.default.createDocument).mockRejectedValue(new Error('Creation failed'))
 
       const store = useFirestoreStore()
-      
-      await expect(store.createDocument('test-project', 'users', { fields: {} }))
-        .rejects.toThrow('Creation failed')
+
+      await expect(store.createDocument('test-project', 'users', { fields: {} })).rejects.toThrow(
+        'Creation failed'
+      )
     })
   })
 
   describe('createSubcollection', () => {
     it('creates subcollection via API', async () => {
       const firestoreApi = await import('@/api/firestore')
-      vi.mocked(firestoreApi.default.createSubcollection).mockResolvedValue({ name: 'subdoc', fields: {} })
+      vi.mocked(firestoreApi.default.createSubcollection).mockResolvedValue({
+        name: 'subdoc',
+        fields: {},
+      })
 
       const store = useFirestoreStore()
       const result = await store.createSubcollection('parent/doc/path', 'subcol')
-      
+
       expect(result).toBe(true)
     })
 
@@ -381,7 +385,7 @@ describe('useFirestoreStore', () => {
 
       const store = useFirestoreStore()
       const result = await store.createSubcollection('parent/doc', 'subcol')
-      
+
       expect(result).toBe(false)
     })
   })
@@ -393,7 +397,7 @@ describe('useFirestoreStore', () => {
 
       const store = useFirestoreStore()
       const result = await store.updateDocument('test-project', 'users', 'doc1', { fields: {} })
-      
+
       expect(result).toBe(true)
       expect(firestoreApi.default.updateDocument).toHaveBeenCalled()
     })
@@ -403,9 +407,10 @@ describe('useFirestoreStore', () => {
       vi.mocked(firestoreApi.default.updateDocument).mockRejectedValue(new Error('Update failed'))
 
       const store = useFirestoreStore()
-      
-      await expect(store.updateDocument('test-project', 'users', 'doc1', { fields: {} }))
-        .rejects.toThrow('Update failed')
+
+      await expect(
+        store.updateDocument('test-project', 'users', 'doc1', { fields: {} })
+      ).rejects.toThrow('Update failed')
     })
   })
 
@@ -416,7 +421,7 @@ describe('useFirestoreStore', () => {
 
       const store = useFirestoreStore()
       const result = await store.deleteDocument('path/to/doc')
-      
+
       expect(result).toBe(true)
     })
 
@@ -426,13 +431,10 @@ describe('useFirestoreStore', () => {
 
       const store = useFirestoreStore()
       store.collections.push({ id: 'users', documentCount: 2 } as any)
-      store.documents.set('users', [
-        { name: 'path/to/doc1' },
-        { name: 'path/to/doc2' }
-      ] as any)
-      
+      store.documents.set('users', [{ name: 'path/to/doc1' }, { name: 'path/to/doc2' }] as any)
+
       await store.deleteDocument('path/to/doc1', 'users')
-      
+
       const docs = store.documents.get('users')
       expect(docs).toHaveLength(1)
       expect(docs![0].name).toBe('path/to/doc2')
@@ -444,13 +446,10 @@ describe('useFirestoreStore', () => {
 
       const store = useFirestoreStore()
       store.collections.push({ id: 'users', documentCount: 2 } as any)
-      store.documents.set('users', [
-        { name: 'path/to/doc1' },
-        { name: 'path/to/doc2' }
-      ] as any)
-      
+      store.documents.set('users', [{ name: 'path/to/doc1' }, { name: 'path/to/doc2' }] as any)
+
       await store.deleteDocument('path/to/doc1', 'users')
-      
+
       const collection = store.collections.find(c => c.id === 'users')
       expect(collection?.documentCount).toBe(1)
     })
@@ -464,9 +463,9 @@ describe('useFirestoreStore', () => {
       const store = useFirestoreStore()
       store.collections.push({ id: 'to-delete' } as any)
       store.documents.set('to-delete', [{ name: 'doc' }] as any)
-      
+
       const result = await store.deleteCollection('test-project', 'to-delete')
-      
+
       expect(result).toBe(true)
       expect(store.collections.find(c => c.id === 'to-delete')).toBeUndefined()
       expect(store.documents.has('to-delete')).toBe(false)
@@ -477,9 +476,8 @@ describe('useFirestoreStore', () => {
       vi.mocked(firestoreApi.default.deleteCollection).mockRejectedValue(new Error('Delete failed'))
 
       const store = useFirestoreStore()
-      
-      await expect(store.deleteCollection('test-project', 'users'))
-        .rejects.toThrow('Delete failed')
+
+      await expect(store.deleteCollection('test-project', 'users')).rejects.toThrow('Delete failed')
     })
   })
 
@@ -489,13 +487,13 @@ describe('useFirestoreStore', () => {
       vi.mocked(firestoreApi.default.listSubcollections).mockResolvedValue({
         collections: [
           { collectionId: 'orders', name: 'path/orders' },
-          { collectionId: 'reviews', name: 'path/reviews' }
-        ]
+          { collectionId: 'reviews', name: 'path/reviews' },
+        ],
       })
 
       const store = useFirestoreStore()
       const result = await store.loadSubcollections('parent/doc/path')
-      
+
       expect(result).toHaveLength(2)
       expect(result[0].id).toBe('orders')
       expect(result[1].id).toBe('reviews')
@@ -507,7 +505,7 @@ describe('useFirestoreStore', () => {
 
       const store = useFirestoreStore()
       const result = await store.loadSubcollections('parent/doc/path')
-      
+
       expect(result).toEqual([])
     })
   })
@@ -519,7 +517,7 @@ describe('useFirestoreStore', () => {
 
       const store = useFirestoreStore()
       const result = await store.addDatabase('test-project', 'new-db')
-      
+
       expect(result).toBe(true)
       expect(store.availableDatabases).toContain('new-db')
     })
@@ -530,7 +528,7 @@ describe('useFirestoreStore', () => {
 
       const store = useFirestoreStore()
       const result = await store.addDatabase('test-project', 'nonexistent-db')
-      
+
       expect(result).toBe(false)
     })
 
@@ -542,7 +540,7 @@ describe('useFirestoreStore', () => {
 
       const store = useFirestoreStore()
       const promise = store.addDatabase('test-project', 'test-db')
-      
+
       expect(store.testingDatabase).toBe(true)
       await promise
       expect(store.testingDatabase).toBe(false)
@@ -558,10 +556,10 @@ describe('useFirestoreStore', () => {
 
       const store = useFirestoreStore()
       store.collections.push({ id: 'users', documentCount: 0 } as any)
-      
+
       await store.loadDocuments('test-project', 'users')
       await store.loadDocuments('test-project', 'users', 'token123')
-      
+
       const docs = store.documents.get('users')
       expect(docs).toHaveLength(2)
     })
@@ -572,12 +570,11 @@ describe('useFirestoreStore', () => {
 
       const store = useFirestoreStore()
       store.collections.push({ id: 'users' } as any)
-      
+
       await store.loadDocuments('test-project', 'users')
-      
+
       // Should set empty array on error
       expect(store.documents.get('users')).toEqual([])
     })
   })
 })
-

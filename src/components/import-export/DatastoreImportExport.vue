@@ -62,14 +62,19 @@
               @dragenter="handleDragEnter"
               @dragleave="handleDragLeave"
               class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-dashed rounded-md transition-colors"
-              :class="isDragOver
-                ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-500'
-                : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'"
+              :class="
+                isDragOver
+                  ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-500'
+                  : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
+              "
             >
               <div class="space-y-1 text-center">
                 <FolderOpenIcon class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" />
                 <div class="flex justify-center text-sm text-gray-600 dark:text-gray-400">
-                  <label for="folder-upload" class="relative cursor-pointer bg-white dark:bg-gray-800 rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                  <label
+                    for="folder-upload"
+                    class="relative cursor-pointer bg-white dark:bg-gray-800 rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500"
+                  >
                     <span>Select folder</span>
                     <input
                       id="folder-upload"
@@ -92,7 +97,10 @@
           </div>
 
           <!-- Selected Files Preview -->
-          <div v-if="selectedFiles.length > 0" class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+          <div
+            v-if="selectedFiles.length > 0"
+            class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700"
+          >
             <div class="flex items-center justify-between mb-3">
               <div class="flex items-center">
                 <FolderIcon class="h-5 w-5 text-gray-400 mr-2" />
@@ -115,11 +123,17 @@
               </div>
 
               <!-- Info Message -->
-              <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-3">
+              <div
+                class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-3"
+              >
                 <div class="flex">
                   <div class="flex-shrink-0">
                     <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                      <path
+                        fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clip-rule="evenodd"
+                      />
                     </svg>
                   </div>
                   <div class="ml-3 flex-1">
@@ -158,7 +172,7 @@ import {
   ArrowUpTrayIcon,
   FolderOpenIcon,
   FolderIcon,
-  XMarkIcon
+  XMarkIcon,
 } from '@heroicons/vue/24/outline'
 import { useDatastoreImportExport } from '@/composables/useDatastoreImportExport'
 import { useServiceConnections } from '@/composables/useServiceConnections'
@@ -178,7 +192,7 @@ const {
   loadData,
   exportEntities,
   exportEntitiesAsJson,
-  importEntities
+  importEntities,
 } = useDatastoreImportExport()
 
 // File upload state
@@ -263,7 +277,7 @@ const handleDrop = async (e: DragEvent) => {
 const readDirectory = async (dirEntry: any, files: File[], path = '') => {
   const dirReader = dirEntry.createReader()
 
-  return new Promise<void>((resolve) => {
+  return new Promise<void>(resolve => {
     const readEntries = () => {
       dirReader.readEntries(async (entries: any[]) => {
         if (entries.length === 0) {
@@ -273,14 +287,14 @@ const readDirectory = async (dirEntry: any, files: File[], path = '') => {
 
         for (const entry of entries) {
           if (entry.isFile) {
-            const file = await new Promise<File>((resolveFile) => {
+            const file = await new Promise<File>(resolveFile => {
               entry.file((f: File) => {
                 // Create a new File object with the full path
                 const newFile = new File([f], f.name, { type: f.type })
                 // Add webkitRelativePath property
                 Object.defineProperty(newFile, 'webkitRelativePath', {
                   value: path ? `${path}/${f.name}` : f.name,
-                  writable: false
+                  writable: false,
                 })
                 resolveFile(newFile)
               })
@@ -305,9 +319,8 @@ const processFiles = (files: File[]) => {
   selectedFiles.value = files
 
   // Look for metadata files (can be overall_export_metadata or *.overall_export_metadata)
-  const metadata = files.find(f =>
-    f.name === 'overall_export_metadata' ||
-    f.name.endsWith('.overall_export_metadata')
+  const metadata = files.find(
+    f => f.name === 'overall_export_metadata' || f.name.endsWith('.overall_export_metadata')
   )
   metadataFile.value = metadata || null
 
@@ -315,7 +328,7 @@ const processFiles = (files: File[]) => {
     appStore.showToast({
       type: 'warning',
       title: 'Metadata file not found',
-      message: 'Could not find export metadata file in the selected folder'
+      message: 'Could not find export metadata file in the selected folder',
     })
     return
   }

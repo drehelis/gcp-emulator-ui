@@ -13,11 +13,11 @@
         :class="[
           appStore.layout.sidebar.collapsed && !isMobile ? 'w-16' : 'w-80',
           'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 theme-transition-colors',
-          'flex flex-col overflow-y-auto overflow-x-visible transition-all'
+          'flex flex-col overflow-y-auto overflow-x-visible transition-all',
         ]"
       >
         <!-- Sidebar Header -->
-        <div 
+        <div
           class="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700 theme-transition-colors"
           :class="{ 'justify-center': appStore.layout.sidebar.collapsed && !isMobile }"
         >
@@ -36,22 +36,32 @@
                 class="p-1.5 hover:opacity-70 theme-transition-colors hover:scale-110 transition-transform"
                 title="View on GitHub"
               >
-                <svg width="20" height="20" viewBox="0 0 98 96" xmlns="http://www.w3.org/2000/svg" class="fill-gray-700 dark:fill-gray-300">
-                  <path fill-rule="evenodd" clip-rule="evenodd" d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"/>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 98 96"
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="fill-gray-700 dark:fill-gray-300"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M48.854 0C21.839 0 0 22 0 49.217c0 21.756 13.993 40.172 33.405 46.69 2.427.49 3.316-1.059 3.316-2.362 0-1.141-.08-5.052-.08-9.127-13.59 2.934-16.42-5.867-16.42-5.867-2.184-5.704-5.42-7.17-5.42-7.17-4.448-3.015.324-3.015.324-3.015 4.934.326 7.523 5.052 7.523 5.052 4.367 7.496 11.404 5.378 14.235 4.074.404-3.178 1.699-5.378 3.074-6.6-10.839-1.141-22.243-5.378-22.243-24.283 0-5.378 1.94-9.778 5.014-13.2-.485-1.222-2.184-6.275.486-13.038 0 0 4.125-1.304 13.426 5.052a46.97 46.97 0 0 1 12.214-1.63c4.125 0 8.33.571 12.213 1.63 9.302-6.356 13.427-5.052 13.427-5.052 2.67 6.763.97 11.816.485 13.038 3.155 3.422 5.015 7.822 5.015 13.2 0 18.905-11.404 23.06-22.324 24.283 1.78 1.548 3.316 4.481 3.316 9.126 0 6.6-.08 11.897-.08 13.526 0 1.304.89 2.853 3.316 2.364 19.412-6.52 33.405-24.935 33.405-46.691C97.707 22 75.788 0 48.854 0z"
+                  />
                 </svg>
               </a>
               <h1 class="text-lg font-semibold text-gray-900 dark:text-white">GCP Emulator UI</h1>
             </div>
           </div>
-          
-          <div 
+
+          <div
             v-else
             class="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center"
           >
             <QueueListIcon class="w-5 h-5 text-white" />
           </div>
 
-                    <!-- Collapse/Expand button (desktop only) -->
+          <!-- Collapse/Expand button (desktop only) -->
           <button
             v-if="!isMobile"
             @click="appStore.toggleSidebar"
@@ -66,16 +76,23 @@
         </div>
 
         <!-- Project Selector -->
-        <div class="px-4 py-4 border-b border-gray-200 dark:border-gray-700 overflow-visible relative z-50 theme-transition-colors">
+        <div
+          class="px-4 py-4 border-b border-gray-200 dark:border-gray-700 overflow-visible relative z-50 theme-transition-colors"
+        >
           <ProjectSelector :collapsed="appStore.layout.sidebar.collapsed && !isMobile" />
         </div>
 
         <!-- Dynamic Navigation -->
-        <div class="flex-1 px-4 py-4 space-y-2 overflow-y-auto scrollbar-thin" v-if="navigationItems.length > 0">
+        <div
+          class="flex-1 px-4 py-4 space-y-2 overflow-y-auto scrollbar-thin"
+          v-if="navigationItems.length > 0"
+        >
           <template v-for="item in navigationItems" :key="item.id">
-
             <!-- Services Header -->
-            <div v-if="item.label === 'Services' && !appStore.layout.sidebar.collapsed" class="mb-3">
+            <div
+              v-if="item.label === 'Services' && !appStore.layout.sidebar.collapsed"
+              class="mb-3"
+            >
               <NavItem
                 :to="item.route"
                 :icon="item.icon"
@@ -94,7 +111,10 @@
             </div>
 
             <!-- PubSub Section Container -->
-            <div v-else-if="item.id === 'pubsub-section'" class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3 theme-transition-colors">
+            <div
+              v-else-if="item.id === 'pubsub-section'"
+              class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3 theme-transition-colors"
+            >
               <template v-for="subItem in item.children" :key="subItem.id">
                 <NavItem
                   :to="subItem.route"
@@ -114,7 +134,10 @@
             </div>
 
             <!-- Storage Section Container -->
-            <div v-else-if="item.id === 'storage-section'" class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3 theme-transition-colors">
+            <div
+              v-else-if="item.id === 'storage-section'"
+              class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3 theme-transition-colors"
+            >
               <template v-for="subItem in item.children" :key="subItem.id">
                 <NavItem
                   :to="subItem.route"
@@ -134,7 +157,10 @@
             </div>
 
             <!-- Firestore Section Container -->
-            <div v-else-if="item.id === 'firestore-section'" class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3">
+            <div
+              v-else-if="item.id === 'firestore-section'"
+              class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3"
+            >
               <template v-for="subItem in item.children" :key="subItem.id">
                 <NavItem
                   :to="subItem.route"
@@ -154,7 +180,10 @@
             </div>
 
             <!-- Datastore Section Container -->
-            <div v-else-if="item.id === 'datastore-section'" class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3">
+            <div
+              v-else-if="item.id === 'datastore-section'"
+              class="space-y-1 ml-4 border-l-2 border-gray-200 dark:border-gray-600 pl-3"
+            >
               <template v-for="subItem in item.children" :key="subItem.id">
                 <NavItem
                   :to="subItem.route"
@@ -175,7 +204,11 @@
 
             <!-- Other Items (Expanded Mode) -->
             <NavItem
-              v-else-if="!item.id.includes('-section') && !appStore.layout.sidebar.collapsed && !item.isSeparator"
+              v-else-if="
+                !item.id.includes('-section') &&
+                !appStore.layout.sidebar.collapsed &&
+                !item.isSeparator
+              "
               :to="item.route"
               :icon="item.icon"
               :label="item.label"
@@ -192,11 +225,18 @@
             />
 
             <!-- Collapsed Separator -->
-            <div v-else-if="item.isSeparator && appStore.layout.sidebar.collapsed" class="my-3 mx-auto w-8 border-t border-gray-200 dark:border-gray-700 theme-transition-colors"></div>
+            <div
+              v-else-if="item.isSeparator && appStore.layout.sidebar.collapsed"
+              class="my-3 mx-auto w-8 border-t border-gray-200 dark:border-gray-700 theme-transition-colors"
+            ></div>
 
             <!-- Collapsed/Other Items -->
             <NavItem
-              v-else-if="!item.id.includes('-section') && appStore.layout.sidebar.collapsed && !item.isSeparator"
+              v-else-if="
+                !item.id.includes('-section') &&
+                appStore.layout.sidebar.collapsed &&
+                !item.isSeparator
+              "
               :to="item.route"
               :icon="item.icon"
               :label="item.label"
@@ -212,7 +252,6 @@
             />
           </template>
         </div>
-
       </aside>
     </Transition>
 
@@ -233,7 +272,7 @@
     <!-- Main Content -->
     <div class="flex-1 flex flex-col min-w-0">
       <!-- Top Header -->
-      <header 
+      <header
         class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-4 lg:px-6 theme-transition-colors"
         :class="{ 'lg:pl-4': appStore.layout.sidebar.collapsed }"
       >
@@ -251,18 +290,25 @@
           <!-- Breadcrumbs -->
           <nav class="hidden md:flex" aria-label="Breadcrumb">
             <ol class="flex items-center space-x-2">
-              <li v-for="(breadcrumb, index) in appStore.breadcrumbs" :key="index" class="flex items-center">
-                <ChevronRightIcon v-if="index > 0" class="w-4 h-4 text-gray-400 mx-2 theme-transition-colors" />
+              <li
+                v-for="(breadcrumb, index) in appStore.breadcrumbs"
+                :key="index"
+                class="flex items-center"
+              >
+                <ChevronRightIcon
+                  v-if="index > 0"
+                  class="w-4 h-4 text-gray-400 mx-2 theme-transition-colors"
+                />
                 <component
                   :is="breadcrumb.route && !breadcrumb.disabled ? 'router-link' : 'span'"
                   :to="breadcrumb.route"
                   :class="[
                     'text-sm font-medium theme-transition-colors',
-                    breadcrumb.disabled 
-                      ? 'text-gray-400 dark:text-gray-500' 
-                      : breadcrumb.route 
-                        ? 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white' 
-                        : 'text-gray-900 dark:text-white'
+                    breadcrumb.disabled
+                      ? 'text-gray-400 dark:text-gray-500'
+                      : breadcrumb.route
+                        ? 'text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
+                        : 'text-gray-900 dark:text-white',
                   ]"
                 >
                   {{ breadcrumb.label }}
@@ -278,7 +324,6 @@
           <div class="hidden lg:block">
             <GlobalSearch />
           </div>
-
 
           <!-- Theme toggle -->
           <button
@@ -299,7 +344,6 @@
           </button>
         </div>
       </header>
-
 
       <!-- Page Content -->
       <main class="flex-1 overflow-auto">
@@ -328,7 +372,7 @@ import {
   ArrowsRightLeftIcon,
   ArchiveBoxIcon,
   CircleStackIcon,
-  TableCellsIcon
+  TableCellsIcon,
 } from '@heroicons/vue/24/outline'
 
 import { useAppStore } from '@/stores/app'
@@ -349,7 +393,7 @@ const {
   storageConnected,
   firestoreConnected,
   datastoreConnected,
-  checkAllConnections
+  checkAllConnections,
 } = useServiceConnections()
 
 // Reactive state
@@ -360,7 +404,6 @@ const isFullscreen = ref(false)
 const currentProject = computed(() => {
   return route.params.projectId as string
 })
-
 
 // Dynamic navigation items that replicate the exact hardcoded structure
 const navigationItems = computed<NavigationItem[]>(() => {
@@ -377,7 +420,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
       route: `/projects/${currentProject.value}`,
       icon: CubeIcon,
       disabled: false,
-      exact: true
+      exact: true,
     })
 
     // PubSub services with connection status
@@ -392,7 +435,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
         icon: null,
         disabled: false,
         isSectionHeader: true,
-        connected: pubsubConnected.value
+        connected: pubsubConnected.value,
       })
 
       // Only show PubSub navigation items when connected
@@ -403,7 +446,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
           route: `/projects/${currentProject.value}/pubsub/topics`,
           icon: QueueListIcon,
           disabled: false,
-          isSubItem: true
+          isSubItem: true,
         })
 
         pubsubChildren.push({
@@ -412,7 +455,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
           route: `/projects/${currentProject.value}/pubsub/subscriptions`,
           icon: InboxStackIcon,
           disabled: false,
-          isSubItem: true
+          isSubItem: true,
         })
 
         pubsubChildren.push({
@@ -421,16 +464,15 @@ const navigationItems = computed<NavigationItem[]>(() => {
           route: `/projects/${currentProject.value}/pubsub/message-templates`,
           icon: DocumentDuplicateIcon,
           disabled: false,
-          isSubItem: true
+          isSubItem: true,
         })
-
       }
 
       items.push({
         id: 'pubsub-section',
         label: 'PubSub Section',
         route: null,
-        children: pubsubChildren
+        children: pubsubChildren,
       })
     }
 
@@ -446,7 +488,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
         icon: null,
         disabled: false,
         isSectionHeader: true,
-        connected: storageConnected.value
+        connected: storageConnected.value,
       })
 
       // Only show Storage navigation items when connected
@@ -457,17 +499,15 @@ const navigationItems = computed<NavigationItem[]>(() => {
           route: `/projects/${currentProject.value}/storage/buckets`,
           icon: ArchiveBoxIcon,
           disabled: false,
-          isSubItem: true
+          isSubItem: true,
         })
-
-
       }
 
       items.push({
         id: 'storage-section',
         label: 'Storage Section',
         route: null,
-        children: storageChildren
+        children: storageChildren,
       })
     }
 
@@ -483,7 +523,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
         icon: null,
         disabled: false,
         isSectionHeader: true,
-        connected: firestoreConnected.value
+        connected: firestoreConnected.value,
       })
 
       // Only show Firestore navigation items when connected
@@ -494,7 +534,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
           route: `/projects/${currentProject.value}/firestore/collections`,
           icon: CircleStackIcon,
           disabled: false,
-          isSubItem: true
+          isSubItem: true,
         })
       }
 
@@ -502,7 +542,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
         id: 'firestore-section',
         label: 'Firestore Section',
         route: null,
-        children: firestoreChildren
+        children: firestoreChildren,
       })
     }
 
@@ -518,7 +558,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
         icon: null,
         disabled: false,
         isSectionHeader: true,
-        connected: datastoreConnected.value
+        connected: datastoreConnected.value,
       })
 
       // Only show Datastore navigation items when connected
@@ -529,7 +569,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
           route: `/projects/${currentProject.value}/datastore/namespaces`,
           icon: TableCellsIcon,
           disabled: false,
-          isSubItem: true
+          isSubItem: true,
         })
       }
 
@@ -537,10 +577,9 @@ const navigationItems = computed<NavigationItem[]>(() => {
         id: 'datastore-section',
         label: 'Datastore Section',
         route: null,
-        children: datastoreChildren
+        children: datastoreChildren,
       })
     }
-
   } else {
     // Collapsed sidebar navigation (icon only)
     items.push({
@@ -548,7 +587,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
       label: 'Project Services',
       route: `/projects/${currentProject.value}`,
       icon: CubeIcon,
-      disabled: false
+      disabled: false,
     })
 
     if (showPubSubNav.value) {
@@ -559,7 +598,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
         route: null,
         icon: null,
         disabled: false,
-        isSeparator: true
+        isSeparator: true,
       })
 
       items.push({
@@ -568,7 +607,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
         route: `/projects/${currentProject.value}/pubsub/topics`,
         icon: QueueListIcon,
         disabled: false,
-        customClasses: !pubsubConnected.value ? 'opacity-50' : ''
+        customClasses: !pubsubConnected.value ? 'opacity-50' : '',
       })
 
       items.push({
@@ -577,7 +616,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
         route: `/projects/${currentProject.value}/pubsub/subscriptions`,
         icon: InboxStackIcon,
         disabled: false,
-        customClasses: !pubsubConnected.value ? 'opacity-50' : ''
+        customClasses: !pubsubConnected.value ? 'opacity-50' : '',
       })
 
       items.push({
@@ -586,9 +625,8 @@ const navigationItems = computed<NavigationItem[]>(() => {
         route: `/projects/${currentProject.value}/pubsub/message-templates`,
         icon: DocumentDuplicateIcon,
         disabled: false,
-        customClasses: !pubsubConnected.value ? 'opacity-50' : ''
+        customClasses: !pubsubConnected.value ? 'opacity-50' : '',
       })
-
     }
 
     if (showStorageNav.value) {
@@ -599,7 +637,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
         route: null,
         icon: null,
         disabled: false,
-        isSeparator: true
+        isSeparator: true,
       })
 
       items.push({
@@ -608,10 +646,8 @@ const navigationItems = computed<NavigationItem[]>(() => {
         route: `/projects/${currentProject.value}/storage/buckets`,
         icon: ArchiveBoxIcon,
         disabled: false,
-        customClasses: !storageConnected.value ? 'opacity-50' : ''
+        customClasses: !storageConnected.value ? 'opacity-50' : '',
       })
-
-
     }
 
     if (showFirestoreNav.value) {
@@ -622,7 +658,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
         route: null,
         icon: null,
         disabled: false,
-        isSeparator: true
+        isSeparator: true,
       })
 
       items.push({
@@ -631,7 +667,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
         route: `/projects/${currentProject.value}/firestore/collections`,
         icon: CircleStackIcon,
         disabled: false,
-        customClasses: !firestoreConnected.value ? 'opacity-50' : ''
+        customClasses: !firestoreConnected.value ? 'opacity-50' : '',
       })
     }
 
@@ -643,7 +679,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
         route: null,
         icon: null,
         disabled: false,
-        isSeparator: true
+        isSeparator: true,
       })
 
       items.push({
@@ -652,7 +688,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
         route: `/projects/${currentProject.value}/datastore/namespaces`,
         icon: TableCellsIcon,
         disabled: false,
-        customClasses: !datastoreConnected.value ? 'opacity-50' : ''
+        customClasses: !datastoreConnected.value ? 'opacity-50' : '',
       })
     }
 
@@ -663,9 +699,8 @@ const navigationItems = computed<NavigationItem[]>(() => {
       route: null,
       icon: null,
       disabled: false,
-      isSeparator: true
+      isSeparator: true,
     })
-
   }
 
   // Always add unified Import/Export (after all service sections in both modes)
@@ -674,7 +709,7 @@ const navigationItems = computed<NavigationItem[]>(() => {
     label: 'Import/Export',
     route: `/projects/${currentProject.value}/import-export`,
     icon: ArrowsRightLeftIcon,
-    disabled: false
+    disabled: false,
   })
 
   return items
@@ -687,19 +722,23 @@ const showFirestoreNav = computed(() => !!currentProject.value)
 const showDatastoreNav = computed(() => !!currentProject.value)
 
 // Watch for route changes and sync project selection
-watch(() => route.params.projectId, (newProjectId) => {
-  if (newProjectId && typeof newProjectId === 'string') {
-    // Always update the store selection when URL changes to ensure consistency
-    if (projectsStore.selectedProjectId !== newProjectId) {
-      projectsStore.selectProject(newProjectId)
+watch(
+  () => route.params.projectId,
+  newProjectId => {
+    if (newProjectId && typeof newProjectId === 'string') {
+      // Always update the store selection when URL changes to ensure consistency
+      if (projectsStore.selectedProjectId !== newProjectId) {
+        projectsStore.selectProject(newProjectId)
+      }
+    } else {
+      // Clear selection when not on a project route
+      if (projectsStore.selectedProjectId) {
+        projectsStore.clearSelectedProject()
+      }
     }
-  } else {
-    // Clear selection when not on a project route
-    if (projectsStore.selectedProjectId) {
-      projectsStore.clearSelectedProject()
-    }
-  }
-}, { immediate: true })
+  },
+  { immediate: true }
+)
 
 // Theme management
 const themeIcon = computed(() => {
@@ -713,7 +752,6 @@ const themeIcon = computed(() => {
       return ComputerDesktopIcon
   }
 })
-
 
 const fullscreenIcon = computed(() => {
   return isFullscreen.value ? ArrowsPointingInIcon : ArrowsPointingOutIcon
@@ -741,12 +779,11 @@ function toggleFullscreen() {
   }
 }
 
-
 function handleResize() {
   const mobile = window.innerWidth < 1024
   if (mobile !== isMobile.value) {
     isMobile.value = mobile
-    
+
     // Auto-collapse sidebar on mobile
     if (mobile && !appStore.layout.sidebar.collapsed) {
       appStore.setSidebarCollapsed(true)
@@ -759,11 +796,15 @@ function handleFullscreenChange() {
 }
 
 // Check connections when project changes
-watch(currentProject, (newProject) => {
-  if (newProject) {
-    checkAllConnections()
-  }
-}, { immediate: true })
+watch(
+  currentProject,
+  newProject => {
+    if (newProject) {
+      checkAllConnections()
+    }
+  },
+  { immediate: true }
+)
 
 // Lifecycle
 onMounted(() => {

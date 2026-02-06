@@ -12,7 +12,9 @@ interface SaveAndAddAnotherConfig<T extends Record<string, any>> {
   formState: T
 }
 
-export function useSaveAndAddAnother<T extends Record<string, any>>(config?: SaveAndAddAnotherConfig<T>) {
+export function useSaveAndAddAnother<T extends Record<string, any>>(
+  config?: SaveAndAddAnotherConfig<T>
+) {
   const lastSavedId = ref<string | null>(null)
   const isLoading = ref(false)
 
@@ -81,6 +83,6 @@ export function useSaveAndAddAnother<T extends Record<string, any>>(config?: Sav
     clearNotification,
     getSuccessMessage,
     handleSaveAndAddAnother,
-    handleClearFields
+    handleClearFields,
   }
 }

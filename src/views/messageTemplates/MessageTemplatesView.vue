@@ -16,8 +16,12 @@
     <div v-else-if="hasError" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
       <div class="text-center">
         <ExclamationTriangleIcon class="mx-auto h-12 w-12 text-red-400" />
-        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Error Loading Templates</h3>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ templatesStore.state.error }}</p>
+        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+          Error Loading Templates
+        </h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          {{ templatesStore.state.error }}
+        </p>
         <div class="mt-4">
           <button
             @click="loadData"
@@ -73,7 +77,10 @@
                     <div class="text-sm font-medium text-gray-900 dark:text-white">
                       {{ template.name }}
                     </div>
-                    <div v-if="template.description" class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <div
+                      v-if="template.description"
+                      class="text-xs text-gray-500 dark:text-gray-400 mt-1"
+                    >
                       {{ template.description }}
                     </div>
                   </div>
@@ -103,46 +110,51 @@
                   </button>
                 </div>
               </div>
-              
+
               <!-- Topic -->
               <div class="flex items-center text-sm text-gray-600 dark:text-gray-300">
                 <QueueListIcon class="w-4 h-4 mr-2 text-gray-400 shrink-0" />
                 <span>{{ template.topicName }}</span>
               </div>
-              
+
               <!-- Variables, Attributes & Tags -->
               <div class="space-y-2">
                 <!-- Variables -->
-                <div v-if="Object.keys(template.variables).length > 0" class="flex items-center flex-wrap gap-x-3 gap-y-1">
-                  <span class="text-xs text-purple-600 dark:text-purple-400 font-medium">Variables:</span>
-                  <span 
-                    v-for="(value, key) in template.variables" 
-                    :key="key"
-                    class="text-xs"
+                <div
+                  v-if="Object.keys(template.variables).length > 0"
+                  class="flex items-center flex-wrap gap-x-3 gap-y-1"
+                >
+                  <span class="text-xs text-purple-600 dark:text-purple-400 font-medium"
+                    >Variables:</span
                   >
+                  <span v-for="(value, key) in template.variables" :key="key" class="text-xs">
                     <span class="font-medium text-gray-900 dark:text-white">{{ key }}</span>
                     <span class="text-gray-500 dark:text-gray-400 ml-1">{{ value }}</span>
                   </span>
                 </div>
-                
+
                 <!-- Attributes -->
-                <div v-if="Object.keys(template.attributes).length > 0" class="flex items-center flex-wrap gap-x-3 gap-y-1">
-                  <span class="text-xs text-blue-600 dark:text-blue-400 font-medium">Attributes:</span>
-                  <span 
-                    v-for="(value, key) in template.attributes" 
-                    :key="key"
-                    class="text-xs"
+                <div
+                  v-if="Object.keys(template.attributes).length > 0"
+                  class="flex items-center flex-wrap gap-x-3 gap-y-1"
+                >
+                  <span class="text-xs text-blue-600 dark:text-blue-400 font-medium"
+                    >Attributes:</span
                   >
+                  <span v-for="(value, key) in template.attributes" :key="key" class="text-xs">
                     <span class="font-medium text-gray-900 dark:text-white">{{ key }}</span>
                     <span class="text-gray-500 dark:text-gray-400 ml-1">{{ value }}</span>
                   </span>
                 </div>
-                
+
                 <!-- Tags -->
-                <div v-if="template.tags && template.tags.length > 0" class="flex items-center flex-wrap gap-1">
+                <div
+                  v-if="template.tags && template.tags.length > 0"
+                  class="flex items-center flex-wrap gap-1"
+                >
                   <span class="text-xs text-green-600 dark:text-green-400 font-medium">Tags:</span>
-                  <span 
-                    v-for="tag in template.tags" 
+                  <span
+                    v-for="tag in template.tags"
                     :key="tag"
                     class="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
                   >
@@ -150,10 +162,16 @@
                   </span>
                 </div>
               </div>
-              
+
               <!-- Date -->
               <div class="text-xs text-gray-400 dark:text-gray-500">
-                {{ formatDate(template.updatedAt > template.createdAt ? template.updatedAt : template.createdAt) }}
+                {{
+                  formatDate(
+                    template.updatedAt > template.createdAt
+                      ? template.updatedAt
+                      : template.createdAt
+                  )
+                }}
               </div>
             </div>
           </div>
@@ -173,16 +191,25 @@
                   <div class="text-sm font-medium text-gray-900 dark:text-white truncate">
                     {{ template.name }}
                   </div>
-                  <div v-if="template.description" class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                  <div
+                    v-if="template.description"
+                    class="text-xs text-gray-500 dark:text-gray-400 truncate"
+                  >
                     {{ template.description }}
                   </div>
                   <div class="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                    {{ formatDate(template.updatedAt > template.createdAt ? template.updatedAt : template.createdAt) }}
+                    {{
+                      formatDate(
+                        template.updatedAt > template.createdAt
+                          ? template.updatedAt
+                          : template.createdAt
+                      )
+                    }}
                   </div>
                 </div>
               </div>
             </div>
-            
+
             <!-- Topic -->
             <div class="col-span-2 min-w-0">
               <div class="flex items-center text-sm text-gray-600 dark:text-gray-300">
@@ -190,41 +217,46 @@
                 <span class="truncate">{{ template.topicName }}</span>
               </div>
             </div>
-            
+
             <!-- Variables & Attributes -->
             <div class="col-span-5 min-w-0">
               <div class="space-y-1">
                 <!-- Variables -->
-                <div v-if="Object.keys(template.variables).length > 0" class="flex items-center flex-wrap gap-x-3 gap-y-1">
-                  <span class="text-xs text-purple-600 dark:text-purple-400 font-medium">Variables:</span>
-                  <span 
-                    v-for="(value, key) in template.variables" 
-                    :key="key"
-                    class="text-xs"
+                <div
+                  v-if="Object.keys(template.variables).length > 0"
+                  class="flex items-center flex-wrap gap-x-3 gap-y-1"
+                >
+                  <span class="text-xs text-purple-600 dark:text-purple-400 font-medium"
+                    >Variables:</span
                   >
+                  <span v-for="(value, key) in template.variables" :key="key" class="text-xs">
                     <span class="font-medium text-gray-900 dark:text-white">{{ key }}</span>
                     <span class="text-gray-500 dark:text-gray-400 ml-1">{{ value }}</span>
                   </span>
                 </div>
-                
+
                 <!-- Attributes -->
-                <div v-if="Object.keys(template.attributes).length > 0" class="flex items-center flex-wrap gap-x-3 gap-y-1">
-                  <span class="text-xs text-blue-600 dark:text-blue-400 font-medium">Attributes:</span>
-                  <span 
-                    v-for="(value, key) in template.attributes" 
-                    :key="key"
-                    class="text-xs"
+                <div
+                  v-if="Object.keys(template.attributes).length > 0"
+                  class="flex items-center flex-wrap gap-x-3 gap-y-1"
+                >
+                  <span class="text-xs text-blue-600 dark:text-blue-400 font-medium"
+                    >Attributes:</span
                   >
+                  <span v-for="(value, key) in template.attributes" :key="key" class="text-xs">
                     <span class="font-medium text-gray-900 dark:text-white">{{ key }}</span>
                     <span class="text-gray-500 dark:text-gray-400 ml-1">{{ value }}</span>
                   </span>
                 </div>
-                
+
                 <!-- Tags -->
-                <div v-if="template.tags && template.tags.length > 0" class="flex items-center flex-wrap gap-1">
+                <div
+                  v-if="template.tags && template.tags.length > 0"
+                  class="flex items-center flex-wrap gap-1"
+                >
                   <span class="text-xs text-green-600 dark:text-green-400 font-medium">Tags:</span>
-                  <span 
-                    v-for="tag in template.tags" 
+                  <span
+                    v-for="tag in template.tags"
                     :key="tag"
                     class="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300"
                   >
@@ -233,7 +265,7 @@
                 </div>
               </div>
             </div>
-            
+
             <!-- Actions -->
             <div class="col-span-1 text-right">
               <div class="flex items-center justify-end space-x-1">
@@ -271,9 +303,7 @@
       <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <div class="flex items-center justify-between">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-              Templates (0)
-            </h2>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Templates (0)</h2>
             <div class="flex items-center space-x-3">
               <button
                 @click="loadData"
@@ -287,14 +317,12 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Empty State Content -->
       <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <div class="text-center py-12">
           <DocumentDuplicateIcon class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600" />
-          <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">
-            No templates yet
-          </h3>
+          <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">No templates yet</h3>
           <p class="mt-2 text-gray-600 dark:text-gray-400">
             Create templates by using "Save as Template" when publishing messages to topics
           </p>
@@ -313,7 +341,10 @@
     >
       <form @submit.prevent="confirmDuplicateTemplate" class="space-y-4">
         <div>
-          <label for="duplicate-template-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label
+            for="duplicate-template-name"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
             Template Name
           </label>
           <input
@@ -323,14 +354,17 @@
             type="text"
             placeholder="Enter name for the duplicated template..."
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-            :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-500': duplicateTemplateNameError }"
+            :class="{
+              'border-red-300 focus:border-red-500 focus:ring-red-500': duplicateTemplateNameError,
+            }"
             @input="clearDuplicateTemplateNameError"
           />
           <p v-if="duplicateTemplateNameError" class="mt-1 text-sm text-red-600 dark:text-red-400">
             {{ duplicateTemplateNameError }}
           </p>
           <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            This will create a copy of "{{ templateToDuplicate?.name }}" with all its data, attributes, and variables.
+            This will create a copy of "{{ templateToDuplicate?.name }}" with all its data,
+            attributes, and variables.
           </p>
         </div>
       </form>
@@ -345,7 +379,7 @@
       :is-loading="isDeletingTemplate"
       :details="{
         title: 'What will happen:',
-        description: 'The template will be permanently deleted from your saved templates.'
+        description: 'The template will be permanently deleted from your saved templates.',
       }"
       @confirm="confirmDeleteTemplate"
       @cancel="cancelDeleteTemplate"
@@ -372,7 +406,7 @@ import {
   ExclamationTriangleIcon,
   PaperAirplaneIcon,
   TrashIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
 } from '@heroicons/vue/24/outline'
 
 import { useMessageTemplatesStore, type MessageTemplate } from '@/stores/messageTemplates'
@@ -407,7 +441,7 @@ const publishModalData = ref({
     attributes: Record<string, string>
     variables: Record<string, string>
     originalTemplate?: MessageTemplate
-  } | null
+  } | null,
 })
 
 // Computed properties
@@ -415,9 +449,7 @@ const projectId = computed(() => route.params.projectId as string)
 
 // Get templates for current project from route
 const currentProjectTemplates = computed(() => {
-  return templatesStore.templates.filter(template => 
-    template.projectId === projectId.value
-  )
+  return templatesStore.templates.filter(template => template.projectId === projectId.value)
 })
 
 const templateStats = computed(() => {
@@ -425,16 +457,14 @@ const templateStats = computed(() => {
   currentProjectTemplates.value.forEach(template => {
     topics.add(template.topicName)
   })
-  
+
   return {
     total: currentProjectTemplates.value.length,
     byTopic: topics.size,
-    withVariables: currentProjectTemplates.value.filter(t => 
-      Object.keys(t.variables).length > 0
-    ).length,
-    withAttributes: currentProjectTemplates.value.filter(t => 
-      Object.keys(t.attributes).length > 0
-    ).length,
+    withVariables: currentProjectTemplates.value.filter(t => Object.keys(t.variables).length > 0)
+      .length,
+    withAttributes: currentProjectTemplates.value.filter(t => Object.keys(t.attributes).length > 0)
+      .length,
   }
 })
 const isLoading = computed(() => templatesStore.isLoading)
@@ -442,7 +472,9 @@ const hasError = computed(() => templatesStore.hasError)
 
 const filteredTemplates = computed(() => {
   // Sort by updated date (most recent first) - create a copy to avoid side effects
-  return [...currentProjectTemplates.value].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+  return [...currentProjectTemplates.value].sort(
+    (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()
+  )
 })
 
 // Duplicate modal actions
@@ -450,29 +482,25 @@ const duplicateModalActions = computed<ModalAction[]>(() => [
   {
     label: 'Cancel',
     handler: handleDuplicateModalClose,
-    variant: 'secondary'
+    variant: 'secondary',
   },
   {
     label: 'Duplicate Template',
     handler: confirmDuplicateTemplate,
     variant: 'primary',
     loading: isDuplicatingTemplate.value,
-    disabled: !duplicateTemplateName.value.trim() || isDuplicatingTemplate.value
-  }
+    disabled: !duplicateTemplateName.value.trim() || isDuplicatingTemplate.value,
+  },
 ])
 
 // Methods
 async function loadData() {
   try {
-    await Promise.all([
-      templatesStore.loadTemplates(),
-      topicsStore.fetchTopics(projectId.value)
-    ])
+    await Promise.all([templatesStore.loadTemplates(), topicsStore.fetchTopics(projectId.value)])
   } catch (error) {
     console.error('Failed to load data:', error)
   }
 }
-
 
 async function useTemplate(template: MessageTemplate) {
   publishModalData.value = {
@@ -482,10 +510,10 @@ async function useTemplate(template: MessageTemplate) {
       data: template.data,
       attributes: { ...template.attributes },
       variables: { ...template.variables },
-      originalTemplate: template
-    }
+      originalTemplate: template,
+    },
   }
-  
+
   showPublishModal.value = true
 }
 
@@ -494,7 +522,7 @@ function duplicateTemplate(template: MessageTemplate) {
   duplicateTemplateName.value = `${template.name} (Copy)`
   duplicateTemplateNameError.value = ''
   showDuplicateTemplateModal.value = true
-  
+
   // Focus the input after the modal is shown
   setTimeout(() => {
     duplicateTemplateNameInput.value?.focus()
@@ -503,7 +531,7 @@ function duplicateTemplate(template: MessageTemplate) {
 
 async function confirmDuplicateTemplate() {
   if (!templateToDuplicate.value) return
-  
+
   if (!duplicateTemplateName.value.trim()) {
     duplicateTemplateNameError.value = 'Template name is required'
     return
@@ -511,21 +539,24 @@ async function confirmDuplicateTemplate() {
 
   try {
     isDuplicatingTemplate.value = true
-    
-    await templatesStore.duplicateTemplate(templateToDuplicate.value.id, duplicateTemplateName.value.trim())
-    
+
+    await templatesStore.duplicateTemplate(
+      templateToDuplicate.value.id,
+      duplicateTemplateName.value.trim()
+    )
+
     appStore.showToast({
       type: 'success',
       title: 'Template Duplicated',
-      message: `Template "${duplicateTemplateName.value}" has been created`
+      message: `Template "${duplicateTemplateName.value}" has been created`,
     })
-    
+
     handleDuplicateModalClose()
   } catch (error) {
     appStore.showToast({
       type: 'error',
       title: 'Duplication Failed',
-      message: (error as Error).message
+      message: (error as Error).message,
     })
   } finally {
     isDuplicatingTemplate.value = false
@@ -555,19 +586,19 @@ async function confirmDeleteTemplate() {
   try {
     isDeletingTemplate.value = true
     await templatesStore.deleteTemplate(templateToDelete.value.id)
-    
+
     appStore.showToast({
       type: 'success',
       title: 'Template Deleted',
-      message: `Template "${templateToDelete.value.name}" has been deleted`
+      message: `Template "${templateToDelete.value.name}" has been deleted`,
     })
-    
+
     cancelDeleteTemplate()
   } catch (error) {
     appStore.showToast({
       type: 'error',
       title: 'Deletion Failed',
-      message: (error as Error).message
+      message: (error as Error).message,
     })
   } finally {
     isDeletingTemplate.value = false
@@ -580,18 +611,16 @@ function cancelDeleteTemplate() {
   isDeletingTemplate.value = false
 }
 
-
 function onPublishModalClose(isOpen: boolean) {
   if (!isOpen) {
     publishModalData.value.initialTemplate = null
   }
 }
 
- 
 function onMessagePublished() {
   showPublishModal.value = false
   publishModalData.value.initialTemplate = null
-  
+
   // Toast notification is already handled by PublishMessageModal component
 }
 
@@ -599,7 +628,7 @@ function formatDate(date: Date): string {
   const now = new Date()
   const diff = now.getTime() - date.getTime()
   const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-  
+
   if (days === 0) {
     return 'Today'
   } else if (days === 1) {
@@ -612,11 +641,15 @@ function formatDate(date: Date): string {
 }
 
 // Watch for project changes
-watch(() => projectId.value, () => {
-  if (projectId.value) {
-    loadData()
-  }
-}, { immediate: true })
+watch(
+  () => projectId.value,
+  () => {
+    if (projectId.value) {
+      loadData()
+    }
+  },
+  { immediate: true }
+)
 
 // Lifecycle
 onMounted(() => {
