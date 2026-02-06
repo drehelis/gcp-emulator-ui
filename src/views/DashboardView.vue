@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { useProjectsStore } from '@/stores/projects'
 
@@ -14,7 +14,7 @@ const projectsStore = useProjectsStore()
 
 const isLoading = ref(false)
 
-const stats = reactive({
+const stats = ref({
   topics: 0,
   subscriptions: 0,
   schemas: 0,
@@ -40,18 +40,18 @@ const refreshData = async () => {
         Promise.resolve(0)  // subscriptionsApi.getSubscriptions(projectsStore.selectedProject)
       ])
       
-      stats.topics = 0 // topics.length
-      stats.subscriptions = 0 // subscriptions.length
-      stats.schemas = 0
-      stats.messagestoday = 0
+      stats.value.topics = 0 // topics.length
+      stats.value.subscriptions = 0 // subscriptions.length
+      stats.value.schemas = 0
+      stats.value.messagestoday = 0
       
       recentActivity.value = []
     } else {
       // Reset stats when no project selected
-      stats.topics = 0
-      stats.subscriptions = 0
-      stats.schemas = 0
-      stats.messagestoday = 0
+      stats.value.topics = 0
+      stats.value.subscriptions = 0
+      stats.value.schemas = 0
+      stats.value.messagestoday = 0
       recentActivity.value = []
     }
   } catch (error) {
