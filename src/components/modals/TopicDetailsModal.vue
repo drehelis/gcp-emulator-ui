@@ -108,202 +108,13 @@
             <div v-if="editingSubscription && getSubscriptionDisplayName(editingSubscription.name) === getSubscriptionDisplayName(subscription.name)" class="space-y-4">
               <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Edit Subscription</h4>
               
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Subscription Name (Read-only in edit mode) -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Name
-                  </label>
-                  <div class="px-3 py-2 bg-gray-100 dark:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-300">
-                    {{ newSubscription.name }}
-                  </div>
-                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Subscription names cannot be changed after creation
-                  </p>
-                </div>
-
-                <!-- Delivery Type (Read-only in edit mode) -->
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Delivery Type
-                  </label>
-                  <div class="px-3 py-2 bg-gray-100 dark:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-300">
-                    {{ newSubscription.deliveryType.charAt(0).toUpperCase() + newSubscription.deliveryType.slice(1) }}
-                  </div>
-                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Delivery type cannot be changed after creation
-                  </p>
-                </div>
-
-                <!-- Push Endpoint (if push and editable) -->
-                <div v-if="newSubscription.deliveryType === 'push'" class="md:col-span-2">
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Push Endpoint *
-                  </label>
-                  <input
-                    v-model="newSubscription.pushEndpoint"
-                    type="url"
-                    placeholder="https://example.com/webhook"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  />
-                </div>
-
-                <!-- BigQuery Config (if bigquery and mostly read-only) -->
-                <div v-if="newSubscription.deliveryType === 'bigquery'" class="md:col-span-2 space-y-3">
-                  <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                      BigQuery Table
-                    </label>
-                    <div class="px-3 py-2 bg-gray-100 dark:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-300">
-                      {{ newSubscription.bigqueryTable }}
-                    </div>
-                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      BigQuery table cannot be changed after creation
-                    </p>
-                  </div>
-                  
-                  <div class="flex items-center space-x-4">
-                    <label class="flex items-center">
-                      <input
-                        v-model="newSubscription.useTopicSchema"
-                        type="checkbox"
-                        class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
-                      />
-                      <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Use Topic Schema</span>
-                    </label>
-                    
-                    <label class="flex items-center">
-                      <input
-                        v-model="newSubscription.writeMetadata"
-                        type="checkbox"
-                        class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
-                      />
-                      <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Write Metadata</span>
-                    </label>
-                  </div>
-                </div>
-
-                <!-- Ack Deadline -->
-                <div class="md:col-span-2">
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Ack Deadline (seconds)
-                  </label>
-                  <input
-                    v-model.number="newSubscription.ackDeadlineSeconds"
-                    type="number"
-                    min="10"
-                    max="600"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                    :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-500': newSubscription.errors?.ackDeadlineSeconds }"
-                  />
-                  <p v-if="newSubscription.errors?.ackDeadlineSeconds" class="mt-1 text-sm text-red-600 dark:text-red-400">
-                    {{ newSubscription.errors.ackDeadlineSeconds }}
-                  </p>
-                </div>
-
-                <!-- Message Ordering -->
-                <div class="md:col-span-2 flex items-center">
-                  <label class="flex items-center mb-2">
-                    <input
-                      v-model="newSubscription.enableMessageOrdering"
-                      type="checkbox"
-                      class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
-                    />
-                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Enable Message Ordering</span>
-                  </label>
-                </div>
-
-                <!-- Filter Expression -->
-                <div class="md:col-span-2">
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Filter Expression (Optional)
-                  </label>
-                  <textarea
-                    v-model="newSubscription.filter"
-                    rows="2"
-                    placeholder='e.g., attributes.region = "us-west" AND attributes.priority = "high"'
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm font-mono text-xs"
-                  ></textarea>
-                  <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                    Filter messages based on attributes. Only matching messages will be delivered to this subscription.
-                  </p>
-                </div>
-
-                <!-- Dead Letter Policy -->
-                <div class="md:col-span-2">
-                  <label class="flex items-center mb-2">
-                    <input
-                      v-model="newSubscription.enableDeadLetter"
-                      type="checkbox"
-                      class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
-                    />
-                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Enable Dead Letter Policy</span>
-                  </label>
-                  
-                  <div v-if="newSubscription.enableDeadLetter" class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Dead Letter Topic
-                      </label>
-                      <input
-                        v-model="newSubscription.deadLetterTopic"
-                        type="text"
-                        placeholder="dead-letter-topic"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Max Delivery Attempts
-                      </label>
-                      <input
-                        v-model.number="newSubscription.maxDeliveryAttempts"
-                        type="number"
-                        min="1"
-                        max="100"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Retry Policy -->
-                <div class="md:col-span-2">
-                  <label class="flex items-center mb-2">
-                    <input
-                      v-model="newSubscription.enableRetryPolicy"
-                      type="checkbox"
-                      class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
-                    />
-                    <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Enable Retry Policy</span>
-                  </label>
-                  
-                  <div v-if="newSubscription.enableRetryPolicy" class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Minimum Backoff
-                      </label>
-                      <input
-                        v-model="newSubscription.minimumBackoff"
-                        type="text"
-                        placeholder="10s (e.g., 1s, 30s, 5m)"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                      />
-                    </div>
-                    <div>
-                      <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        Maximum Backoff
-                      </label>
-                      <input
-                        v-model="newSubscription.maximumBackoff"
-                        type="text"
-                        placeholder="600s (e.g., 1m, 10m, 1h)"
-                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <SubscriptionFormFields 
+                v-model="newSubscription" 
+                :mode="editingSubscription ? 'edit' : 'create'"
+                read-only-name
+                read-only-delivery-type
+                read-only-big-query-table
+              />
 
             </div>
 
@@ -377,413 +188,13 @@
           </div>
         </div>
 
-        <!-- Edit Subscription Form (hidden - now shows inline) -->
-        <div v-if="false" class="mt-4 border border-orange-200 dark:border-orange-600 rounded-lg p-4 bg-orange-50 dark:bg-orange-900/20">
-          <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">Edit Subscription</h4>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Subscription Name (Read-only in edit mode) -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Name
-              </label>
-              <div class="px-3 py-2 bg-gray-100 dark:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-300">
-                {{ newSubscription.name }}
-              </div>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Subscription names cannot be changed after creation
-              </p>
-            </div>
-
-            <!-- Delivery Type (Read-only in edit mode) -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Delivery Type
-              </label>
-              <div class="px-3 py-2 bg-gray-100 dark:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-300">
-                {{ newSubscription.deliveryType.charAt(0).toUpperCase() + newSubscription.deliveryType.slice(1) }}
-              </div>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Delivery type cannot be changed after creation
-              </p>
-            </div>
-
-            <!-- Push Endpoint (if push and editable) -->
-            <div v-if="newSubscription.deliveryType === 'push'" class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Push Endpoint *
-              </label>
-              <input
-                v-model="newSubscription.pushEndpoint"
-                type="url"
-                placeholder="https://example.com/webhook"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-              />
-            </div>
-
-            <!-- BigQuery Config (if bigquery and mostly read-only) -->
-            <div v-if="newSubscription.deliveryType === 'bigquery'" class="md:col-span-2 space-y-3">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  BigQuery Table
-                </label>
-                <div class="px-3 py-2 bg-gray-100 dark:bg-gray-600 rounded-md text-sm text-gray-700 dark:text-gray-300">
-                  {{ newSubscription.bigqueryTable }}
-                </div>
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                  BigQuery table cannot be changed after creation
-                </p>
-              </div>
-              
-              <div class="flex items-center space-x-4">
-                <label class="flex items-center">
-                  <input
-                    v-model="newSubscription.useTopicSchema"
-                    type="checkbox"
-                    class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
-                  />
-                  <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Use Topic Schema</span>
-                </label>
-                
-                <label class="flex items-center">
-                  <input
-                    v-model="newSubscription.writeMetadata"
-                    type="checkbox"
-                    class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
-                  />
-                  <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Write Metadata</span>
-                </label>
-              </div>
-            </div>
-
-            <!-- Ack Deadline -->
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Ack Deadline (seconds)
-              </label>
-              <input
-                v-model.number="newSubscription.ackDeadlineSeconds"
-                type="number"
-                min="10"
-                max="600"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-              />
-            </div>
-
-            <!-- Message Ordering -->
-            <div class="md:col-span-2 flex items-center">
-              <label class="flex items-center mb-2">
-                <input
-                  v-model="newSubscription.enableMessageOrdering"
-                  type="checkbox"
-                  class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
-                />
-                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Enable Message Ordering</span>
-              </label>
-            </div>
-
-            <!-- Filter Expression -->
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Filter Expression (Optional)
-              </label>
-              <textarea
-                v-model="newSubscription.filter"
-                rows="2"
-                placeholder='e.g., attributes.region = "us-west" AND attributes.priority = "high"'
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm font-mono text-xs"
-              ></textarea>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Filter messages based on attributes. Only matching messages will be delivered to this subscription.
-              </p>
-            </div>
-            
-            <!-- Dead Letter Policy -->
-            <div class="md:col-span-2">
-              <label class="flex items-center mb-2">
-                <input
-                  v-model="newSubscription.enableDeadLetter"
-                  type="checkbox"
-                  class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
-                />
-                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Enable Dead Letter Policy</span>
-              </label>
-              
-              <div v-if="newSubscription.enableDeadLetter" class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Dead Letter Topic
-                  </label>
-                  <input
-                    v-model="newSubscription.deadLetterTopic"
-                    type="text"
-                    placeholder="projects/project/topics/dead-letter-topic"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Max Delivery Attempts
-                  </label>
-                  <input
-                    v-model.number="newSubscription.maxDeliveryAttempts"
-                    type="number"
-                    min="5"
-                    max="100"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-            
-            <!-- Retry Policy -->
-            <div class="md:col-span-2">
-              <label class="flex items-center mb-2">
-                <input
-                  v-model="newSubscription.enableRetryPolicy"
-                  type="checkbox"
-                  class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
-                />
-                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Enable Retry Policy</span>
-              </label>
-              
-              <div v-if="newSubscription.enableRetryPolicy" class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Minimum Backoff
-                  </label>
-                  <input
-                    v-model="newSubscription.minimumBackoff"
-                    type="text"
-                    placeholder="10s (e.g., 1s, 30s, 5m)"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Maximum Backoff
-                  </label>
-                  <input
-                    v-model="newSubscription.maximumBackoff"
-                    type="text"
-                    placeholder="600s (e.g., 1m, 10m, 1h)"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
         <!-- New/Edit Subscription Form -->
         <div v-if="showNewSubscriptionForm || showEditSubscriptionForm" class="mt-4 border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-white dark:bg-gray-800">
           <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">
             {{ editingSubscription ? 'Edit Subscription' : 'Create New Subscription' }}
           </h4>
           
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Subscription Name -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Name *
-              </label>
-              <input
-                v-model="newSubscription.name"
-                type="text"
-                placeholder="subscription-name"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-500': newSubscription.errors?.name }"
-              />
-              <p v-if="newSubscription.errors?.name" class="mt-1 text-sm text-red-600 dark:text-red-400">
-                {{ newSubscription.errors.name }}
-              </p>
-            </div>
-
-            <!-- Delivery Type -->
-            <div>
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Delivery Type
-              </label>
-              <select
-                v-model="newSubscription.deliveryType"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-              >
-                <option value="pull">Pull</option>
-                <option value="push">Push</option>
-                <option value="bigquery">BigQuery</option>
-              </select>
-            </div>
-
-            <!-- Push Endpoint (if push) -->
-            <div v-if="newSubscription.deliveryType === 'push'" class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Push Endpoint *
-              </label>
-              <input
-                v-model="newSubscription.pushEndpoint"
-                type="url"
-                placeholder="https://example.com/webhook"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-              />
-            </div>
-
-            <!-- BigQuery Config (if bigquery) -->
-            <div v-if="newSubscription.deliveryType === 'bigquery'" class="md:col-span-2 space-y-3">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  BigQuery Table *
-                </label>
-                <input
-                  v-model="newSubscription.bigqueryTable"
-                  type="text"
-                  placeholder="project.dataset.table"
-                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                />
-              </div>
-              
-              <div class="flex items-center space-x-4">
-                <label class="flex items-center">
-                  <input
-                    v-model="newSubscription.useTopicSchema"
-                    type="checkbox"
-                    class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
-                  />
-                  <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Use Topic Schema</span>
-                </label>
-                
-                <label class="flex items-center">
-                  <input
-                    v-model="newSubscription.writeMetadata"
-                    type="checkbox"
-                    class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
-                  />
-                  <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Write Metadata</span>
-                </label>
-              </div>
-              
-              <p class="text-xs text-amber-600 dark:text-amber-400">
-                ⚠️ Note: BigQuery subscriptions can be created but don't send messages to BigQuery in the emulator
-              </p>
-            </div>
-
-            <!-- Ack Deadline -->
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Ack Deadline (seconds)
-              </label>
-              <input
-                v-model.number="newSubscription.ackDeadlineSeconds"
-                type="number"
-                min="10"
-                max="600"
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-              />
-            </div>
-
-            <!-- Message Ordering -->
-            <div class="md:col-span-2 flex items-center">
-              <label class="flex items-center mb-2">
-                <input
-                  v-model="newSubscription.enableMessageOrdering"
-                  type="checkbox"
-                  class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
-                />
-                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Enable Message Ordering</span>
-              </label>
-            </div>
-
-            <!-- Filter Expression -->
-            <div class="md:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Filter Expression (Optional)
-              </label>
-              <textarea
-                v-model="newSubscription.filter"
-                rows="2"
-                placeholder='e.g., attributes.region = "us-west" AND attributes.priority = "high"'
-                class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm font-mono text-xs"
-              ></textarea>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                Filter messages based on attributes. Only matching messages will be delivered to this subscription.
-              </p>
-            </div>
-            
-            <!-- Dead Letter Policy -->
-            <div class="md:col-span-2">
-              <label class="flex items-center mb-2">
-                <input
-                  v-model="newSubscription.enableDeadLetter"
-                  type="checkbox"
-                  class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
-                />
-                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Enable Dead Letter Policy</span>
-              </label>
-              
-              <div v-if="newSubscription.enableDeadLetter" class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Dead Letter Topic
-                  </label>
-                  <input
-                    v-model="newSubscription.deadLetterTopic"
-                    type="text"
-                    placeholder="projects/project/topics/dead-letter-topic"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Max Delivery Attempts
-                  </label>
-                  <input
-                    v-model.number="newSubscription.maxDeliveryAttempts"
-                    type="number"
-                    min="5"
-                    max="100"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-            
-            <!-- Retry Policy -->
-            <div class="md:col-span-2">
-              <label class="flex items-center mb-2">
-                <input
-                  v-model="newSubscription.enableRetryPolicy"
-                  type="checkbox"
-                  class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
-                />
-                <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Enable Retry Policy</span>
-              </label>
-              
-              <div v-if="newSubscription.enableRetryPolicy" class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Minimum Backoff
-                  </label>
-                  <input
-                    v-model="newSubscription.minimumBackoff"
-                    type="text"
-                    placeholder="10s (e.g., 1s, 30s, 5m)"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Maximum Backoff
-                  </label>
-                  <input
-                    v-model="newSubscription.maximumBackoff"
-                    type="text"
-                    placeholder="600s (e.g., 1m, 10m, 1h)"
-                    class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
+          <SubscriptionFormFields v-model="newSubscription" :mode="editingSubscription ? 'edit' : 'create'" />
 
         </div>
       </div>
@@ -817,6 +228,7 @@ import {
 } from '@heroicons/vue/24/outline'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
+import SubscriptionFormFields from '@/components/forms/SubscriptionFormFields.vue'
 import { topicsApi, subscriptionsApi } from '@/api/pubsub'
 import { useAppStore } from '@/stores/app'
 import { useTopicsStore } from '@/stores/topics'
@@ -944,7 +356,54 @@ const getSubscriptionDisplayName = (fullName: string | undefined): string => {
   return displayName
 }
 
-
+const validateSubscriptionForm = (subscription: SubscriptionForm, options: {
+  validateName?: boolean
+  validateBigQuery?: boolean
+  skipPushEndpointIfExists?: boolean
+  existingPushEndpoint?: string
+} = {}): Record<string, string> => {
+  const errors: Record<string, string> = {}
+  
+  // Name validation (only for new subscriptions)
+  if (options.validateName && !subscription.name.trim()) {
+    errors.name = 'Subscription name is required'
+  }
+  
+  // Ack deadline range validation
+  if (subscription.ackDeadlineSeconds < 10 || subscription.ackDeadlineSeconds > 600) {
+    errors.ackDeadlineSeconds = 'Ack deadline must be between 10 and 600 seconds'
+  }
+  
+  // Push endpoint validation
+  if (subscription.deliveryType === 'push') {
+    const hasExistingEndpoint = options.skipPushEndpointIfExists && options.existingPushEndpoint
+    if (!subscription.pushEndpoint?.trim() && !hasExistingEndpoint) {
+      errors.pushEndpoint = 'Push endpoint is required for push subscriptions'
+    }
+  }
+  
+  // BigQuery validation (only for new subscriptions)
+  if (options.validateBigQuery && subscription.deliveryType === 'bigquery' && !subscription.bigqueryTable?.trim()) {
+    errors.bigqueryTable = 'BigQuery table is required for BigQuery subscriptions'
+  }
+  
+  // Dead letter policy validation
+  if (subscription.enableDeadLetter && !subscription.deadLetterTopic?.trim()) {
+    errors.deadLetterTopic = 'Dead letter topic is required when dead letter policy is enabled'
+  }
+  
+  // Retry policy validation
+  if (subscription.enableRetryPolicy) {
+    if (!subscription.minimumBackoff?.trim()) {
+      errors.minimumBackoff = 'Minimum backoff is required when retry policy is enabled'
+    }
+    if (!subscription.maximumBackoff?.trim()) {
+      errors.maximumBackoff = 'Maximum backoff is required when retry policy is enabled'
+    }
+  }
+  
+  return errors
+}
 
 const loadTopic = async () => {
   if (!props.topicName || !currentProjectId.value) return
@@ -1185,32 +644,10 @@ const saveNewSubscription = async () => {
   if (!topic.value || !currentProjectId.value) return
   
   // Validate
-  const errors: Record<string, string> = {}
-  if (!newSubscription.value.name.trim()) {
-    errors.name = 'Subscription name is required'
-  }
-  
-  // Validate ack deadline range
-  if (newSubscription.value.ackDeadlineSeconds < 10 || newSubscription.value.ackDeadlineSeconds > 600) {
-    errors.ackDeadlineSeconds = 'Ack deadline must be between 10 and 600 seconds'
-  }
-  if (newSubscription.value.deliveryType === 'push' && !newSubscription.value.pushEndpoint?.trim()) {
-    errors.pushEndpoint = 'Push endpoint is required for push subscriptions'
-  }
-  if (newSubscription.value.deliveryType === 'bigquery' && !newSubscription.value.bigqueryTable?.trim()) {
-    errors.bigqueryTable = 'BigQuery table is required for BigQuery subscriptions'
-  }
-  if (newSubscription.value.enableDeadLetter && !newSubscription.value.deadLetterTopic?.trim()) {
-    errors.deadLetterTopic = 'Dead letter topic is required when dead letter policy is enabled'
-  }
-  if (newSubscription.value.enableRetryPolicy) {
-    if (!newSubscription.value.minimumBackoff?.trim()) {
-      errors.minimumBackoff = 'Minimum backoff is required when retry policy is enabled'
-    }
-    if (!newSubscription.value.maximumBackoff?.trim()) {
-      errors.maximumBackoff = 'Maximum backoff is required when retry policy is enabled'
-    }
-  }
+  const errors = validateSubscriptionForm(newSubscription.value, {
+    validateName: true,
+    validateBigQuery: true
+  })
   
   if (Object.keys(errors).length > 0) {
     newSubscription.value.errors = errors
@@ -1332,34 +769,16 @@ const saveEditedSubscription = async () => {
   if (!editingSubscription.value || !currentProjectId.value) return
   
   // Validate form data BEFORE deleting the subscription
-  const errors: Record<string, string> = {}
-  
-  // Validate ack deadline range
-  if (newSubscription.value.ackDeadlineSeconds < 10 || newSubscription.value.ackDeadlineSeconds > 600) {
-    errors.ackDeadlineSeconds = 'Ack deadline must be between 10 and 600 seconds'
-  }
-  
-  // For editing existing subscriptions, be more lenient with validation
-  // Only require push endpoint if this is a new push subscription
-  console.log('editingSubscription pushConfig:', editingSubscription.value.pushConfig)
-  console.log('Has existing pushEndpoint?', editingSubscription.value.pushConfig?.pushEndpoint)
-  
-  // Skip push endpoint validation for existing push subscriptions during edit
   const isEditingExistingPushSub = editingSubscription.value.pushConfig?.pushEndpoint && typeof editingSubscription.value.pushConfig === 'object'
-  if (newSubscription.value.deliveryType === 'push' && !newSubscription.value.pushEndpoint?.trim() && !isEditingExistingPushSub) {
-    errors.pushEndpoint = 'Push endpoint is required for push subscriptions'
-  }
-  if (newSubscription.value.enableDeadLetter && !newSubscription.value.deadLetterTopic?.trim()) {
-    errors.deadLetterTopic = 'Dead letter topic is required when dead letter policy is enabled'
-  }
-  if (newSubscription.value.enableRetryPolicy) {
-    if (!newSubscription.value.minimumBackoff?.trim()) {
-      errors.minimumBackoff = 'Minimum backoff is required when retry policy is enabled'
-    }
-    if (!newSubscription.value.maximumBackoff?.trim()) {
-      errors.maximumBackoff = 'Maximum backoff is required when retry policy is enabled'
-    }
-  }
+  const existingPushEndpoint = isEditingExistingPushSub && editingSubscription.value.pushConfig ? editingSubscription.value.pushConfig.pushEndpoint : undefined
+  
+  console.log('editingSubscription pushConfig:', editingSubscription.value.pushConfig)
+  console.log('Has existing pushEndpoint?', existingPushEndpoint)
+  
+  const errors = validateSubscriptionForm(newSubscription.value, {
+    skipPushEndpointIfExists: true,
+    ...(existingPushEndpoint && { existingPushEndpoint })
+  })
   
   console.log('Validation errors:', errors)
   if (Object.keys(errors).length > 0) {
