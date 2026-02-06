@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4" :class="containerClass">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4" :class="containerClass">
     <!-- Subscription Name -->
     <div>
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -55,7 +55,7 @@
     </div>
 
     <!-- Push Endpoint (if push) -->
-    <div v-if="modelValue.deliveryType === 'push'" class="md:col-span-2">
+    <div v-if="modelValue.deliveryType === 'push'" class="lg:col-span-2">
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         Push Endpoint *
       </label>
@@ -69,7 +69,7 @@
     </div>
 
     <!-- BigQuery Config (if bigquery) -->
-    <div v-if="modelValue.deliveryType === 'bigquery'" class="md:col-span-2 space-y-3">
+    <div v-if="modelValue.deliveryType === 'bigquery'" class="lg:col-span-2 space-y-3">
       <div>
         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           BigQuery Table *
@@ -121,13 +121,13 @@
     </div>
 
     <!-- Ack Deadline -->
-    <div class="md:col-span-2">
+    <div class="lg:col-span-2">
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         Ack Deadline (seconds)
       </label>
       <input
         :value="modelValue.ackDeadlineSeconds"
-        @input="updateField('ackDeadlineSeconds', parseInt(($event.target as HTMLInputElement).value))"
+        @input="updateNumericField('ackDeadlineSeconds', ($event.target as HTMLInputElement).value)"
         type="number"
         min="10"
         max="600"
@@ -140,7 +140,7 @@
     </div>
 
     <!-- Message Ordering -->
-    <div class="md:col-span-2 flex items-center">
+    <div class="lg:col-span-2 flex items-center">
       <label class="flex items-center mb-2">
         <input
           :checked="modelValue.enableMessageOrdering"
@@ -153,7 +153,7 @@
     </div>
 
     <!-- Filter Expression -->
-    <div class="md:col-span-2">
+    <div class="lg:col-span-2">
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         Filter Expression (Optional)
       </label>
@@ -170,7 +170,7 @@
     </div>
 
     <!-- Dead Letter Policy -->
-    <div class="md:col-span-2">
+    <div class="lg:col-span-2">
       <label class="flex items-center mb-2">
         <input
           :checked="modelValue.enableDeadLetter || modelValue.useDeadLetter"
@@ -181,7 +181,7 @@
         <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ deadLetterLabel }}</span>
       </label>
       
-      <div v-if="modelValue.enableDeadLetter || modelValue.useDeadLetter" class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+      <div v-if="modelValue.enableDeadLetter || modelValue.useDeadLetter" class="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-2">
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Dead Letter Topic
@@ -200,7 +200,7 @@
           </label>
           <input
             :value="modelValue.maxDeliveryAttempts"
-            @input="updateField('maxDeliveryAttempts', parseInt(($event.target as HTMLInputElement).value))"
+            @input="updateNumericField('maxDeliveryAttempts', ($event.target as HTMLInputElement).value)"
             type="number"
             min="1"
             max="100"
@@ -212,7 +212,7 @@
     </div>
 
     <!-- Retry Policy -->
-    <div class="md:col-span-2">
+    <div class="lg:col-span-2">
       <label class="flex items-center mb-2">
         <input
           :checked="modelValue.enableRetryPolicy || modelValue.useRetryPolicy"
@@ -223,7 +223,7 @@
         <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ retryPolicyLabel }}</span>
       </label>
       
-      <div v-if="modelValue.enableRetryPolicy || modelValue.useRetryPolicy" class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
+      <div v-if="modelValue.enableRetryPolicy || modelValue.useRetryPolicy" class="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-2">
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Minimum Backoff
@@ -298,13 +298,12 @@ const emit = defineEmits<{
   'update:modelValue': [value: SubscriptionForm]
 }>()
 
-// Compute field names based on mode (TopicDetailsModal uses enableDeadLetter/enableRetryPolicy, CreateTopicModal uses useDeadLetter/useRetryPolicy)
 const enableDeadLetterField = computed(() => 
-  'enableDeadLetter' in props.modelValue ? 'enableDeadLetter' : 'useDeadLetter'
+  props.mode === 'create' ? 'useDeadLetter' : 'enableDeadLetter'
 )
 
 const enableRetryPolicyField = computed(() => 
-  'enableRetryPolicy' in props.modelValue ? 'enableRetryPolicy' : 'useRetryPolicy'
+  props.mode === 'create' ? 'useRetryPolicy' : 'enableRetryPolicy'
 )
 
 const deadLetterLabel = computed(() => 
@@ -323,6 +322,14 @@ const updateField = (field: string, value: any) => {
   emit('update:modelValue', {
     ...props.modelValue,
     [field]: value
+  })
+}
+
+const updateNumericField = (field: string, value: string) => {
+  const numValue = parseInt(value, 10)
+  emit('update:modelValue', {
+    ...props.modelValue,
+    [field]: isNaN(numValue) ? undefined : numValue
   })
 }
 </script>

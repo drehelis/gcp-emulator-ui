@@ -110,7 +110,7 @@
               
               <SubscriptionFormFields 
                 v-model="newSubscription" 
-                mode="edit"
+                :mode="editingSubscription ? 'edit' : 'create'"
                 read-only-name
                 read-only-delivery-type
                 read-only-big-query-table
@@ -194,7 +194,7 @@
             {{ editingSubscription ? 'Edit Subscription' : 'Create New Subscription' }}
           </h4>
           
-          <SubscriptionFormFields v-model="newSubscription" mode="edit" />
+          <SubscriptionFormFields v-model="newSubscription" :mode="editingSubscription ? 'edit' : 'create'" />
 
         </div>
       </div>
