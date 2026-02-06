@@ -47,7 +47,7 @@ jobs:
       run: |
         npm run lint -- --ignore-pattern '**/__tests__/**'
 
-  lint:
+  prettier:
     runs-on: ubuntu-latest
 
     steps:
