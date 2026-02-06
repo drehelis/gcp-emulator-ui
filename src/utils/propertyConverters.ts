@@ -6,7 +6,7 @@ import type { PropertyForm } from '@/components/datastore/PropertyEditor.vue'
  */
 export function propertyFormToDatastoreValue(property: PropertyForm): DatastoreValue {
   const datastoreValue: DatastoreValue = {
-    excludeFromIndexes: !property.indexed
+    excludeFromIndexes: !property.indexed,
   }
 
   switch (property.type) {
@@ -31,13 +31,20 @@ export function propertyFormToDatastoreValue(property: PropertyForm): DatastoreV
       if (property.value) {
         // Check if it's a datetime-local format (YYYY-MM-DDTHH:mm or YYYY-MM-DDTHH:mm:ss)
         // without milliseconds/microseconds and without Z
-        if (property.value.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/) && !property.value.includes('.')) {
+        if (
+          property.value.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2})?$/) &&
+          !property.value.includes('.')
+        ) {
           // datetime-local format - add seconds if needed and Z
-          const withSeconds = property.value.match(/:\d{2}:\d{2}$/) ? property.value : `${property.value}:00`
+          const withSeconds = property.value.match(/:\d{2}:\d{2}$/)
+            ? property.value
+            : `${property.value}:00`
           datastoreValue.timestampValue = `${withSeconds}Z`
         } else {
           // Already has RFC 3339 format (possibly with microseconds) - preserve it
-          datastoreValue.timestampValue = property.value.endsWith('Z') ? property.value : `${property.value}Z`
+          datastoreValue.timestampValue = property.value.endsWith('Z')
+            ? property.value
+            : `${property.value}Z`
         }
       }
       break
@@ -53,7 +60,7 @@ export function propertyFormToDatastoreValue(property: PropertyForm): DatastoreV
       const [lat, lng] = property.value.split(',').map(v => parseFloat(v.trim()))
       datastoreValue.geoPointValue = {
         latitude: lat || 0,
-        longitude: lng || 0
+        longitude: lng || 0,
       }
       break
     }
@@ -108,7 +115,7 @@ export function datastoreValueToPropertyForm(key: string, value: DatastoreValue)
     // datetime-local input needs YYYY-MM-DDTHH:mm:ss (no milliseconds, no Z)
     val = value.timestampValue
       .replace(/\.\d+Z?$/, '') // Remove milliseconds/microseconds and Z
-      .replace(/Z$/, '')        // Remove Z if no milliseconds
+      .replace(/Z$/, '') // Remove Z if no milliseconds
   } else if (value.keyValue !== undefined) {
     type = 'key'
     val = JSON.stringify(value.keyValue, null, 2)
@@ -131,6 +138,6 @@ export function datastoreValueToPropertyForm(key: string, value: DatastoreValue)
     type,
     value: val,
     indexed: !value.excludeFromIndexes,
-    expanded: false
+    expanded: false,
   }
 }

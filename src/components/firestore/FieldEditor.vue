@@ -13,7 +13,9 @@
             placeholder="Field name"
             class="text-sm font-medium text-gray-900 dark:text-white bg-transparent border-none p-0 focus:outline-none focus:ring-0"
           />
-          <span v-else class="text-sm font-medium text-gray-900 dark:text-white">{{ fieldName }}</span>
+          <span v-else class="text-sm font-medium text-gray-900 dark:text-white">{{
+            fieldName
+          }}</span>
         </div>
 
         <!-- Field Value Editor -->
@@ -82,7 +84,10 @@
             />
 
             <!-- Null -->
-            <div v-else-if="fieldType === 'null'" class="px-3 py-2 bg-gray-100 dark:bg-gray-600 rounded-md text-sm text-gray-500 dark:text-gray-400 italic">
+            <div
+              v-else-if="fieldType === 'null'"
+              class="px-3 py-2 bg-gray-100 dark:bg-gray-600 rounded-md text-sm text-gray-500 dark:text-gray-400 italic"
+            >
               null
             </div>
 
@@ -117,10 +122,17 @@
             />
 
             <!-- Map (Object) -->
-            <div v-else-if="fieldType === 'map'" :class="hideBorder ? '' : 'border border-gray-200 dark:border-gray-600 rounded-md'">
-              <div class="p-3 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50">
+            <div
+              v-else-if="fieldType === 'map'"
+              :class="hideBorder ? '' : 'border border-gray-200 dark:border-gray-600 rounded-md'"
+            >
+              <div
+                class="p-3 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50"
+              >
                 <div class="flex items-center justify-between">
-                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Map Fields</span>
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >Map Fields</span
+                  >
                   <div class="flex gap-2">
                     <button
                       @click="addMapField"
@@ -131,7 +143,10 @@
                   </div>
                 </div>
               </div>
-              <div v-if="Object.keys(mapValue).length === 0" class="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+              <div
+                v-if="Object.keys(mapValue).length === 0"
+                class="p-4 text-center text-gray-500 dark:text-gray-400 text-sm"
+              >
                 No fields in map
               </div>
               <div v-else>
@@ -145,10 +160,17 @@
             </div>
 
             <!-- Array -->
-            <div v-else-if="fieldType === 'array'" :class="hideBorder ? '' : 'border border-gray-200 dark:border-gray-600 rounded-md'">
-              <div class="p-3 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50">
+            <div
+              v-else-if="fieldType === 'array'"
+              :class="hideBorder ? '' : 'border border-gray-200 dark:border-gray-600 rounded-md'"
+            >
+              <div
+                class="p-3 border-b border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700/50"
+              >
                 <div class="flex items-center justify-between">
-                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Array Items</span>
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >Array Items</span
+                  >
                   <div class="flex gap-2">
                     <button
                       @click="addArrayItem"
@@ -159,7 +181,10 @@
                   </div>
                 </div>
               </div>
-              <div v-if="arrayValue.length === 0" class="p-4 text-center text-gray-500 dark:text-gray-400 text-sm">
+              <div
+                v-if="arrayValue.length === 0"
+                class="p-4 text-center text-gray-500 dark:text-gray-400 text-sm"
+              >
                 No items in array
               </div>
               <div v-else>
@@ -208,9 +233,9 @@ interface Props {
 }
 
 interface Emits {
-  update: [{ path: string[], value: any }]
+  update: [{ path: string[]; value: any }]
   delete: [path: string[]]
-  rename: [{ oldPath: string[], newPath: string[] }]
+  rename: [{ oldPath: string[]; newPath: string[] }]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -219,7 +244,7 @@ const props = withDefaults(defineProps<Props>(), {
   forcedType: undefined,
   hideDeleteButton: false,
   hideBorder: false,
-  hideFieldName: false
+  hideFieldName: false,
 })
 
 const emit = defineEmits<Emits>()
@@ -261,19 +286,26 @@ function initializeValues() {
       booleanValue.value = typeof value === 'boolean' ? value : false
       break
     case 'timestamp':
-      timestampValue.value = typeof value === 'string' ? value : new Date().toISOString().slice(0, 16)
+      timestampValue.value =
+        typeof value === 'string' ? value : new Date().toISOString().slice(0, 16)
       break
     case 'reference':
       referenceValue.value = typeof value === 'string' ? value : ''
       break
     case 'map':
-      mapValue.value = typeof value === 'object' && !Array.isArray(value) && value !== null ? { ...value } : {}
+      mapValue.value =
+        typeof value === 'object' && !Array.isArray(value) && value !== null ? { ...value } : {}
       break
     case 'array':
       arrayValue.value = Array.isArray(value) ? [...value] : []
       break
     case 'geopoint':
-      if (typeof value === 'object' && value !== null && 'latitude' in value && 'longitude' in value) {
+      if (
+        typeof value === 'object' &&
+        value !== null &&
+        'latitude' in value &&
+        'longitude' in value
+      ) {
         geoPoint.value = { latitude: value.latitude, longitude: value.longitude }
       } else {
         geoPoint.value = { latitude: 0, longitude: 0 }
@@ -285,12 +317,15 @@ function initializeValues() {
 // Initialize on mount and when props change
 initializeValues()
 watch(() => props.fieldValue, initializeValues, { deep: true })
-watch(() => props.forcedType, (newType) => {
-  if (newType) {
-    fieldType.value = newType
-    initializeValues()
+watch(
+  () => props.forcedType,
+  newType => {
+    if (newType) {
+      fieldType.value = newType
+      initializeValues()
+    }
   }
-})
+)
 
 function getCurrentValue() {
   switch (fieldType.value) {
@@ -340,7 +375,7 @@ function addMapField() {
   updateValue()
 }
 
-function handleNestedUpdate(event: { path: (string | number)[], value: any }) {
+function handleNestedUpdate(event: { path: (string | number)[]; value: any }) {
   if (event.path.length === props.path.length) {
     // Direct update to this field's value
     if (fieldType.value === 'map') {

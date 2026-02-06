@@ -1,5 +1,7 @@
 <template>
-  <div class="w-1/3 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto theme-transition-colors">
+  <div
+    class="w-1/3 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto theme-transition-colors"
+  >
     <div class="p-4">
       <!-- Database Name -->
       <div class="mb-3">
@@ -21,18 +23,14 @@
 
       <!-- Collections List -->
       <div v-if="collections.length > 0" class="space-y-1">
-        <div
-          v-for="collection in collections"
-          :key="collection.id"
-          class="group"
-        >
+        <div v-for="collection in collections" :key="collection.id" class="group">
           <div
             @click="$emit('select-collection', collection)"
             :class="[
               'flex items-center px-3 py-2 text-sm rounded-md cursor-pointer transition-colors',
               selectedCollection?.id === collection.id
                 ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700',
             ]"
           >
             <CircleStackIcon class="w-4 h-4 mr-2 flex-shrink-0" />
@@ -42,14 +40,9 @@
       </div>
 
       <!-- Empty state -->
-      <div
-        v-if="collections.length === 0 && !loading"
-        class="text-center py-8"
-      >
+      <div v-if="collections.length === 0 && !loading" class="text-center py-8">
         <CircleStackIcon class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-        <p class="text-sm text-gray-500 dark:text-gray-400">
-          No collections found
-        </p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">No collections found</p>
       </div>
     </div>
   </div>

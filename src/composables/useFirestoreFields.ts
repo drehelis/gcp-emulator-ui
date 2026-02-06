@@ -19,7 +19,7 @@ export const useFirestoreFields = () => {
     map: { label: 'Map', defaultValue: {} },
     array: { label: 'Array', defaultValue: [] },
     geopoint: { label: 'GeoPoint', defaultValue: { latitude: 0, longitude: 0 } },
-    reference: { label: 'Reference', defaultValue: '' }
+    reference: { label: 'Reference', defaultValue: '' },
   }
 
   /**
@@ -73,7 +73,8 @@ export const useFirestoreFields = () => {
       return `${fields.length} fields`
     }
     if (value.referenceValue !== undefined) return value.referenceValue
-    if (value.geoPointValue !== undefined) return `${value.geoPointValue.latitude}, ${value.geoPointValue.longitude}`
+    if (value.geoPointValue !== undefined)
+      return `${value.geoPointValue.latitude}, ${value.geoPointValue.longitude}`
     if (value.bytesValue !== undefined) return value.bytesValue
     if (value.nullValue !== undefined) return 'null'
     return JSON.stringify(value, null, 2)
@@ -91,7 +92,8 @@ export const useFirestoreFields = () => {
     if (firestoreValue.timestampValue !== undefined) return firestoreValue.timestampValue
     if (firestoreValue.referenceValue !== undefined) return firestoreValue.referenceValue
     if (firestoreValue.nullValue !== undefined) return null
-    if (firestoreValue.geoPointValue !== undefined) return `${firestoreValue.geoPointValue.latitude},${firestoreValue.geoPointValue.longitude}`
+    if (firestoreValue.geoPointValue !== undefined)
+      return `${firestoreValue.geoPointValue.latitude},${firestoreValue.geoPointValue.longitude}`
     return ''
   }
 
@@ -108,9 +110,7 @@ export const useFirestoreFields = () => {
 
       case 'number': {
         const num = Number(value || 0)
-        return Number.isInteger(num)
-          ? { integerValue: num.toString() }
-          : { doubleValue: num }
+        return Number.isInteger(num) ? { integerValue: num.toString() } : { doubleValue: num }
       }
 
       case 'boolean':
@@ -141,8 +141,8 @@ export const useFirestoreFields = () => {
         return {
           geoPointValue: {
             latitude: Number(geo.latitude || 0),
-            longitude: Number(geo.longitude || 0)
-          }
+            longitude: Number(geo.longitude || 0),
+          },
         }
       }
 
@@ -166,8 +166,8 @@ export const useFirestoreFields = () => {
         const values = Array.isArray(value) ? value : []
         return {
           arrayValue: {
-            values: values.map(item => convertToFirestoreValue(item))
-          }
+            values: values.map(item => convertToFirestoreValue(item)),
+          },
         }
       }
 
@@ -191,9 +191,7 @@ export const useFirestoreFields = () => {
     }
 
     if (typeof value === 'number') {
-      return Number.isInteger(value)
-        ? { integerValue: value.toString() }
-        : { doubleValue: value }
+      return Number.isInteger(value) ? { integerValue: value.toString() } : { doubleValue: value }
     }
 
     if (typeof value === 'boolean') {
@@ -203,8 +201,8 @@ export const useFirestoreFields = () => {
     if (Array.isArray(value)) {
       return {
         arrayValue: {
-          values: value.map(item => convertToFirestoreValue(item))
-        }
+          values: value.map(item => convertToFirestoreValue(item)),
+        },
       }
     }
 
@@ -259,7 +257,7 @@ export const useFirestoreFields = () => {
     if ('geoPointValue' in firestoreValue) {
       return {
         latitude: firestoreValue.geoPointValue.latitude || 0,
-        longitude: firestoreValue.geoPointValue.longitude || 0
+        longitude: firestoreValue.geoPointValue.longitude || 0,
       }
     }
 
@@ -342,6 +340,6 @@ export const useFirestoreFields = () => {
 
     // Validation and utilities
     isValidFieldName,
-    generateTempFieldName
+    generateTempFieldName,
   }
 }

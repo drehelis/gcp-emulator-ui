@@ -1,15 +1,18 @@
 <template>
-  <div :class="[
-    'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto',
-    selectedDocument ? 'w-1/3' : 'w-2/3'
-  ]">
+  <div
+    :class="[
+      'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto',
+      selectedDocument ? 'w-1/3' : 'w-2/3',
+    ]"
+  >
     <div class="p-4">
       <!-- Collection Header with Breadcrumb Style -->
       <div class="mb-3">
-        <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 font-mono">
+        <div
+          class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 font-mono"
+        >
           <span class="text-gray-900 dark:text-white">{{
-            selectedCollection ? selectedCollection.id :
-            'Select a collection'
+            selectedCollection ? selectedCollection.id : 'Select a collection'
           }}</span>
           <div v-if="selectedCollection" class="relative" data-collection-menu>
             <button
@@ -58,7 +61,7 @@
               'flex items-center px-3 py-2 text-sm rounded-md cursor-pointer transition-colors',
               selectedDocument?.name === document.name
                 ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700',
             ]"
             @click="$emit('select-document', document)"
           >
@@ -67,10 +70,7 @@
         </div>
 
         <!-- Empty collection state -->
-        <div
-          v-if="documents.length === 0 && !loading"
-          class="text-center py-8"
-        >
+        <div v-if="documents.length === 0 && !loading" class="text-center py-8">
           <DocumentIcon class="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
           <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
             No documents in this collection
@@ -86,14 +86,9 @@
       </div>
 
       <!-- No collection selected state -->
-      <div
-        v-else
-        class="text-center py-16"
-      >
+      <div v-else class="text-center py-16">
         <CircleStackIcon class="w-16 h-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-        <p class="text-lg font-medium text-gray-900 dark:text-white mb-2">
-          Select a collection
-        </p>
+        <p class="text-lg font-medium text-gray-900 dark:text-white mb-2">Select a collection</p>
         <p class="text-sm text-gray-500 dark:text-gray-400">
           Choose a collection from the left panel to view its documents
         </p>
@@ -104,7 +99,12 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { PlusIcon, EllipsisVerticalIcon, DocumentIcon, CircleStackIcon } from '@heroicons/vue/24/outline'
+import {
+  PlusIcon,
+  EllipsisVerticalIcon,
+  DocumentIcon,
+  CircleStackIcon,
+} from '@heroicons/vue/24/outline'
 import { useDocumentUtils } from '@/composables/useDocumentUtils'
 import type { FirestoreDocument, FirestoreCollectionWithMetadata } from '@/types'
 

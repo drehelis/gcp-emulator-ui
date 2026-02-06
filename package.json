@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "lint": "eslint . --fix",
     "lint:style": "stylelint **/*.{css,scss,vue} --fix",
-    "format": "prettier --write src/",
+    "format:write": "prettier --write src/",
+    "format:check": "prettier --check src/",
     "type-check": "vue-tsc --noEmit --skipLibCheck",
     "test": "vitest",
     "test:coverage": "vitest run --coverage"

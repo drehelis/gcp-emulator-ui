@@ -10,9 +10,12 @@
           <ChevronLeftIcon class="w-6 h-6" />
         </button>
         <div class="flex-1 min-w-0">
-          <h1 class="text-lg font-semibold text-gray-900 dark:text-white truncate">{{ getDocumentId(selectedDocument.name) }}</h1>
+          <h1 class="text-lg font-semibold text-gray-900 dark:text-white truncate">
+            {{ getDocumentId(selectedDocument.name) }}
+          </h1>
           <p class="text-sm text-gray-500 dark:text-gray-400">
-            {{ Object.keys(selectedDocument.fields || {}).length }} fields, {{ subcollections.length }} subcollections
+            {{ Object.keys(selectedDocument.fields || {}).length }} fields,
+            {{ subcollections.length }} subcollections
           </p>
         </div>
         <button
@@ -53,7 +56,10 @@
     <!-- Content -->
     <div class="flex-1 overflow-y-auto">
       <!-- Subcollections Section -->
-      <div v-if="subcollections.length > 0" class="p-4 border-b border-gray-200 dark:border-gray-700">
+      <div
+        v-if="subcollections.length > 0"
+        class="p-4 border-b border-gray-200 dark:border-gray-700"
+      >
         <div class="flex items-center justify-between mb-3">
           <h2 class="text-sm font-medium text-gray-900 dark:text-white">Subcollections</h2>
           <button
@@ -72,7 +78,9 @@
             class="w-full flex items-center p-3 text-left bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
           >
             <CircleStackIcon class="w-5 h-5 text-blue-500 dark:text-blue-400 mr-3 flex-shrink-0" />
-            <span class="font-medium text-gray-900 dark:text-white truncate">{{ subcollection.id }}</span>
+            <span class="font-medium text-gray-900 dark:text-white truncate">{{
+              subcollection.id
+            }}</span>
             <ChevronRightIcon class="w-5 h-5 text-gray-400 dark:text-gray-500 flex-shrink-0 ml-2" />
           </button>
         </div>
@@ -117,11 +125,15 @@
 
         <!-- Empty Fields State -->
         <div v-else class="text-center py-8">
-          <div class="w-12 h-12 mx-auto bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mb-4">
+          <div
+            class="w-12 h-12 mx-auto bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mb-4"
+          >
             <DocumentIcon class="w-6 h-6 text-gray-400 dark:text-gray-500" />
           </div>
           <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-2">No fields</h3>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Add your first field to this document.</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            Add your first field to this document.
+          </p>
           <button
             @click="$emit('add-field')"
             class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
@@ -143,7 +155,7 @@ import {
   PlusIcon,
   CircleStackIcon,
   ChevronRightIcon,
-  DocumentIcon
+  DocumentIcon,
 } from '@heroicons/vue/24/outline'
 import { useDocumentUtils } from '@/composables/useDocumentUtils'
 import FieldList from '@/components/firestore/fields/FieldList.vue'
@@ -157,13 +169,13 @@ interface Props {
 
 withDefaults(defineProps<Props>(), {
   subcollections: () => [],
-  expandedFields: () => new Set()
+  expandedFields: () => new Set(),
 })
 
 const { getDocumentId } = useDocumentUtils()
 
 const emit = defineEmits<{
-  'back': []
+  back: []
   'add-field': []
   'edit-field': [data: any]
   'delete-field': [data: any]

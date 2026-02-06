@@ -10,16 +10,14 @@
           placeholder="Enter field name"
           class="firestore-input"
         />
-        <p v-if="!localField.name.trim()" class="mt-1 text-xs text-gray-500 dark:text-gray-400">Optional field - leave empty to skip</p>
+        <p v-if="!localField.name.trim()" class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+          Optional field - leave empty to skip
+        </p>
       </div>
 
       <!-- Field Type -->
       <div class="col-span-2">
-        <select
-          v-model="localField.type"
-          @change="handleTypeChange"
-          class="firestore-select"
-        >
+        <select v-model="localField.type" @change="handleTypeChange" class="firestore-select">
           <option value="string">String</option>
           <option value="number">Number</option>
           <option value="boolean">Boolean</option>
@@ -42,7 +40,7 @@
           placeholder="Enter text value"
           rows="1"
           class="firestore-textarea"
-          style="field-sizing: content; min-height: 2.5rem;"
+          style="field-sizing: content; min-height: 2.5rem"
         />
 
         <!-- Number -->
@@ -77,9 +75,7 @@
         />
 
         <!-- Null -->
-        <div v-else-if="localField.type === 'null'" class="firestore-null-value">
-          null
-        </div>
+        <div v-else-if="localField.type === 'null'" class="firestore-null-value">null</div>
 
         <!-- Reference -->
         <input
@@ -113,7 +109,9 @@
 
         <!-- Map -->
         <div v-else-if="localField.type === 'map'" class="flex items-center gap-2">
-          <span class="text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded">
+          <span
+            class="text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded"
+          >
             {{ Object.keys(mapData).length }} field(s)
           </span>
           <button
@@ -127,7 +125,9 @@
 
         <!-- Array -->
         <div v-else-if="localField.type === 'array'" class="flex items-center gap-2">
-          <span class="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded">
+          <span
+            class="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded"
+          >
             {{ arrayData.length }} item(s)
           </span>
           <button
@@ -169,7 +169,6 @@
       :depth="0"
       @update="handleNestedArrayUpdate"
     />
-
   </div>
 </template>
 
@@ -204,25 +203,29 @@ const geoPoint = ref({ latitude: 0, longitude: 0 })
 // Computed properties for complex types
 const mapData = computed({
   get: () => localField.value.value || {},
-  set: (value) => {
+  set: value => {
     localField.value.value = value
     updateField()
-  }
+  },
 })
 
 const arrayData = computed({
   get: () => localField.value.value || [],
-  set: (value) => {
+  set: value => {
     localField.value.value = value
     updateField()
-  }
+  },
 })
 
 // Watch for external field changes
-watch(() => props.field, (newField) => {
-  Object.assign(localField.value, newField)
-  initializeSpecialTypes()
-}, { deep: true })
+watch(
+  () => props.field,
+  newField => {
+    Object.assign(localField.value, newField)
+    initializeSpecialTypes()
+  },
+  { deep: true }
+)
 
 // Initialize special types
 function initializeSpecialTypes() {
@@ -236,16 +239,26 @@ initializeSpecialTypes()
 
 function getDefaultValueForType(type: string): any {
   switch (type) {
-    case 'string': return ''
-    case 'number': return 0
-    case 'boolean': return false
-    case 'null': return null
-    case 'timestamp': return new Date().toISOString().slice(0, 16)
-    case 'reference': return ''
-    case 'map': return {}
-    case 'array': return []
-    case 'geopoint': return { latitude: 0, longitude: 0 }
-    default: return ''
+    case 'string':
+      return ''
+    case 'number':
+      return 0
+    case 'boolean':
+      return false
+    case 'null':
+      return null
+    case 'timestamp':
+      return new Date().toISOString().slice(0, 16)
+    case 'reference':
+      return ''
+    case 'map':
+      return {}
+    case 'array':
+      return []
+    case 'geopoint':
+      return { latitude: 0, longitude: 0 }
+    default:
+      return ''
   }
 }
 
@@ -261,7 +274,7 @@ function updateField() {
   emit('update', localField.value.id, {
     name: localField.value.name,
     type: localField.value.type,
-    value: localField.value.value
+    value: localField.value.value,
   })
 }
 
@@ -269,7 +282,6 @@ function updateGeoPoint() {
   localField.value.value = { ...geoPoint.value }
   updateField()
 }
-
 
 // Map methods
 function addMapField() {
@@ -281,7 +293,6 @@ function addMapField() {
   mapData.value = newMap
 }
 
-
 // Array methods
 function addArrayItem() {
   // Default to string type - users can change it after adding
@@ -290,15 +301,12 @@ function addArrayItem() {
   arrayData.value = newArray
 }
 
-
-
-
 // Handlers for recursive nested field updates
-function handleNestedMapUpdate(event: { path: (string | number)[], value: any }) {
+function handleNestedMapUpdate(event: { path: (string | number)[]; value: any }) {
   mapData.value = event.value
 }
 
-function handleNestedArrayUpdate(event: { path: (string | number)[], value: any }) {
+function handleNestedArrayUpdate(event: { path: (string | number)[]; value: any }) {
   arrayData.value = event.value
 }
 </script>

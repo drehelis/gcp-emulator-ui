@@ -21,7 +21,10 @@ export const useDocumentUtils = () => {
    * @param documentId - Document ID to search for
    * @returns Found document or undefined
    */
-  const findDocumentById = (documents: FirestoreDocument[], documentId: string): FirestoreDocument | undefined => {
+  const findDocumentById = (
+    documents: FirestoreDocument[],
+    documentId: string
+  ): FirestoreDocument | undefined => {
     return documents.find(doc => getDocumentId(doc.name) === documentId)
   }
 
@@ -31,7 +34,10 @@ export const useDocumentUtils = () => {
    * @param documentPath - Full document path to search for
    * @returns Found document or undefined
    */
-  const findDocumentByPath = (documents: FirestoreDocument[], documentPath: string): FirestoreDocument | undefined => {
+  const findDocumentByPath = (
+    documents: FirestoreDocument[],
+    documentPath: string
+  ): FirestoreDocument | undefined => {
     return documents.find(doc => doc.name === documentPath)
   }
 
@@ -88,7 +94,7 @@ export const useDocumentUtils = () => {
     // Subcollection documents have more than 3 parts after 'documents'
     // Normal: documents/collection/doc -> 2 parts
     // Subcollection: documents/collection/doc/subcollection/subdoc -> 4 parts
-    return documentsIndex !== -1 && (parts.length - documentsIndex - 1) > 2
+    return documentsIndex !== -1 && parts.length - documentsIndex - 1 > 2
   }
 
   /**
@@ -96,20 +102,22 @@ export const useDocumentUtils = () => {
    * @param documentPath - Full document path
    * @returns Array of breadcrumb segments with type and name
    */
-  const getBreadcrumbSegments = (documentPath: string): Array<{type: 'collection' | 'document', name: string}> => {
+  const getBreadcrumbSegments = (
+    documentPath: string
+  ): Array<{ type: 'collection' | 'document'; name: string }> => {
     const parts = documentPath.split('/')
     const documentsIndex = parts.indexOf('documents')
 
     if (documentsIndex === -1) return []
 
     const pathParts = parts.slice(documentsIndex + 1)
-    const segments: Array<{type: 'collection' | 'document', name: string}> = []
+    const segments: Array<{ type: 'collection' | 'document'; name: string }> = []
 
     // Alternate between collection and document
     pathParts.forEach((part, index) => {
       segments.push({
         type: index % 2 === 0 ? 'collection' : 'document',
-        name: part
+        name: part,
       })
     })
 
@@ -156,6 +164,6 @@ export const useDocumentUtils = () => {
     getBreadcrumbSegments,
 
     // Validation
-    isValidDocumentId
+    isValidDocumentId,
   }
 }

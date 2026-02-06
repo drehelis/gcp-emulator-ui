@@ -91,7 +91,18 @@ export interface DialogAction {
 export interface FormField {
   name: string
   label: string
-  type: 'text' | 'email' | 'password' | 'number' | 'textarea' | 'select' | 'checkbox' | 'radio' | 'file' | 'date' | 'datetime'
+  type:
+    | 'text'
+    | 'email'
+    | 'password'
+    | 'number'
+    | 'textarea'
+    | 'select'
+    | 'checkbox'
+    | 'radio'
+    | 'file'
+    | 'date'
+    | 'datetime'
   placeholder?: string
   required?: boolean
   disabled?: boolean

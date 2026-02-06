@@ -67,7 +67,17 @@ export interface FirestoreFilter {
   }
   fieldFilter?: {
     field: { fieldPath: string }
-    op: 'LESS_THAN' | 'LESS_THAN_OR_EQUAL' | 'GREATER_THAN' | 'GREATER_THAN_OR_EQUAL' | 'EQUAL' | 'NOT_EQUAL' | 'ARRAY_CONTAINS' | 'IN' | 'ARRAY_CONTAINS_ANY' | 'NOT_IN'
+    op:
+      | 'LESS_THAN'
+      | 'LESS_THAN_OR_EQUAL'
+      | 'GREATER_THAN'
+      | 'GREATER_THAN_OR_EQUAL'
+      | 'EQUAL'
+      | 'NOT_EQUAL'
+      | 'ARRAY_CONTAINS'
+      | 'IN'
+      | 'ARRAY_CONTAINS_ANY'
+      | 'NOT_IN'
     value: FirestoreValue
   }
   unaryFilter?: {
@@ -226,7 +236,11 @@ export interface FirestoreDatabase {
   updateTime?: string
   locationId?: string
   type?: 'DATABASE_TYPE_UNSPECIFIED' | 'FIRESTORE_NATIVE' | 'DATASTORE_MODE'
-  concurrencyMode?: 'CONCURRENCY_MODE_UNSPECIFIED' | 'OPTIMISTIC' | 'PESSIMISTIC' | 'OPTIMISTIC_WITH_ENTITY_GROUPS'
+  concurrencyMode?:
+    | 'CONCURRENCY_MODE_UNSPECIFIED'
+    | 'OPTIMISTIC'
+    | 'PESSIMISTIC'
+    | 'OPTIMISTIC_WITH_ENTITY_GROUPS'
   appEngineIntegrationMode?: 'APP_ENGINE_INTEGRATION_MODE_UNSPECIFIED' | 'ENABLED' | 'DISABLED'
   keyPrefix?: string
   etag?: string
@@ -286,7 +300,17 @@ export interface QueryBuilder {
 
 export interface QueryFilter {
   field: string
-  operator: 'eq' | 'ne' | 'lt' | 'lte' | 'gt' | 'gte' | 'in' | 'not-in' | 'array-contains' | 'array-contains-any'
+  operator:
+    | 'eq'
+    | 'ne'
+    | 'lt'
+    | 'lte'
+    | 'gt'
+    | 'gte'
+    | 'in'
+    | 'not-in'
+    | 'array-contains'
+    | 'array-contains-any'
   value: any
 }
 

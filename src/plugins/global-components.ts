@@ -17,7 +17,7 @@ import {
   PresentationChartLineIcon,
   ChartPieIcon,
   FolderIcon,
-  
+
   // Action icons
   PlusIcon,
   TrashIcon,
@@ -28,14 +28,14 @@ import {
   FunnelIcon,
   Bars3Icon,
   XMarkIcon,
-  
+
   // Status icons
   CheckCircleIcon,
   ExclamationCircleIcon,
   ExclamationTriangleIcon,
   InformationCircleIcon,
   ClockIcon,
-  
+
   // Arrow icons
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -43,7 +43,7 @@ import {
   ChevronDownIcon,
   ArrowUpIcon,
   ArrowDownIcon,
-  
+
   // Other common icons
   UserIcon,
   BellIcon,
@@ -55,7 +55,7 @@ import {
   PaperAirplaneIcon,
   ArrowDownTrayIcon,
   ArrowsPointingOutIcon,
-  ArrowsPointingInIcon
+  ArrowsPointingInIcon,
 } from '@heroicons/vue/24/outline'
 
 // Import filled versions for active states
@@ -68,7 +68,7 @@ import {
   CogIcon as CogIconSolid,
   PresentationChartLineIcon as PresentationChartLineIconSolid,
   ChartPieIcon as ChartPieIconSolid,
-  FolderIcon as FolderIconSolid
+  FolderIcon as FolderIconSolid,
 } from '@heroicons/vue/24/solid'
 
 export default {
@@ -83,7 +83,7 @@ export default {
     app.component('PresentationChartLineIcon', PresentationChartLineIcon)
     app.component('ChartPieIcon', ChartPieIcon)
     app.component('FolderIcon', FolderIcon)
-    
+
     app.component('PlusIcon', PlusIcon)
     app.component('TrashIcon', TrashIcon)
     app.component('PencilIcon', PencilIcon)
@@ -93,20 +93,20 @@ export default {
     app.component('FunnelIcon', FunnelIcon)
     app.component('Bars3Icon', Bars3Icon)
     app.component('XMarkIcon', XMarkIcon)
-    
+
     app.component('CheckCircleIcon', CheckCircleIcon)
     app.component('ExclamationCircleIcon', ExclamationCircleIcon)
     app.component('ExclamationTriangleIcon', ExclamationTriangleIcon)
     app.component('InformationCircleIcon', InformationCircleIcon)
     app.component('ClockIcon', ClockIcon)
-    
+
     app.component('ChevronLeftIcon', ChevronLeftIcon)
     app.component('ChevronRightIcon', ChevronRightIcon)
     app.component('ChevronUpIcon', ChevronUpIcon)
     app.component('ChevronDownIcon', ChevronDownIcon)
     app.component('ArrowUpIcon', ArrowUpIcon)
     app.component('ArrowDownIcon', ArrowDownIcon)
-    
+
     app.component('UserIcon', UserIcon)
     app.component('BellIcon', BellIcon)
     app.component('SunIcon', SunIcon)
@@ -118,7 +118,7 @@ export default {
     app.component('ArrowDownTrayIcon', ArrowDownTrayIcon)
     app.component('ArrowsPointingOutIcon', ArrowsPointingOutIcon)
     app.component('ArrowsPointingInIcon', ArrowsPointingInIcon)
-    
+
     // Register solid icons with 'Solid' suffix
     app.component('HomeIconSolid', HomeIconSolid)
     app.component('ChartBarIconSolid', ChartBarIconSolid)
@@ -129,5 +129,5 @@ export default {
     app.component('PresentationChartLineIconSolid', PresentationChartLineIconSolid)
     app.component('ChartPieIconSolid', ChartPieIconSolid)
     app.component('FolderIconSolid', FolderIconSolid)
-  }
+  },
 }

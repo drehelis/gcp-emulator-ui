@@ -58,7 +58,7 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
-  limitOptions: () => [10, 25, 50, 100]
+  limitOptions: () => [10, 25, 50, 100],
 })
 
 const emit = defineEmits<{

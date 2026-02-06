@@ -85,8 +85,14 @@ export const datastoreApi = {
   },
 
   // Run an aggregation query
-  async runAggregationQuery(projectId: string, request: RunAggregationQueryRequest): Promise<RunAggregationQueryResponse> {
-    const response = await datastoreClient.post(`/v1/projects/${projectId}:runAggregationQuery`, request)
+  async runAggregationQuery(
+    projectId: string,
+    request: RunAggregationQueryRequest
+  ): Promise<RunAggregationQueryResponse> {
+    const response = await datastoreClient.post(
+      `/v1/projects/${projectId}:runAggregationQuery`,
+      request
+    )
     return response.data
   },
 
@@ -97,8 +103,14 @@ export const datastoreApi = {
   },
 
   // Begin a transaction
-  async beginTransaction(projectId: string, request: BeginTransactionRequest): Promise<BeginTransactionResponse> {
-    const response = await datastoreClient.post(`/v1/projects/${projectId}:beginTransaction`, request)
+  async beginTransaction(
+    projectId: string,
+    request: BeginTransactionRequest
+  ): Promise<BeginTransactionResponse> {
+    const response = await datastoreClient.post(
+      `/v1/projects/${projectId}:beginTransaction`,
+      request
+    )
     return response.data
   },
 
@@ -124,7 +136,11 @@ export const datastoreApi = {
         return cached
       }
 
-      console.log('[Datastore API] Listing kinds for:', { projectId, namespaceId: namespaceId || '(default)', databaseId: databaseId || '(default)' })
+      console.log('[Datastore API] Listing kinds for:', {
+        projectId,
+        namespaceId: namespaceId || '(default)',
+        databaseId: databaseId || '(default)',
+      })
 
       const kinds = new Set<string>()
 
@@ -133,14 +149,14 @@ export const datastoreApi = {
       // First, get all kind names from __kind__
       const partitionId: any = {
         projectId,
-        namespaceId: namespaceId || ''
+        namespaceId: namespaceId || '',
       }
 
       const request: RunQueryRequest = {
         partitionId,
         query: {
-          kind: [{ name: '__kind__' }]
-        }
+          kind: [{ name: '__kind__' }],
+        },
       }
 
       console.log('[Datastore API] Querying __kind__ to get all kind names...')
@@ -167,18 +183,21 @@ export const datastoreApi = {
       // OPTIMIZATION: Parallelize queries instead of serial loop
       console.log(`[Datastore API] Filtering kinds by database: ${databaseId}`)
 
-      const kindCheckPromises = allKindNames.map(async (kindName) => {
+      const kindCheckPromises = allKindNames.map(async kindName => {
         try {
           // Query just 1 entity from this kind to check its database
           const entityRequest: RunQueryRequest = {
             partitionId,
             query: {
               kind: [{ name: kindName }],
-              limit: 1
-            }
+              limit: 1,
+            },
           }
 
-          const entityResponse = await datastoreClient.post(`/v1/projects/${projectId}:runQuery`, entityRequest)
+          const entityResponse = await datastoreClient.post(
+            `/v1/projects/${projectId}:runQuery`,
+            entityRequest
+          )
 
           if (entityResponse.data.batch?.entityResults?.[0]) {
             const entity = entityResponse.data.batch.entityResults[0].entity
@@ -252,14 +271,14 @@ export const datastoreApi = {
       }
 
       // OPTIMIZATION: Parallelize queries instead of serial loop
-      const queryPromises = kindsToQuery.map(async (kindName) => {
+      const queryPromises = kindsToQuery.map(async kindName => {
         try {
           const request: RunQueryRequest = {
             partitionId,
             query: {
               kind: [{ name: kindName }],
-              limit: 10 // Only need a few entities to discover database
-            }
+              limit: 10, // Only need a few entities to discover database
+            },
           }
 
           console.log(`[Datastore API] Querying ${kindName} for databases...`)
@@ -268,14 +287,16 @@ export const datastoreApi = {
           const foundDatabases: string[] = []
           // Extract database IDs from entity partition IDs
           if (response.data.batch?.entityResults) {
-            console.log(`[Datastore API] Found ${response.data.batch.entityResults.length} results for ${kindName}`)
+            console.log(
+              `[Datastore API] Found ${response.data.batch.entityResults.length} results for ${kindName}`
+            )
             response.data.batch.entityResults.forEach((result: any) => {
               const resultNamespace = result.entity?.key?.partitionId?.namespaceId || ''
               const databaseId = result.entity?.key?.partitionId?.databaseId
 
               console.log(`[Datastore API] Entity in ${kindName}:`, {
                 namespace: resultNamespace,
-                databaseId
+                databaseId,
               })
 
               // Only include if namespace matches (or if no namespace filter)
@@ -331,8 +352,8 @@ export const datastoreApi = {
       const request: RunQueryRequest = {
         partitionId,
         query: {
-          kind: [{ name: '__namespace__' }]
-        }
+          kind: [{ name: '__namespace__' }],
+        },
       }
 
       const response = await datastoreClient.post(`/v1/projects/${projectId}:runQuery`, request)
@@ -381,11 +402,11 @@ export const datastoreApi = {
     limit?: number,
     cursorOrOffset?: string | number,
     databaseId?: string
-  ): Promise<{ entities: DatastoreEntity[], endCursor?: string, hasMore: boolean }> {
+  ): Promise<{ entities: DatastoreEntity[]; endCursor?: string; hasMore: boolean }> {
     try {
       const partitionId: any = {
         projectId,
-        namespaceId: namespaceId || ''
+        namespaceId: namespaceId || '',
       }
 
       // NOTE: Datastore emulator doesn't support databaseId in partitionId
@@ -401,7 +422,7 @@ export const datastoreApi = {
 
       const query: any = {
         kind: [{ name: kind }],
-        limit: queryLimit
+        limit: queryLimit,
       }
 
       // Use cursor for normal queries, offset when filtering by database
@@ -413,7 +434,7 @@ export const datastoreApi = {
 
       const request: RunQueryRequest = {
         partitionId,
-        query
+        query,
       }
 
       const response = await datastoreClient.post(`/v1/projects/${projectId}:runQuery`, request)
@@ -424,7 +445,8 @@ export const datastoreApi = {
         const moreResults = response.data.batch.moreResults
 
         // Check if there are more results
-        const hasMore = moreResults === 'MORE_RESULTS_AFTER_LIMIT' ||
+        const hasMore =
+          moreResults === 'MORE_RESULTS_AFTER_LIMIT' ||
           moreResults === 'MORE_RESULTS_AFTER_CURSOR' ||
           moreResults === 'NOT_FINISHED'
 
@@ -442,14 +464,14 @@ export const datastoreApi = {
           return {
             entities: limitedEntities,
             endCursor: undefined,
-            hasMore: hasMore && limitedEntities.length >= (limit || 0)
+            hasMore: hasMore && limitedEntities.length >= (limit || 0),
           }
         }
 
         return {
           entities,
           endCursor,
-          hasMore
+          hasMore,
         }
       }
 
@@ -464,7 +486,7 @@ export const datastoreApi = {
   async getEntity(projectId: string, key: DatastoreKey): Promise<DatastoreEntity | null> {
     try {
       const request: LookupRequest = {
-        keys: [key]
+        keys: [key],
       }
 
       const response = await datastoreClient.post(`/v1/projects/${projectId}:lookup`, request)
@@ -486,9 +508,9 @@ export const datastoreApi = {
       mode: 'NON_TRANSACTIONAL',
       mutations: [
         {
-          insert: entity
-        }
-      ]
+          insert: entity,
+        },
+      ],
     }
 
     const response = await datastoreClient.post(`/v1/projects/${projectId}:commit`, request)
@@ -500,7 +522,7 @@ export const datastoreApi = {
     if (response.data.mutationResults?.[0]?.key) {
       return {
         ...entity,
-        key: response.data.mutationResults[0].key
+        key: response.data.mutationResults[0].key,
       }
     }
 
@@ -513,9 +535,9 @@ export const datastoreApi = {
       mode: 'NON_TRANSACTIONAL',
       mutations: [
         {
-          update: entity
-        }
-      ]
+          update: entity,
+        },
+      ],
     }
 
     await datastoreClient.post(`/v1/projects/${projectId}:commit`, request)
@@ -528,9 +550,9 @@ export const datastoreApi = {
       mode: 'NON_TRANSACTIONAL',
       mutations: [
         {
-          upsert: entity
-        }
-      ]
+          upsert: entity,
+        },
+      ],
     }
 
     await datastoreClient.post(`/v1/projects/${projectId}:commit`, request)
@@ -545,7 +567,7 @@ export const datastoreApi = {
     if (databaseId && databaseId !== '' && databaseId !== '(default)') {
       throw new Error(
         `Delete operations are not supported for entities in named database "${databaseId}". ` +
-        `This is a known limitation of the Datastore emulator. `
+          `This is a known limitation of the Datastore emulator. `
       )
     }
 
@@ -553,9 +575,9 @@ export const datastoreApi = {
     const cleanKey: DatastoreKey = {
       partitionId: {
         projectId: key.partitionId.projectId,
-        namespaceId: key.partitionId.namespaceId
+        namespaceId: key.partitionId.namespaceId,
       },
-      path: key.path
+      path: key.path,
     }
 
     try {
@@ -563,9 +585,9 @@ export const datastoreApi = {
         mode: 'NON_TRANSACTIONAL',
         mutations: [
           {
-            delete: cleanKey
-          }
-        ]
+            delete: cleanKey,
+          },
+        ],
       }
 
       const response = await datastoreClient.post(`/v1/projects/${projectId}:commit`, request)
@@ -580,10 +602,22 @@ export const datastoreApi = {
   },
 
   // Delete all entities of a kind
-  async deleteKind(projectId: string, kind: string, namespaceId?: string, databaseId?: string): Promise<void> {
+  async deleteKind(
+    projectId: string,
+    kind: string,
+    namespaceId?: string,
+    databaseId?: string
+  ): Promise<void> {
     try {
       // Get all entities of this kind
-      const entities = await this.getEntitiesByKind(projectId, kind, namespaceId, undefined, undefined, databaseId)
+      const entities = await this.getEntitiesByKind(
+        projectId,
+        kind,
+        namespaceId,
+        undefined,
+        undefined,
+        databaseId
+      )
 
       if (entities.length === 0) {
         return
@@ -596,8 +630,8 @@ export const datastoreApi = {
         const request: CommitRequest = {
           mode: 'NON_TRANSACTIONAL',
           mutations: batch.map(entity => ({
-            delete: entity.key
-          }))
+            delete: entity.key,
+          })),
         }
 
         await datastoreClient.post(`/v1/projects/${projectId}:commit`, request)
@@ -631,10 +665,13 @@ export const datastoreApi = {
 
     const request = {
       database: databasePath,
-      export_directory: exportDirectory
+      export_directory: exportDirectory,
     }
 
-    const response = await datastoreClient.post(`/emulator/v1/projects/${projectId}:export`, request)
+    const response = await datastoreClient.post(
+      `/emulator/v1/projects/${projectId}:export`,
+      request
+    )
     return response.data
   },
 
@@ -645,10 +682,13 @@ export const datastoreApi = {
 
     const request = {
       database: databasePath,
-      export_directory: metadataFilePath
+      export_directory: metadataFilePath,
     }
 
-    const response = await datastoreClient.post(`/emulator/v1/projects/${projectId}:import`, request)
+    const response = await datastoreClient.post(
+      `/emulator/v1/projects/${projectId}:import`,
+      request
+    )
 
     // Clear cache after import to ensure fresh data is loaded
     clearCache(projectId)
@@ -673,14 +713,14 @@ export const datastoreApi = {
       const exportData: any = {
         projectId,
         exportDate: new Date().toISOString(),
-        namespaces: []
+        namespaces: [],
       }
 
       // Step 2: For each namespace, get all kinds and their entities
       for (const namespace of namespacesToExport) {
         const namespaceData: any = {
           namespaceId: namespace,
-          kinds: []
+          kinds: [],
         }
 
         // Get all kinds in this namespace
@@ -690,15 +730,15 @@ export const datastoreApi = {
         for (const kind of kinds) {
           const partitionId: any = {
             projectId,
-            namespaceId: namespace || ''
+            namespaceId: namespace || '',
           }
 
           const request: RunQueryRequest = {
             partitionId,
             query: {
               kind: [{ name: kind }],
-              limit: 10000  // Large limit to get all entities
-            }
+              limit: 10000, // Large limit to get all entities
+            },
           }
 
           const response = await datastoreClient.post(`/v1/projects/${projectId}:runQuery`, request)
@@ -713,7 +753,7 @@ export const datastoreApi = {
           namespaceData.kinds.push({
             kind,
             count: entities.length,
-            entities
+            entities,
           })
         }
 
@@ -728,18 +768,23 @@ export const datastoreApi = {
   },
 
   // Helper to create a key
-  createKey(projectId: string, kind: string, id?: string | number, namespaceId?: string): DatastoreKey {
+  createKey(
+    projectId: string,
+    kind: string,
+    id?: string | number,
+    namespaceId?: string
+  ): DatastoreKey {
     return {
       partitionId: {
         projectId,
-        namespaceId: namespaceId || ''
+        namespaceId: namespaceId || '',
       },
       path: [
         {
           kind,
-          ...(typeof id === 'string' ? { name: id } : { id: id?.toString() })
-        }
-      ]
+          ...(typeof id === 'string' ? { name: id } : { id: id?.toString() }),
+        },
+      ],
     }
   },
 
@@ -852,10 +897,10 @@ export const datastoreApi = {
 
   async downloadFile(filename: string): Promise<Blob> {
     const response = await fileServerClient.get(`/${filename}`, {
-      responseType: 'blob'
+      responseType: 'blob',
     })
     return response.data
-  }
+  },
 }
 
 export default datastoreApi

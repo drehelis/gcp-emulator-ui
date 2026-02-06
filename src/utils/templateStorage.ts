@@ -46,12 +46,12 @@ class MessageTemplateStorage {
         resolve(this.db)
       }
 
-      request.onupgradeneeded = (event) => {
+      request.onupgradeneeded = event => {
         const db = (event.target as IDBOpenDBRequest).result
-        
+
         if (!db.objectStoreNames.contains(this.storeName)) {
           const store = db.createObjectStore(this.storeName, { keyPath: 'id' })
-          
+
           // Create indexes for efficient querying
           store.createIndex('projectId', 'projectId', { unique: false })
           store.createIndex('topicName', 'topicName', { unique: false })
@@ -67,23 +67,23 @@ class MessageTemplateStorage {
 
   async saveTemplate(templateData: CreateTemplateForm): Promise<MessageTemplate> {
     const db = await this.open()
-    
+
     // Check if template with same name exists in this project
     const existingTemplates = await this.getTemplates(templateData.projectId)
     const existingTemplate = existingTemplates.find(t => t.name === templateData.name)
-    
+
     if (existingTemplate) {
       throw new Error(`Template "${templateData.name}" already exists in this project`)
     }
-    
+
     const id = `template-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     const now = new Date()
-    
+
     const fullTemplate: MessageTemplate = {
       ...templateData,
       id,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
     }
 
     // Clean up the object to ensure it's serializable
@@ -95,7 +95,7 @@ class MessageTemplateStorage {
       const request = store.add({
         ...cleanTemplate,
         createdAt: now,
-        updatedAt: now
+        updatedAt: now,
       })
 
       request.onsuccess = () => resolve(fullTemplate)
@@ -105,13 +105,13 @@ class MessageTemplateStorage {
 
   async getTemplates(projectId?: string): Promise<MessageTemplate[]> {
     const db = await this.open()
-    
+
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([this.storeName], 'readonly')
       const store = transaction.objectStore(this.storeName)
-      
+
       let request: IDBRequest
-      
+
       if (projectId) {
         const index = store.index('projectId')
         request = index.getAll(projectId)
@@ -123,7 +123,7 @@ class MessageTemplateStorage {
         const templates = request.result.map((template: any) => ({
           ...template,
           createdAt: new Date(template.createdAt),
-          updatedAt: new Date(template.updatedAt)
+          updatedAt: new Date(template.updatedAt),
         }))
         resolve(templates)
       }
@@ -133,7 +133,7 @@ class MessageTemplateStorage {
 
   async getTemplate(id: string): Promise<MessageTemplate | null> {
     const db = await this.open()
-    
+
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([this.storeName], 'readonly')
       const store = transaction.objectStore(this.storeName)
@@ -145,7 +145,7 @@ class MessageTemplateStorage {
           resolve({
             ...template,
             createdAt: new Date(template.createdAt),
-            updatedAt: new Date(template.updatedAt)
+            updatedAt: new Date(template.updatedAt),
           })
         } else {
           resolve(null)
@@ -157,18 +157,18 @@ class MessageTemplateStorage {
 
   async updateTemplate(id: string, updates: Partial<MessageTemplate>): Promise<MessageTemplate> {
     const db = await this.open()
-    
+
     // First get the existing template
     const existingTemplate = await this.getTemplate(id)
     if (!existingTemplate) {
       throw new Error('Template not found')
     }
-    
+
     const updatedTemplate: MessageTemplate = {
       ...existingTemplate,
       ...updates,
       id, // Ensure ID doesn't change
-      updatedAt: new Date()
+      updatedAt: new Date(),
     }
 
     // Clean up the object to ensure it's serializable - clean both existing and updates separately
@@ -179,7 +179,7 @@ class MessageTemplateStorage {
       ...cleanExisting,
       ...cleanUpdates,
       id,
-      updatedAt: new Date()
+      updatedAt: new Date(),
     }
 
     return new Promise((resolve, reject) => {
@@ -194,7 +194,7 @@ class MessageTemplateStorage {
 
   async deleteTemplate(id: string): Promise<void> {
     const db = await this.open()
-    
+
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([this.storeName], 'readwrite')
       const store = transaction.objectStore(this.storeName)
@@ -207,7 +207,7 @@ class MessageTemplateStorage {
 
   async clearTemplates(projectId?: string): Promise<void> {
     const db = await this.open()
-    
+
     if (!projectId) {
       // Clear all templates
       return new Promise((resolve, reject) => {

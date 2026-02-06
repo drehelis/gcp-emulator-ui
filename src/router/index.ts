@@ -28,10 +28,8 @@ const routes: RouteRecordRaw[] = [
           description: 'Overview of your Pub/Sub resources and metrics',
           icon: 'ChartBarIcon',
           requiresAuth: true,
-          breadcrumbs: [
-            { label: 'Home', route: '/' }
-          ]
-        }
+          breadcrumbs: [{ label: 'Home', route: '/' }],
+        },
       },
       {
         path: 'projects',
@@ -42,11 +40,8 @@ const routes: RouteRecordRaw[] = [
           description: 'Manage your Google Cloud projects',
           icon: 'FolderIcon',
           requiresAuth: true,
-          breadcrumbs: [
-            { label: 'Home', route: '/' },
-            { label: 'Projects' }
-          ]
-        }
+          breadcrumbs: [{ label: 'Home', route: '/' }, { label: 'Projects' }],
+        },
       },
       {
         path: 'projects/:projectId',
@@ -62,11 +57,8 @@ const routes: RouteRecordRaw[] = [
               icon: 'QueueListIcon',
               requiresAuth: true,
               requiresProject: true,
-              breadcrumbs: [
-                { label: 'Home', route: '/' },
-                { label: ':projectId' }
-              ]
-            }
+              breadcrumbs: [{ label: 'Home', route: '/' }, { label: ':projectId' }],
+            },
           },
           {
             path: 'pubsub/topics',
@@ -86,9 +78,9 @@ const routes: RouteRecordRaw[] = [
                     { label: 'Home', route: '/' },
                     { label: ':projectId', route: '/projects/:projectId' },
                     { label: 'Pub/Sub' },
-                    { label: 'Topics' }
-                  ]
-                }
+                    { label: 'Topics' },
+                  ],
+                },
               },
               {
                 path: 'create',
@@ -106,9 +98,9 @@ const routes: RouteRecordRaw[] = [
                     { label: ':projectId', route: '/projects/:projectId' },
                     { label: 'Pub/Sub' },
                     { label: 'Topics', route: '/projects/:projectId/pubsub/topics' },
-                    { label: 'Create Topic' }
-                  ]
-                }
+                    { label: 'Create Topic' },
+                  ],
+                },
               },
               {
                 path: ':topicName',
@@ -126,9 +118,9 @@ const routes: RouteRecordRaw[] = [
                     { label: ':projectId', route: '/projects/:projectId' },
                     { label: 'Pub/Sub' },
                     { label: 'Topics', route: '/projects/:projectId/pubsub/topics' },
-                    { label: 'Topic Details' }
-                  ]
-                }
+                    { label: 'Topic Details' },
+                  ],
+                },
               },
               {
                 path: ':topicName/publish',
@@ -146,11 +138,11 @@ const routes: RouteRecordRaw[] = [
                     { label: ':projectId', route: '/projects/:projectId' },
                     { label: 'Pub/Sub' },
                     { label: 'Topics', route: '/projects/:projectId/pubsub/topics' },
-                    { label: 'Publish Messages' }
-                  ]
-                }
-              }
-            ]
+                    { label: 'Publish Messages' },
+                  ],
+                },
+              },
+            ],
           },
           {
             path: 'pubsub/subscriptions',
@@ -170,9 +162,9 @@ const routes: RouteRecordRaw[] = [
                     { label: 'Home', route: '/' },
                     { label: ':projectId', route: '/projects/:projectId' },
                     { label: 'Pub/Sub' },
-                    { label: 'Subscriptions' }
-                  ]
-                }
+                    { label: 'Subscriptions' },
+                  ],
+                },
               },
               {
                 path: 'create',
@@ -190,9 +182,9 @@ const routes: RouteRecordRaw[] = [
                     { label: ':projectId', route: '/projects/:projectId' },
                     { label: 'Pub/Sub' },
                     { label: 'Subscriptions', route: '/projects/:projectId/pubsub/subscriptions' },
-                    { label: 'Create Subscription' }
-                  ]
-                }
+                    { label: 'Create Subscription' },
+                  ],
+                },
               },
               {
                 path: ':subscriptionName',
@@ -210,9 +202,9 @@ const routes: RouteRecordRaw[] = [
                     { label: ':projectId', route: '/projects/:projectId' },
                     { label: 'Pub/Sub' },
                     { label: 'Subscriptions', route: '/projects/:projectId/pubsub/subscriptions' },
-                    { label: 'Subscription Details' }
-                  ]
-                }
+                    { label: 'Subscription Details' },
+                  ],
+                },
               },
               {
                 path: ':subscriptionName/consume',
@@ -230,11 +222,11 @@ const routes: RouteRecordRaw[] = [
                     { label: ':projectId', route: '/projects/:projectId' },
                     { label: 'Pub/Sub' },
                     { label: 'Subscriptions', route: '/projects/:projectId/pubsub/subscriptions' },
-                    { label: 'Consume Messages' }
-                  ]
-                }
-              }
-            ]
+                    { label: 'Consume Messages' },
+                  ],
+                },
+              },
+            ],
           },
           {
             path: 'pubsub/message-templates',
@@ -254,11 +246,11 @@ const routes: RouteRecordRaw[] = [
                     { label: 'Home', route: '/' },
                     { label: ':projectId', route: '/projects/:projectId' },
                     { label: 'Pub/Sub' },
-                    { label: 'Message Templates' }
-                  ]
-                }
-              }
-            ]
+                    { label: 'Message Templates' },
+                  ],
+                },
+              },
+            ],
           },
           {
             path: 'import-export',
@@ -274,9 +266,9 @@ const routes: RouteRecordRaw[] = [
               breadcrumbs: [
                 { label: 'Home', route: '/' },
                 { label: ':projectId', route: '/projects/:projectId' },
-                { label: 'Import/Export' }
-              ]
-            }
+                { label: 'Import/Export' },
+              ],
+            },
           },
           // Cloud Storage routes
           {
@@ -297,9 +289,9 @@ const routes: RouteRecordRaw[] = [
                     { label: 'Home', route: '/' },
                     { label: ':projectId', route: '/projects/:projectId' },
                     { label: 'Cloud Storage' },
-                    { label: 'Buckets' }
-                  ]
-                }
+                    { label: 'Buckets' },
+                  ],
+                },
               },
               {
                 path: 'create',
@@ -317,9 +309,9 @@ const routes: RouteRecordRaw[] = [
                     { label: ':projectId', route: '/projects/:projectId' },
                     { label: 'Cloud Storage' },
                     { label: 'Buckets', route: '/projects/:projectId/storage/buckets' },
-                    { label: 'Create Bucket' }
-                  ]
-                }
+                    { label: 'Create Bucket' },
+                  ],
+                },
               },
               {
                 path: ':bucketName',
@@ -340,9 +332,9 @@ const routes: RouteRecordRaw[] = [
                         { label: ':projectId', route: '/projects/:projectId' },
                         { label: 'Cloud Storage' },
                         { label: 'Buckets', route: '/projects/:projectId/storage/buckets' },
-                        { label: ':bucketName' }
-                      ]
-                    }
+                        { label: ':bucketName' },
+                      ],
+                    },
                   },
                   {
                     path: 'objects/:objectPath*',
@@ -360,10 +352,13 @@ const routes: RouteRecordRaw[] = [
                         { label: ':projectId', route: '/projects/:projectId' },
                         { label: 'Cloud Storage' },
                         { label: 'Buckets', route: '/projects/:projectId/storage/buckets' },
-                        { label: ':bucketName', route: '/projects/:projectId/storage/buckets/:bucketName' },
-                        { label: 'Object Details' }
-                      ]
-                    }
+                        {
+                          label: ':bucketName',
+                          route: '/projects/:projectId/storage/buckets/:bucketName',
+                        },
+                        { label: 'Object Details' },
+                      ],
+                    },
                   },
                   {
                     path: 'upload',
@@ -381,14 +376,17 @@ const routes: RouteRecordRaw[] = [
                         { label: ':projectId', route: '/projects/:projectId' },
                         { label: 'Cloud Storage' },
                         { label: 'Buckets', route: '/projects/:projectId/storage/buckets' },
-                        { label: ':bucketName', route: '/projects/:projectId/storage/buckets/:bucketName' },
-                        { label: 'Upload' }
-                      ]
-                    }
-                  }
-                ]
-              }
-            ]
+                        {
+                          label: ':bucketName',
+                          route: '/projects/:projectId/storage/buckets/:bucketName',
+                        },
+                        { label: 'Upload' },
+                      ],
+                    },
+                  },
+                ],
+              },
+            ],
           },
           // Firestore routes
           {
@@ -409,11 +407,11 @@ const routes: RouteRecordRaw[] = [
                     { label: 'Home', route: '/' },
                     { label: ':projectId', route: '/projects/:projectId' },
                     { label: 'Firestore' },
-                    { label: 'Collections' }
-                  ]
-                }
-              }
-            ]
+                    { label: 'Collections' },
+                  ],
+                },
+              },
+            ],
           },
           // Datastore routes
           {
@@ -434,13 +432,13 @@ const routes: RouteRecordRaw[] = [
                     { label: 'Home', route: '/' },
                     { label: ':projectId', route: '/projects/:projectId' },
                     { label: 'Datastore' },
-                    { label: 'Namespaces' }
-                  ]
-                }
-              }
-            ]
-          }
-        ]
+                    { label: 'Namespaces' },
+                  ],
+                },
+              },
+            ],
+          },
+        ],
       },
       // Legacy redirects for backward compatibility
       {
@@ -452,7 +450,7 @@ const routes: RouteRecordRaw[] = [
             return `/projects/${selectedProject}/pubsub/topics`
           }
           return '/' // Redirect to dashboard if no project selected
-        }
+        },
       },
       {
         path: 'subscriptions',
@@ -463,7 +461,7 @@ const routes: RouteRecordRaw[] = [
             return `/projects/${selectedProject}/pubsub/subscriptions`
           }
           return '/' // Redirect to dashboard if no project selected
-        }
+        },
       },
       {
         path: 'schemas',
@@ -478,11 +476,8 @@ const routes: RouteRecordRaw[] = [
               icon: 'DocumentTextIcon',
               requiresAuth: true,
               requiresProject: true,
-              breadcrumbs: [
-                { label: 'Home', route: '/' },
-                { label: 'Schemas' }
-              ]
-            }
+              breadcrumbs: [{ label: 'Home', route: '/' }, { label: 'Schemas' }],
+            },
           },
           {
             path: 'create',
@@ -497,9 +492,9 @@ const routes: RouteRecordRaw[] = [
               breadcrumbs: [
                 { label: 'Home', route: '/' },
                 { label: 'Schemas', route: '/schemas' },
-                { label: 'Create Schema' }
-              ]
-            }
+                { label: 'Create Schema' },
+              ],
+            },
           },
           {
             path: ':schemaName',
@@ -515,11 +510,11 @@ const routes: RouteRecordRaw[] = [
               breadcrumbs: [
                 { label: 'Home', route: '/' },
                 { label: 'Schemas', route: '/schemas' },
-                { label: 'Schema Details' }
-              ]
-            }
-          }
-        ]
+                { label: 'Schema Details' },
+              ],
+            },
+          },
+        ],
       },
       {
         path: 'monitoring',
@@ -534,11 +529,8 @@ const routes: RouteRecordRaw[] = [
               icon: 'ChartLineIcon',
               requiresAuth: true,
               requiresProject: true,
-              breadcrumbs: [
-                { label: 'Home', route: '/' },
-                { label: 'Monitoring' }
-              ]
-            }
+              breadcrumbs: [{ label: 'Home', route: '/' }, { label: 'Monitoring' }],
+            },
           },
           {
             path: 'metrics',
@@ -553,9 +545,9 @@ const routes: RouteRecordRaw[] = [
               breadcrumbs: [
                 { label: 'Home', route: '/' },
                 { label: 'Monitoring', route: '/monitoring' },
-                { label: 'Metrics' }
-              ]
-            }
+                { label: 'Metrics' },
+              ],
+            },
           },
           {
             path: 'alerts',
@@ -570,11 +562,11 @@ const routes: RouteRecordRaw[] = [
               breadcrumbs: [
                 { label: 'Home', route: '/' },
                 { label: 'Monitoring', route: '/monitoring' },
-                { label: 'Alerts' }
-              ]
-            }
-          }
-        ]
+                { label: 'Alerts' },
+              ],
+            },
+          },
+        ],
       },
       {
         path: 'analytics',
@@ -586,13 +578,10 @@ const routes: RouteRecordRaw[] = [
           icon: 'ChartPieIcon',
           requiresAuth: true,
           requiresProject: true,
-          breadcrumbs: [
-            { label: 'Home', route: '/' },
-            { label: 'Analytics' }
-          ]
-        }
-      }
-    ]
+          breadcrumbs: [{ label: 'Home', route: '/' }, { label: 'Analytics' }],
+        },
+      },
+    ],
   },
   // Authentication routes
   {
@@ -606,8 +595,8 @@ const routes: RouteRecordRaw[] = [
         meta: {
           title: 'Sign In',
           description: 'Sign in to your account',
-          requiresAuth: false
-        }
+          requiresAuth: false,
+        },
       },
       {
         path: 'callback',
@@ -616,10 +605,10 @@ const routes: RouteRecordRaw[] = [
         meta: {
           title: 'Authentication',
           description: 'Processing authentication...',
-          requiresAuth: false
-        }
-      }
-    ]
+          requiresAuth: false,
+        },
+      },
+    ],
   },
   // Fullscreen routes
   {
@@ -634,8 +623,8 @@ const routes: RouteRecordRaw[] = [
         meta: {
           title: 'Message Viewer',
           description: 'Fullscreen message viewer',
-          requiresAuth: true
-        }
+          requiresAuth: true,
+        },
       },
       {
         path: 'metrics-dashboard',
@@ -645,10 +634,10 @@ const routes: RouteRecordRaw[] = [
           title: 'Metrics Dashboard',
           description: 'Fullscreen metrics dashboard',
           requiresAuth: true,
-          requiresProject: true
-        }
-      }
-    ]
+          requiresProject: true,
+        },
+      },
+    ],
   },
   // Error pages
   {
@@ -660,8 +649,8 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/error/NotFoundView.vue'),
         meta: {
           title: 'Page Not Found',
-          description: 'The page you are looking for does not exist'
-        }
+          description: 'The page you are looking for does not exist',
+        },
       },
       {
         path: '403',
@@ -669,8 +658,8 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/error/ForbiddenView.vue'),
         meta: {
           title: 'Access Denied',
-          description: 'You do not have permission to access this resource'
-        }
+          description: 'You do not have permission to access this resource',
+        },
       },
       {
         path: '500',
@@ -678,16 +667,16 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/error/ServerErrorView.vue'),
         meta: {
           title: 'Server Error',
-          description: 'An unexpected error occurred'
-        }
-      }
-    ]
+          description: 'An unexpected error occurred',
+        },
+      },
+    ],
   },
   // Catch all route - redirect to 404
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/error/404'
-  }
+    redirect: '/error/404',
+  },
 ]
 
 // Create router instance
@@ -700,12 +689,12 @@ const router = createRouter({
     } else if (to.hash) {
       return {
         el: to.hash,
-        behavior: 'smooth'
+        behavior: 'smooth',
       }
     } else {
       return { top: 0 }
     }
-  }
+  },
 })
 
 // Global navigation guards
@@ -734,7 +723,7 @@ router.beforeEach(async (to, from, next) => {
 
   if (to.meta.breadcrumbs) {
     // Process breadcrumbs to replace :projectId and :bucketName with actual values
-    const projectId = to.params.projectId as string || projectsStore.selectedProjectId
+    const projectId = (to.params.projectId as string) || projectsStore.selectedProjectId
     const bucketName = to.params.bucketName as string
     const breadcrumbs = (to.meta.breadcrumbs as any[]).map(breadcrumb => ({
       ...breadcrumb,
@@ -743,7 +732,7 @@ router.beforeEach(async (to, from, next) => {
         .replace(':bucketName', bucketName || 'Bucket'),
       route: breadcrumb.route
         ?.replace(':projectId', projectId || 'project')
-        ?.replace(':bucketName', bucketName || 'bucket')
+        ?.replace(':bucketName', bucketName || 'bucket'),
     }))
     appStore.setBreadcrumbs(breadcrumbs)
   }
@@ -756,7 +745,7 @@ router.beforeEach(async (to, from, next) => {
       appStore.setGlobalLoading(false)
       next({
         name: 'login',
-        query: { redirect: to.fullPath }
+        query: { redirect: to.fullPath },
       })
       return
     }
@@ -767,7 +756,7 @@ router.beforeEach(async (to, from, next) => {
     appStore.showToast({
       type: 'warning',
       title: 'Project Required',
-      message: 'Please select a project to continue'
+      message: 'Please select a project to continue',
     })
 
     appStore.setGlobalLoading(false)
@@ -778,9 +767,7 @@ router.beforeEach(async (to, from, next) => {
   // Role-based access control
   if (to.meta.roles && to.meta.roles.length > 0) {
     const userRoles = getUserRoles() // TODO: Implement actual role check
-    const hasRequiredRole = (to.meta.roles as string[]).some(role =>
-      userRoles.includes(role)
-    )
+    const hasRequiredRole = (to.meta.roles as string[]).some(role => userRoles.includes(role))
 
     if (!hasRequiredRole) {
       appStore.setGlobalLoading(false)
@@ -819,7 +806,7 @@ router.afterEach((to, from) => {
 })
 
 // Error handling
-router.onError((error) => {
+router.onError(error => {
   const appStore = useAppStore()
 
   console.error('Router error:', error)
@@ -828,7 +815,7 @@ router.onError((error) => {
   appStore.showToast({
     type: 'error',
     title: 'Navigation Error',
-    message: 'An error occurred while navigating. Please try again.'
+    message: 'An error occurred while navigating. Please try again.',
   })
 })
 

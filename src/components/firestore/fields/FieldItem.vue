@@ -12,10 +12,7 @@
           class="p-0.5 mr-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
         >
           <ChevronRightIcon
-            :class="[
-              'w-3 h-3 transition-transform',
-              isExpanded ? 'rotate-90' : ''
-            ]"
+            :class="['w-3 h-3 transition-transform', isExpanded ? 'rotate-90' : '']"
           />
         </button>
         <div v-else class="w-4 mr-1"></div>
@@ -49,10 +46,12 @@
 
       <!-- Hover Actions -->
       <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <span class="text-xs text-gray-500 dark:text-gray-400 font-mono">{{ getFieldType(fieldValue) }}</span>
+        <span class="text-xs text-gray-500 dark:text-gray-400 font-mono">{{
+          getFieldType(fieldValue)
+        }}</span>
         <button
           v-if="getFieldType(fieldValue) === 'map' || getFieldType(fieldValue) === 'array'"
-          @click="getFieldType(fieldValue) === 'map' ? $emit('add-to-map', fieldPath) : $emit('add-to-array', fieldPath)"
+          @click="handleAddField"
           class="p-1 text-gray-400 hover:text-green-600 dark:hover:text-green-400 rounded transition-colors"
           :title="getFieldType(fieldValue) === 'map' ? 'Add field to map' : 'Add item to array'"
         >
@@ -82,7 +81,7 @@
       class="ml-5 space-y-1 border-l border-gray-200 dark:border-gray-600 pl-3"
     >
       <template
-        v-for="(subValue, subFieldName) in (fieldValue.mapValue?.fields || {})"
+        v-for="(subValue, subFieldName) in fieldValue.mapValue?.fields || {}"
         :key="`${fieldName}.${subFieldName}`"
       >
         <FieldItem
@@ -105,7 +104,7 @@
       class="ml-5 space-y-1 border-l border-gray-200 dark:border-gray-600 pl-3"
     >
       <FieldItem
-        v-for="(arrayItem, arrayIndex) in (fieldValue.arrayValue?.values || [])"
+        v-for="(arrayItem, arrayIndex) in fieldValue.arrayValue?.values || []"
         :key="arrayIndex"
         :field-name="`[${arrayIndex}]`"
         :field-value="arrayItem"
@@ -135,7 +134,7 @@ interface Props {
 
 const props = defineProps<Props>()
 
-defineEmits<{
+const emit = defineEmits<{
   'toggle-field': [fieldName: string]
   'edit-field': [data: any]
   'delete-field': [data: any]
@@ -148,4 +147,13 @@ const { formatFieldValue, getFieldType } = useFirestoreFields()
 const isExpanded = computed(() => {
   return props.expandedFields.has(props.fieldPath)
 })
+
+const handleAddField = () => {
+  const fieldType = getFieldType(props.fieldValue)
+  if (fieldType === 'map') {
+    emit('add-to-map', props.fieldPath)
+    return
+  }
+  emit('add-to-array', props.fieldPath)
+}
 </script>

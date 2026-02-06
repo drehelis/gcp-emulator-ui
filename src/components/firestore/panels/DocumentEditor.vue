@@ -1,10 +1,17 @@
 <template>
-  <div v-if="selectedDocument" class="w-full lg:w-1/3 h-full bg-white dark:bg-gray-800 overflow-y-auto">
+  <div
+    v-if="selectedDocument"
+    class="w-full lg:w-1/3 h-full bg-white dark:bg-gray-800 overflow-y-auto"
+  >
     <div class="p-3 sm:p-4">
       <!-- Document Header -->
       <div class="mb-3">
-        <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 font-mono mb-3">
-          <span class="text-gray-900 dark:text-white">{{ getDocumentId(selectedDocument.name) }}</span>
+        <div
+          class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 font-mono mb-3"
+        >
+          <span class="text-gray-900 dark:text-white">{{
+            getDocumentId(selectedDocument.name)
+          }}</span>
           <div class="relative" data-document-menu>
             <button
               @click="showDocumentMenu = !showDocumentMenu"
@@ -54,18 +61,14 @@
 
         <!-- Display subcollections for current document -->
         <div v-if="subcollections.length > 0" class="mt-3 space-y-1">
-          <div
-            v-for="subcollection in subcollections"
-            :key="subcollection.id"
-            class="group"
-          >
+          <div v-for="subcollection in subcollections" :key="subcollection.id" class="group">
             <button
               @click="$emit('navigate-to-subcollection', subcollection)"
               :class="[
                 'flex items-center w-full px-2 py-2 sm:py-1.5 text-sm rounded-md cursor-pointer transition-colors min-h-[44px] sm:min-h-0',
                 selectedSubcollection?.id === subcollection.id
                   ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700',
               ]"
             >
               <ChevronRightIcon class="w-4 h-4 mr-1 flex-shrink-0" />
@@ -101,12 +104,16 @@
       />
     </div>
   </div>
-
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { PlusIcon, EllipsisVerticalIcon, ChevronRightIcon, CircleStackIcon } from '@heroicons/vue/24/outline'
+import {
+  PlusIcon,
+  EllipsisVerticalIcon,
+  ChevronRightIcon,
+  CircleStackIcon,
+} from '@heroicons/vue/24/outline'
 import { useDocumentUtils } from '@/composables/useDocumentUtils'
 import FieldList from '@/components/firestore/fields/FieldList.vue'
 import type { FirestoreDocument, FirestoreCollectionWithMetadata } from '@/types'
@@ -120,7 +127,7 @@ interface Props {
 
 withDefaults(defineProps<Props>(), {
   subcollections: () => [],
-  expandedFields: () => new Set()
+  expandedFields: () => new Set(),
 })
 
 const { getDocumentId } = useDocumentUtils()

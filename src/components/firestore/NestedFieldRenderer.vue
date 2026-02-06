@@ -61,17 +61,24 @@
           <select
             v-else-if="getValueType(nestedValue) === 'boolean'"
             :value="nestedValue"
-            @change="updateFieldValue(nestedKey, ($event.target as HTMLSelectElement).value === 'true')"
+            @change="
+              updateFieldValue(nestedKey, ($event.target as HTMLSelectElement).value === 'true')
+            "
             :class="selectClass"
           >
             <option :value="true">true</option>
             <option :value="false">false</option>
           </select>
-          <div v-else-if="getValueType(nestedValue) === 'null'" class="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 italic">
+          <div
+            v-else-if="getValueType(nestedValue) === 'null'"
+            class="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 italic"
+          >
             null
           </div>
           <div v-else-if="getValueType(nestedValue) === 'map'" class="flex items-center gap-2">
-            <span class="text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded">
+            <span
+              class="text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded"
+            >
               {{ Object.keys(nestedValue || {}).length }} field(s)
             </span>
             <button
@@ -82,7 +89,9 @@
             </button>
           </div>
           <div v-else-if="getValueType(nestedValue) === 'array'" class="flex items-center gap-2">
-            <span class="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded">
+            <span
+              class="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded"
+            >
               {{ (nestedValue || []).length }} item(s)
             </span>
             <button
@@ -124,11 +133,7 @@
   </div>
 
   <div v-else-if="isArray && (value || []).length > 0" :class="containerClass">
-    <div
-      v-for="(item, index) in value"
-      :key="`array-${path.join('-')}-${index}`"
-      class="px-4 py-2"
-    >
+    <div v-for="(item, index) in value" :key="`array-${path.join('-')}-${index}`" class="px-4 py-2">
       <div class="grid grid-cols-12 gap-3 items-center text-sm">
         <!-- Tree indicator -->
         <div class="col-span-1 flex items-center">
@@ -179,11 +184,16 @@
             <option :value="true">true</option>
             <option :value="false">false</option>
           </select>
-          <div v-else-if="getValueType(item) === 'null'" class="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 italic">
+          <div
+            v-else-if="getValueType(item) === 'null'"
+            class="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 italic"
+          >
             null
           </div>
           <div v-else-if="getValueType(item) === 'map'" class="flex items-center gap-2">
-            <span class="text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded">
+            <span
+              class="text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded"
+            >
               {{ Object.keys(item || {}).length }} field(s)
             </span>
             <button
@@ -194,7 +204,9 @@
             </button>
           </div>
           <div v-else-if="getValueType(item) === 'array'" class="flex items-center gap-2">
-            <span class="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded">
+            <span
+              class="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded"
+            >
               {{ (item || []).length }} item(s)
             </span>
             <button
@@ -247,21 +259,19 @@ interface Props {
 }
 
 interface Emits {
-  update: [{ path: (string | number)[], value: any }]
+  update: [{ path: (string | number)[]; value: any }]
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 // Color scheme based on depth
-const colorSchemes = [
-  'blue', 'purple', 'indigo', 'teal', 'emerald', 'cyan', 'sky', 'violet'
-]
+const colorSchemes = ['blue', 'purple', 'indigo', 'teal', 'emerald', 'cyan', 'sky', 'violet']
 
 const currentColor = computed(() => colorSchemes[props.depth % colorSchemes.length])
 
-const isMap = computed(() =>
-  props.value && typeof props.value === 'object' && !Array.isArray(props.value)
+const isMap = computed(
+  () => props.value && typeof props.value === 'object' && !Array.isArray(props.value)
 )
 
 const isArray = computed(() => Array.isArray(props.value))
@@ -324,7 +334,10 @@ function renameField(oldKey: string, newKey: string) {
     return
   }
 
-  if ((oldKey !== newKey || oldKey.startsWith('_temp_')) && !Object.prototype.hasOwnProperty.call(props.value, newKey)) {
+  if (
+    (oldKey !== newKey || oldKey.startsWith('_temp_')) &&
+    !Object.prototype.hasOwnProperty.call(props.value, newKey)
+  ) {
     // Rename field while preserving its position
     const newValue: Record<string, any> = {}
     Object.keys(props.value).forEach(key => {
@@ -341,12 +354,24 @@ function renameField(oldKey: string, newKey: string) {
 function updateFieldType(key: string, type: string) {
   const newValue = preserveObjectOrder(props.value)
   switch (type) {
-    case 'string': newValue[key] = ''; break
-    case 'number': newValue[key] = 0; break
-    case 'boolean': newValue[key] = false; break
-    case 'null': newValue[key] = null; break
-    case 'map': newValue[key] = {}; break
-    case 'array': newValue[key] = []; break
+    case 'string':
+      newValue[key] = ''
+      break
+    case 'number':
+      newValue[key] = 0
+      break
+    case 'boolean':
+      newValue[key] = false
+      break
+    case 'null':
+      newValue[key] = null
+      break
+    case 'map':
+      newValue[key] = {}
+      break
+    case 'array':
+      newValue[key] = []
+      break
   }
   updateValue(newValue)
 }
@@ -385,12 +410,24 @@ function addNestedField(parentKey: string, type: 'map' | 'array') {
 function updateArrayItemType(index: number, type: string) {
   const newValue = [...props.value]
   switch (type) {
-    case 'string': newValue[index] = ''; break
-    case 'number': newValue[index] = 0; break
-    case 'boolean': newValue[index] = false; break
-    case 'null': newValue[index] = null; break
-    case 'map': newValue[index] = {}; break
-    case 'array': newValue[index] = []; break
+    case 'string':
+      newValue[index] = ''
+      break
+    case 'number':
+      newValue[index] = 0
+      break
+    case 'boolean':
+      newValue[index] = false
+      break
+    case 'null':
+      newValue[index] = null
+      break
+    case 'map':
+      newValue[index] = {}
+      break
+    case 'array':
+      newValue[index] = []
+      break
   }
   updateValue(newValue)
 }
@@ -421,16 +458,16 @@ function addNestedArrayItem(index: number, type: 'map' | 'array') {
 }
 
 // Handle recursive updates
-function handleNestedUpdate(event: { path: (string | number)[], value: any }) {
+function handleNestedUpdate(event: { path: (string | number)[]; value: any }) {
   // Remove our own path prefix from the event path
   const relativePath = event.path.slice(props.path.length)
-  
+
   if (relativePath.length === 0) {
     // Direct update to this level
     updateValue(event.value)
     return
   }
-  
+
   const newValue = isMap.value ? preserveObjectOrder(props.value) : [...props.value]
   const [firstKey, ...restPath] = relativePath
 
@@ -467,7 +504,7 @@ function handleNestedUpdate(event: { path: (string | number)[], value: any }) {
   updateValue(newValue)
 }
 
-function handleArrayNestedUpdate(event: { path: (string | number)[], value: any }) {
+function handleArrayNestedUpdate(event: { path: (string | number)[]; value: any }) {
   handleNestedUpdate(event)
 }
 </script>

@@ -64,20 +64,15 @@ const props = defineProps<{
 }>()
 
 const { checkFirestoreConnection } = useServiceConnections()
-const {
-  isExporting,
-  isImporting,
-  loadData,
-  exportCollections,
-  importCollections
-} = useFirestoreImportExport()
+const { isExporting, isImporting, loadData, exportCollections, importCollections } =
+  useFirestoreImportExport()
 
 const handleExportCollections = async () => {
   await loadData(props.projectId)
   await exportCollections(props.projectId)
 }
 
-const handleImport = async (data: { importData: any[], options: any }) => {
+const handleImport = async (data: { importData: any[]; options: any }) => {
   await importCollections(props.projectId, data.importData, data.options)
 }
 

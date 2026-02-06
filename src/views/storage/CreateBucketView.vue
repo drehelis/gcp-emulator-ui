@@ -13,7 +13,7 @@
                 Create a new Cloud Storage bucket to store your objects
               </p>
             </div>
-            
+
             <router-link
               :to="`/projects/${currentProjectId}/storage/buckets`"
               class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
@@ -30,11 +30,11 @@
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <form @submit.prevent="handleSubmit" class="space-y-8">
         <!-- Basic Information -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"
+        >
           <div class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              Basic Information
-            </h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Basic Information</h3>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
               Configure the basic settings for your bucket
             </p>
@@ -43,7 +43,10 @@
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
             <!-- Bucket Name -->
             <div class="sm:col-span-2">
-              <label for="bucketName" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="bucketName"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Bucket Name *
               </label>
               <div class="mt-1">
@@ -61,8 +64,8 @@
                 />
               </div>
               <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                Bucket names must be 3-63 characters, lowercase letters, numbers, hyphens, and periods only.
-                Must start and end with a letter or number.
+                Bucket names must be 3-63 characters, lowercase letters, numbers, hyphens, and
+                periods only. Must start and end with a letter or number.
               </p>
               <div v-if="nameError" class="mt-2 text-sm text-red-600 dark:text-red-400">
                 {{ nameError }}
@@ -71,7 +74,10 @@
 
             <!-- Project -->
             <div>
-              <label for="project" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="project"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Project
               </label>
               <div class="mt-1">
@@ -87,7 +93,10 @@
 
             <!-- Location -->
             <div>
-              <label for="location" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="location"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Location
               </label>
               <div class="mt-1">
@@ -115,11 +124,11 @@
         </div>
 
         <!-- Storage Class -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"
+        >
           <div class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              Storage Class
-            </h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Storage Class</h3>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
               Choose the default storage class for objects in this bucket
             </p>
@@ -131,7 +140,8 @@
               :key="option.value"
               class="relative flex cursor-pointer rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 p-4 shadow-sm focus:outline-none hover:border-blue-300 dark:hover:border-blue-600 transition-colors"
               :class="{
-                'border-blue-500 dark:border-blue-400 ring-2 ring-blue-500 dark:ring-blue-400': form.storageClass === option.value
+                'border-blue-500 dark:border-blue-400 ring-2 ring-blue-500 dark:ring-blue-400':
+                  form.storageClass === option.value,
               }"
             >
               <input
@@ -161,11 +171,11 @@
         </div>
 
         <!-- Advanced Settings -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"
+        >
           <div class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-              Advanced Settings
-            </h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Advanced Settings</h3>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
               Optional settings for enhanced functionality
             </p>
@@ -175,7 +185,10 @@
             <!-- Versioning -->
             <div class="flex items-center justify-between">
               <div class="flex-1">
-                <label for="versioning" class="text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label
+                  for="versioning"
+                  class="text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   Object Versioning
                 </label>
                 <p class="text-sm text-gray-500 dark:text-gray-400">
@@ -190,14 +203,14 @@
                   class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
                   :class="{
                     'bg-blue-600': form.enableVersioning,
-                    'bg-gray-200 dark:bg-gray-700': !form.enableVersioning
+                    'bg-gray-200 dark:bg-gray-700': !form.enableVersioning,
                   }"
                 >
                   <span
                     class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition-out"
                     :class="{
                       'translate-x-5': form.enableVersioning,
-                      'translate-x-0': !form.enableVersioning
+                      'translate-x-0': !form.enableVersioning,
                     }"
                   />
                 </button>
@@ -206,7 +219,10 @@
 
             <!-- Labels -->
             <div>
-              <label for="labels" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <label
+                for="labels"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+              >
                 Labels
               </label>
               <div class="mt-1">
@@ -259,12 +275,12 @@
         </div>
 
         <!-- Form Actions -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6">
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"
+        >
           <div class="flex items-center justify-between">
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-              * Required fields
-            </p>
-            
+            <p class="text-sm text-gray-500 dark:text-gray-400">* Required fields</p>
+
             <div class="flex items-center space-x-3">
               <router-link
                 :to="`/projects/${currentProjectId}/storage/buckets`"
@@ -272,13 +288,16 @@
               >
                 Cancel
               </router-link>
-              
+
               <button
                 type="submit"
                 :disabled="!isFormValid || storageStore.loading.create"
                 class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                <ArrowPathIcon v-if="storageStore.loading.create" class="animate-spin -ml-1 mr-2 h-4 w-4" />
+                <ArrowPathIcon
+                  v-if="storageStore.loading.create"
+                  class="animate-spin -ml-1 mr-2 h-4 w-4"
+                />
                 {{ storageStore.loading.create ? 'Creating...' : 'Create Bucket' }}
               </button>
             </div>
@@ -297,7 +316,7 @@ import {
   CheckCircleIcon,
   PlusIcon,
   TrashIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
 } from '@heroicons/vue/24/outline'
 import { useStorageStore } from '@/stores/storage'
 import { useProjectsStore } from '@/stores/projects'
@@ -315,7 +334,7 @@ const form = ref({
   location: 'US',
   storageClass: 'STANDARD',
   enableVersioning: false,
-  labels: [] as Array<{ key: string; value: string }>
+  labels: [] as Array<{ key: string; value: string }>,
 })
 
 const nameError = ref('')
@@ -326,39 +345,41 @@ const storageClassOptions = [
     value: 'STANDARD',
     label: 'Standard',
     description: 'Best for frequently accessed data',
-    useCase: 'Hot data, websites, streaming'
+    useCase: 'Hot data, websites, streaming',
   },
   {
     value: 'NEARLINE',
     label: 'Nearline',
     description: 'Best for data accessed once per month',
-    useCase: 'Backups, disaster recovery'
+    useCase: 'Backups, disaster recovery',
   },
   {
     value: 'COLDLINE',
     label: 'Coldline',
     description: 'Best for data accessed once per quarter',
-    useCase: 'Long-term storage, archiving'
+    useCase: 'Long-term storage, archiving',
   },
   {
     value: 'ARCHIVE',
     label: 'Archive',
     description: 'Best for data accessed once per year',
-    useCase: 'Legal compliance, digital preservation'
-  }
+    useCase: 'Legal compliance, digital preservation',
+  },
 ]
 
 // Computed
 const currentProjectId = computed(() => {
-  return route.params.projectId as string || projectsStore.selectedProjectId || 'Unknown'
+  return (route.params.projectId as string) || projectsStore.selectedProjectId || 'Unknown'
 })
 
 const isFormValid = computed(() => {
-  return form.value.name && 
-         form.value.name.length >= 3 && 
-         form.value.name.length <= 63 &&
-         /^[a-z0-9][a-z0-9._-]*[a-z0-9]$/.test(form.value.name) &&
-         !nameError.value
+  return (
+    form.value.name &&
+    form.value.name.length >= 3 &&
+    form.value.name.length <= 63 &&
+    /^[a-z0-9][a-z0-9._-]*[a-z0-9]$/.test(form.value.name) &&
+    !nameError.value
+  )
 })
 
 // Methods
@@ -413,13 +434,15 @@ async function handleSubmit(): Promise<void> {
       name: form.value.name,
       project: form.value.project,
       predefinedAcl: 'private',
-      projection: 'full'
+      projection: 'full',
     }
 
     await storageStore.createBucket(request)
-    
+
     // Navigate to the new bucket
-    router.push(`/projects/${currentProjectId.value}/storage/buckets/${encodeURIComponent(form.value.name)}`)
+    router.push(
+      `/projects/${currentProjectId.value}/storage/buckets/${encodeURIComponent(form.value.name)}`
+    )
   } catch {
     // Error is handled in the store
   }

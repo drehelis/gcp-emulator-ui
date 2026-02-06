@@ -28,7 +28,7 @@ export function useRecursiveNavigation() {
 
   // Breadcrumb path computed from navigation stack
   const breadcrumbPath = computed(() => {
-    const path: Array<{type: 'collection' | 'document', id: string, name: string}> = []
+    const path: Array<{ type: 'collection' | 'document'; id: string; name: string }> = []
 
     for (let i = 0; i <= currentStackIndex.value; i++) {
       const level = navigationStack.value[i]
@@ -39,7 +39,7 @@ export function useRecursiveNavigation() {
         path.push({
           type: 'collection',
           id: level.collectionId || level.header,
-          name: level.collectionId || level.header
+          name: level.collectionId || level.header,
         })
 
         // If there's a selected document in the subcollection, add it too
@@ -48,7 +48,7 @@ export function useRecursiveNavigation() {
           path.push({
             type: 'document',
             id: documentId,
-            name: documentId
+            name: documentId,
           })
         }
       } else if (level && level.selectedItem) {
@@ -57,7 +57,7 @@ export function useRecursiveNavigation() {
           path.push({
             type: 'collection',
             id: level.selectedItem.id,
-            name: level.selectedItem.id
+            name: level.selectedItem.id,
           })
         } else {
           // Document
@@ -65,7 +65,7 @@ export function useRecursiveNavigation() {
           path.push({
             type: 'document',
             id: documentId,
-            name: documentId
+            name: documentId,
           })
         }
       }
@@ -76,18 +76,23 @@ export function useRecursiveNavigation() {
 
   // Initialize with root collections
   const initializeWithCollections = (collections: FirestoreCollectionWithMetadata[]) => {
-    navigationStack.value = [{
-      type: 'root',
-      items: collections,
-      selectedItem: null,
-      header: '(default)'
-    }]
+    navigationStack.value = [
+      {
+        type: 'root',
+        items: collections,
+        selectedItem: null,
+        header: '(default)',
+      },
+    ]
     currentStackIndex.value = 0
     slideOffset.value = 0
   }
 
   // Navigate to a collection (next level)
-  const navigateToCollection = async (collection: FirestoreCollectionWithMetadata, documents: FirestoreDocument[]) => {
+  const navigateToCollection = async (
+    collection: FirestoreCollectionWithMetadata,
+    documents: FirestoreDocument[]
+  ) => {
     // If we're going forward, remove any levels after current
     if (currentStackIndex.value < navigationStack.value.length - 1) {
       navigationStack.value = navigationStack.value.slice(0, currentStackIndex.value + 1)
@@ -104,7 +109,7 @@ export function useRecursiveNavigation() {
       items: documents,
       selectedItem: null,
       header: collection.id,
-      collectionId: collection.id
+      collectionId: collection.id,
     })
 
     // Navigate to new level
@@ -113,7 +118,10 @@ export function useRecursiveNavigation() {
   }
 
   // Navigate to a document (next level with subcollections)
-  const navigateToDocument = async (document: FirestoreDocument, subcollections: FirestoreCollectionWithMetadata[] = []) => {
+  const navigateToDocument = async (
+    document: FirestoreDocument,
+    subcollections: FirestoreCollectionWithMetadata[] = []
+  ) => {
     // Update current level selection
     if (navigationStack.value[currentStackIndex.value]) {
       navigationStack.value[currentStackIndex.value].selectedItem = document
@@ -127,7 +135,10 @@ export function useRecursiveNavigation() {
   }
 
   // Navigate to a subcollection
-  const navigateToSubcollection = async (subcollection: FirestoreCollectionWithMetadata, documents: FirestoreDocument[]) => {
+  const navigateToSubcollection = async (
+    subcollection: FirestoreCollectionWithMetadata,
+    documents: FirestoreDocument[]
+  ) => {
     const currentLevel = navigationStack.value[currentStackIndex.value]
     const selectedDocument = currentLevel?.selectedItem as FirestoreDocument
 
@@ -145,7 +156,7 @@ export function useRecursiveNavigation() {
       selectedItem: null,
       header: subcollection.id,
       parentPath: selectedDocument.name,
-      collectionId: subcollection.id
+      collectionId: subcollection.id,
     })
 
     // Navigate to new level
@@ -217,7 +228,9 @@ export function useRecursiveNavigation() {
   }
 
   // Load subcollections for a document
-  const loadSubcollections = async (documentPath: string): Promise<FirestoreCollectionWithMetadata[]> => {
+  const loadSubcollections = async (
+    documentPath: string
+  ): Promise<FirestoreCollectionWithMetadata[]> => {
     try {
       return await firestoreApi.listSubcollections(documentPath)
     } catch (error) {
@@ -227,12 +240,22 @@ export function useRecursiveNavigation() {
   }
 
   // Load documents for a subcollection (with pagination support)
-  const loadSubcollectionDocuments = async (parentPath: string, collectionId: string, nextPageToken?: string, pageSize: number = 30): Promise<{ documents: FirestoreDocument[], nextPageToken?: string }> => {
+  const loadSubcollectionDocuments = async (
+    parentPath: string,
+    collectionId: string,
+    nextPageToken?: string,
+    pageSize: number = 30
+  ): Promise<{ documents: FirestoreDocument[]; nextPageToken?: string }> => {
     try {
-      const response = await firestoreApi.listSubcollectionDocuments(parentPath, collectionId, pageSize, nextPageToken)
+      const response = await firestoreApi.listSubcollectionDocuments(
+        parentPath,
+        collectionId,
+        pageSize,
+        nextPageToken
+      )
       return {
         documents: response.documents || [],
-        nextPageToken: response.nextPageToken
+        nextPageToken: response.nextPageToken,
       }
     } catch (error) {
       console.error('Failed to load subcollection documents:', error)
@@ -241,7 +264,12 @@ export function useRecursiveNavigation() {
   }
 
   // Navigate to a specific path by parsing path string
-  const navigateToPath = async (pathString: string, firestoreStore: any, currentProjectId: string, documentSubcollections: any) => {
+  const navigateToPath = async (
+    pathString: string,
+    firestoreStore: any,
+    currentProjectId: string,
+    documentSubcollections: any
+  ) => {
     // Parse the path string: "/ > collection-1 > doc-id > sub-collection > doc-id2"
     const pathSegments = pathString
       .split('>')
@@ -278,8 +306,10 @@ export function useRecursiveNavigation() {
           await new Promise(resolve => setTimeout(resolve, 100))
         } else {
           // Try to find as document
-          const document = currentItems.find((item: any) =>
-            'name' in item && (item.name.includes(segment) || item.name.split('/').pop() === segment)
+          const document = currentItems.find(
+            (item: any) =>
+              'name' in item &&
+              (item.name.includes(segment) || item.name.split('/').pop() === segment)
           )
 
           if (document) {
@@ -297,7 +327,10 @@ export function useRecursiveNavigation() {
 
               if (subcollection) {
                 // Load documents for this subcollection
-                const subcollectionDocsResult = await loadSubcollectionDocuments(document.name, subcollection.id)
+                const subcollectionDocsResult = await loadSubcollectionDocuments(
+                  document.name,
+                  subcollection.id
+                )
                 await navigateToSubcollection(subcollection, subcollectionDocsResult.documents)
 
                 // Skip the subcollection segment since we handled it
@@ -319,29 +352,47 @@ export function useRecursiveNavigation() {
   }
 
   // Navigate to a subcollection from a specific parent document context
-  const navigateToSubcollectionFromDocument = async (targetDocumentPath: string, subcollection: FirestoreCollectionWithMetadata, documents: FirestoreDocument[]) => {
-    console.log('navigateToSubcollectionFromDocument - targetDocumentPath:', targetDocumentPath, 'subcollection:', subcollection.id)
+  const navigateToSubcollectionFromDocument = async (
+    targetDocumentPath: string,
+    subcollection: FirestoreCollectionWithMetadata,
+    documents: FirestoreDocument[]
+  ) => {
+    console.log(
+      'navigateToSubcollectionFromDocument - targetDocumentPath:',
+      targetDocumentPath,
+      'subcollection:',
+      subcollection.id
+    )
 
     // First, find the navigation level that contains the target document
     let targetLevelIndex = -1
     for (let i = 0; i < navigationStack.value.length; i++) {
       const level = navigationStack.value[i]
-      if (level?.selectedItem && 'name' in level.selectedItem &&
-          level.selectedItem.name === targetDocumentPath) {
+      if (
+        level?.selectedItem &&
+        'name' in level.selectedItem &&
+        level.selectedItem.name === targetDocumentPath
+      ) {
         targetLevelIndex = i
         break
       }
     }
 
     if (targetLevelIndex >= 0) {
-      console.log('Found target document at navigation level:', targetLevelIndex, 'navigating there first')
+      console.log(
+        'Found target document at navigation level:',
+        targetLevelIndex,
+        'navigating there first'
+      )
       // Navigate to the parent document level first
       navigateToLevel(targetLevelIndex)
 
       // Wait a bit for navigation to settle
       await new Promise(resolve => setTimeout(resolve, 50))
     } else {
-      console.log('Target document not found in navigation stack, cannot navigate to subcollection from correct context')
+      console.log(
+        'Target document not found in navigation stack, cannot navigate to subcollection from correct context'
+      )
       return
     }
 
@@ -350,13 +401,24 @@ export function useRecursiveNavigation() {
   }
 
   // Handle subcollection deletion navigation update
-  const handleSubcollectionDeleted = (deletedSubcollectionId: string, parentDocumentPath: string) => {
-    console.log('handleSubcollectionDeleted - deletedId:', deletedSubcollectionId, 'parentPath:', parentDocumentPath)
+  const handleSubcollectionDeleted = (
+    deletedSubcollectionId: string,
+    parentDocumentPath: string
+  ) => {
+    console.log(
+      'handleSubcollectionDeleted - deletedId:',
+      deletedSubcollectionId,
+      'parentPath:',
+      parentDocumentPath
+    )
 
     const currentLevel = navigationStack.value[currentStackIndex.value]
 
     // Check if we're currently viewing the deleted subcollection
-    if (currentLevel?.type === 'subcollection' && currentLevel.collectionId === deletedSubcollectionId) {
+    if (
+      currentLevel?.type === 'subcollection' &&
+      currentLevel.collectionId === deletedSubcollectionId
+    ) {
       console.log('Currently viewing deleted subcollection, navigating back to parent document')
 
       // Navigate back to the parent document level
@@ -460,6 +522,6 @@ export function useRecursiveNavigation() {
     navigateToPath,
     navigateToBreadcrumbIndex,
     navigateToSubcollectionFromDocument,
-    handleSubcollectionDeleted
+    handleSubcollectionDeleted,
   }
 }

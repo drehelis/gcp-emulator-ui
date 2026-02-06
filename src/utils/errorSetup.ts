@@ -14,7 +14,7 @@ export function setupErrorHandling(app: App) {
   }
 
   // Global unhandled promise rejection handler
-  window.addEventListener('unhandledrejection', (event) => {
+  window.addEventListener('unhandledrejection', event => {
     console.error('Unhandled promise rejection:', event.reason)
 
     if (import.meta.env.PROD) {
@@ -26,7 +26,7 @@ export function setupErrorHandling(app: App) {
   })
 
   // Global error handler
-  window.addEventListener('error', (event) => {
+  window.addEventListener('error', event => {
     console.error('Global error:', event.error)
 
     if (import.meta.env.PROD) {
@@ -34,7 +34,7 @@ export function setupErrorHandling(app: App) {
         context: 'global',
         filename: event.filename,
         lineno: event.lineno,
-        colno: event.colno
+        colno: event.colno,
       })
     }
   })
@@ -42,7 +42,6 @@ export function setupErrorHandling(app: App) {
 
 function reportError(/* error: any, context: Record<string, any> = {} */) {
   // TODO: Implement actual error reporting (Sentry, LogRocket, etc.)
-
   // Example Sentry integration:
   // if (window.Sentry) {
   //   window.Sentry.captureException(error, {

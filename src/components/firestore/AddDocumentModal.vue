@@ -10,7 +10,9 @@
     <div class="space-y-6">
       <!-- Collection Information -->
       <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
-        <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-4">Collection Information</h3>
+        <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-4">
+          Collection Information
+        </h3>
 
         <div class="space-y-4">
           <!-- Collection Path -->
@@ -18,7 +20,9 @@
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Collection Path
             </label>
-            <div class="px-3 py-2 bg-gray-100 dark:bg-gray-600 rounded-md text-sm font-mono text-gray-900 dark:text-white">
+            <div
+              class="px-3 py-2 bg-gray-100 dark:bg-gray-600 rounded-md text-sm font-mono text-gray-900 dark:text-white"
+            >
               {{ collectionPath }}
             </div>
           </div>
@@ -35,7 +39,11 @@
       <!-- Success Notification -->
       <SuccessNotification
         :show="!!saveAndAddAnother.lastSavedId.value"
-        :message="saveAndAddAnother.lastSavedId.value ? saveAndAddAnother.getSuccessMessage('document', saveAndAddAnother.lastSavedId.value) : ''"
+        :message="
+          saveAndAddAnother.lastSavedId.value
+            ? saveAndAddAnother.getSuccessMessage('document', saveAndAddAnother.lastSavedId.value)
+            : ''
+        "
         @clear="handleClearFields"
       />
 
@@ -76,7 +84,7 @@ interface Props {
 
 interface Emits {
   'update:modelValue': [value: boolean]
-  'created': [documentId: string]
+  created: [documentId: string]
 }
 
 const props = defineProps<Props>()
@@ -93,7 +101,7 @@ const saveAndAddAnother = useSaveAndAddAnother()
 // Computed
 const isOpen = computed({
   get: () => props.modelValue,
-  set: (value: boolean) => emit('update:modelValue', value)
+  set: (value: boolean) => emit('update:modelValue', value),
 })
 
 const collectionPath = computed(() => {
@@ -115,21 +123,21 @@ const modalActions = computed<ModalAction[]>(() => [
   {
     label: 'Cancel',
     handler: handleCancel,
-    variant: 'secondary'
+    variant: 'secondary',
   },
   {
     label: 'Save & Add Another',
     handler: handleSaveAndAddAnother,
     variant: 'secondary',
-    disabled: !isFormValid.value || documentForm.loading.value
+    disabled: !isFormValid.value || documentForm.loading.value,
   },
   {
     label: 'Save',
     handler: handleSave,
     variant: 'primary',
     disabled: !isFormValid.value,
-    loading: documentForm.loading.value
-  }
+    loading: documentForm.loading.value,
+  },
 ])
 
 // Methods
@@ -167,7 +175,7 @@ const handleSave = async () => {
         parentDocumentPath,
         collectionId,
         {
-          fields: documentFields
+          fields: documentFields,
         },
         documentForm.documentId.value || undefined
       )
@@ -177,14 +185,15 @@ const handleSave = async () => {
         props.projectId,
         props.collectionId,
         {
-          fields: documentFields
+          fields: documentFields,
         },
         documentForm.documentId.value || undefined
       )
     }
 
     if (success) {
-      const finalDocumentId = documentForm.documentId.value || success.name.split('/').pop() || 'unknown'
+      const finalDocumentId =
+        documentForm.documentId.value || success.name.split('/').pop() || 'unknown'
       emit('created', finalDocumentId)
       isOpen.value = false
       resetForm()
@@ -223,7 +232,7 @@ const handleSaveAndAddAnother = async () => {
         parentDocumentPath,
         collectionId,
         {
-          fields: documentFields
+          fields: documentFields,
         },
         documentForm.documentId.value || undefined
       )
@@ -233,14 +242,15 @@ const handleSaveAndAddAnother = async () => {
         props.projectId,
         props.collectionId,
         {
-          fields: documentFields
+          fields: documentFields,
         },
         documentForm.documentId.value || undefined
       )
     }
 
     if (success) {
-      const finalDocumentId = documentForm.documentId.value || success.name.split('/').pop() || 'unknown'
+      const finalDocumentId =
+        documentForm.documentId.value || success.name.split('/').pop() || 'unknown'
 
       // Set the notification for the saved document
       saveAndAddAnother.setLastSaved(finalDocumentId)
@@ -319,7 +329,7 @@ const convertFirestoreFieldsToFormFields = (firestoreFields: any): any[] => {
       id: `field_${Date.now()}_${Math.random()}`,
       name: fieldName,
       type,
-      value
+      value,
     })
   })
 
@@ -327,20 +337,23 @@ const convertFirestoreFieldsToFormFields = (firestoreFields: any): any[] => {
 }
 
 // Watch for modelValue prop changes to reset form or populate from clone
-watch(() => props.modelValue, async (newValue) => {
-  if (newValue) {
-    if (props.cloneDocument) {
-      // Populate form with cloned document data
-      documentForm.resetForm()
-      documentForm.documentId.value = '' // Clear document ID for new document
+watch(
+  () => props.modelValue,
+  async newValue => {
+    if (newValue) {
+      if (props.cloneDocument) {
+        // Populate form with cloned document data
+        documentForm.resetForm()
+        documentForm.documentId.value = '' // Clear document ID for new document
 
-      // Convert Firestore fields to form fields format
-      const formFields = convertFirestoreFieldsToFormFields(props.cloneDocument.fields)
-      documentForm.fields.value = formFields
-    } else {
-      resetForm()
+        // Convert Firestore fields to form fields format
+        const formFields = convertFirestoreFieldsToFormFields(props.cloneDocument.fields)
+        documentForm.fields.value = formFields
+      } else {
+        resetForm()
+      }
+      await nextTick()
     }
-    await nextTick()
   }
-})
+)
 </script>

@@ -1,7 +1,10 @@
 <template>
   <div class="space-y-4">
     <!-- Headers (only show at top level) -->
-    <div v-if="showHeaders && level === 1" class="grid grid-cols-12 gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+    <div
+      v-if="showHeaders && level === 1"
+      class="grid grid-cols-12 gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
+    >
       <div class="col-span-1"></div>
       <div class="col-span-4">Field name</div>
       <div class="col-span-3">Field type</div>
@@ -19,11 +22,24 @@
             @click="toggleFieldCollapse(field.id)"
             class="mr-2 firestore-hover-gray"
           >
-            <svg class="w-4 h-4 transform transition-transform" :class="{ 'rotate-90': !isFieldCollapsed(field.id) }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            <svg
+              class="w-4 h-4 transform transition-transform"
+              :class="{ 'rotate-90': !isFieldCollapsed(field.id) }"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              ></path>
             </svg>
           </button>
-          <span class="text-sm text-gray-600 dark:text-gray-400 font-mono">{{ getFieldNumber(field, index) }}</span>
+          <span class="text-sm text-gray-600 dark:text-gray-400 font-mono">{{
+            getFieldNumber(field, index)
+          }}</span>
         </div>
 
         <!-- Field name -->
@@ -45,8 +61,18 @@
             class="firestore-select flex items-center justify-between"
           >
             <span>{{ field.type }}</span>
-            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            <svg
+              class="w-4 h-4 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 9l-7 7-7-7"
+              ></path>
             </svg>
           </button>
 
@@ -91,7 +117,12 @@
             title="Add sub-field"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+              ></path>
             </svg>
           </button>
 
@@ -103,7 +134,12 @@
             title="Remove field"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              ></path>
             </svg>
           </button>
         </div>
@@ -135,7 +171,12 @@
         class="inline-flex items-center px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
       >
         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+          ></path>
         </svg>
         Add field
       </button>
@@ -148,7 +189,12 @@
         class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
       >
         <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+          ></path>
         </svg>
         Add field to {{ parentField.name || 'map' }}
       </button>
@@ -184,7 +230,7 @@ interface Emits {
   'add-sub-field': [field: Field]
   'remove-field': [fieldId: string]
   'toggle-dropdown': [fieldId: string]
-  'select-field-type': [data: { fieldId: string, type: string }]
+  'select-field-type': [data: { fieldId: string; type: string }]
 }
 
 const props = defineProps<Props>()

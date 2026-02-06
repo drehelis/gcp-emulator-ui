@@ -19,7 +19,7 @@ describe('useMetricsStore', () => {
     it('loads metrics from localStorage', () => {
       const savedData = {
         topics: [['topic1', { messagesPublished: 10, publishHistory: [] }]],
-        subscriptions: [['sub1', { messagesReceived: 5, pullHistory: [] }]]
+        subscriptions: [['sub1', { messagesReceived: 5, pullHistory: [] }]],
       }
       localStorage.setItem('emulator-ui-metrics', JSON.stringify(savedData))
 
@@ -60,7 +60,7 @@ describe('useMetricsStore', () => {
 
       expect(store.getTopicMetrics('topic1')?.publishHistory).toHaveLength(100)
     })
-    
+
     it('tracks message pull', () => {
       const store = useMetricsStore()
       store.trackMessagePull('sub1', 2)
@@ -73,7 +73,7 @@ describe('useMetricsStore', () => {
 
     it('tracks message ack', () => {
       const store = useMetricsStore()
-        store.trackMessagePull('sub1', 5) // ensure it exists
+      store.trackMessagePull('sub1', 5) // ensure it exists
       store.trackMessageAck('sub1', 3)
 
       expect(store.getSubscriptionMetrics('sub1')?.messagesAcked).toBe(3)
@@ -85,7 +85,7 @@ describe('useMetricsStore', () => {
       const store = useMetricsStore()
       store.trackMessagePublish('topic1', 10)
       store.trackMessagePublish('topic2', 5)
-      
+
       expect(store.getTotalMessagesPublished).toBe(15)
     })
 
@@ -114,13 +114,15 @@ describe('useMetricsStore', () => {
       // Map serialized as array of entries
       expect(data.topics[0][0]).toBe('topic1')
     })
-    
+
     it('handles localStorage errors gracefully', () => {
-        const store = useMetricsStore()
-        vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => { throw new Error('Full') })
-        
-        // Should not throw
-        store.trackMessagePublish('topic1', 1)
+      const store = useMetricsStore()
+      vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+        throw new Error('Full')
+      })
+
+      // Should not throw
+      store.trackMessagePublish('topic1', 1)
     })
   })
 
@@ -129,32 +131,32 @@ describe('useMetricsStore', () => {
       const store = useMetricsStore()
       store.trackMessagePublish('topic1', 1)
       store.resetAllMetrics()
-      
+
       expect(store.topicMetrics.size).toBe(0)
       expect(localStorage.getItem('emulator-ui-metrics')).toBeNull()
     })
   })
-  
+
   describe('publish rate', () => {
-      it('calculates rate correctly', () => {
-          const store = useMetricsStore()
-          
-          // Mock Date to control time windows
-          vi.useFakeTimers()
-          const now = new Date()
-          vi.setSystemTime(now)
-          
-          store.trackMessagePublish('topic1', 10) // T=0
-          
-          // Move forward 30 mins
-          vi.advanceTimersByTime(30 * 60 * 1000)
-          store.trackMessagePublish('topic1', 20) // T=30m
-          
-          // Rate in last hour: 30 messages / 1 hour = 30/hr
-          const rate = store.getTopicPublishRate('topic1', 60)
-          expect(rate).toBe(30)
-          
-          vi.useRealTimers()
-      })
+    it('calculates rate correctly', () => {
+      const store = useMetricsStore()
+
+      // Mock Date to control time windows
+      vi.useFakeTimers()
+      const now = new Date()
+      vi.setSystemTime(now)
+
+      store.trackMessagePublish('topic1', 10) // T=0
+
+      // Move forward 30 mins
+      vi.advanceTimersByTime(30 * 60 * 1000)
+      store.trackMessagePublish('topic1', 20) // T=30m
+
+      // Rate in last hour: 30 messages / 1 hour = 30/hr
+      const rate = store.getTopicPublishRate('topic1', 60)
+      expect(rate).toBe(30)
+
+      vi.useRealTimers()
+    })
   })
 })

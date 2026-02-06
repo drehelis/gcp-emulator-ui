@@ -30,42 +30,42 @@
           :class="collapsed ? 'w-48' : 'w-80'"
           :style="dropdownStyles"
         >
-        <div class="py-1">
-          <div v-if="projects.length === 0" class="px-4 py-2 text-sm text-gray-500">
-            No projects available
-          </div>
-          <div
-            v-for="project in projects"
-            :key="project"
-            class="group flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 theme-transition-colors"
-            :class="{ 'bg-gray-100 dark:bg-gray-700': project === selectedProject }"
-          >
-            <button
-              @click="selectProject(project)"
-              class="flex-1 text-left hover:text-gray-900 dark:hover:text-white"
+          <div class="py-1">
+            <div v-if="projects.length === 0" class="px-4 py-2 text-sm text-gray-500">
+              No projects available
+            </div>
+            <div
+              v-for="project in projects"
+              :key="project"
+              class="group flex items-center justify-between px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700 theme-transition-colors"
+              :class="{ 'bg-gray-100 dark:bg-gray-700': project === selectedProject }"
             >
-              {{ project }}
-            </button>
-            <button
-              @click.stop="deleteProjectConfirm(project)"
-              class="ml-2 p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity rounded hover:bg-gray-200 dark:hover:bg-gray-600"
-              title="Delete project"
-            >
-              <XMarkIcon class="w-4 h-4" />
-            </button>
-          </div>
-          <div class="border-t border-gray-200 dark:border-gray-600">
-            <button
-              @click="openAddProjectModal"
-              class="block w-full px-4 py-2 text-sm text-left text-blue-600 hover:bg-gray-100 hover:text-blue-700 dark:text-blue-400 dark:hover:bg-gray-700"
-            >
-              <PlusIcon class="inline w-4 h-4 mr-2" />
-              Add New Project
-            </button>
+              <button
+                @click="selectProject(project)"
+                class="flex-1 text-left hover:text-gray-900 dark:hover:text-white"
+              >
+                {{ project }}
+              </button>
+              <button
+                @click.stop="deleteProjectConfirm(project)"
+                class="ml-2 p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity rounded hover:bg-gray-200 dark:hover:bg-gray-600"
+                title="Delete project"
+              >
+                <XMarkIcon class="w-4 h-4" />
+              </button>
+            </div>
+            <div class="border-t border-gray-200 dark:border-gray-600">
+              <button
+                @click="openAddProjectModal"
+                class="block w-full px-4 py-2 text-sm text-left text-blue-600 hover:bg-gray-100 hover:text-blue-700 dark:text-blue-400 dark:hover:bg-gray-700"
+              >
+                <PlusIcon class="inline w-4 h-4 mr-2" />
+                Add New Project
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </Transition>
+      </Transition>
     </Teleport>
 
     <!-- Add Project Modal -->
@@ -85,7 +85,7 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
-  collapsed: false
+  collapsed: false,
 })
 
 const router = useRouter()
@@ -100,11 +100,11 @@ const projects = computed(() => projectsStore.projectList)
 
 const dropdownStyles = computed(() => {
   if (!dropdownRef.value) return {}
-  
+
   const rect = dropdownRef.value.getBoundingClientRect()
   return {
     top: `${rect.bottom + 4}px`,
-    left: `${rect.left}px`
+    left: `${rect.left}px`,
   }
 })
 

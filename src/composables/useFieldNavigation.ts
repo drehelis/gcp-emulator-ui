@@ -50,7 +50,9 @@ export const useFieldNavigation = () => {
       }
 
       if (!currentRef?.arrayValue?.values) {
-        throw new Error(`Expected array at path part "${currentPart}" in "${originalPath}", but found: ${typeof currentRef}`)
+        throw new Error(
+          `Expected array at path part "${currentPart}" in "${originalPath}", but found: ${typeof currentRef}`
+        )
       }
 
       if (index < 0 || index >= currentRef.arrayValue.values.length) {
@@ -67,7 +69,9 @@ export const useFieldNavigation = () => {
       } else if (currentRef && typeof currentRef === 'object' && currentPart in currentRef) {
         nextRef = currentRef[currentPart]
       } else {
-        throw new Error(`Field "${currentPart}" not found in path "${originalPath}". Available fields: ${currentRef?.mapValue?.fields ? Object.keys(currentRef.mapValue.fields).join(', ') : Object.keys(currentRef || {}).join(', ')}`)
+        throw new Error(
+          `Field "${currentPart}" not found in path "${originalPath}". Available fields: ${currentRef?.mapValue?.fields ? Object.keys(currentRef.mapValue.fields).join(', ') : Object.keys(currentRef || {}).join(', ')}`
+        )
       }
 
       if (nextRef === undefined) {
@@ -93,7 +97,7 @@ export const useFieldNavigation = () => {
     if (pathParts.length === 1) {
       return {
         parent: fields,
-        lastPart: pathParts[0]
+        lastPart: pathParts[0],
       }
     }
 
@@ -104,7 +108,7 @@ export const useFieldNavigation = () => {
 
     return {
       parent,
-      lastPart
+      lastPart,
     }
   }
 
@@ -112,6 +116,6 @@ export const useFieldNavigation = () => {
     parseFieldPath,
     navigateToFieldPath,
     navigateToParentPath,
-    navigateWithParts
+    navigateWithParts,
   }
 }

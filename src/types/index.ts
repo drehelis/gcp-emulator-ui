@@ -146,7 +146,10 @@ export interface BaseStoreState {
 
 // API types
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
-export type ContentType = 'application/json' | 'application/x-www-form-urlencoded' | 'multipart/form-data'
+export type ContentType =
+  | 'application/json'
+  | 'application/x-www-form-urlencoded'
+  | 'multipart/form-data'
 
 // Date/Time types
 export type DateFormat = 'short' | 'medium' | 'long' | 'full' | 'iso' | 'relative'

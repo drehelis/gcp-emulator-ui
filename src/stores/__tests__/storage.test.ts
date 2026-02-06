@@ -14,8 +14,8 @@ vi.mock('vue-toastification', () => ({
     success: vi.fn(),
     error: vi.fn(),
     warning: vi.fn(),
-    info: vi.fn()
-  })
+    info: vi.fn(),
+  }),
 }))
 
 // Mock the storage API
@@ -30,8 +30,8 @@ vi.mock('@/api/storage', () => ({
     downloadObject: vi.fn(),
     deleteMultipleObjects: vi.fn(),
     getObjectDownloadUrl: vi.fn(),
-    getObjectPreviewUrl: vi.fn()
-  }
+    getObjectPreviewUrl: vi.fn(),
+  },
 }))
 
 describe('useStorageStore', () => {
@@ -117,10 +117,10 @@ describe('useStorageStore', () => {
     it('toggles order when clicking same field', () => {
       const store = useStorageStore()
       expect(store.sortOrder).toBe('asc')
-      
+
       store.setSortBy('name') // Same field
       expect(store.sortOrder).toBe('desc')
-      
+
       store.setSortBy('name') // Same field again
       expect(store.sortOrder).toBe('asc')
     })
@@ -129,7 +129,7 @@ describe('useStorageStore', () => {
       const store = useStorageStore()
       store.setSortBy('name') // Already name, toggles to desc
       expect(store.sortOrder).toBe('desc')
-      
+
       store.setSortBy('size') // Different field, resets to asc
       expect(store.sortOrder).toBe('asc')
     })
@@ -162,7 +162,7 @@ describe('useStorageStore', () => {
       const store = useStorageStore()
       store.selectObject('file1.txt')
       store.selectObject('file2.txt')
-      
+
       store.clearSelection()
       expect(store.selectedObjects).toHaveLength(0)
     })
@@ -173,9 +173,9 @@ describe('useStorageStore', () => {
       const store = useStorageStore()
       // Simulate state
       store.selectObject('file.txt')
-      
+
       store.clearCurrentPath()
-      
+
       expect(store.currentPath).toBe('')
       expect(store.breadcrumbs).toHaveLength(0)
       expect(store.selectedObjects).toHaveLength(0)
@@ -185,10 +185,10 @@ describe('useStorageStore', () => {
   describe('reset', () => {
     it('resets entire store state', () => {
       const store = useStorageStore()
-      
+
       // Verify reset clears state
       store.reset()
-      
+
       expect(store.buckets).toEqual([])
       expect(store.currentBucket).toBeNull()
       expect(store.objects).toEqual([])
@@ -203,7 +203,7 @@ describe('useStorageStore', () => {
     it('isLoading reflects any loading state', () => {
       const store = useStorageStore()
       expect(store.isLoading).toBe(false)
-      
+
       // Note: loading states are internal, this tests the computed property exists
       expect(typeof store.isLoading).toBe('boolean')
     })
@@ -217,7 +217,7 @@ describe('useStorageStore', () => {
   describe('settings', () => {
     it('has default storage settings', () => {
       const store = useStorageStore()
-      
+
       expect(store.settings.defaultStorageClass).toBe('STANDARD')
       expect(store.settings.enableVersioning).toBe(false)
       expect(store.settings.enableCors).toBe(false)
@@ -227,7 +227,7 @@ describe('useStorageStore', () => {
   describe('pagination', () => {
     it('has default pagination state', () => {
       const store = useStorageStore()
-      
+
       expect(store.pagination.hasMore).toBe(false)
       expect(store.pagination.nextPageToken).toBeUndefined()
     })
@@ -238,13 +238,13 @@ describe('useStorageStore', () => {
       vi.mocked(storageApi.listBuckets).mockResolvedValue({
         items: [
           { name: 'bucket1', selfLink: '', timeCreated: '', updated: '' },
-          { name: 'bucket2', selfLink: '', timeCreated: '', updated: '' }
-        ]
+          { name: 'bucket2', selfLink: '', timeCreated: '', updated: '' },
+        ],
       })
 
       const store = useStorageStore()
       await store.fetchBuckets()
-      
+
       expect(store.buckets).toHaveLength(2)
       expect(store.buckets[0].name).toBe('bucket1')
     })
@@ -254,7 +254,7 @@ describe('useStorageStore', () => {
 
       const store = useStorageStore()
       await store.fetchBuckets()
-      
+
       expect(store.buckets).toEqual([])
     })
 
@@ -263,7 +263,7 @@ describe('useStorageStore', () => {
 
       const store = useStorageStore()
       await store.fetchBuckets()
-      
+
       expect(store.hasError).toBe(true)
     })
   })
@@ -275,7 +275,7 @@ describe('useStorageStore', () => {
 
       const store = useStorageStore()
       await store.fetchBucket('my-bucket')
-      
+
       expect(store.currentBucket).toEqual(mockBucket)
       expect(store.hasCurrentBucket).toBe(true)
     })
@@ -286,10 +286,9 @@ describe('useStorageStore', () => {
 
       const store = useStorageStore()
       await store.fetchBucket('new-bucket')
-      
+
       expect(store.buckets).toContainEqual(mockBucket)
     })
-
   })
 
   describe('createBucket', () => {
@@ -299,7 +298,7 @@ describe('useStorageStore', () => {
 
       const store = useStorageStore()
       await store.createBucket({ name: 'new-bucket' })
-      
+
       expect(store.buckets).toContainEqual(mockBucket)
       expect(store.currentBucket).toEqual(mockBucket)
     })
@@ -308,9 +307,8 @@ describe('useStorageStore', () => {
       vi.mocked(storageApi.createBucket).mockRejectedValue(new Error('Creation failed'))
 
       const store = useStorageStore()
-      
-      await expect(store.createBucket({ name: 'fail-bucket' }))
-        .rejects.toThrow()
+
+      await expect(store.createBucket({ name: 'fail-bucket' })).rejects.toThrow()
     })
   })
 
@@ -331,7 +329,7 @@ describe('useStorageStore', () => {
   describe('loading states', () => {
     it('exposes individual loading states', () => {
       const store = useStorageStore()
-      
+
       expect(store.loading.buckets).toBe(false)
       expect(store.loading.objects).toBe(false)
       expect(store.loading.upload).toBe(false)
@@ -344,7 +342,7 @@ describe('useStorageStore', () => {
   describe('state management', () => {
     it('tracks base state', () => {
       const store = useStorageStore()
-      
+
       expect(store.state.state).toBe('idle')
       expect(store.state.error).toBeNull()
     })
@@ -353,7 +351,7 @@ describe('useStorageStore', () => {
   describe('deleteBucket', () => {
     it('removes bucket from list on success', async () => {
       const mockBucket = { name: 'bucket-to-delete', selfLink: '', timeCreated: '', updated: '' }
-      
+
       vi.mocked(storageApi.createBucket).mockResolvedValue(mockBucket)
       vi.mocked(storageApi.listObjects).mockResolvedValue({ items: [], prefixes: [] })
       vi.mocked(storageApi.deleteMultipleObjects).mockResolvedValue({ success: [], errors: [] })
@@ -362,7 +360,7 @@ describe('useStorageStore', () => {
       const store = useStorageStore()
       await store.createBucket({ name: 'bucket-to-delete' })
       expect(store.buckets).toHaveLength(1)
-      
+
       await store.deleteBucket('bucket-to-delete')
       expect(store.buckets).toHaveLength(0)
     })
@@ -374,7 +372,7 @@ describe('useStorageStore', () => {
 
       const store = useStorageStore()
       await store.fetchBuckets()
-      
+
       expect(store.hasError).toBe(true)
     })
   })
@@ -387,7 +385,7 @@ describe('useStorageStore', () => {
 
       const store = useStorageStore()
       await store.fetchBucket('my-bucket')
-      
+
       expect(store.currentBucket?.name).toBe('my-bucket')
     })
   })
@@ -433,20 +431,28 @@ describe('useStorageStore', () => {
     it('fetches objects and prefixes', async () => {
       vi.mocked(storageApi.listObjects).mockResolvedValue({
         items: [
-          { name: 'file1.txt', size: '100', contentType: 'text/plain', bucket: 'my-bucket', storageClass: 'STANDARD', timeCreated: '', updated: '' }
+          {
+            name: 'file1.txt',
+            size: '100',
+            contentType: 'text/plain',
+            bucket: 'my-bucket',
+            storageClass: 'STANDARD',
+            timeCreated: '',
+            updated: '',
+          },
         ],
-        prefixes: ['folder1/']
+        prefixes: ['folder1/'],
       })
       vi.mocked(storageApi.getObjectDownloadUrl).mockReturnValue('http://mock-download-url')
 
       const store = useStorageStore()
       await store.fetchObjects('my-bucket')
-      
+
       expect(store.objects).toHaveLength(2)
       // Folder should be first (due to sorting logic)
       expect(store.objects[0].isFolder).toBe(true)
       expect(store.objects[0].name).toBe('folder1')
-      
+
       expect(store.objects[1].isFolder).toBe(false)
       expect(store.objects[1].name).toBe('file1.txt')
       expect(store.objects[1].downloadUrl).toBe('http://mock-download-url')
@@ -454,10 +460,10 @@ describe('useStorageStore', () => {
 
     it('updates breadcrumbs', async () => {
       vi.mocked(storageApi.listObjects).mockResolvedValue({ items: [], prefixes: [] })
-      
+
       const store = useStorageStore()
       await store.fetchObjects('my-bucket', 'folder1/subfolder/')
-      
+
       expect(store.breadcrumbs).toHaveLength(2)
       expect(store.breadcrumbs[0].name).toBe('folder1')
       expect(store.currentPath).toBe('folder1/subfolder/')
@@ -466,14 +472,30 @@ describe('useStorageStore', () => {
     it('calculates bucket statistics', async () => {
       vi.mocked(storageApi.listObjects).mockResolvedValue({
         items: [
-          { name: 'file1.txt', size: '100', contentType: 'text/plain', bucket: 'test', storageClass: 'STANDARD', timeCreated: '', updated: '' },
-          { name: 'file2.jpg', size: '200', contentType: 'image/jpeg', bucket: 'test', storageClass: 'STANDARD', timeCreated: '', updated: '' }
-        ]
+          {
+            name: 'file1.txt',
+            size: '100',
+            contentType: 'text/plain',
+            bucket: 'test',
+            storageClass: 'STANDARD',
+            timeCreated: '',
+            updated: '',
+          },
+          {
+            name: 'file2.jpg',
+            size: '200',
+            contentType: 'image/jpeg',
+            bucket: 'test',
+            storageClass: 'STANDARD',
+            timeCreated: '',
+            updated: '',
+          },
+        ],
       })
 
       const store = useStorageStore()
       await store.fetchObjects('my-bucket')
-      
+
       expect(store.bucketStatistics).not.toBeNull()
       expect(store.bucketStatistics?.objectCount).toBe(2)
       expect(store.bucketStatistics?.totalSize).toBe(300)
@@ -485,16 +507,21 @@ describe('useStorageStore', () => {
       const file = new File(['content'], 'test.txt', { type: 'text/plain' })
       vi.mocked(storageApi.uploadObject).mockImplementation((file, req, onProgress) => {
         if (onProgress) onProgress({ loaded: 100, total: 100, percentage: 100 })
-        return Promise.resolve({ 
-            name: 'test.txt', bucket: 'bucket', contentType: 'text/plain', 
-            size: '100', storageClass: 'STANDARD', timeCreated: '', updated: '' 
+        return Promise.resolve({
+          name: 'test.txt',
+          bucket: 'bucket',
+          contentType: 'text/plain',
+          size: '100',
+          storageClass: 'STANDARD',
+          timeCreated: '',
+          updated: '',
         })
       })
       vi.mocked(storageApi.listObjects).mockResolvedValue({ items: [], prefixes: [] })
 
       const store = useStorageStore()
       await store.uploadFiles([file], 'my-bucket')
-      
+
       expect(storageApi.uploadObject).toHaveBeenCalled()
       expect(storageApi.listObjects).toHaveBeenCalled() // Should refresh
       expect(store.state.error).toBeNull()
@@ -506,28 +533,47 @@ describe('useStorageStore', () => {
 
       const store = useStorageStore()
       await expect(store.uploadFiles([file], 'my-bucket')).rejects.toThrow('Upload failed')
-      
+
       expect(store.state.error).toBe('Upload failed')
     })
   })
 
   describe('deleteObjects', () => {
     it('deletes multiple objects and updates list', async () => {
-       // Mock fetchObject to populate initial state
-       vi.mocked(storageApi.listObjects).mockResolvedValue({
+      // Mock fetchObject to populate initial state
+      vi.mocked(storageApi.listObjects).mockResolvedValue({
         items: [
-          { name: 'file1.txt', size: '100', contentType: 'text/plain', bucket: 'my-bucket', storageClass: 'STANDARD', timeCreated: '', updated: '' },
-          { name: 'file2.txt', size: '100', contentType: 'text/plain', bucket: 'my-bucket', storageClass: 'STANDARD', timeCreated: '', updated: '' }
-        ]
+          {
+            name: 'file1.txt',
+            size: '100',
+            contentType: 'text/plain',
+            bucket: 'my-bucket',
+            storageClass: 'STANDARD',
+            timeCreated: '',
+            updated: '',
+          },
+          {
+            name: 'file2.txt',
+            size: '100',
+            contentType: 'text/plain',
+            bucket: 'my-bucket',
+            storageClass: 'STANDARD',
+            timeCreated: '',
+            updated: '',
+          },
+        ],
       })
-      vi.mocked(storageApi.deleteMultipleObjects).mockResolvedValue({ success: ['file1.txt'], errors: [] })
+      vi.mocked(storageApi.deleteMultipleObjects).mockResolvedValue({
+        success: ['file1.txt'],
+        errors: [],
+      })
 
       const store = useStorageStore()
       await store.fetchObjects('my-bucket')
       expect(store.objects).toHaveLength(2)
 
       await store.deleteObjects('my-bucket', ['file1.txt'])
-      
+
       expect(storageApi.deleteMultipleObjects).toHaveBeenCalled()
       // Should remove from local state
       expect(store.objects).toHaveLength(1)
@@ -535,4 +581,3 @@ describe('useStorageStore', () => {
     })
   })
 })
-

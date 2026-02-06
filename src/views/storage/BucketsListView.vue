@@ -1,7 +1,10 @@
 <template>
   <div class="space-y-6">
     <!-- Loading State -->
-    <div v-if="storageStore.loading.buckets && !storageStore.buckets.length" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+    <div
+      v-if="storageStore.loading.buckets && !storageStore.buckets.length"
+      class="bg-white dark:bg-gray-800 shadow rounded-lg p-6"
+    >
       <div class="animate-pulse">
         <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
         <div class="space-y-3">
@@ -16,7 +19,9 @@
     <div v-else-if="storageStore.hasError" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
       <div class="text-center">
         <ExclamationTriangleIcon class="mx-auto h-12 w-12 text-red-400" />
-        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">Error Loading Buckets</h3>
+        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+          Error Loading Buckets
+        </h3>
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ storageStore.state.error }}</p>
         <div class="mt-4">
           <button
@@ -36,9 +41,7 @@
       <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <div class="flex items-center justify-between">
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">
-              Buckets
-            </h2>
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Buckets</h2>
             <div class="flex items-center space-x-3">
               <!-- View Mode Toggle -->
               <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-md p-0.5">
@@ -48,7 +51,7 @@
                     'p-1.5 rounded text-sm font-medium transition-colors',
                     storageStore.viewMode === 'list'
                       ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white',
                   ]"
                   title="Table view"
                 >
@@ -60,7 +63,7 @@
                     'p-1.5 rounded text-sm font-medium transition-colors',
                     storageStore.viewMode === 'grid'
                       ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white',
                   ]"
                   title="Grid view"
                 >
@@ -80,185 +83,216 @@
                 :disabled="storageStore.loading.buckets"
                 class="inline-flex items-center px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                <ArrowPathIcon class="h-4 w-4 sm:mr-2" :class="{ 'animate-spin': storageStore.loading.buckets }" />
+                <ArrowPathIcon
+                  class="h-4 w-4 sm:mr-2"
+                  :class="{ 'animate-spin': storageStore.loading.buckets }"
+                />
                 <span class="hidden sm:inline">Refresh</span>
               </button>
             </div>
           </div>
-
         </div>
       </div>
 
       <!-- Buckets Table View -->
       <div class="px-4 sm:px-6 lg:px-8">
-        <div v-if="storageStore.viewMode === 'list'" class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div
+          v-if="storageStore.viewMode === 'list'"
+          class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
+        >
           <!-- Desktop Table View -->
           <div class="hidden md:block overflow-x-auto">
             <table class="min-w-full">
-            <!-- Table Header -->
-            <thead class="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-              <tr>
-                <th class="w-10 px-3 py-2 text-left">
-                  <input
-                    type="checkbox"
-                    class="w-3.5 h-3.5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
-                  >
-                </th>
-                <th scope="col" class="px-3 py-2 text-left">
-                  <button
-                    @click="handleSort('name')"
-                    class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-                  >
-                    Name
-                    <ChevronUpIcon
-                      v-if="sortBy === 'name' && sortOrder === 'asc'"
-                      class="w-3 h-3 ml-1"
-                    />
-                    <ChevronDownIcon
-                      v-else-if="sortBy === 'name' && sortOrder === 'desc'"
-                      class="w-3 h-3 ml-1"
-                    />
-                    <div v-else class="w-3 h-3 ml-1"></div>
-                  </button>
-                </th>
-                <th scope="col" class="px-3 py-2 text-left w-32 hidden md:table-cell">
-                  <button
-                    @click="handleSort('created')"
-                    class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-                  >
-                    Created
-                    <ChevronUpIcon
-                      v-if="sortBy === 'created' && sortOrder === 'asc'"
-                      class="w-3 h-3 ml-1"
-                    />
-                    <ChevronDownIcon
-                      v-else-if="sortBy === 'created' && sortOrder === 'desc'"
-                      class="w-3 h-3 ml-1"
-                    />
-                    <div v-else class="w-3 h-3 ml-1"></div>
-                  </button>
-                </th>
-                <th scope="col" class="px-3 py-2 text-left w-24 hidden sm:table-cell">
-                  <button
-                    @click="handleSort('location')"
-                    class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
-                  >
-                    Location
-                    <ChevronUpIcon
-                      v-if="sortBy === 'location' && sortOrder === 'asc'"
-                      class="w-3 h-3 ml-1"
-                    />
-                    <ChevronDownIcon
-                      v-else-if="sortBy === 'location' && sortOrder === 'desc'"
-                      class="w-3 h-3 ml-1"
-                    />
-                    <div v-else class="w-3 h-3 ml-1"></div>
-                  </button>
-                </th>
-                <th scope="col" class="px-3 py-2 text-left w-28 hidden lg:table-cell">
-                  <button
-                    @click="handleSort('storageClass')"
-                    class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors whitespace-nowrap"
-                  >
-                    Class
-                    <ChevronUpIcon
-                      v-if="sortBy === 'storageClass' && sortOrder === 'asc'"
-                      class="w-3 h-3 ml-1"
-                    />
-                    <ChevronDownIcon
-                      v-else-if="sortBy === 'storageClass' && sortOrder === 'desc'"
-                      class="w-3 h-3 ml-1"
-                    />
-                    <div v-else class="w-3 h-3 ml-1"></div>
-                  </button>
-                </th>
-                <th scope="col" class="px-3 py-2 text-left w-20 hidden xl:table-cell">
-                  <span class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap">
-                    Public
-                  </span>
-                </th>
-                <th scope="col" class="w-16 px-3 py-2"><span class="sr-only">Actions</span></th>
-              </tr>
-            </thead>
-
-            <!-- Table Body -->
-            <tbody class="bg-white dark:bg-gray-800">
-              <tr
-                v-for="(bucket, index) in sortedBuckets"
-                :key="bucket.name"
-                :id="`bucket-${bucket.name}`"
-                class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
-                :class="[
-                  index !== sortedBuckets.length - 1 ? 'border-b border-gray-100 dark:border-gray-700/50' : ''
-                ]"
-                @click="navigateToBucket(bucket.name)"
+              <!-- Table Header -->
+              <thead
+                class="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700"
               >
-                <!-- Checkbox -->
-                <td class="px-3 py-1.5">
-                  <input
-                    type="checkbox"
-                    class="w-3.5 h-3.5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
-                    @click.stop
-                  >
-                </td>
-
-                <!-- Name -->
-                <td class="px-3 py-1.5">
-                  <div class="flex items-center min-w-0">
-                    <ArchiveBoxIcon class="w-4 h-4 text-blue-500 dark:text-blue-400 mr-2 flex-shrink-0" />
-                    <span class="text-xs font-medium text-gray-900 dark:text-white truncate" :title="bucket.name">
-                      {{ bucket.name }}
+                <tr>
+                  <th class="w-10 px-3 py-2 text-left">
+                    <input
+                      type="checkbox"
+                      class="w-3.5 h-3.5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
+                    />
+                  </th>
+                  <th scope="col" class="px-3 py-2 text-left">
+                    <button
+                      @click="handleSort('name')"
+                      class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                    >
+                      Name
+                      <ChevronUpIcon
+                        v-if="sortBy === 'name' && sortOrder === 'asc'"
+                        class="w-3 h-3 ml-1"
+                      />
+                      <ChevronDownIcon
+                        v-else-if="sortBy === 'name' && sortOrder === 'desc'"
+                        class="w-3 h-3 ml-1"
+                      />
+                      <div v-else class="w-3 h-3 ml-1"></div>
+                    </button>
+                  </th>
+                  <th scope="col" class="px-3 py-2 text-left w-32 hidden md:table-cell">
+                    <button
+                      @click="handleSort('created')"
+                      class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                    >
+                      Created
+                      <ChevronUpIcon
+                        v-if="sortBy === 'created' && sortOrder === 'asc'"
+                        class="w-3 h-3 ml-1"
+                      />
+                      <ChevronDownIcon
+                        v-else-if="sortBy === 'created' && sortOrder === 'desc'"
+                        class="w-3 h-3 ml-1"
+                      />
+                      <div v-else class="w-3 h-3 ml-1"></div>
+                    </button>
+                  </th>
+                  <th scope="col" class="px-3 py-2 text-left w-24 hidden sm:table-cell">
+                    <button
+                      @click="handleSort('location')"
+                      class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors"
+                    >
+                      Location
+                      <ChevronUpIcon
+                        v-if="sortBy === 'location' && sortOrder === 'asc'"
+                        class="w-3 h-3 ml-1"
+                      />
+                      <ChevronDownIcon
+                        v-else-if="sortBy === 'location' && sortOrder === 'desc'"
+                        class="w-3 h-3 ml-1"
+                      />
+                      <div v-else class="w-3 h-3 ml-1"></div>
+                    </button>
+                  </th>
+                  <th scope="col" class="px-3 py-2 text-left w-28 hidden lg:table-cell">
+                    <button
+                      @click="handleSort('storageClass')"
+                      class="flex items-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-200 transition-colors whitespace-nowrap"
+                    >
+                      Class
+                      <ChevronUpIcon
+                        v-if="sortBy === 'storageClass' && sortOrder === 'asc'"
+                        class="w-3 h-3 ml-1"
+                      />
+                      <ChevronDownIcon
+                        v-else-if="sortBy === 'storageClass' && sortOrder === 'desc'"
+                        class="w-3 h-3 ml-1"
+                      />
+                      <div v-else class="w-3 h-3 ml-1"></div>
+                    </button>
+                  </th>
+                  <th scope="col" class="px-3 py-2 text-left w-20 hidden xl:table-cell">
+                    <span
+                      class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap"
+                    >
+                      Public
                     </span>
-                  </div>
-                </td>
+                  </th>
+                  <th scope="col" class="w-16 px-3 py-2"><span class="sr-only">Actions</span></th>
+                </tr>
+              </thead>
 
-                <!-- Created -->
-                <td class="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap hidden md:table-cell">
-                  {{ bucket.timeCreated ? new Date(bucket.timeCreated).toLocaleDateString() : 'N/A' }}
-                </td>
+              <!-- Table Body -->
+              <tbody class="bg-white dark:bg-gray-800">
+                <tr
+                  v-for="(bucket, index) in sortedBuckets"
+                  :key="bucket.name"
+                  :id="`bucket-${bucket.name}`"
+                  class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
+                  :class="[
+                    index !== sortedBuckets.length - 1
+                      ? 'border-b border-gray-100 dark:border-gray-700/50'
+                      : '',
+                  ]"
+                  @click="navigateToBucket(bucket.name)"
+                >
+                  <!-- Checkbox -->
+                  <td class="px-3 py-1.5">
+                    <input
+                      type="checkbox"
+                      class="w-3.5 h-3.5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
+                      @click.stop
+                    />
+                  </td>
 
-                <!-- Location -->
-                <td class="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 hidden sm:table-cell">
-                  <span class="truncate" :title="bucket.location || 'US'">
-                    {{ bucket.location || 'US' }}
-                  </span>
-                </td>
+                  <!-- Name -->
+                  <td class="px-3 py-1.5">
+                    <div class="flex items-center min-w-0">
+                      <ArchiveBoxIcon
+                        class="w-4 h-4 text-blue-500 dark:text-blue-400 mr-2 flex-shrink-0"
+                      />
+                      <span
+                        class="text-xs font-medium text-gray-900 dark:text-white truncate"
+                        :title="bucket.name"
+                      >
+                        {{ bucket.name }}
+                      </span>
+                    </div>
+                  </td>
 
-                <!-- Storage Class -->
-                <td class="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 hidden lg:table-cell whitespace-nowrap">
-                  <span class="truncate" :title="bucket.storageClass || 'Standard'">
-                    {{ bucket.storageClass || 'Standard' }}
-                  </span>
-                </td>
+                  <!-- Created -->
+                  <td
+                    class="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap hidden md:table-cell"
+                  >
+                    {{
+                      bucket.timeCreated ? new Date(bucket.timeCreated).toLocaleDateString() : 'N/A'
+                    }}
+                  </td>
 
-                <!-- Public Access -->
-                <td class="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 hidden xl:table-cell whitespace-nowrap">
-                  Not public
-                </td>
+                  <!-- Location -->
+                  <td
+                    class="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 hidden sm:table-cell"
+                  >
+                    <span class="truncate" :title="bucket.location || 'US'">
+                      {{ bucket.location || 'US' }}
+                    </span>
+                  </td>
 
-                <!-- Actions -->
-                <td class="px-3 py-1.5 text-right">
-                  <div class="flex items-center justify-end space-x-1">
-                    <button
-                      @click.stop="downloadBucketAsZip(bucket.name)"
-                      :disabled="downloadingBuckets.has(bucket.name)"
-                      class="p-1 text-gray-400 hover:text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Download bucket as ZIP"
-                    >
-                      <ArrowDownTrayIcon :class="['w-3.5 h-3.5', downloadingBuckets.has(bucket.name) ? 'animate-pulse' : '']" />
-                    </button>
-                    <button
-                      @click.stop="confirmDeleteBucket(bucket)"
-                      :disabled="storageStore.loading.delete"
-                      class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Delete bucket"
-                    >
-                      <TrashIcon class="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
+                  <!-- Storage Class -->
+                  <td
+                    class="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 hidden lg:table-cell whitespace-nowrap"
+                  >
+                    <span class="truncate" :title="bucket.storageClass || 'Standard'">
+                      {{ bucket.storageClass || 'Standard' }}
+                    </span>
+                  </td>
+
+                  <!-- Public Access -->
+                  <td
+                    class="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 hidden xl:table-cell whitespace-nowrap"
+                  >
+                    Not public
+                  </td>
+
+                  <!-- Actions -->
+                  <td class="px-3 py-1.5 text-right">
+                    <div class="flex items-center justify-end space-x-1">
+                      <button
+                        @click.stop="downloadBucketAsZip(bucket.name)"
+                        :disabled="downloadingBuckets.has(bucket.name)"
+                        class="p-1 text-gray-400 hover:text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Download bucket as ZIP"
+                      >
+                        <ArrowDownTrayIcon
+                          :class="[
+                            'w-3.5 h-3.5',
+                            downloadingBuckets.has(bucket.name) ? 'animate-pulse' : '',
+                          ]"
+                        />
+                      </button>
+                      <button
+                        @click.stop="confirmDeleteBucket(bucket)"
+                        :disabled="storageStore.loading.delete"
+                        class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Delete bucket"
+                      >
+                        <TrashIcon class="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
             </table>
           </div>
 
@@ -294,12 +328,16 @@
                 @click="navigateToBucket(bucket.name)"
               >
                 <div class="flex items-start space-x-3">
-                  <ArchiveBoxIcon class="w-5 h-5 text-blue-500 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                  <ArchiveBoxIcon
+                    class="w-5 h-5 text-blue-500 dark:text-blue-400 mt-0.5 flex-shrink-0"
+                  />
                   <div class="flex-1 min-w-0">
                     <h3 class="text-sm font-medium text-gray-900 dark:text-white truncate">
                       {{ bucket.name }}
                     </h3>
-                    <div class="mt-1 flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
+                    <div
+                      class="mt-1 flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400"
+                    >
                       <span>{{ bucket.location || 'US' }}</span>
                       <span>{{ bucket.storageClass || 'Standard' }}</span>
                       <span v-if="bucket.timeCreated">
@@ -341,7 +379,9 @@
                   {{ bucket.storageClass || 'STANDARD' }}
                 </div>
                 <div v-if="bucket.location" class="text-xs">
-                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
+                  <span
+                    class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
+                  >
                     {{ bucket.location }}
                   </span>
                 </div>
@@ -349,7 +389,9 @@
             </div>
 
             <!-- Action Buttons (visible on hover) -->
-            <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1">
+            <div
+              class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex space-x-1"
+            >
               <button
                 @click.stop="navigateToBucket(bucket.name)"
                 class="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
@@ -370,7 +412,12 @@
                 class="p-1.5 text-gray-400 hover:text-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Download bucket as ZIP"
               >
-                <ArrowDownTrayIcon :class="['w-3.5 h-3.5', downloadingBuckets.has(bucket.name) ? 'animate-pulse' : '']" />
+                <ArrowDownTrayIcon
+                  :class="[
+                    'w-3.5 h-3.5',
+                    downloadingBuckets.has(bucket.name) ? 'animate-pulse' : '',
+                  ]"
+                />
               </button>
               <button
                 @click.stop="confirmDeleteBucket(bucket)"
@@ -392,9 +439,7 @@
       <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <div class="flex items-center justify-between">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-white">
-              Buckets (0)
-            </h2>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-white">Buckets (0)</h2>
             <div class="flex items-center space-x-3">
               <button
                 @click="showCreateBucketModal = true"
@@ -408,20 +453,25 @@
                 :disabled="storageStore.loading.buckets"
                 class="inline-flex items-center px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                <ArrowPathIcon class="h-4 w-4 sm:mr-2" :class="{ 'animate-spin': storageStore.loading.buckets }" />
+                <ArrowPathIcon
+                  class="h-4 w-4 sm:mr-2"
+                  :class="{ 'animate-spin': storageStore.loading.buckets }"
+                />
                 <span class="hidden sm:inline">Refresh</span>
               </button>
             </div>
           </div>
         </div>
       </div>
-      
+
       <!-- Empty State Content -->
       <div class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
         <div class="text-center py-12">
           <ArchiveBoxIcon class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-600" />
           <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">No Buckets Found</h3>
-          <p class="mt-2 text-gray-600 dark:text-gray-400">Create your first bucket to start storing objects in Cloud Storage.</p>
+          <p class="mt-2 text-gray-600 dark:text-gray-400">
+            Create your first bucket to start storing objects in Cloud Storage.
+          </p>
           <div class="mt-6">
             <button
               @click="showCreateBucketModal = true"
@@ -444,17 +494,14 @@
       :is-loading="storageStore.loading.delete"
       :details="{
         title: 'Bucket Details',
-        description: deleteModal.bucket?.name || ''
+        description: deleteModal.bucket?.name || '',
       }"
       @confirm="handleDeleteBucket"
       @cancel="cancelDeleteBucket"
     />
 
     <!-- Create Bucket Modal -->
-    <CreateBucketModal
-      v-model="showCreateBucketModal"
-      @bucket-created="handleBucketCreated"
-    />
+    <CreateBucketModal v-model="showCreateBucketModal" @bucket-created="handleBucketCreated" />
   </div>
 </template>
 
@@ -473,7 +520,7 @@ import {
   Bars3Icon,
   Squares2X2Icon,
   ChevronUpIcon,
-  ChevronDownIcon
+  ChevronDownIcon,
 } from '@heroicons/vue/24/outline'
 import { useStorageStore } from '@/stores/storage'
 import { useProjectsStore } from '@/stores/projects'
@@ -497,7 +544,7 @@ const deleteModal = ref<{
   bucket: StorageBucket | null
 }>({
   show: false,
-  bucket: null
+  bucket: null,
 })
 const downloadingBuckets = ref(new Set<string>())
 
@@ -507,7 +554,7 @@ const sortOrder = ref<'asc' | 'desc'>('asc')
 
 // Computed
 const currentProjectId = computed(() => {
-  return route.params.projectId as string || projectsStore.selectedProjectId || 'Unknown'
+  return (route.params.projectId as string) || projectsStore.selectedProjectId || 'Unknown'
 })
 
 const sortedBuckets = computed(() => {
@@ -585,7 +632,9 @@ async function refreshBuckets(): Promise<void> {
 function navigateToBucket(bucketName: string): void {
   // Clear the current path and breadcrumbs when navigating to a different bucket
   storageStore.clearCurrentPath()
-  router.push(`/projects/${currentProjectId.value}/storage/buckets/${encodeURIComponent(bucketName)}`)
+  router.push(
+    `/projects/${currentProjectId.value}/storage/buckets/${encodeURIComponent(bucketName)}`
+  )
 }
 
 async function copyBucketName(bucketName: string): Promise<void> {
@@ -594,14 +643,14 @@ async function copyBucketName(bucketName: string): Promise<void> {
     appStore.showToast({
       type: 'success',
       title: 'Copied to Clipboard',
-      message: `Bucket name "${bucketName}" copied to clipboard`
+      message: `Bucket name "${bucketName}" copied to clipboard`,
     })
   } catch (error) {
     console.error('Failed to copy bucket name:', error)
     appStore.showToast({
       type: 'error',
       title: 'Copy Failed',
-      message: 'Failed to copy bucket name to clipboard'
+      message: 'Failed to copy bucket name to clipboard',
     })
   }
 }
@@ -609,7 +658,7 @@ async function copyBucketName(bucketName: string): Promise<void> {
 function confirmDeleteBucket(bucket: StorageBucket): void {
   deleteModal.value = {
     show: true,
-    bucket
+    bucket,
   }
 }
 
@@ -627,7 +676,7 @@ async function handleDeleteBucket(): Promise<void> {
 function cancelDeleteBucket(): void {
   deleteModal.value = {
     show: false,
-    bucket: null
+    bucket: null,
   }
 }
 
@@ -644,8 +693,10 @@ async function downloadBucketAsZip(bucketName: string): Promise<void> {
   downloadingBuckets.value.add(bucketName)
 
   try {
-    const blob = await storageApi.downloadBucketAsZip(bucketName, (progress) => {
-      console.log(`Downloading bucket ${bucketName}: ${progress.current}/${progress.total} - ${progress.currentFile}`)
+    const blob = await storageApi.downloadBucketAsZip(bucketName, progress => {
+      console.log(
+        `Downloading bucket ${bucketName}: ${progress.current}/${progress.total} - ${progress.currentFile}`
+      )
     })
 
     const url = URL.createObjectURL(blob)
@@ -660,20 +711,19 @@ async function downloadBucketAsZip(bucketName: string): Promise<void> {
     appStore.showToast({
       type: 'success',
       title: 'Download Complete',
-      message: `Bucket "${bucketName}" downloaded successfully`
+      message: `Bucket "${bucketName}" downloaded successfully`,
     })
   } catch (error) {
     console.error('Failed to download bucket:', error)
     appStore.showToast({
       type: 'error',
       title: 'Download Failed',
-      message: `Failed to download bucket "${bucketName}"`
+      message: `Failed to download bucket "${bucketName}"`,
     })
   } finally {
     downloadingBuckets.value.delete(bucketName)
   }
 }
-
 
 // Handle focus targeting when hash is present
 async function handleBucketFocus(): Promise<void> {
@@ -699,22 +749,31 @@ onMounted(async () => {
 })
 
 // Watch for project ID changes and refetch buckets
-watch(currentProjectId, async (newProjectId, oldProjectId) => {
-  if (newProjectId && newProjectId !== 'Unknown' && newProjectId !== oldProjectId) {
-    await storageStore.fetchBuckets(true) // Force refresh
-  }
-}, { immediate: true })
+watch(
+  currentProjectId,
+  async (newProjectId, oldProjectId) => {
+    if (newProjectId && newProjectId !== 'Unknown' && newProjectId !== oldProjectId) {
+      await storageStore.fetchBuckets(true) // Force refresh
+    }
+  },
+  { immediate: true }
+)
 
 // Watch for route hash changes to handle focus targeting
-watch(() => route.hash, () => {
-  handleBucketFocus()
-})
-
-// Watch for buckets to be loaded to handle focus targeting when data loads
-watch(() => storageStore.buckets.length, () => {
-  if (route.hash) {
+watch(
+  () => route.hash,
+  () => {
     handleBucketFocus()
   }
-})
+)
 
+// Watch for buckets to be loaded to handle focus targeting when data loads
+watch(
+  () => storageStore.buckets.length,
+  () => {
+    if (route.hash) {
+      handleBucketFocus()
+    }
+  }
+)
 </script>

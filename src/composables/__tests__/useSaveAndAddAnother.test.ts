@@ -26,7 +26,7 @@ describe('useSaveAndAddAnother', () => {
   describe('setLastSaved', () => {
     it('sets the last saved ID', () => {
       const { lastSavedId, setLastSaved } = useSaveAndAddAnother()
-      
+
       setLastSaved('doc-123')
       expect(lastSavedId.value).toBe('doc-123')
     })
@@ -35,10 +35,10 @@ describe('useSaveAndAddAnother', () => {
   describe('clearNotification', () => {
     it('clears the last saved ID', () => {
       const { lastSavedId, setLastSaved, clearNotification } = useSaveAndAddAnother()
-      
+
       setLastSaved('doc-123')
       expect(lastSavedId.value).toBe('doc-123')
-      
+
       clearNotification()
       expect(lastSavedId.value).toBeNull()
     })
@@ -47,14 +47,14 @@ describe('useSaveAndAddAnother', () => {
   describe('getSuccessMessage', () => {
     it('generates document success message', () => {
       const { getSuccessMessage } = useSaveAndAddAnother()
-      
+
       const message = getSuccessMessage('document', 'my-doc')
       expect(message).toBe("Your previous document 'my-doc' was saved.")
     })
 
     it('generates collection success message', () => {
       const { getSuccessMessage } = useSaveAndAddAnother()
-      
+
       const message = getSuccessMessage('collection', 'my-collection')
       expect(message).toBe("Your previous collection 'my-collection' was saved.")
     })
@@ -63,7 +63,7 @@ describe('useSaveAndAddAnother', () => {
   describe('handleSaveAndAddAnother', () => {
     it('throws error when config is not provided', async () => {
       const { handleSaveAndAddAnother } = useSaveAndAddAnother()
-      
+
       await expect(handleSaveAndAddAnother()).rejects.toThrow('Configuration required')
     })
 
@@ -77,7 +77,7 @@ describe('useSaveAndAddAnother', () => {
         clearForm: vi.fn(),
         onSuccess: vi.fn(),
         getEntityId: vi.fn(),
-        formState: {}
+        formState: {},
       }
 
       const { handleSaveAndAddAnother } = useSaveAndAddAnother(mockConfig)
@@ -98,7 +98,7 @@ describe('useSaveAndAddAnother', () => {
         clearForm: vi.fn(),
         onSuccess: vi.fn(),
         getEntityId: vi.fn().mockReturnValue('doc-456'),
-        formState: {}
+        formState: {},
       }
 
       const { handleSaveAndAddAnother, lastSavedId } = useSaveAndAddAnother(mockConfig)
@@ -112,7 +112,7 @@ describe('useSaveAndAddAnother', () => {
 
     it('handles save errors gracefully', async () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-      
+
       const mockConfig = {
         entityType: 'document' as const,
         validateForm: vi.fn().mockReturnValue(true),
@@ -122,7 +122,7 @@ describe('useSaveAndAddAnother', () => {
         clearForm: vi.fn(),
         onSuccess: vi.fn(),
         getEntityId: vi.fn(),
-        formState: {}
+        formState: {},
       }
 
       const { handleSaveAndAddAnother, isLoading } = useSaveAndAddAnother(mockConfig)
@@ -130,7 +130,7 @@ describe('useSaveAndAddAnother', () => {
 
       expect(consoleSpy).toHaveBeenCalled()
       expect(isLoading.value).toBe(false)
-      
+
       consoleSpy.mockRestore()
     })
   })
@@ -138,10 +138,10 @@ describe('useSaveAndAddAnother', () => {
   describe('handleClearFields', () => {
     it('clears notification', () => {
       const { handleClearFields, lastSavedId, setLastSaved } = useSaveAndAddAnother()
-      
+
       setLastSaved('doc-123')
       handleClearFields()
-      
+
       expect(lastSavedId.value).toBeNull()
     })
 
@@ -158,8 +158,8 @@ describe('useSaveAndAddAnother', () => {
         getEntityId: vi.fn(),
         formState: {
           field1: { resetForm: mockResetForm },
-          field2: { resetForm: mockResetForm }
-        }
+          field2: { resetForm: mockResetForm },
+        },
       }
 
       const { handleClearFields } = useSaveAndAddAnother(mockConfig)

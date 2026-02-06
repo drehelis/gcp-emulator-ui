@@ -1,12 +1,16 @@
 <template>
-  <div :class="[
-    'w-full lg:w-1/3 h-full bg-white dark:bg-gray-800 overflow-y-auto',
-    { 'border-r border-gray-200 dark:border-gray-700': props.showRightBorder }
-  ]">
+  <div
+    :class="[
+      'w-full lg:w-1/3 h-full bg-white dark:bg-gray-800 overflow-y-auto',
+      { 'border-r border-gray-200 dark:border-gray-700': props.showRightBorder },
+    ]"
+  >
     <div class="p-3 sm:p-4">
       <!-- Header -->
       <div class="mb-3">
-        <div class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 font-mono mb-3">
+        <div
+          class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 font-mono mb-3"
+        >
           <span class="text-gray-900 dark:text-white">{{ header }}</span>
         </div>
         <div class="border-b border-gray-200 dark:border-gray-600"></div>
@@ -32,7 +36,7 @@
             'flex items-center px-3 py-3 sm:py-2 text-sm rounded-md cursor-pointer transition-colors min-h-[44px] sm:min-h-0',
             selectedItem && getItemKey(selectedItem) === getItemKey(item)
               ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700',
           ]"
           @click="$emit('select-item', item)"
         >
@@ -76,7 +80,7 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   emptyStateIcon: CircleStackIcon,
   loading: false,
-  showRightBorder: false
+  showRightBorder: false,
 })
 
 defineEmits<{

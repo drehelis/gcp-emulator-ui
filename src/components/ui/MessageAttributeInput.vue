@@ -13,7 +13,7 @@
           placeholder="Attribute key (e.g., eventType)"
           :class="[
             'block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-green-500 focus:ring-green-500 text-sm px-3 py-2 placeholder-gray-400 dark:placeholder-gray-500',
-            isPreconfigured(attribute.key) ? 'pr-20' : ''
+            isPreconfigured(attribute.key) ? 'pr-20' : '',
           ]"
           :title="isPreconfigured(attribute.key) ? 'Pre-configured at runtime' : ''"
         />
@@ -23,7 +23,12 @@
           title="This attribute is pre-configured from runtime config"
         >
           <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M13 10V3L4 14h7v7l9-11h-7z"
+            />
           </svg>
           Auto
         </span>
@@ -47,7 +52,7 @@
         </button>
       </div>
     </div>
-    
+
     <button
       @click="addAttribute"
       class="w-full flex items-center justify-center px-3 py-2 border border-dashed border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:border-green-300 dark:hover:border-green-600 bg-white dark:bg-gray-800 hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors"
@@ -76,7 +81,7 @@ interface Emits {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  preconfiguredKeys: () => []
+  preconfiguredKeys: () => [],
 })
 const emit = defineEmits<Emits>()
 

@@ -10,7 +10,10 @@
   >
     <form @submit.prevent="handleSubmit" class="space-y-4">
       <div>
-        <label for="project-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        <label
+          for="project-name"
+          class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+        >
           Project ID
         </label>
         <input
@@ -44,7 +47,7 @@
             :class="{ 'rotate-180': showAdvanced }"
           />
         </button>
-        
+
         <Transition
           enter-active-class="transition-all"
           enter-from-class="opacity-0 max-h-0"
@@ -55,7 +58,10 @@
         >
           <div v-if="showAdvanced" class="mt-3 space-y-3 overflow-hidden">
             <div>
-              <label for="project-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              <label
+                for="project-description"
+                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+              >
                 Description (Optional)
               </label>
               <textarea
@@ -102,42 +108,42 @@ const isSubmitting = ref(false)
 
 const modelValue = computed({
   get: () => props.modelValue,
-  set: (value: boolean) => emit('update:modelValue', value)
+  set: (value: boolean) => emit('update:modelValue', value),
 })
 
 const modalActions = computed<ModalAction[]>(() => [
   {
     label: 'Cancel',
     handler: handleClose,
-    variant: 'secondary'
+    variant: 'secondary',
   },
   {
     label: 'Add Project',
     handler: handleSubmit,
     variant: 'primary',
     loading: isSubmitting.value,
-    disabled: !projectName.value.trim() || isSubmitting.value
-  }
+    disabled: !projectName.value.trim() || isSubmitting.value,
+  },
 ])
 
 const validateProjectName = (name: string): string => {
   if (!name.trim()) {
     return 'Project ID is required'
   }
-  
+
   // Basic Google Cloud project ID validation
   if (!/^[a-z][a-z0-9-]*[a-z0-9]$/.test(name) && name.length > 1) {
     return 'Project ID must start with a lowercase letter, contain only lowercase letters, numbers, and hyphens, and end with a letter or number'
   }
-  
+
   if (name.length < 6 || name.length > 30) {
     return 'Project ID must be between 6 and 30 characters'
   }
-  
+
   if (projectsStore.projectList.includes(name)) {
     return 'This project is already added'
   }
-  
+
   return ''
 }
 
@@ -154,17 +160,19 @@ const handleSubmit = async () => {
   try {
     const addedProjectId = projectName.value.trim()
     await projectsStore.addProject(addedProjectId)
-    
+
     // Close modal after successful submission (store already shows success toast)
     isSubmitting.value = false
     modelValue.value = false
     resetForm()
-    
+
     // Navigate to the project services page where user can select emulator
     router.push(`/projects/${addedProjectId}`)
   } catch (err: any) {
     // Display error in the modal form (store already shows error toast)
-    error.value = err.message || 'Failed to add project. Please check if the project exists and the emulator is running.'
+    error.value =
+      err.message ||
+      'Failed to add project. Please check if the project exists and the emulator is running.'
     console.error('Error adding project:', err)
     isSubmitting.value = false
   }
@@ -192,10 +200,13 @@ const clearError = () => {
 }
 
 // Focus input when modal opens
-watch(() => props.modelValue, async (isOpen) => {
-  if (isOpen) {
-    await nextTick()
-    nameInput.value?.focus()
+watch(
+  () => props.modelValue,
+  async isOpen => {
+    if (isOpen) {
+      await nextTick()
+      nameInput.value?.focus()
+    }
   }
-})
+)
 </script>

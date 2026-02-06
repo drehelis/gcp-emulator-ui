@@ -18,18 +18,20 @@ const stats = ref({
   topics: 0,
   subscriptions: 0,
   schemas: 0,
-  messagestoday: 0
+  messagestoday: 0,
 })
 
-const recentActivity = ref<Array<{
-  id: string
-  description: string
-  timestamp: string
-}>>([])
+const recentActivity = ref<
+  Array<{
+    id: string
+    description: string
+    timestamp: string
+  }>
+>([])
 
 const refreshData = async () => {
   isLoading.value = true
-  
+
   try {
     if (projectsStore.selectedProject) {
       // Load real data from the emulator
@@ -37,14 +39,14 @@ const refreshData = async () => {
         // TODO: Implement actual API calls to get real data from the emulator
         // For now, just initialize with zero values
         Promise.resolve(0), // topicsApi.getTopics(projectsStore.selectedProject)
-        Promise.resolve(0)  // subscriptionsApi.getSubscriptions(projectsStore.selectedProject)
+        Promise.resolve(0), // subscriptionsApi.getSubscriptions(projectsStore.selectedProject)
       ])
-      
+
       stats.value.topics = 0 // topics.length
       stats.value.subscriptions = 0 // subscriptions.length
       stats.value.schemas = 0
       stats.value.messagestoday = 0
-      
+
       recentActivity.value = []
     } else {
       // Reset stats when no project selected
@@ -59,7 +61,7 @@ const refreshData = async () => {
     appStore.showToast({
       type: 'error',
       title: 'Error',
-      message: 'Failed to refresh dashboard data'
+      message: 'Failed to refresh dashboard data',
     })
   } finally {
     isLoading.value = false

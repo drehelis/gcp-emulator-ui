@@ -129,7 +129,7 @@ export const useFirestoreStorage = () => {
   const getFirestoreStorageData = () => {
     return {
       databases: loadDatabasesFromStorage(),
-      selectedDatabase: loadSelectedDatabaseFromStorage()
+      selectedDatabase: loadSelectedDatabaseFromStorage(),
     }
   }
 
@@ -166,6 +166,6 @@ export const useFirestoreStorage = () => {
 
     // Storage keys (for external use if needed)
     STORAGE_KEY_DATABASES,
-    STORAGE_KEY_SELECTED_DB
+    STORAGE_KEY_SELECTED_DB,
   }
 }

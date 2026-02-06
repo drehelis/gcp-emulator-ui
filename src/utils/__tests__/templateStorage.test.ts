@@ -15,41 +15,41 @@ const mockObjectStore = {
   delete: vi.fn(),
   clear: vi.fn(),
   index: vi.fn(),
-  createIndex: vi.fn()
+  createIndex: vi.fn(),
 }
 
 const mockTransaction = {
-  objectStore: vi.fn(() => mockObjectStore)
+  objectStore: vi.fn(() => mockObjectStore),
 }
 
 const mockDB = {
   transaction: vi.fn(() => mockTransaction),
   objectStoreNames: {
-    contains: vi.fn(() => true)
+    contains: vi.fn(() => true),
   },
-  createObjectStore: vi.fn(() => mockObjectStore)
+  createObjectStore: vi.fn(() => mockObjectStore),
 }
 
 const mockRequest = {
   result: mockDB,
   error: null,
   onsuccess: null as (() => void) | null,
-  onerror: null as (() => void) | null
+  onerror: null as (() => void) | null,
 }
 
 const mockOpenRequest = {
   ...mockRequest,
-  onupgradeneeded: null as ((_event: any) => void) | null
+  onupgradeneeded: null as ((_event: any) => void) | null,
 }
 
 // Mock indexedDB globally
 const mockIndexedDB = {
-  open: vi.fn(() => mockOpenRequest)
+  open: vi.fn(() => mockOpenRequest),
 }
 
 Object.defineProperty(global, 'indexedDB', {
   value: mockIndexedDB,
-  writable: true
+  writable: true,
 })
 
 describe('templateStorage', () => {
@@ -90,21 +90,21 @@ describe('templateStorage', () => {
 
       await templateStorage.open()
       await templateStorage.open()
-      
+
       // Should only open once since db is cached
       expect(mockIndexedDB.open).toHaveBeenCalledTimes(1)
     })
 
     it('creates object store on upgrade', async () => {
       const createObjectStoreMock = vi.fn(() => ({
-        createIndex: vi.fn()
+        createIndex: vi.fn(),
       }))
-      
+
       mockIndexedDB.open.mockImplementation(() => {
         const request = {
           ...mockOpenRequest,
           onupgradeneeded: null as any,
-          onsuccess: null as any
+          onsuccess: null as any,
         }
         setTimeout(() => {
           if (request.onupgradeneeded) {
@@ -112,9 +112,9 @@ describe('templateStorage', () => {
               target: {
                 result: {
                   objectStoreNames: { contains: () => false },
-                  createObjectStore: createObjectStoreMock
-                }
-              }
+                  createObjectStore: createObjectStoreMock,
+                },
+              },
             })
           }
           request.onsuccess?.()
@@ -125,7 +125,7 @@ describe('templateStorage', () => {
       // @ts-ignore
       templateStorage.db = null
       await templateStorage.open()
-      
+
       expect(createObjectStoreMock).toHaveBeenCalledWith('templates', { keyPath: 'id' })
     })
 
@@ -154,7 +154,7 @@ describe('templateStorage', () => {
       data: '{"message": "hello"}',
       attributes: { key: 'value' },
       variables: { var1: 'val1' },
-      tags: ['tag1', 'tag2']
+      tags: ['tag1', 'tag2'],
     }
 
     it('saves a new template with generated id', async () => {
@@ -170,7 +170,7 @@ describe('templateStorage', () => {
           const req = { onsuccess: null as any, onerror: null as any, result: [] }
           setTimeout(() => req.onsuccess?.(), 0)
           return req
-        })
+        }),
       })
 
       mockObjectStore.add.mockImplementation(() => {
@@ -200,15 +200,16 @@ describe('templateStorage', () => {
           const req = {
             onsuccess: null as any,
             onerror: null as any,
-            result: [{ name: 'Test Template', projectId: 'my-project' }]
+            result: [{ name: 'Test Template', projectId: 'my-project' }],
           }
           setTimeout(() => req.onsuccess?.(), 0)
           return req
-        })
+        }),
       })
 
-      await expect(templateStorage.saveTemplate(mockTemplateData))
-        .rejects.toThrow('Template "Test Template" already exists in this project')
+      await expect(templateStorage.saveTemplate(mockTemplateData)).rejects.toThrow(
+        'Template "Test Template" already exists in this project'
+      )
     })
   })
 
@@ -221,8 +222,18 @@ describe('templateStorage', () => {
       })
 
       const mockTemplates = [
-        { id: '1', name: 'Template 1', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: '2', name: 'Template 2', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+        {
+          id: '1',
+          name: 'Template 1',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+        {
+          id: '2',
+          name: 'Template 2',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
       ]
 
       mockObjectStore.getAll.mockImplementation(() => {
@@ -246,7 +257,13 @@ describe('templateStorage', () => {
       })
 
       const mockTemplates = [
-        { id: '1', name: 'Template 1', projectId: 'my-project', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+        {
+          id: '1',
+          name: 'Template 1',
+          projectId: 'my-project',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
       ]
 
       mockObjectStore.index.mockReturnValue({
@@ -254,7 +271,7 @@ describe('templateStorage', () => {
           const req = { onsuccess: null as any, onerror: null as any, result: mockTemplates }
           setTimeout(() => req.onsuccess?.(), 0)
           return req
-        })
+        }),
       })
 
       const templates = await templateStorage.getTemplates('my-project')
@@ -276,7 +293,7 @@ describe('templateStorage', () => {
         id: 'template-123',
         name: 'Test Template',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       }
 
       mockObjectStore.get.mockImplementation(() => {
@@ -323,7 +340,7 @@ describe('templateStorage', () => {
         name: 'Old Name',
         projectId: 'my-project',
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       }
 
       mockObjectStore.get.mockImplementation(() => {
@@ -357,8 +374,9 @@ describe('templateStorage', () => {
         return req
       })
 
-      await expect(templateStorage.updateTemplate('non-existent', { name: 'New' }))
-        .rejects.toThrow('Template not found')
+      await expect(templateStorage.updateTemplate('non-existent', { name: 'New' })).rejects.toThrow(
+        'Template not found'
+      )
     })
   })
 
@@ -407,8 +425,18 @@ describe('templateStorage', () => {
       })
 
       const mockTemplates = [
-        { id: 'template-1', projectId: 'my-project', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() },
-        { id: 'template-2', projectId: 'my-project', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }
+        {
+          id: 'template-1',
+          projectId: 'my-project',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+        {
+          id: 'template-2',
+          projectId: 'my-project',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
       ]
 
       mockObjectStore.index.mockReturnValue({
@@ -416,7 +444,7 @@ describe('templateStorage', () => {
           const req = { onsuccess: null as any, onerror: null as any, result: mockTemplates }
           setTimeout(() => req.onsuccess?.(), 0)
           return req
-        })
+        }),
       })
 
       mockObjectStore.delete.mockImplementation(() => {

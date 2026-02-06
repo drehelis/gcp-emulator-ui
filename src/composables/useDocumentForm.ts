@@ -34,9 +34,7 @@ export function useDocumentForm() {
     }
 
     if (typeof value === 'number') {
-      return Number.isInteger(value)
-        ? { integerValue: value.toString() }
-        : { doubleValue: value }
+      return Number.isInteger(value) ? { integerValue: value.toString() } : { doubleValue: value }
     }
 
     if (typeof value === 'boolean') {
@@ -46,8 +44,8 @@ export function useDocumentForm() {
     if (Array.isArray(value)) {
       return {
         arrayValue: {
-          values: value.map(item => buildFirestoreValue(item))
-        }
+          values: value.map(item => buildFirestoreValue(item)),
+        },
       }
     }
 
@@ -88,7 +86,7 @@ export function useDocumentForm() {
       id: generateFieldId(),
       name: '',
       type: 'string',
-      value: ''
+      value: '',
     })
   }
 
@@ -110,7 +108,7 @@ export function useDocumentForm() {
           id: generateFieldId(),
           name: '',
           type: 'string',
-          value: ''
+          value: '',
         })
       }
     }
@@ -119,12 +117,14 @@ export function useDocumentForm() {
   // Reset form
   const resetForm = () => {
     documentId.value = ''
-    fields.value = [{
-      id: generateFieldId(),
-      name: '',
-      type: 'string',
-      value: ''
-    }]
+    fields.value = [
+      {
+        id: generateFieldId(),
+        name: '',
+        type: 'string',
+        value: '',
+      },
+    ]
     loading.value = false
   }
 
@@ -146,6 +146,6 @@ export function useDocumentForm() {
     removeField,
     resetForm,
     buildDocumentFields,
-    buildFirestoreValue
+    buildFirestoreValue,
   }
 }

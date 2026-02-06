@@ -18,7 +18,10 @@
         @keydown="emit('keydown', $event)"
       >
         <!-- Modal header -->
-        <div v-if="title || $slots.header" class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-600 flex-shrink-0">
+        <div
+          v-if="title || $slots.header"
+          class="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-600 flex-shrink-0"
+        >
           <div class="flex items-center min-w-0 flex-1 mr-4">
             <component
               v-if="icon"
@@ -46,7 +49,10 @@
         </div>
 
         <!-- Modal footer -->
-        <div v-if="$slots.footer || actions.length > 0" class="flex flex-col-reverse gap-3 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-600 sm:flex-row sm:justify-end flex-shrink-0">
+        <div
+          v-if="$slots.footer || actions.length > 0"
+          class="flex flex-col-reverse gap-3 p-4 sm:p-6 border-t border-gray-200 dark:border-gray-600 sm:flex-row sm:justify-end flex-shrink-0"
+        >
           <slot name="footer">
             <button
               v-for="action in actions"
@@ -63,8 +69,19 @@
                 fill="none"
                 viewBox="0 0 24 24"
               >
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
               </svg>
               {{ action.label }}
             </button>
@@ -104,7 +121,7 @@ const props = withDefaults(defineProps<Props>(), {
   iconColor: 'primary',
   persistent: false,
   actions: () => [],
-  zIndex: 50
+  zIndex: 50,
 })
 
 const emit = defineEmits<{
@@ -113,11 +130,10 @@ const emit = defineEmits<{
   keydown: [event: KeyboardEvent]
 }>()
 
-
 const sizeClasses = computed(() => {
   const sizes = {
     xs: 'max-w-xs',
-    sm: 'max-w-sm', 
+    sm: 'max-w-sm',
     md: 'max-w-md',
     lg: 'max-w-lg',
     xl: 'max-w-xl',
@@ -125,7 +141,7 @@ const sizeClasses = computed(() => {
     '3xl': 'max-w-3xl',
     '4xl': 'max-w-4xl',
     '5xl': 'max-w-full sm:max-w-5xl',
-    full: 'max-w-full sm:max-w-6xl'
+    full: 'max-w-full sm:max-w-6xl',
   }
   return sizes[props.size]
 })
@@ -136,7 +152,7 @@ const iconColorClass = computed(() => {
     secondary: 'text-gray-600 dark:text-gray-400',
     success: 'text-green-600 dark:text-green-400',
     warning: 'text-yellow-600 dark:text-yellow-400',
-    danger: 'text-red-600 dark:text-red-400'
+    danger: 'text-red-600 dark:text-red-400',
   }
   return colors[props.iconColor]
 })
@@ -144,11 +160,12 @@ const iconColorClass = computed(() => {
 const getActionButtonClass = (action: ModalAction) => {
   const variants = {
     primary: 'border-transparent text-white bg-blue-600 hover:bg-blue-700 focus:ring-blue-500',
-    secondary: 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-blue-500',
+    secondary:
+      'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 focus:ring-blue-500',
     danger: 'border-transparent text-white bg-red-600 hover:bg-red-700 focus:ring-red-500',
-    success: 'border-transparent text-white bg-green-600 hover:bg-green-700 focus:ring-green-500'
+    success: 'border-transparent text-white bg-green-600 hover:bg-green-700 focus:ring-green-500',
   }
-  
+
   return variants[action.variant || 'secondary']
 }
 

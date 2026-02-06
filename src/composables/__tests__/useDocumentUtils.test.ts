@@ -33,7 +33,7 @@ describe('useDocumentUtils', () => {
     const mockDocuments = [
       { name: 'projects/p/databases/(default)/documents/users/user1', fields: {} },
       { name: 'projects/p/databases/(default)/documents/users/user2', fields: {} },
-      { name: 'projects/p/databases/(default)/documents/users/user3', fields: {} }
+      { name: 'projects/p/databases/(default)/documents/users/user3', fields: {} },
     ]
 
     it('finds document by ID', () => {
@@ -55,7 +55,7 @@ describe('useDocumentUtils', () => {
   describe('findDocumentByPath', () => {
     const mockDocuments = [
       { name: 'projects/p/databases/(default)/documents/users/user1', fields: {} },
-      { name: 'projects/p/databases/(default)/documents/posts/post1', fields: {} }
+      { name: 'projects/p/databases/(default)/documents/posts/post1', fields: {} },
     ]
 
     it('finds document by full path', () => {
@@ -105,12 +105,16 @@ describe('useDocumentUtils', () => {
   describe('getParentCollectionPath', () => {
     it('returns parent path for document', () => {
       const path = 'projects/p/databases/(default)/documents/users/user1'
-      expect(utils.getParentCollectionPath(path)).toBe('projects/p/databases/(default)/documents/users')
+      expect(utils.getParentCollectionPath(path)).toBe(
+        'projects/p/databases/(default)/documents/users'
+      )
     })
 
     it('handles subcollection document', () => {
       const path = 'projects/p/databases/(default)/documents/users/user1/posts/post1'
-      expect(utils.getParentCollectionPath(path)).toBe('projects/p/databases/(default)/documents/users/user1/posts')
+      expect(utils.getParentCollectionPath(path)).toBe(
+        'projects/p/databases/(default)/documents/users/user1/posts'
+      )
     })
   })
 
@@ -139,22 +143,22 @@ describe('useDocumentUtils', () => {
     it('returns collection and document segments', () => {
       const path = 'projects/p/databases/(default)/documents/users/user1'
       const result = utils.getBreadcrumbSegments(path)
-      
+
       expect(result).toEqual([
         { type: 'collection', name: 'users' },
-        { type: 'document', name: 'user1' }
+        { type: 'document', name: 'user1' },
       ])
     })
 
     it('handles subcollection paths', () => {
       const path = 'projects/p/databases/(default)/documents/users/user1/posts/post1'
       const result = utils.getBreadcrumbSegments(path)
-      
+
       expect(result).toEqual([
         { type: 'collection', name: 'users' },
         { type: 'document', name: 'user1' },
         { type: 'collection', name: 'posts' },
-        { type: 'document', name: 'post1' }
+        { type: 'document', name: 'post1' },
       ])
     })
 
@@ -165,10 +169,8 @@ describe('useDocumentUtils', () => {
     it('handles collection-only path', () => {
       const path = 'projects/p/databases/(default)/documents/users'
       const result = utils.getBreadcrumbSegments(path)
-      
-      expect(result).toEqual([
-        { type: 'collection', name: 'users' }
-      ])
+
+      expect(result).toEqual([{ type: 'collection', name: 'users' }])
     })
   })
 

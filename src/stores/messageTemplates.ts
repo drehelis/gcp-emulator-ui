@@ -7,7 +7,11 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { BaseStoreState } from '@/types'
 import { useProjectsStore } from './projects'
-import { templateStorage, type MessageTemplate, type CreateTemplateForm } from '@/utils/templateStorage'
+import {
+  templateStorage,
+  type MessageTemplate,
+  type CreateTemplateForm,
+} from '@/utils/templateStorage'
 
 // Re-export types for convenience
 export type { MessageTemplate, CreateTemplateForm }
@@ -19,7 +23,7 @@ export const useMessageTemplatesStore = defineStore('messageTemplates', () => {
   const state = ref<BaseStoreState>({
     state: 'idle',
     error: null,
-    lastUpdated: null
+    lastUpdated: null,
   })
 
   const templates = ref<MessageTemplate[]>([])
@@ -28,8 +32,8 @@ export const useMessageTemplatesStore = defineStore('messageTemplates', () => {
   // Getters
   const currentProjectTemplates = computed(() => {
     if (!projectsStore.selectedProject) return []
-    return templates.value.filter(template => 
-      template.projectId === projectsStore.selectedProject!.projectId
+    return templates.value.filter(
+      template => template.projectId === projectsStore.selectedProject!.projectId
     )
   })
 
@@ -47,12 +51,10 @@ export const useMessageTemplatesStore = defineStore('messageTemplates', () => {
   const templateStats = computed(() => ({
     total: currentProjectTemplates.value.length,
     byTopic: Object.keys(templatesByTopic.value).length,
-    withVariables: currentProjectTemplates.value.filter(t => 
-      Object.keys(t.variables).length > 0
-    ).length,
-    withAttributes: currentProjectTemplates.value.filter(t => 
-      Object.keys(t.attributes).length > 0
-    ).length,
+    withVariables: currentProjectTemplates.value.filter(t => Object.keys(t.variables).length > 0)
+      .length,
+    withAttributes: currentProjectTemplates.value.filter(t => Object.keys(t.attributes).length > 0)
+      .length,
   }))
 
   const isLoading = computed(() => state.value.state === 'loading')
@@ -70,7 +72,6 @@ export const useMessageTemplatesStore = defineStore('messageTemplates', () => {
 
       state.value.state = 'success'
       state.value.lastUpdated = new Date()
-
     } catch (error) {
       state.value.state = 'error'
       state.value.error = (error as Error).message
@@ -93,7 +94,6 @@ export const useMessageTemplatesStore = defineStore('messageTemplates', () => {
       state.value.lastUpdated = new Date()
 
       return newTemplate
-
     } catch (error) {
       state.value.state = 'error'
       state.value.error = (error as Error).message
@@ -101,7 +101,10 @@ export const useMessageTemplatesStore = defineStore('messageTemplates', () => {
     }
   }
 
-  async function updateTemplate(templateId: string, updates: Partial<MessageTemplate>): Promise<MessageTemplate> {
+  async function updateTemplate(
+    templateId: string,
+    updates: Partial<MessageTemplate>
+  ): Promise<MessageTemplate> {
     try {
       state.value.state = 'loading'
       state.value.error = null
@@ -124,7 +127,6 @@ export const useMessageTemplatesStore = defineStore('messageTemplates', () => {
       state.value.lastUpdated = new Date()
 
       return updatedTemplate
-
     } catch (error) {
       state.value.state = 'error'
       state.value.error = (error as Error).message
@@ -153,7 +155,6 @@ export const useMessageTemplatesStore = defineStore('messageTemplates', () => {
 
       state.value.state = 'success'
       state.value.lastUpdated = new Date()
-
     } catch (error) {
       state.value.state = 'error'
       state.value.error = (error as Error).message
@@ -169,7 +170,7 @@ export const useMessageTemplatesStore = defineStore('messageTemplates', () => {
       }
 
       const duplicateName = newName || `${originalTemplate.name} (Copy)`
-      
+
       const duplicateData: CreateTemplateForm = {
         name: duplicateName,
         description: originalTemplate.description,
@@ -178,11 +179,10 @@ export const useMessageTemplatesStore = defineStore('messageTemplates', () => {
         data: originalTemplate.data,
         attributes: { ...originalTemplate.attributes },
         variables: { ...originalTemplate.variables },
-        tags: originalTemplate.tags ? [...originalTemplate.tags] : undefined
+        tags: originalTemplate.tags ? [...originalTemplate.tags] : undefined,
       }
 
       return await saveTemplate(duplicateData)
-
     } catch (error) {
       state.value.state = 'error'
       state.value.error = (error as Error).message
@@ -206,9 +206,8 @@ export const useMessageTemplatesStore = defineStore('messageTemplates', () => {
     const targetProjectId = projectId || projectsStore.selectedProject?.projectId
     if (!targetProjectId) return []
 
-    return templates.value.filter(template => 
-      template.topicName === topicName && 
-      template.projectId === targetProjectId
+    return templates.value.filter(
+      template => template.topicName === topicName && template.projectId === targetProjectId
     )
   }
 
@@ -219,11 +218,13 @@ export const useMessageTemplatesStore = defineStore('messageTemplates', () => {
     const lowerQuery = query.toLowerCase()
     return templates.value.filter(template => {
       if (template.projectId !== targetProjectId) return false
-      
-      return template.name.toLowerCase().includes(lowerQuery) ||
-             template.description?.toLowerCase().includes(lowerQuery) ||
-             template.topicName.toLowerCase().includes(lowerQuery) ||
-             template.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
+
+      return (
+        template.name.toLowerCase().includes(lowerQuery) ||
+        template.description?.toLowerCase().includes(lowerQuery) ||
+        template.topicName.toLowerCase().includes(lowerQuery) ||
+        template.tags?.some(tag => tag.toLowerCase().includes(lowerQuery))
+      )
     })
   }
 
@@ -242,13 +243,12 @@ export const useMessageTemplatesStore = defineStore('messageTemplates', () => {
             ...templateData,
             id: `template-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             createdAt: new Date(),
-            updatedAt: new Date()
+            updatedAt: new Date(),
           }
 
           // Check for name conflicts
-          const existingTemplate = templates.value.find(t => 
-            t.name === importedTemplate.name && 
-            t.projectId === importedTemplate.projectId
+          const existingTemplate = templates.value.find(
+            t => t.name === importedTemplate.name && t.projectId === importedTemplate.projectId
           )
 
           if (existingTemplate) {
@@ -258,9 +258,10 @@ export const useMessageTemplatesStore = defineStore('messageTemplates', () => {
 
           templates.value.push(importedTemplate)
           importedCount++
-
         } catch (error) {
-          errors.push(`Failed to import template "${templateData.name}": ${(error as Error).message}`)
+          errors.push(
+            `Failed to import template "${templateData.name}": ${(error as Error).message}`
+          )
         }
       }
 
@@ -276,7 +277,6 @@ export const useMessageTemplatesStore = defineStore('messageTemplates', () => {
       }
 
       return importedCount
-
     } catch (error) {
       state.value.state = 'error'
       state.value.error = (error as Error).message
@@ -294,10 +294,10 @@ export const useMessageTemplatesStore = defineStore('messageTemplates', () => {
   async function clearProjectTemplates(projectId: string) {
     // Clear from IndexedDB
     await templateStorage.clearTemplates(projectId)
-    
+
     // Clear from local state
     templates.value = templates.value.filter(template => template.projectId !== projectId)
-    
+
     if (selectedTemplate.value?.projectId === projectId) {
       selectedTemplate.value = null
     }
@@ -309,10 +309,9 @@ export const useMessageTemplatesStore = defineStore('messageTemplates', () => {
     state.value = {
       state: 'idle',
       error: null,
-      lastUpdated: null
+      lastUpdated: null,
     }
   }
-
 
   return {
     // State
@@ -341,6 +340,6 @@ export const useMessageTemplatesStore = defineStore('messageTemplates', () => {
     importTemplates,
     exportTemplates,
     clearProjectTemplates,
-    reset
+    reset,
   }
 })

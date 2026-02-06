@@ -6,10 +6,7 @@ export interface PaginationOptions {
 }
 
 export function usePagination(options: PaginationOptions = {}) {
-  const {
-    initialLimit = 25,
-    defaultLimits = [10, 25, 50, 100]
-  } = options
+  const { initialLimit = 25, defaultLimits = [10, 25, 50, 100] } = options
 
   const limit = ref(initialLimit)
   const currentPage = ref(1)
@@ -49,7 +46,7 @@ export function usePagination(options: PaginationOptions = {}) {
     handleLimitChange,
     nextPage,
     previousPage,
-    resetPage
+    resetPage,
   }
 }
 
@@ -86,6 +83,6 @@ export function usePaginatedData<T>(
     paginatedItems,
     hasMore,
     paginationStart: actualPaginationStart,
-    paginationEnd: actualPaginationEnd
+    paginationEnd: actualPaginationEnd,
   }
 }

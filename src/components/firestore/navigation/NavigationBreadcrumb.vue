@@ -1,5 +1,7 @@
 <template>
-  <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 lg:px-8 py-2">
+  <div
+    class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 sm:px-6 lg:px-8 py-2"
+  >
     <div class="flex items-center text-xs text-gray-600 dark:text-gray-400 font-mono">
       <!-- Edit mode -->
       <template v-if="isEditing">
@@ -41,12 +43,20 @@
             <ClipboardDocumentIcon v-if="!copySuccess" class="w-3 h-3" />
             <CheckIcon v-else class="w-3 h-3" />
           </button>
-          <button @click="$emit('navigate-to-root')" class="text-blue-600 dark:text-blue-400 hover:underline">/</button>
+          <button
+            @click="$emit('navigate-to-root')"
+            class="text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            /
+          </button>
         </div>
 
         <!-- Show navigation path for subcollections -->
         <template v-if="isInSubcollectionMode">
-          <template v-for="(segment, index) in navigationPath" :key="`${segment.type}-${segment.id}-${index}`">
+          <template
+            v-for="(segment, index) in navigationPath"
+            :key="`${segment.type}-${segment.id}-${index}`"
+          >
             <ChevronRightIcon class="w-3 h-3 mx-1" />
             <button
               @click="$emit('navigate-to-segment', index)"
@@ -70,7 +80,9 @@
           </template>
           <template v-if="selectedDocument">
             <ChevronRightIcon class="w-3 h-3 mx-1" />
-            <span class="text-blue-600 dark:text-blue-400 font-semibold">{{ getDocumentId(selectedDocument.name) }}</span>
+            <span class="text-blue-600 dark:text-blue-400 font-semibold">{{
+              getDocumentId(selectedDocument.name)
+            }}</span>
           </template>
         </template>
 
@@ -89,7 +101,12 @@
 
 <script setup lang="ts">
 import { ref, computed, nextTick } from 'vue'
-import { ChevronRightIcon, ClipboardDocumentIcon, CheckIcon, PencilIcon } from '@heroicons/vue/24/outline'
+import {
+  ChevronRightIcon,
+  ClipboardDocumentIcon,
+  CheckIcon,
+  PencilIcon,
+} from '@heroicons/vue/24/outline'
 import { useDocumentUtils } from '@/composables/useDocumentUtils'
 import type { FirestoreDocument, FirestoreCollectionWithMetadata } from '@/types'
 
@@ -133,7 +150,7 @@ const fullPath = computed(() => {
     // For subcollection mode, use the navigation path
     const pathSegments = props.navigationPath.map(segment => segment.name)
     if (pathSegments.length > 0) {
-      return `/ > ${  pathSegments.join(' > ')}`
+      return `/ > ${pathSegments.join(' > ')}`
     }
   } else {
     // For root mode, build from selected items
@@ -145,7 +162,7 @@ const fullPath = computed(() => {
       segments.push(getDocumentId(props.selectedDocument.name))
     }
     if (segments.length > 0) {
-      return `/ > ${  segments.join(' > ')}`
+      return `/ > ${segments.join(' > ')}`
     }
   }
 

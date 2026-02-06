@@ -9,7 +9,9 @@
   >
     <div v-if="entity" class="space-y-6">
       <!-- Key Information -->
-      <div class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
+      <div
+        class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700"
+      >
         <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center">
           <span class="w-1 h-4 bg-blue-500 dark:bg-blue-400 rounded mr-2"></span>
           Key Information
@@ -17,39 +19,89 @@
 
         <div class="space-y-1.5 text-sm">
           <!-- Database ID -->
-          <div v-if="entity.key?.partitionId?.databaseId" class="flex items-baseline hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded px-2 py-1 transition-colors">
-            <span class="text-gray-600 dark:text-gray-400 whitespace-nowrap text-xs w-24 flex-shrink-0">Database ID:</span>
-            <code class="text-gray-900 dark:text-gray-100 font-mono text-xs bg-white dark:bg-gray-900/50 px-1.5 py-0.5 rounded break-all border border-gray-200 dark:border-gray-700">{{ entity.key.partitionId.databaseId }}</code>
+          <div
+            v-if="entity.key?.partitionId?.databaseId"
+            class="flex items-baseline hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded px-2 py-1 transition-colors"
+          >
+            <span
+              class="text-gray-600 dark:text-gray-400 whitespace-nowrap text-xs w-24 flex-shrink-0"
+              >Database ID:</span
+            >
+            <code
+              class="text-gray-900 dark:text-gray-100 font-mono text-xs bg-white dark:bg-gray-900/50 px-1.5 py-0.5 rounded break-all border border-gray-200 dark:border-gray-700"
+              >{{ entity.key.partitionId.databaseId }}</code
+            >
           </div>
 
           <!-- Namespace -->
-          <div v-if="entity.key?.partitionId?.namespaceId !== undefined" class="flex items-baseline hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded px-2 py-1 transition-colors">
-            <span class="text-gray-600 dark:text-gray-400 whitespace-nowrap text-xs w-24 flex-shrink-0">Namespace:</span>
-            <code class="text-gray-900 dark:text-gray-100 font-mono text-xs bg-white dark:bg-gray-900/50 px-1.5 py-0.5 rounded break-all border border-gray-200 dark:border-gray-700">{{ entity.key.partitionId.namespaceId || '(default)' }}</code>
+          <div
+            v-if="entity.key?.partitionId?.namespaceId !== undefined"
+            class="flex items-baseline hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded px-2 py-1 transition-colors"
+          >
+            <span
+              class="text-gray-600 dark:text-gray-400 whitespace-nowrap text-xs w-24 flex-shrink-0"
+              >Namespace:</span
+            >
+            <code
+              class="text-gray-900 dark:text-gray-100 font-mono text-xs bg-white dark:bg-gray-900/50 px-1.5 py-0.5 rounded break-all border border-gray-200 dark:border-gray-700"
+              >{{ entity.key.partitionId.namespaceId || '(default)' }}</code
+            >
           </div>
 
           <!-- Entity Kind -->
-          <div class="flex items-baseline hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded px-2 py-1 transition-colors">
-            <span class="text-gray-600 dark:text-gray-400 whitespace-nowrap text-xs w-24 flex-shrink-0">Entity Kind:</span>
-            <code class="text-gray-900 dark:text-gray-100 font-mono text-xs bg-white dark:bg-gray-900/50 px-1.5 py-0.5 rounded break-all border border-gray-200 dark:border-gray-700">{{ getEntityKind(entity) }}</code>
+          <div
+            class="flex items-baseline hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded px-2 py-1 transition-colors"
+          >
+            <span
+              class="text-gray-600 dark:text-gray-400 whitespace-nowrap text-xs w-24 flex-shrink-0"
+              >Entity Kind:</span
+            >
+            <code
+              class="text-gray-900 dark:text-gray-100 font-mono text-xs bg-white dark:bg-gray-900/50 px-1.5 py-0.5 rounded break-all border border-gray-200 dark:border-gray-700"
+              >{{ getEntityKind(entity) }}</code
+            >
           </div>
 
           <!-- Key / ID -->
-          <div class="flex items-baseline hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded px-2 py-1 transition-colors">
-            <span class="text-gray-600 dark:text-gray-400 whitespace-nowrap text-xs w-24 flex-shrink-0">Key / ID:</span>
-            <code class="text-gray-900 dark:text-gray-100 font-mono text-xs bg-white dark:bg-gray-900/50 px-1.5 py-0.5 rounded break-all border border-gray-200 dark:border-gray-700">{{ getEntityId(entity) }}</code>
+          <div
+            class="flex items-baseline hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded px-2 py-1 transition-colors"
+          >
+            <span
+              class="text-gray-600 dark:text-gray-400 whitespace-nowrap text-xs w-24 flex-shrink-0"
+              >Key / ID:</span
+            >
+            <code
+              class="text-gray-900 dark:text-gray-100 font-mono text-xs bg-white dark:bg-gray-900/50 px-1.5 py-0.5 rounded break-all border border-gray-200 dark:border-gray-700"
+              >{{ getEntityId(entity) }}</code
+            >
           </div>
 
           <!-- Key literal -->
-          <div class="flex items-baseline hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded px-2 py-1 transition-colors">
-            <span class="text-gray-600 dark:text-gray-400 whitespace-nowrap text-xs w-24 flex-shrink-0">Key literal:</span>
-            <code class="text-gray-900 dark:text-gray-100 font-mono text-xs bg-white dark:bg-gray-900/50 px-1.5 py-0.5 rounded break-all border border-gray-200 dark:border-gray-700">{{ getKeyLiteral(entity) }}</code>
+          <div
+            class="flex items-baseline hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded px-2 py-1 transition-colors"
+          >
+            <span
+              class="text-gray-600 dark:text-gray-400 whitespace-nowrap text-xs w-24 flex-shrink-0"
+              >Key literal:</span
+            >
+            <code
+              class="text-gray-900 dark:text-gray-100 font-mono text-xs bg-white dark:bg-gray-900/50 px-1.5 py-0.5 rounded break-all border border-gray-200 dark:border-gray-700"
+              >{{ getKeyLiteral(entity) }}</code
+            >
           </div>
 
           <!-- URL-safe key -->
-          <div class="flex items-baseline hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded px-2 py-1 transition-colors">
-            <span class="text-gray-600 dark:text-gray-400 whitespace-nowrap text-xs w-24 flex-shrink-0">URL-safe key:</span>
-            <code class="text-gray-900 dark:text-gray-100 font-mono text-xs bg-white dark:bg-gray-900/50 px-1.5 py-0.5 rounded break-all border border-gray-200 dark:border-gray-700">{{ getUrlSafeKey(entity) }}</code>
+          <div
+            class="flex items-baseline hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded px-2 py-1 transition-colors"
+          >
+            <span
+              class="text-gray-600 dark:text-gray-400 whitespace-nowrap text-xs w-24 flex-shrink-0"
+              >URL-safe key:</span
+            >
+            <code
+              class="text-gray-900 dark:text-gray-100 font-mono text-xs bg-white dark:bg-gray-900/50 px-1.5 py-0.5 rounded break-all border border-gray-200 dark:border-gray-700"
+              >{{ getUrlSafeKey(entity) }}</code
+            >
           </div>
         </div>
       </div>
@@ -73,10 +125,15 @@
 
         <!-- Edit Mode: Property Editors -->
         <div v-if="editMode" class="space-y-3">
-          <div v-if="editedProperties.length === 0" class="text-center py-8 px-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
+          <div
+            v-if="editedProperties.length === 0"
+            class="text-center py-8 px-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg"
+          >
             <InboxIcon class="w-10 h-10 mx-auto mb-3 text-gray-400 dark:text-gray-500" />
             <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">No properties yet</p>
-            <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">Click "Add property" to create your first property</p>
+            <p class="text-xs text-gray-500 dark:text-gray-500 mt-1">
+              Click "Add property" to create your first property
+            </p>
           </div>
 
           <PropertyEditor
@@ -85,12 +142,15 @@
             :property="property"
             :property-id="`edit-${index}`"
             @remove="removeProperty(index)"
-            @update="(updatedProperty) => updateProperty(index, updatedProperty)"
+            @update="updatedProperty => updateProperty(index, updatedProperty)"
           />
         </div>
 
         <!-- View Mode: Table -->
-        <div v-else-if="!entity.properties || Object.keys(entity.properties).length === 0" class="text-center py-8">
+        <div
+          v-else-if="!entity.properties || Object.keys(entity.properties).length === 0"
+          class="text-center py-8"
+        >
           <InboxIcon class="mx-auto w-12 h-12 text-gray-400 dark:text-gray-600 mb-2" />
           <p class="text-sm text-gray-500 dark:text-gray-400">No properties</p>
         </div>
@@ -105,8 +165,14 @@
                 >
                   <div class="flex items-center">
                     Name
-                    <ChevronUpIcon v-if="sortColumn === 'name' && sortDirection === 'asc'" class="w-4 h-4 ml-1" />
-                    <ChevronDownIcon v-else-if="sortColumn === 'name' && sortDirection === 'desc'" class="w-4 h-4 ml-1" />
+                    <ChevronUpIcon
+                      v-if="sortColumn === 'name' && sortDirection === 'asc'"
+                      class="w-4 h-4 ml-1"
+                    />
+                    <ChevronDownIcon
+                      v-else-if="sortColumn === 'name' && sortDirection === 'desc'"
+                      class="w-4 h-4 ml-1"
+                    />
                     <ChevronUpDownIcon v-else class="w-4 h-4 ml-1 opacity-30" />
                   </div>
                 </th>
@@ -116,12 +182,20 @@
                 >
                   <div class="flex items-center">
                     Type
-                    <ChevronUpIcon v-if="sortColumn === 'type' && sortDirection === 'asc'" class="w-4 h-4 ml-1" />
-                    <ChevronDownIcon v-else-if="sortColumn === 'type' && sortDirection === 'desc'" class="w-4 h-4 ml-1" />
+                    <ChevronUpIcon
+                      v-if="sortColumn === 'type' && sortDirection === 'asc'"
+                      class="w-4 h-4 ml-1"
+                    />
+                    <ChevronDownIcon
+                      v-else-if="sortColumn === 'type' && sortDirection === 'desc'"
+                      class="w-4 h-4 ml-1"
+                    />
                     <ChevronUpDownIcon v-else class="w-4 h-4 ml-1 opacity-30" />
                   </div>
                 </th>
-                <th class="px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                <th
+                  class="px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-300 uppercase tracking-wider"
+                >
                   Value
                 </th>
                 <th
@@ -130,8 +204,14 @@
                 >
                   <div class="flex items-center">
                     Indexed
-                    <ChevronUpIcon v-if="sortColumn === 'indexed' && sortDirection === 'asc'" class="w-4 h-4 ml-1" />
-                    <ChevronDownIcon v-else-if="sortColumn === 'indexed' && sortDirection === 'desc'" class="w-4 h-4 ml-1" />
+                    <ChevronUpIcon
+                      v-if="sortColumn === 'indexed' && sortDirection === 'asc'"
+                      class="w-4 h-4 ml-1"
+                    />
+                    <ChevronDownIcon
+                      v-else-if="sortColumn === 'indexed' && sortDirection === 'desc'"
+                      class="w-4 h-4 ml-1"
+                    />
                     <ChevronUpDownIcon v-else class="w-4 h-4 ml-1 opacity-30" />
                   </div>
                 </th>
@@ -150,7 +230,9 @@
 
                 <!-- Type -->
                 <td class="px-3 py-2 whitespace-nowrap">
-                  <span class="inline-flex items-center px-2 py-0.5 text-xs rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-medium">
+                  <span
+                    class="inline-flex items-center px-2 py-0.5 text-xs rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 font-medium"
+                  >
                     {{ getPropertyType(value) }}
                   </span>
                 </td>
@@ -159,55 +241,110 @@
                 <td class="px-3 py-2">
                   <div class="max-w-md">
                     <!-- String value -->
-                    <code v-if="value.stringValue !== undefined" class="text-xs font-mono text-gray-900 dark:text-gray-100 break-all">{{ value.stringValue }}</code>
+                    <code
+                      v-if="value.stringValue !== undefined"
+                      class="text-xs font-mono text-gray-900 dark:text-gray-100 break-all"
+                      >{{ value.stringValue }}</code
+                    >
 
                     <!-- Integer value -->
-                    <code v-else-if="value.integerValue !== undefined" class="text-xs font-mono text-gray-900 dark:text-gray-100">{{ value.integerValue }}</code>
+                    <code
+                      v-else-if="value.integerValue !== undefined"
+                      class="text-xs font-mono text-gray-900 dark:text-gray-100"
+                      >{{ value.integerValue }}</code
+                    >
 
                     <!-- Double value -->
-                    <code v-else-if="value.doubleValue !== undefined" class="text-xs font-mono text-gray-900 dark:text-gray-100">{{ value.doubleValue }}</code>
+                    <code
+                      v-else-if="value.doubleValue !== undefined"
+                      class="text-xs font-mono text-gray-900 dark:text-gray-100"
+                      >{{ value.doubleValue }}</code
+                    >
 
                     <!-- Boolean value -->
-                    <code v-else-if="value.booleanValue !== undefined" class="text-xs font-mono text-gray-900 dark:text-gray-100">{{ value.booleanValue }}</code>
+                    <code
+                      v-else-if="value.booleanValue !== undefined"
+                      class="text-xs font-mono text-gray-900 dark:text-gray-100"
+                      >{{ value.booleanValue }}</code
+                    >
 
                     <!-- Timestamp value -->
-                    <code v-else-if="value.timestampValue !== undefined" class="text-xs font-mono text-gray-900 dark:text-gray-100">{{ value.timestampValue }}</code>
+                    <code
+                      v-else-if="value.timestampValue !== undefined"
+                      class="text-xs font-mono text-gray-900 dark:text-gray-100"
+                      >{{ value.timestampValue }}</code
+                    >
 
                     <!-- Null value -->
-                    <code v-else-if="value.nullValue !== undefined" class="text-xs font-mono text-gray-500 dark:text-gray-400 italic">null</code>
+                    <code
+                      v-else-if="value.nullValue !== undefined"
+                      class="text-xs font-mono text-gray-500 dark:text-gray-400 italic"
+                      >null</code
+                    >
 
                     <!-- Array value -->
-                    <code v-else-if="value.arrayValue" class="text-xs font-mono text-gray-900 dark:text-gray-100 block">
-                      <pre class="whitespace-pre-wrap break-all">{{ formatArrayValue(value.arrayValue) }}</pre>
+                    <code
+                      v-else-if="value.arrayValue"
+                      class="text-xs font-mono text-gray-900 dark:text-gray-100 block"
+                    >
+                      <pre class="whitespace-pre-wrap break-all">{{
+                        formatArrayValue(value.arrayValue)
+                      }}</pre>
                     </code>
 
                     <!-- Entity value (nested) -->
-                    <code v-else-if="value.entityValue" class="text-xs font-mono text-gray-900 dark:text-gray-100 block">
-                      <pre class="whitespace-pre-wrap break-all">{{ formatEntityValue(value.entityValue) }}</pre>
+                    <code
+                      v-else-if="value.entityValue"
+                      class="text-xs font-mono text-gray-900 dark:text-gray-100 block"
+                    >
+                      <pre class="whitespace-pre-wrap break-all">{{
+                        formatEntityValue(value.entityValue)
+                      }}</pre>
                     </code>
 
                     <!-- Key value -->
-                    <code v-else-if="value.keyValue" class="text-xs font-mono text-gray-900 dark:text-gray-100 block">
-                      <pre class="whitespace-pre-wrap break-all">{{ JSON.stringify(value.keyValue, null, 2) }}</pre>
+                    <code
+                      v-else-if="value.keyValue"
+                      class="text-xs font-mono text-gray-900 dark:text-gray-100 block"
+                    >
+                      <pre class="whitespace-pre-wrap break-all">{{
+                        JSON.stringify(value.keyValue, null, 2)
+                      }}</pre>
                     </code>
 
                     <!-- Blob value -->
-                    <code v-else-if="value.blobValue !== undefined" class="text-xs font-mono text-gray-900 dark:text-gray-100 break-all">{{ value.blobValue }}</code>
+                    <code
+                      v-else-if="value.blobValue !== undefined"
+                      class="text-xs font-mono text-gray-900 dark:text-gray-100 break-all"
+                      >{{ value.blobValue }}</code
+                    >
 
                     <!-- GeoPoint value -->
-                    <code v-else-if="value.geoPointValue" class="text-xs font-mono text-gray-900 dark:text-gray-100">{{ value.geoPointValue.latitude }}, {{ value.geoPointValue.longitude }}</code>
+                    <code
+                      v-else-if="value.geoPointValue"
+                      class="text-xs font-mono text-gray-900 dark:text-gray-100"
+                      >{{ value.geoPointValue.latitude }}, {{ value.geoPointValue.longitude }}</code
+                    >
 
                     <!-- Unknown type -->
-                    <code v-else class="text-xs font-mono text-gray-500 dark:text-gray-400 italic">Unknown type</code>
+                    <code v-else class="text-xs font-mono text-gray-500 dark:text-gray-400 italic"
+                      >Unknown type</code
+                    >
                   </div>
                 </td>
 
                 <!-- Indexed -->
                 <td class="px-3 py-2 whitespace-nowrap">
-                  <span v-if="!value.excludeFromIndexes" class="inline-flex items-center px-2 py-0.5 text-xs rounded bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
+                  <span
+                    v-if="!value.excludeFromIndexes"
+                    class="inline-flex items-center px-2 py-0.5 text-xs rounded bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200"
+                  >
                     Yes
                   </span>
-                  <span v-else class="inline-flex items-center px-2 py-0.5 text-xs rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                  <span
+                    v-else
+                    class="inline-flex items-center px-2 py-0.5 text-xs rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  >
                     No
                   </span>
                 </td>
@@ -235,7 +372,14 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { CubeIcon, InboxIcon, PlusIcon, ChevronUpDownIcon, ChevronUpIcon, ChevronDownIcon } from '@heroicons/vue/24/outline'
+import {
+  CubeIcon,
+  InboxIcon,
+  PlusIcon,
+  ChevronUpDownIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
+} from '@heroicons/vue/24/outline'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
 import type { DatastoreEntity, DatastoreValue } from '@/types'
@@ -246,7 +390,10 @@ import PropertyEditor, { type PropertyForm } from '@/components/datastore/Proper
 import { useDatastoreStore } from '@/stores/datastore'
 import { useAppStore } from '@/stores/app'
 import { useRoute } from 'vue-router'
-import { propertyFormToDatastoreValue, datastoreValueToPropertyForm } from '@/utils/propertyConverters'
+import {
+  propertyFormToDatastoreValue,
+  datastoreValueToPropertyForm,
+} from '@/utils/propertyConverters'
 
 interface Props {
   modelValue: boolean
@@ -276,7 +423,7 @@ const sortDirection = ref<'asc' | 'desc'>('asc')
 
 const modelValue = computed({
   get: () => props.modelValue,
-  set: (value: boolean) => emit('update:modelValue', value)
+  set: (value: boolean) => emit('update:modelValue', value),
 })
 
 const modalActions = computed<ModalAction[]>(() => {
@@ -285,14 +432,14 @@ const modalActions = computed<ModalAction[]>(() => {
       {
         label: 'Cancel',
         handler: cancelEdit,
-        variant: 'secondary'
+        variant: 'secondary',
       },
       {
         label: 'Save Changes',
         handler: saveChanges,
         variant: 'primary',
-        loading: isSaving.value
-      }
+        loading: isSaving.value,
+      },
     ]
   }
 
@@ -300,8 +447,8 @@ const modalActions = computed<ModalAction[]>(() => {
     {
       label: 'Close',
       handler: handleClose,
-      variant: 'secondary'
-    }
+      variant: 'secondary',
+    },
   ]
 })
 
@@ -347,7 +494,7 @@ const totalPropertiesCount = computed(() => propertiesArray.value.length)
 const propertiesPaginatedData = usePaginatedData(
   {
     items: propertiesArray,
-    totalCount: totalPropertiesCount
+    totalCount: totalPropertiesCount,
   },
   propertiesPagination
 )
@@ -381,10 +528,7 @@ const getUrlSafeKey = (entity: DatastoreEntity): string => {
   try {
     // Encode the key path as base64 URL-safe string
     const keyString = JSON.stringify(entity.key)
-    return btoa(keyString)
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=+$/, '')
+    return btoa(keyString).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
   } catch {
     return '[Encoding failed]'
   }
@@ -407,17 +551,18 @@ const getPropertyType = (value: DatastoreValue): string => {
 
 const formatArrayValue = (arrayValue: { values: DatastoreValue[] }): string => {
   try {
-    const values = arrayValue.values?.map((v: DatastoreValue) => {
-      if (v.stringValue !== undefined) return v.stringValue
-      if (v.integerValue !== undefined) return v.integerValue
-      if (v.doubleValue !== undefined) return v.doubleValue
-      if (v.booleanValue !== undefined) return v.booleanValue
-      if (v.timestampValue !== undefined) return v.timestampValue
-      if (v.nullValue !== undefined) return null
-      if (v.entityValue) return convertEntityToObject(v.entityValue)
-      if (v.keyValue) return v.keyValue
-      return v
-    }) || []
+    const values =
+      arrayValue.values?.map((v: DatastoreValue) => {
+        if (v.stringValue !== undefined) return v.stringValue
+        if (v.integerValue !== undefined) return v.integerValue
+        if (v.doubleValue !== undefined) return v.doubleValue
+        if (v.booleanValue !== undefined) return v.booleanValue
+        if (v.timestampValue !== undefined) return v.timestampValue
+        if (v.nullValue !== undefined) return null
+        if (v.entityValue) return convertEntityToObject(v.entityValue)
+        if (v.keyValue) return v.keyValue
+        return v
+      }) || []
     return JSON.stringify(values, null, 2)
   } catch {
     return '[Error formatting array]'
@@ -445,14 +590,16 @@ const convertEntityToObject = (entityValue: any): any => {
     else if (val.booleanValue !== undefined) result[key] = val.booleanValue
     else if (val.timestampValue !== undefined) result[key] = val.timestampValue
     else if (val.nullValue !== undefined) result[key] = null
-    else if (val.arrayValue) result[key] = val.arrayValue.values?.map((v: any) => {
-      if (v.stringValue !== undefined) return v.stringValue
-      if (v.integerValue !== undefined) return v.integerValue
-      if (v.doubleValue !== undefined) return v.doubleValue
-      if (v.booleanValue !== undefined) return v.booleanValue
-      if (v.entityValue) return convertEntityToObject(v.entityValue)
-      return v
-    }) || []
+    else if (val.arrayValue)
+      result[key] =
+        val.arrayValue.values?.map((v: any) => {
+          if (v.stringValue !== undefined) return v.stringValue
+          if (v.integerValue !== undefined) return v.integerValue
+          if (v.doubleValue !== undefined) return v.doubleValue
+          if (v.booleanValue !== undefined) return v.booleanValue
+          if (v.entityValue) return convertEntityToObject(v.entityValue)
+          return v
+        }) || []
     else if (val.entityValue) result[key] = convertEntityToObject(val.entityValue)
     else if (val.keyValue) result[key] = val.keyValue
     else result[key] = val
@@ -492,7 +639,7 @@ const handleAddEditProperty = () => {
       type: 'string',
       value: '',
       indexed: true,
-      expanded: true
+      expanded: true,
     })
   }
 }
@@ -525,7 +672,7 @@ const saveChanges = async () => {
     appStore.showToast({
       type: 'error',
       title: 'Named Database Limitation',
-      message: `Cannot update entities in named database "${databaseId}". This is a known limitation of the Datastore emulator. Please use the default database instead.`
+      message: `Cannot update entities in named database "${databaseId}". This is a known limitation of the Datastore emulator. Please use the default database instead.`,
     })
     return
   }
@@ -543,7 +690,7 @@ const saveChanges = async () => {
     // Build updated entity - only send key and properties
     const updatedEntity: DatastoreEntity = {
       key: props.entity.key,
-      properties
+      properties,
     }
 
     // Update entity via API
@@ -553,7 +700,7 @@ const saveChanges = async () => {
     appStore.showToast({
       type: 'success',
       title: 'Entity Updated',
-      message: 'Entity properties updated successfully'
+      message: 'Entity properties updated successfully',
     })
 
     // Exit edit mode
@@ -562,13 +709,12 @@ const saveChanges = async () => {
 
     // Emit updated event
     emit('updated', updatedEntity)
-
   } catch (error: any) {
     console.error('[EntityDetailsModal] Failed to save changes:', error)
     appStore.showToast({
       type: 'error',
       title: 'Update Failed',
-      message: 'Failed to update entity. Please try again.'
+      message: 'Failed to update entity. Please try again.',
     })
   } finally {
     isSaving.value = false
@@ -584,7 +730,7 @@ const handleClose = () => {
 }
 
 // Reset edit mode when modal opens/closes
-watch(modelValue, (newValue) => {
+watch(modelValue, newValue => {
   if (!newValue) {
     editMode.value = false
     editedProperties.value = []

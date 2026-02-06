@@ -2,7 +2,12 @@ import { ref } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { useMessageTemplatesStore } from '@/stores/messageTemplates'
 import { topicsApi, subscriptionsApi } from '@/api/pubsub'
-import type { PubSubTopic, PubSubSubscription, CreateTopicRequest, CreateSubscriptionRequest } from '@/types'
+import type {
+  PubSubTopic,
+  PubSubSubscription,
+  CreateTopicRequest,
+  CreateSubscriptionRequest,
+} from '@/types'
 import type { MessageTemplate } from '@/utils/templateStorage'
 import { downloadFile, extractTopicName, extractSubscriptionName } from '@/utils/importExportUtils'
 
@@ -31,12 +36,12 @@ export function usePubSubImportExport() {
 
   const isExporting = ref({
     pubsub: false,
-    templates: false
+    templates: false,
   })
 
   const isImporting = ref({
     pubsub: false,
-    templates: false
+    templates: false,
   })
 
   // Load data
@@ -44,41 +49,45 @@ export function usePubSubImportExport() {
     try {
       // Load topics
       const topicsResponse = await topicsApi.getTopics(projectId)
-      topics.value = Array.isArray(topicsResponse) ? topicsResponse.map(topic => ({
-        ...topic,
-        id: topic.id || `${projectId}-${topic.name || 'unknown'}-${Date.now()}`,
-        name: topic.name || 'unknown',
-        fullName: topic.name || `projects/${projectId}/topics/unknown`,
-        projectId,
-        createdAt: new Date(topic.createdAt || Date.now()),
-        updatedAt: new Date(topic.updatedAt || Date.now()),
-        labels: topic.labels || {},
-        state: 'ACTIVE',
-        messageCount: topic.messageCount || 0,
-        subscriptionsCount: topic.subscriptionsCount || 0
-      })) : []
+      topics.value = Array.isArray(topicsResponse)
+        ? topicsResponse.map(topic => ({
+            ...topic,
+            id: topic.id || `${projectId}-${topic.name || 'unknown'}-${Date.now()}`,
+            name: topic.name || 'unknown',
+            fullName: topic.name || `projects/${projectId}/topics/unknown`,
+            projectId,
+            createdAt: new Date(topic.createdAt || Date.now()),
+            updatedAt: new Date(topic.updatedAt || Date.now()),
+            labels: topic.labels || {},
+            state: 'ACTIVE',
+            messageCount: topic.messageCount || 0,
+            subscriptionsCount: topic.subscriptionsCount || 0,
+          }))
+        : []
 
       // Load subscriptions
       const subscriptionsResponse = await subscriptionsApi.getSubscriptions(projectId)
-      subscriptions.value = Array.isArray(subscriptionsResponse) ? subscriptionsResponse.map(sub => ({
-        ...sub,
-        id: sub.id || `${projectId}-${sub.name || 'unknown'}-${Date.now()}`,
-        name: sub.name || 'unknown',
-        fullName: sub.name || `projects/${projectId}/subscriptions/unknown`,
-        projectId,
-        topicName: (sub as any).topic || sub.topicName || 'unknown',
-        createdAt: new Date(sub.createdAt || Date.now()),
-        updatedAt: new Date(sub.updatedAt || Date.now()),
-        labels: sub.labels || {},
-        ackDeadlineSeconds: sub.ackDeadlineSeconds || 60,
-        retainAckedMessages: sub.retainAckedMessages || false,
-        messageRetentionDuration: sub.messageRetentionDuration || '604800s',
-        enableMessageOrdering: sub.enableMessageOrdering || false,
-        enableExactlyOnceDelivery: sub.enableExactlyOnceDelivery || false,
-        detached: sub.detached || false,
-        messageCount: sub.messageCount || 0,
-        undeliveredMessageCount: sub.undeliveredMessageCount || 0
-      })) : []
+      subscriptions.value = Array.isArray(subscriptionsResponse)
+        ? subscriptionsResponse.map(sub => ({
+            ...sub,
+            id: sub.id || `${projectId}-${sub.name || 'unknown'}-${Date.now()}`,
+            name: sub.name || 'unknown',
+            fullName: sub.name || `projects/${projectId}/subscriptions/unknown`,
+            projectId,
+            topicName: (sub as any).topic || sub.topicName || 'unknown',
+            createdAt: new Date(sub.createdAt || Date.now()),
+            updatedAt: new Date(sub.updatedAt || Date.now()),
+            labels: sub.labels || {},
+            ackDeadlineSeconds: sub.ackDeadlineSeconds || 60,
+            retainAckedMessages: sub.retainAckedMessages || false,
+            messageRetentionDuration: sub.messageRetentionDuration || '604800s',
+            enableMessageOrdering: sub.enableMessageOrdering || false,
+            enableExactlyOnceDelivery: sub.enableExactlyOnceDelivery || false,
+            detached: sub.detached || false,
+            messageCount: sub.messageCount || 0,
+            undeliveredMessageCount: sub.undeliveredMessageCount || 0,
+          }))
+        : []
 
       // Load message templates
       await templatesStore.loadTemplates()
@@ -96,14 +105,17 @@ export function usePubSubImportExport() {
       const exportData: TopicSubscriptionConfig[] = []
 
       // Group subscriptions by topic
-      const subscriptionsByTopic = subscriptions.value.reduce((acc, sub) => {
-        const topicName = extractTopicName(sub.topicName)
-        if (!acc[topicName]) {
-          acc[topicName] = []
-        }
-        acc[topicName].push(sub)
-        return acc
-      }, {} as Record<string, PubSubSubscription[]>)
+      const subscriptionsByTopic = subscriptions.value.reduce(
+        (acc, sub) => {
+          const topicName = extractTopicName(sub.topicName)
+          if (!acc[topicName]) {
+            acc[topicName] = []
+          }
+          acc[topicName].push(sub)
+          return acc
+        },
+        {} as Record<string, PubSubSubscription[]>
+      )
 
       // Process topics and their subscriptions
       for (const topic of topics.value) {
@@ -156,7 +168,7 @@ export function usePubSubImportExport() {
           // Export topic without subscriptions
           exportData.push({
             topic_name: topicName,
-            sub_name: `${topicName}-sub`
+            sub_name: `${topicName}-sub`,
           })
         }
       }
@@ -171,14 +183,14 @@ export function usePubSubImportExport() {
       appStore.showToast({
         type: 'success',
         title: 'Configuration exported',
-        message: `Exported ${exportData.length} configuration${exportData.length === 1 ? '' : 's'}`
+        message: `Exported ${exportData.length} configuration${exportData.length === 1 ? '' : 's'}`,
       })
     } catch (error) {
       console.error('Export failed:', error)
       appStore.showToast({
         type: 'error',
         title: 'Export failed',
-        message: (error as Error).message
+        message: (error as Error).message,
       })
     } finally {
       isExporting.value.pubsub = false
@@ -197,7 +209,7 @@ export function usePubSubImportExport() {
         appStore.showToast({
           type: 'info',
           title: 'No templates to export',
-          message: 'No message templates found for this project'
+          message: 'No message templates found for this project',
         })
         return
       }
@@ -212,14 +224,14 @@ export function usePubSubImportExport() {
       appStore.showToast({
         type: 'success',
         title: 'Templates exported',
-        message: `Exported ${exportData.length} template${exportData.length === 1 ? '' : 's'}`
+        message: `Exported ${exportData.length} template${exportData.length === 1 ? '' : 's'}`,
       })
     } catch (error) {
       console.error('Templates export failed:', error)
       appStore.showToast({
         type: 'error',
         title: 'Export failed',
-        message: (error as Error).message
+        message: (error as Error).message,
       })
     } finally {
       isExporting.value.templates = false
@@ -249,7 +261,7 @@ export function usePubSubImportExport() {
           subscriptionsToCreate.push({
             config,
             topicName: config.topic_name,
-            subscriptionName: config.sub_name
+            subscriptionName: config.sub_name,
           })
         }
       }
@@ -267,7 +279,7 @@ export function usePubSubImportExport() {
 
             const topicRequest: CreateTopicRequest = {
               name: topicName,
-              labels: {}
+              labels: {},
             }
 
             await topicsApi.createTopic(projectId, topicRequest)
@@ -282,8 +294,8 @@ export function usePubSubImportExport() {
       if (options.createSubscriptions) {
         for (const item of subscriptionsToCreate) {
           try {
-            const existingSubscription = subscriptions.value.find(s =>
-              extractSubscriptionName(s.name) === item.subscriptionName
+            const existingSubscription = subscriptions.value.find(
+              s => extractSubscriptionName(s.name) === item.subscriptionName
             )
 
             if (existingSubscription && !options.overwriteExisting) {
@@ -299,13 +311,13 @@ export function usePubSubImportExport() {
               messageRetentionDuration: item.config.message_retention_duration || '604800s',
               enableMessageOrdering: item.config.enable_message_ordering || false,
               enableExactlyOnceDelivery: item.config.enable_exactly_once_delivery || false,
-              labels: item.config.labels || {}
+              labels: item.config.labels || {},
             }
 
             // Add push config if present
             if (item.config.push_endpoint) {
               subRequest.pushConfig = {
-                pushEndpoint: item.config.push_endpoint
+                pushEndpoint: item.config.push_endpoint,
               }
             }
 
@@ -313,7 +325,7 @@ export function usePubSubImportExport() {
             if (item.config.dead_letter_topic) {
               subRequest.deadLetterPolicy = {
                 deadLetterTopic: `projects/${projectId}/topics/${item.config.dead_letter_topic}`,
-                maxDeliveryAttempts: item.config.max_delivery_attempts || 5
+                maxDeliveryAttempts: item.config.max_delivery_attempts || 5,
               }
             }
 
@@ -321,7 +333,7 @@ export function usePubSubImportExport() {
             if (item.config.retry_minimum_backoff && item.config.retry_maximum_backoff) {
               subRequest.retryPolicy = {
                 minimumBackoff: item.config.retry_minimum_backoff,
-                maximumBackoff: item.config.retry_maximum_backoff
+                maximumBackoff: item.config.retry_maximum_backoff,
               }
             }
 
@@ -341,19 +353,19 @@ export function usePubSubImportExport() {
         appStore.showToast({
           type: 'success',
           title: 'PubSub import completed successfully',
-          message: `${successCount} configuration${successCount === 1 ? '' : 's'} imported`
+          message: `${successCount} configuration${successCount === 1 ? '' : 's'} imported`,
         })
       } else if (successCount > 0 && errorCount > 0) {
         appStore.showToast({
           type: 'warning',
           title: 'PubSub import completed with errors',
-          message: `${successCount} successful, ${errorCount} failed`
+          message: `${successCount} successful, ${errorCount} failed`,
         })
       } else {
         appStore.showToast({
           type: 'error',
           title: 'PubSub import failed',
-          message: `All ${errorCount} configuration${errorCount === 1 ? '' : 's'} failed to import`
+          message: `All ${errorCount} configuration${errorCount === 1 ? '' : 's'} failed to import`,
         })
       }
     } catch (error) {
@@ -361,7 +373,7 @@ export function usePubSubImportExport() {
       appStore.showToast({
         type: 'error',
         title: 'Import failed',
-        message: (error as Error).message
+        message: (error as Error).message,
       })
     } finally {
       isImporting.value.pubsub = false
@@ -416,7 +428,7 @@ export function usePubSubImportExport() {
             attributes: template.attributes || {},
             variables: template.variables || {},
             description: template.description || '',
-            tags: template.tags || []
+            tags: template.tags || [],
           }
 
           // Create or update template
@@ -444,14 +456,14 @@ export function usePubSubImportExport() {
           appStore.showToast({
             type: 'info',
             title: 'Templates already exist',
-            message: `${skippedCount} template${skippedCount === 1 ? '' : 's'} skipped (already exist${skippedCount === 1 ? 's' : ''}). Enable 'Overwrite existing templates' to update them.`
+            message: `${skippedCount} template${skippedCount === 1 ? '' : 's'} skipped (already exist${skippedCount === 1 ? 's' : ''}). Enable 'Overwrite existing templates' to update them.`,
           })
         } else if (skippedCount > 0 && successCount > 0) {
           // Mixed results
           appStore.showToast({
             type: 'success',
             title: 'Templates import completed',
-            message: `${successCount} imported, ${skippedCount} skipped (already exist${skippedCount === 1 ? 's' : ''})`
+            message: `${successCount} imported, ${skippedCount} skipped (already exist${skippedCount === 1 ? 's' : ''})`,
           })
         } else {
           // All templates were imported/updated
@@ -459,7 +471,7 @@ export function usePubSubImportExport() {
           appStore.showToast({
             type: 'success',
             title: 'Templates import completed successfully',
-            message: `${successCount} template${successCount === 1 ? '' : 's'} ${action}`
+            message: `${successCount} template${successCount === 1 ? '' : 's'} ${action}`,
           })
         }
       } else if (totalProcessed > 0 && errorCount > 0) {
@@ -467,21 +479,21 @@ export function usePubSubImportExport() {
         appStore.showToast({
           type: 'warning',
           title: 'Templates import completed with errors',
-          message: `${successCount} imported, ${skippedCount} skipped, ${errorCount} failed. Check console for details.`
+          message: `${successCount} imported, ${skippedCount} skipped, ${errorCount} failed. Check console for details.`,
         })
       } else if (errorCount > 0) {
         // All failed
         appStore.showToast({
           type: 'error',
           title: 'Templates import failed',
-          message: `All ${errorCount} template${errorCount === 1 ? '' : 's'} failed to import. Check console for details.`
+          message: `All ${errorCount} template${errorCount === 1 ? '' : 's'} failed to import. Check console for details.`,
         })
       } else {
         // Nothing processed
         appStore.showToast({
           type: 'info',
           title: 'No templates to import',
-          message: 'No templates were processed'
+          message: 'No templates were processed',
         })
       }
     } catch (error) {
@@ -489,7 +501,7 @@ export function usePubSubImportExport() {
       appStore.showToast({
         type: 'error',
         title: 'Import failed',
-        message: (error as Error).message
+        message: (error as Error).message,
       })
     } finally {
       isImporting.value.templates = false
@@ -506,6 +518,6 @@ export function usePubSubImportExport() {
     exportConfiguration,
     exportTemplates,
     importConfiguration,
-    importTemplates
+    importTemplates,
   }
 }

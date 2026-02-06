@@ -29,9 +29,7 @@
               :disabled="loading"
               class="inline-flex items-center px-2 sm:px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              <ArrowPathIcon
-                :class="['w-4 h-4', loading ? 'animate-spin' : '', 'sm:mr-2']"
-              />
+              <ArrowPathIcon :class="['w-4 h-4', loading ? 'animate-spin' : '', 'sm:mr-2']" />
               <span class="hidden sm:inline">Refresh</span>
             </button>
           </div>
@@ -56,7 +54,7 @@ interface Props {
 withDefaults(defineProps<Props>(), {
   availableDatabases: () => ['(default)'],
   selectedDatabase: '(default)',
-  testingDatabase: false
+  testingDatabase: false,
 })
 
 defineEmits<{

@@ -6,14 +6,14 @@ const mockClient = vi.hoisted(() => ({
   delete: vi.fn(),
   patch: vi.fn(),
   interceptors: {
-    request: { use: vi.fn() }
-  }
+    request: { use: vi.fn() },
+  },
 }))
 
 vi.mock('axios', () => ({
   default: {
-    create: vi.fn(() => mockClient)
-  }
+    create: vi.fn(() => mockClient),
+  },
 }))
 
 import { firestoreApi } from '../firestore'
@@ -30,13 +30,13 @@ describe('firestoreApi', () => {
   describe('createDocument', () => {
     it('creates document without ID (auto-id)', async () => {
       mockClient.post.mockResolvedValue({ data: { name: 'new-doc' } })
-      
+
       const res = await firestoreApi.createDocument({
         parent: 'projects/p1/databases/(default)/documents',
         collectionId: 'users',
-        document: { fields: {} }
+        document: { fields: {} },
       })
-      
+
       expect(mockClient.post).toHaveBeenCalledWith(
         '/v1/projects/p1/databases/(default)/documents/documents/users',
         { fields: {} }
@@ -46,14 +46,14 @@ describe('firestoreApi', () => {
 
     it('creates document with ID', async () => {
       mockClient.post.mockResolvedValue({ data: { name: 'doc-1' } })
-      
+
       await firestoreApi.createDocument({
         parent: 'projects/p1/databases/(default)/documents',
         collectionId: 'users',
         documentId: 'user1',
-        document: { fields: {} }
+        document: { fields: {} },
       })
-      
+
       expect(mockClient.post).toHaveBeenCalledWith(
         '/v1/projects/p1/databases/(default)/documents/documents/users',
         { fields: {} },
@@ -64,12 +64,12 @@ describe('firestoreApi', () => {
 
   describe('listCollections', () => {
     it('listCollections calls correct endpoint', async () => {
-      mockClient.post.mockResolvedValue({ 
-        data: { collectionIds: ['users'], nextPageToken: 'next' } 
+      mockClient.post.mockResolvedValue({
+        data: { collectionIds: ['users'], nextPageToken: 'next' },
       })
-      
+
       const res = await firestoreApi.listCollections('projects/p1/databases/(default)')
-      
+
       expect(mockClient.post).toHaveBeenCalledWith(
         '/v1/projects/p1/databases/(default)/documents:listCollectionIds',
         {}
@@ -88,43 +88,43 @@ describe('firestoreApi', () => {
           documents: [
             { name: `${collectionPath}/p1` },
             { name: `${collectionPath}/p2` },
-            { name: `projects/p1/databases/(default)/documents/users/u1/comments/c1` }
-          ]
-        }
+            { name: `projects/p1/databases/(default)/documents/users/u1/comments/c1` },
+          ],
+        },
       })
-      
+
       const res = await firestoreApi.listSubcollections(docPath)
-      
+
       expect(mockClient.get).toHaveBeenCalledWith(`/v1/${docPath}/`)
       const ids = res.collections.map(c => c.id).sort()
       expect(ids).toEqual(['comments', 'posts'])
     })
   })
-  
+
   describe('deleteCollection', () => {
-      it('fetches and deletes all documents', async () => {
-          mockClient.get.mockResolvedValue({
-              data: { documents: [{ name: 'doc1' }, { name: 'doc2' }] }
-          })
-          mockClient.delete.mockResolvedValue({})
-          
-          await firestoreApi.deleteCollection('parent', 'col')
-          
-          expect(mockClient.get).toHaveBeenCalled()
-          expect(mockClient.delete).toHaveBeenCalledTimes(2)
-          expect(mockClient.delete).toHaveBeenCalledWith('/v1/doc1')
+    it('fetches and deletes all documents', async () => {
+      mockClient.get.mockResolvedValue({
+        data: { documents: [{ name: 'doc1' }, { name: 'doc2' }] },
       })
+      mockClient.delete.mockResolvedValue({})
+
+      await firestoreApi.deleteCollection('parent', 'col')
+
+      expect(mockClient.get).toHaveBeenCalled()
+      expect(mockClient.delete).toHaveBeenCalledTimes(2)
+      expect(mockClient.delete).toHaveBeenCalledWith('/v1/doc1')
+    })
   })
 
   describe('healthCheck', () => {
-      it('returns true on success', async () => {
-          mockClient.get.mockResolvedValue({ status: 200 })
-          expect(await firestoreApi.healthCheck('p1')).toBe(true)
-      })
-      
-      it('returns false on failure', async () => {
-          mockClient.get.mockRejectedValue(new Error())
-          expect(await firestoreApi.healthCheck('p1')).toBe(false)
-      })
+    it('returns true on success', async () => {
+      mockClient.get.mockResolvedValue({ status: 200 })
+      expect(await firestoreApi.healthCheck('p1')).toBe(true)
+    })
+
+    it('returns false on failure', async () => {
+      mockClient.get.mockRejectedValue(new Error())
+      expect(await firestoreApi.healthCheck('p1')).toBe(false)
+    })
   })
 })

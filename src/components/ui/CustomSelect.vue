@@ -7,7 +7,7 @@
           'border focus:outline-none focus:ring-1',
           disabled
             ? 'bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-600 cursor-not-allowed opacity-60'
-            : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 focus:border-blue-500 focus:ring-blue-500'
+            : 'bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500 focus:border-blue-500 focus:ring-blue-500',
         ]"
       >
         <span class="flex items-center gap-2">
@@ -24,10 +24,7 @@
           </span>
         </span>
         <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-          <ChevronUpDownIcon
-            class="h-4 w-4 text-gray-400 dark:text-gray-500"
-            aria-hidden="true"
-          />
+          <ChevronUpDownIcon class="h-4 w-4 text-gray-400 dark:text-gray-500" aria-hidden="true" />
         </span>
       </ListboxButton>
 
@@ -43,9 +40,14 @@
           class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-gray-800 py-1 text-sm shadow-lg border border-gray-200 dark:border-gray-700 focus:outline-none"
         >
           <!-- Search Input (if searchable) -->
-          <div v-if="searchable" class="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-2">
+          <div
+            v-if="searchable"
+            class="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-2"
+          >
             <div class="relative">
-              <MagnifyingGlassIcon class="absolute left-2 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+              <MagnifyingGlassIcon
+                class="absolute left-2 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 text-gray-400"
+              />
               <input
                 v-model="searchQuery"
                 type="text"
@@ -57,7 +59,10 @@
           </div>
 
           <!-- Empty State -->
-          <div v-if="filteredOptions.length === 0" class="px-3 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+          <div
+            v-if="filteredOptions.length === 0"
+            class="px-3 py-8 text-center text-sm text-gray-500 dark:text-gray-400"
+          >
             <component
               v-if="emptyIcon"
               :is="emptyIcon"
@@ -79,7 +84,7 @@
                 'relative cursor-pointer select-none py-2 px-3',
                 active
                   ? 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
-                  : 'text-gray-900 dark:text-gray-100'
+                  : 'text-gray-900 dark:text-gray-100',
               ]"
             >
               <div class="flex items-center gap-2">
@@ -88,12 +93,7 @@
                   :is="option.icon"
                   class="w-4 h-4 flex-shrink-0 text-gray-400 dark:text-gray-500"
                 />
-                <span
-                  :class="[
-                    'block truncate',
-                    isSelected ? 'font-medium' : 'font-normal'
-                  ]"
-                >
+                <span :class="['block truncate', isSelected ? 'font-medium' : 'font-normal']">
                   {{ option.label }}
                 </span>
                 <span v-if="option.badge" class="ml-auto text-xs text-gray-500 dark:text-gray-400">
@@ -115,17 +115,8 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import {
-  Listbox,
-  ListboxButton,
-  ListboxOptions,
-  ListboxOption
-} from '@headlessui/vue'
-import {
-  CheckIcon,
-  ChevronUpDownIcon,
-  MagnifyingGlassIcon
-} from '@heroicons/vue/24/outline'
+import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
+import { CheckIcon, ChevronUpDownIcon, MagnifyingGlassIcon } from '@heroicons/vue/24/outline'
 
 export interface SelectOption {
   value: string
@@ -152,7 +143,7 @@ const props = withDefaults(defineProps<Props>(), {
   placeholder: 'Select an option...',
   disabled: false,
   searchable: false,
-  emptyText: 'No options available'
+  emptyText: 'No options available',
 })
 
 const emit = defineEmits<{
@@ -164,7 +155,7 @@ const open = ref(false)
 
 const selected = computed({
   get: () => props.modelValue,
-  set: (value) => emit('update:modelValue', value)
+  set: value => emit('update:modelValue', value),
 })
 
 const displayValue = computed(() => {
@@ -178,14 +169,15 @@ const filteredOptions = computed(() => {
   }
 
   const query = searchQuery.value.toLowerCase()
-  return props.options.filter(option =>
-    option.label.toLowerCase().includes(query) ||
-    option.description?.toLowerCase().includes(query)
+  return props.options.filter(
+    option =>
+      option.label.toLowerCase().includes(query) ||
+      option.description?.toLowerCase().includes(query)
   )
 })
 
 // Reset search when closing
-watch(open, (isOpen) => {
+watch(open, isOpen => {
   if (!isOpen) {
     searchQuery.value = ''
   }

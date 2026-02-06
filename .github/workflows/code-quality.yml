@@ -1,4 +1,4 @@
-name: Type-check & Lint
+name: Code Quality
 
 on:
   pull_request:
@@ -22,7 +22,7 @@ jobs:
       run: |
         npm ci
 
-    - name: Run type-check
+    - name: Run
       run: |
         npm run type-check
         
@@ -43,6 +43,27 @@ jobs:
       run: |
         npm ci
 
-    - name: Run lint
+    - name: Run
       run: |
         npm run lint -- --ignore-pattern '**/__tests__/**'
+
+  prettier:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v6
+      with:
+        node-version: '24'
+        cache: 'npm'
+        cache-dependency-path: package-lock.json
+
+    - name: Install dependencies
+      run: |
+        npm ci
+
+    - name: Run
+      run: |
+        npm run format:check
