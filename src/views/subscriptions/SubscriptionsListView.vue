@@ -43,7 +43,7 @@
             </h2>
             <div class="flex items-center space-x-3">
               <button
-                @click="loadSubscriptions"
+                @click="loadSubscriptions({ preserveExpandedTopics: true })"
                 :disabled="loading"
                 class="inline-flex items-center px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
               >
@@ -235,7 +235,7 @@
             <h2 class="text-lg font-medium text-gray-900 dark:text-white">Subscriptions (0)</h2>
             <div class="flex items-center space-x-3">
               <button
-                @click="loadSubscriptions"
+                @click="loadSubscriptions({ preserveExpandedTopics: true })"
                 :disabled="loading"
                 class="inline-flex items-center px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
               >
@@ -367,8 +367,10 @@ const getSubscriptionDisplayName = (subscriptionName: string) => {
   return parts[parts.length - 1]
 }
 
-const loadSubscriptions = async () => {
+const loadSubscriptions = async (options: { preserveExpandedTopics?: boolean } = {}) => {
   if (!currentProjectId.value) return
+
+  const previousExpandedTopics = new Set(expandedTopics.value)
 
   loading.value = true
   error.value = null
@@ -399,8 +401,15 @@ const loadSubscriptions = async () => {
     console.log('Transformed subscriptions:', transformedSubscriptions)
     subscriptions.value = transformedSubscriptions
 
-    // Start with all topics collapsed by default
-    expandedTopics.value = new Set()
+    if (options.preserveExpandedTopics) {
+      const topicNames = new Set(subscriptionsByTopic.value.keys())
+      expandedTopics.value = new Set(
+        [...previousExpandedTopics].filter(topicName => topicNames.has(topicName))
+      )
+    } else {
+      // Start with all topics collapsed by default
+      expandedTopics.value = new Set()
+    }
 
     // Handle topic focus after data is loaded
     await nextTick()
@@ -626,7 +635,7 @@ const confirmDeleteSubscription = async () => {
     )
 
     // Refresh subscriptions list from API
-    await loadSubscriptions()
+    await loadSubscriptions({ preserveExpandedTopics: true })
   } catch (error: any) {
     console.error('Error deleting subscription:', error)
 
