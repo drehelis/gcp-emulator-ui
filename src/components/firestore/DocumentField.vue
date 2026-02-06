@@ -174,7 +174,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch, computed } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { TrashIcon, PlusIcon } from '@heroicons/vue/24/outline'
 import NestedFieldRenderer from './NestedFieldRenderer.vue'
 
@@ -198,36 +198,36 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 // Local reactive copy of the field
-const localField = reactive({ ...props.field })
+const localField = ref({ ...props.field })
 const geoPoint = ref({ latitude: 0, longitude: 0 })
 
 // Computed properties for complex types
 const mapData = computed({
-  get: () => localField.value || {},
+  get: () => localField.value.value || {},
   set: (value) => {
-    localField.value = value
+    localField.value.value = value
     updateField()
   }
 })
 
 const arrayData = computed({
-  get: () => localField.value || [],
+  get: () => localField.value.value || [],
   set: (value) => {
-    localField.value = value
+    localField.value.value = value
     updateField()
   }
 })
 
 // Watch for external field changes
 watch(() => props.field, (newField) => {
-  Object.assign(localField, newField)
+  Object.assign(localField.value, newField)
   initializeSpecialTypes()
 }, { deep: true })
 
 // Initialize special types
 function initializeSpecialTypes() {
-  if (localField.type === 'geopoint' && localField.value) {
-    geoPoint.value = { ...localField.value }
+  if (localField.value.type === 'geopoint' && localField.value.value) {
+    geoPoint.value = { ...localField.value.value }
   }
 }
 
@@ -250,23 +250,23 @@ function getDefaultValueForType(type: string): any {
 }
 
 function handleTypeChange() {
-  localField.value = getDefaultValueForType(localField.type)
-  if (localField.type === 'geopoint') {
+  localField.value.value = getDefaultValueForType(localField.value.type)
+  if (localField.value.type === 'geopoint') {
     geoPoint.value = { latitude: 0, longitude: 0 }
   }
   updateField()
 }
 
 function updateField() {
-  emit('update', localField.id, {
-    name: localField.name,
-    type: localField.type,
-    value: localField.value
+  emit('update', localField.value.id, {
+    name: localField.value.name,
+    type: localField.value.type,
+    value: localField.value.value
   })
 }
 
 function updateGeoPoint() {
-  localField.value = { ...geoPoint.value }
+  localField.value.value = { ...geoPoint.value }
   updateField()
 }
 
