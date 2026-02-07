@@ -77,9 +77,7 @@ const getTopicHeader = (wrapper: ReturnType<typeof mount>) =>
   wrapper.find('#topic-topic-a').find('div.cursor-pointer')
 
 const getDeleteButton = (wrapper: ReturnType<typeof mount>) =>
-  wrapper
-    .findAll('button')
-    .find(button => button.attributes('title') === 'Delete subscription')
+  wrapper.findAll('button').find(button => button.attributes('title') === 'Delete subscription')
 
 describe('SubscriptionsListView', () => {
   beforeEach(() => {
