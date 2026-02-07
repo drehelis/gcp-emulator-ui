@@ -355,7 +355,10 @@ textarea,
 button,
 a,
 [role='button'],
-.cursor-pointer {
+.cursor-pointer,
+button *,
+a *,
+[role='button'] * {
   cursor: pointer !important;
 }
 
