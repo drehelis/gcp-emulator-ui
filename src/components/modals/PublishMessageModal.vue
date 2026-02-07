@@ -542,9 +542,9 @@ import {
   MagnifyingGlassIcon,
 } from '@heroicons/vue/24/outline'
 import { topicsApi } from '@/api/pubsub'
+import { useAppStore } from '@/stores/app'
 import { useMessageTemplatesStore } from '@/stores/messageTemplates'
 import { useTopicsStore } from '@/stores/topics'
-import { useToast } from 'vue-toastification'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import TemplateVariableInput from '@/components/ui/TemplateVariableInput.vue'
 import MessageAttributeInput from '@/components/ui/MessageAttributeInput.vue'
@@ -570,9 +570,9 @@ const emit = defineEmits<{
 }>()
 
 // Stores
+const appStore = useAppStore()
 const templatesStore = useMessageTemplatesStore()
 const topicsStore = useTopicsStore()
-const toast = useToast()
 
 // Main modal state
 const isOpen = computed({
@@ -799,8 +799,11 @@ const handlePublishMessage = async () => {
         }
       }
 
-      toast.success(`Published ${publishCount.value} messages successfully!`, {
-        timeout: 3000,
+      appStore.showToast({
+        type: 'success',
+        title: 'Messages Published',
+        message: `Published ${publishCount.value} messages successfully!`,
+        duration: 3000,
       })
 
       emit('message-published')
@@ -810,15 +813,21 @@ const handlePublishMessage = async () => {
         attributes,
       })
 
-      toast.success(`Message published successfully!`, {
-        timeout: 2000,
+      appStore.showToast({
+        type: 'success',
+        title: 'Message Published',
+        message: 'Message published successfully!',
+        duration: 2000,
       })
 
       emit('message-published')
     }
   } catch (error: any) {
-    toast.error(error.message || 'Failed to publish message', {
-      timeout: 4000,
+    appStore.showToast({
+      type: 'error',
+      title: 'Publish Failed',
+      message: error.message || 'Failed to publish message',
+      duration: 4000,
     })
   } finally {
     isPublishing.value = false
@@ -887,12 +896,18 @@ const handleUpdateTemplate = async () => {
       topicName: selectedTopic.value,
     })
 
-    toast.success(`Template "${originalTemplate.name}" has been updated successfully`, {
-      timeout: 3000,
+    appStore.showToast({
+      type: 'success',
+      title: 'Template Updated',
+      message: `Template "${originalTemplate.name}" has been updated successfully`,
+      duration: 3000,
     })
   } catch (error) {
-    toast.error((error as Error).message || 'Failed to update template', {
-      timeout: 4000,
+    appStore.showToast({
+      type: 'error',
+      title: 'Update Failed',
+      message: (error as Error).message || 'Failed to update template',
+      duration: 4000,
     })
   } finally {
     isUpdatingTemplate.value = false
@@ -939,14 +954,20 @@ const confirmSaveTemplate = async () => {
       projectId: props.projectId,
     })
 
-    toast.success(`Template "${name}" has been saved successfully`, {
-      timeout: 3000,
+    appStore.showToast({
+      type: 'success',
+      title: 'Template Saved',
+      message: `Template "${name}" has been saved successfully`,
+      duration: 3000,
     })
 
     handleTemplateModalClose()
   } catch (error) {
-    toast.error((error as Error).message || 'Failed to save template', {
-      timeout: 4000,
+    appStore.showToast({
+      type: 'error',
+      title: 'Save Failed',
+      message: (error as Error).message || 'Failed to save template',
+      duration: 4000,
     })
   } finally {
     isSavingTemplate.value = false

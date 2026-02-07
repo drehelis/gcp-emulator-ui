@@ -1,6 +1,6 @@
 import { ref, computed, watch } from 'vue'
-import { useToast } from 'vue-toastification'
 import { topicsApi } from '@/api/pubsub'
+import { useAppStore } from '@/stores/app'
 
 interface MessageAttribute {
   key: string
@@ -13,7 +13,7 @@ interface TemplateVariable {
 }
 
 export function useMessagePublisher() {
-  const toast = useToast()
+  const appStore = useAppStore()
 
   // Form state
   const templateVariables = ref<TemplateVariable[]>([{ name: '', value: '' }])
@@ -97,11 +97,19 @@ export function useMessagePublisher() {
         attributes,
       })
 
-      toast.success(`Message published successfully to topic "${topicName}"`)
+      appStore.showToast({
+        type: 'success',
+        title: 'Message Published',
+        message: `Message published successfully to topic "${topicName}"`,
+      })
       return response.messageIds?.[0] || 'unknown'
     } catch (error: any) {
       console.error('Error publishing message:', error)
-      toast.error(error.message || 'Failed to publish message')
+      appStore.showToast({
+        type: 'error',
+        title: 'Publish Failed',
+        message: error.message || 'Failed to publish message',
+      })
       throw error
     } finally {
       isPublishing.value = false
