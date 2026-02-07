@@ -100,11 +100,11 @@ Currently supported runtime fields:
 
 ```json
 {
-   "pubsub": {
-      "pubsubPreConfiguredMsgAttr": {
-         "key": "value"
-      }
-   }
+  "pubsub": {
+    "pubsubPreConfiguredMsgAttr": {
+      "key": "value"
+    }
+  }
 }
 ```
 
