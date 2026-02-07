@@ -117,7 +117,7 @@ describe('useMetricsStore', () => {
 
     it('handles localStorage errors gracefully', () => {
       const store = useMetricsStore()
-      vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      vi.spyOn(Object.getPrototypeOf(localStorage), 'setItem').mockImplementation(() => {
         throw new Error('Full')
       })
 

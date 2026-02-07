@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { useServiceConnections, SERVICE_NAMES } from '../useServiceConnections'
+import { useServiceConnections } from '../useServiceConnections'
 import { createPinia, setActivePinia } from 'pinia'
 
 // Mock fetch

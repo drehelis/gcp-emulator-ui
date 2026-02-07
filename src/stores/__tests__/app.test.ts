@@ -7,20 +7,26 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useAppStore } from '../app'
 
+const toastMocks = vi.hoisted(() => ({
+  success: vi.fn(),
+  error: vi.fn(),
+  warning: vi.fn(),
+  info: vi.fn(),
+}))
+
 // Mock vue-toastification
 vi.mock('vue-toastification', () => ({
-  useToast: () => ({
-    success: vi.fn(),
-    error: vi.fn(),
-    warning: vi.fn(),
-    info: vi.fn(),
-  }),
+  useToast: () => toastMocks,
 }))
 
 describe('useAppStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
+    toastMocks.success.mockReset()
+    toastMocks.error.mockReset()
+    toastMocks.warning.mockReset()
+    toastMocks.info.mockReset()
   })
 
   describe('initial state', () => {
@@ -334,6 +340,20 @@ describe('useAppStore', () => {
       // Just ensure it doesn't throw
       expect(store.toasts).toHaveLength(0)
     })
+
+    it('toggleToasts disables showToast', () => {
+      const store = useAppStore()
+
+      store.toggleToasts()
+      const result = store.showToast({
+        type: 'success',
+        title: 'Test',
+        message: 'Should not show',
+      })
+
+      expect(result).toBeUndefined()
+      expect(toastMocks.success).not.toHaveBeenCalled()
+    })
   })
 
   describe('notifications settings', () => {
@@ -354,6 +374,43 @@ describe('useAppStore', () => {
       })
 
       expect(result).toBeUndefined()
+      expect(toastMocks.success).not.toHaveBeenCalled()
+    })
+
+    it('updates notifications partially', () => {
+      const store = useAppStore()
+      const initialDuration = store.notifications.toastDuration
+
+      store.updateNotifications({ enableToasts: false })
+
+      expect(store.notifications.enableToasts).toBe(false)
+      expect(store.notifications.toastDuration).toBe(initialDuration)
+    })
+
+    it('updateNotifications disables showToast', () => {
+      const store = useAppStore()
+
+      store.updateNotifications({ enableToasts: false })
+
+      const result = store.showToast({
+        type: 'success',
+        title: 'Test',
+        message: 'Should not show',
+      })
+
+      expect(result).toBeUndefined()
+      expect(toastMocks.success).not.toHaveBeenCalled()
+    })
+
+    it('toggles toast notifications', () => {
+      const store = useAppStore()
+      expect(store.notifications.enableToasts).toBe(true)
+
+      store.toggleToasts()
+      expect(store.notifications.enableToasts).toBe(false)
+
+      store.toggleToasts()
+      expect(store.notifications.enableToasts).toBe(true)
     })
   })
 

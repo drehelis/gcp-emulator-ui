@@ -299,7 +299,6 @@ import SubscriptionFormFields from '@/components/forms/SubscriptionFormFields.vu
 import { topicsApi, subscriptionsApi } from '@/api/pubsub'
 import { useAppStore } from '@/stores/app'
 import { useTopicsStore } from '@/stores/topics'
-import { useToast } from 'vue-toastification'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
 import type { PubSubTopic, PubSubSubscription } from '@/types'
 import { getMeaningfulErrorMessage } from '@/utils/errorMessages'
@@ -339,7 +338,6 @@ const emit = defineEmits<{
 const route = useRoute()
 const appStore = useAppStore()
 const topicsStore = useTopicsStore()
-const toast = useToast()
 
 const isLoading = ref(false)
 const isLoadingSubscriptions = ref(false)
@@ -739,8 +737,11 @@ const saveNewSubscription = async () => {
         ? errorMessages[0]
         : `Validation errors: ${errorMessages.join(', ')}`
 
-    toast.error(errorMessage, {
-      timeout: 6000,
+    appStore.showToast({
+      type: 'error',
+      title: 'Validation Error',
+      message: errorMessage,
+      duration: 6000,
     })
     return
   }
@@ -817,26 +818,33 @@ const saveNewSubscription = async () => {
       error.message?.includes('ALREADY_EXISTS') ||
       error.response?.data?.message?.includes('ALREADY_EXISTS')
     ) {
-      toast.warning(
-        `A subscription named "${newSubscription.value.name}" already exists for this topic. Please choose a different name.`,
-        {
-          timeout: 8000,
-        }
-      )
+      appStore.showToast({
+        type: 'warning',
+        title: 'Subscription Exists',
+        message: `A subscription named "${newSubscription.value.name}" already exists for this topic. Please choose a different name.`,
+        duration: 8000,
+      })
     } else if (error.response?.status === 404 || error.message?.includes('NOT_FOUND')) {
-      toast.error('The topic no longer exists. Please refresh the page to see the current state.', {
-        timeout: 6000,
+      appStore.showToast({
+        type: 'error',
+        title: 'Topic Missing',
+        message: 'The topic no longer exists. Please refresh the page to see the current state.',
+        duration: 6000,
       })
     } else if (error.response?.status === 400) {
-      toast.error(
-        'The subscription configuration is invalid. Please check your settings and try again.',
-        {
-          timeout: 5000,
-        }
-      )
+      appStore.showToast({
+        type: 'error',
+        title: 'Invalid Configuration',
+        message:
+          'The subscription configuration is invalid. Please check your settings and try again.',
+        duration: 5000,
+      })
     } else {
-      toast.error(`Failed to create subscription: ${getMeaningfulErrorMessage(error)}`, {
-        timeout: 5000,
+      appStore.showToast({
+        type: 'error',
+        title: 'Create Failed',
+        message: `Failed to create subscription: ${getMeaningfulErrorMessage(error)}`,
+        duration: 5000,
       })
     }
   } finally {
@@ -892,8 +900,11 @@ const saveEditedSubscription = async () => {
         ? errorMessages[0]
         : `Validation errors: ${errorMessages.join(', ')}`
 
-    toast.error(errorMessage, {
-      timeout: 6000,
+    appStore.showToast({
+      type: 'error',
+      title: 'Validation Error',
+      message: errorMessage,
+      duration: 6000,
     })
     return
   }
@@ -1027,19 +1038,26 @@ const saveEditedSubscription = async () => {
 
     // Handle specific error cases
     if (error.response?.status === 409 || error.message?.includes('ALREADY_EXISTS')) {
-      toast.warning(
-        'The subscription could not be updated because it still exists. The delete operation may have failed. Please try refreshing the page and try again.',
-        {
-          timeout: 8000,
-        }
-      )
+      appStore.showToast({
+        type: 'warning',
+        title: 'Update Blocked',
+        message:
+          'The subscription could not be updated because it still exists. The delete operation may have failed. Please try refreshing the page and try again.',
+        duration: 8000,
+      })
     } else if (error.response?.status === 404 || error.message?.includes('NOT_FOUND')) {
-      toast.error('The topic no longer exists. Please refresh the page to see the current state.', {
-        timeout: 6000,
+      appStore.showToast({
+        type: 'error',
+        title: 'Topic Missing',
+        message: 'The topic no longer exists. Please refresh the page to see the current state.',
+        duration: 6000,
       })
     } else {
-      toast.error(`Failed to update subscription: ${getMeaningfulErrorMessage(error)}`, {
-        timeout: 5000,
+      appStore.showToast({
+        type: 'error',
+        title: 'Update Failed',
+        message: `Failed to update subscription: ${getMeaningfulErrorMessage(error)}`,
+        duration: 5000,
       })
     }
   } finally {
@@ -1093,8 +1111,11 @@ const deleteSubscription = async () => {
         message: `Subscription "${displayName}" was already deleted or doesn't exist`,
       })
     } else {
-      toast.error(`Failed to delete subscription: ${getMeaningfulErrorMessage(error)}`, {
-        timeout: 5000,
+      appStore.showToast({
+        type: 'error',
+        title: 'Delete Failed',
+        message: `Failed to delete subscription: ${getMeaningfulErrorMessage(error)}`,
+        duration: 5000,
       })
     }
   } finally {

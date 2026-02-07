@@ -2,8 +2,7 @@
  * Tests for Datastore API client
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import axios from 'axios'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock axios before importing the API
 const mocks = vi.hoisted(() => ({

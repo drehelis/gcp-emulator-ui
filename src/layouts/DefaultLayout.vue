@@ -325,6 +325,19 @@
             <GlobalSearch />
           </div>
 
+          <!-- Toast notifications toggle -->
+          <button
+            @click="toggleToasts"
+            class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 theme-transition-colors"
+            :title="toastsEnabled ? 'Disable toast notifications' : 'Enable toast notifications'"
+            :aria-label="
+              toastsEnabled ? 'Disable toast notifications' : 'Enable toast notifications'
+            "
+            :aria-pressed="toastsEnabled"
+          >
+            <component :is="toastsEnabled ? BellIcon : BellSlashIcon" class="w-5 h-5" />
+          </button>
+
           <!-- Theme toggle -->
           <button
             @click="toggleTheme"
@@ -373,6 +386,8 @@ import {
   ArchiveBoxIcon,
   CircleStackIcon,
   TableCellsIcon,
+  BellIcon,
+  BellSlashIcon,
 } from '@heroicons/vue/24/outline'
 
 import { useAppStore } from '@/stores/app'
@@ -399,6 +414,8 @@ const {
 // Reactive state
 const isMobile = ref(false)
 const isFullscreen = ref(false)
+
+const toastsEnabled = computed(() => appStore.notifications.enableToasts)
 
 // Current project from route only (for navigation)
 const currentProject = computed(() => {
@@ -714,6 +731,10 @@ const navigationItems = computed<NavigationItem[]>(() => {
 
   return items
 })
+
+const toggleToasts = () => {
+  appStore.toggleToasts()
+}
 
 // Always show services when in a project, but with connection status
 const showPubSubNav = computed(() => !!currentProject.value)

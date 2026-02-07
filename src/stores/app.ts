@@ -285,6 +285,14 @@ export const useAppStore = defineStore(
       localStorage.setItem('app-preferences', JSON.stringify(preferences.value))
     }
 
+    function updateNotifications(updates: Partial<NotificationSettings>) {
+      Object.assign(notifications.value, updates)
+    }
+
+    function toggleToasts() {
+      notifications.value.enableToasts = !notifications.value.enableToasts
+    }
+
     function toggleFeatureFlag(flag: keyof UIFeatureFlags) {
       if (typeof featureFlags.value[flag] === 'boolean') {
         ;(featureFlags.value[flag] as boolean) = !(featureFlags.value[flag] as boolean)
@@ -419,6 +427,8 @@ export const useAppStore = defineStore(
       setPageTitle,
       setPageDescription,
       updatePreferences,
+      updateNotifications,
+      toggleToasts,
       toggleFeatureFlag,
       enableFeature,
       disableFeature,
