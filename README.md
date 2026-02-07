@@ -92,6 +92,32 @@ docker run \
 
 Browse to http://localhost:9090
 
+### Runtime Config (`/config.json`)
+
+The UI can load optional runtime settings from `/config.json` at startup. This file is intended for container deployments where you want to inject configuration without rebuilding the app.
+
+Currently supported runtime fields:
+
+```json
+{
+   "pubsub": {
+      "pubsubPreConfiguredMsgAttr": {
+         "key": "value"
+      }
+   }
+}
+```
+
+To set `pubsubPreConfiguredMsgAttr`, provide a JSON object in the `PUBSUB_PRE_CONFIGURED_MSG_ATTR` environment variable when starting the container. Example:
+
+```bash
+docker run \
+   --rm \
+   --env PUBSUB_PRE_CONFIGURED_MSG_ATTR='{"source":"local","env":"dev"}' \
+   --publish 9090:80 \
+   ghcr.io/drehelis/gcp-emulator-ui:main
+```
+
 ### Development Setup
 
 1. **Clone and install dependencies**
