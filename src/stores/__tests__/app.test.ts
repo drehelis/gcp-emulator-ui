@@ -7,20 +7,26 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useAppStore } from '../app'
 
+const toastMocks = vi.hoisted(() => ({
+  success: vi.fn(),
+  error: vi.fn(),
+  warning: vi.fn(),
+  info: vi.fn(),
+}))
+
 // Mock vue-toastification
 vi.mock('vue-toastification', () => ({
-  useToast: () => ({
-    success: vi.fn(),
-    error: vi.fn(),
-    warning: vi.fn(),
-    info: vi.fn(),
-  }),
+  useToast: () => toastMocks,
 }))
 
 describe('useAppStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
+    toastMocks.success.mockReset()
+    toastMocks.error.mockReset()
+    toastMocks.warning.mockReset()
+    toastMocks.info.mockReset()
   })
 
   describe('initial state', () => {
@@ -354,6 +360,18 @@ describe('useAppStore', () => {
       })
 
       expect(result).toBeUndefined()
+      expect(toastMocks.success).not.toHaveBeenCalled()
+    })
+
+    it('toggles toast notifications', () => {
+      const store = useAppStore()
+      expect(store.notifications.enableToasts).toBe(true)
+
+      store.toggleToasts()
+      expect(store.notifications.enableToasts).toBe(false)
+
+      store.toggleToasts()
+      expect(store.notifications.enableToasts).toBe(true)
     })
   })
 
