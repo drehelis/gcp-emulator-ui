@@ -340,6 +340,20 @@ describe('useAppStore', () => {
       // Just ensure it doesn't throw
       expect(store.toasts).toHaveLength(0)
     })
+
+    it('toggleToasts disables showToast', () => {
+      const store = useAppStore()
+
+      store.toggleToasts()
+      const result = store.showToast({
+        type: 'success',
+        title: 'Test',
+        message: 'Should not show',
+      })
+
+      expect(result).toBeUndefined()
+      expect(toastMocks.success).not.toHaveBeenCalled()
+    })
   })
 
   describe('notifications settings', () => {
@@ -352,6 +366,31 @@ describe('useAppStore', () => {
     it('respects enableToasts setting', () => {
       const store = useAppStore()
       store.$patch({ notifications: { ...store.notifications, enableToasts: false } })
+
+      const result = store.showToast({
+        type: 'success',
+        title: 'Test',
+        message: 'Should not show',
+      })
+
+      expect(result).toBeUndefined()
+      expect(toastMocks.success).not.toHaveBeenCalled()
+    })
+
+    it('updates notifications partially', () => {
+      const store = useAppStore()
+      const initialDuration = store.notifications.toastDuration
+
+      store.updateNotifications({ enableToasts: false })
+
+      expect(store.notifications.enableToasts).toBe(false)
+      expect(store.notifications.toastDuration).toBe(initialDuration)
+    })
+
+    it('updateNotifications disables showToast', () => {
+      const store = useAppStore()
+
+      store.updateNotifications({ enableToasts: false })
 
       const result = store.showToast({
         type: 'success',
