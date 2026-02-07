@@ -401,13 +401,13 @@ const loadSubscriptions = async (options: { preserveExpandedTopics?: boolean } =
     console.log('Transformed subscriptions:', transformedSubscriptions)
     subscriptions.value = transformedSubscriptions
 
-    if (options.preserveExpandedTopics) {
+    const shouldPreserve = options.preserveExpandedTopics !== false
+    if (shouldPreserve) {
       const topicNames = new Set(subscriptionsByTopic.value.keys())
       expandedTopics.value = new Set(
         [...previousExpandedTopics].filter(topicName => topicNames.has(topicName))
       )
     } else {
-      // Start with all topics collapsed by default
       expandedTopics.value = new Set()
     }
 
@@ -712,7 +712,8 @@ watch(
   () => currentProjectId.value,
   (newProjectId, oldProjectId) => {
     if (newProjectId !== oldProjectId && newProjectId) {
-      loadSubscriptions()
+      // Reset expanded topics when switching projects (initial load for new project)
+      loadSubscriptions({ preserveExpandedTopics: false })
     }
   },
   { immediate: true }
@@ -742,7 +743,8 @@ watch(
 // Lifecycle
 onMounted(() => {
   if (currentProjectId.value) {
-    loadSubscriptions()
+    // Reset expanded topics on initial mount
+    loadSubscriptions({ preserveExpandedTopics: false })
   }
 })
 </script>
