@@ -835,7 +835,8 @@ const saveNewSubscription = async () => {
       appStore.showToast({
         type: 'error',
         title: 'Invalid Configuration',
-        message: 'The subscription configuration is invalid. Please check your settings and try again.',
+        message:
+          'The subscription configuration is invalid. Please check your settings and try again.',
         duration: 5000,
       })
     } else {
