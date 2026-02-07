@@ -2,7 +2,7 @@
   <BaseModal
     v-model="modelValue"
     title="Create Bucket"
-    size="lg"
+    size="5xl"
     :actions="modalActions"
     @close="handleClose"
   >
