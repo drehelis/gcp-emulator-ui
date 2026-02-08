@@ -170,6 +170,7 @@
                     :disabled="isDuplicatingSubscription || !subscription?.name"
                     class="p-1 text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Duplicate subscription"
+                    aria-label="Duplicate subscription"
                   >
                     <DocumentDuplicateIcon class="w-4 h-4" />
                   </button>
@@ -178,6 +179,7 @@
                     :disabled="isDeletingSubscription || !subscription?.name"
                     class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     title="Delete subscription"
+                    aria-label="Delete subscription"
                   >
                     <TrashIcon class="w-4 h-4" />
                   </button>
@@ -297,7 +299,9 @@
       @cancel="cancelDeleteSubscription"
     />
 
-    <!-- Duplicate Subscription Modal -->
+  </BaseModal>
+
+  <Teleport to="body">
     <BaseModal
       v-model="showDuplicateSubscriptionModal"
       title="Duplicate Subscription"
@@ -342,11 +346,11 @@
         </div>
       </form>
     </BaseModal>
-  </BaseModal>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import {
   PlusIcon,
@@ -361,7 +365,7 @@ import { topicsApi, subscriptionsApi } from '@/api/pubsub'
 import { useAppStore } from '@/stores/app'
 import { useTopicsStore } from '@/stores/topics'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
-import type { PubSubTopic, PubSubSubscription } from '@/types'
+import type { PubSubTopic, PubSubSubscription, CreateSubscriptionRequest } from '@/types'
 import { getMeaningfulErrorMessage } from '@/utils/errorMessages'
 
 interface Props {
@@ -467,6 +471,7 @@ const duplicateModalActions = computed<ModalAction[]>(() => [
     label: 'Cancel',
     handler: handleDuplicateModalClose,
     variant: 'secondary',
+    disabled: isDuplicatingSubscription.value,
   },
   {
     label: 'Duplicate Subscription',
@@ -823,15 +828,18 @@ const openDuplicateSubscriptionModal = (subscription: PubSubSubscription) => {
   duplicateSubscriptionNameError.value = ''
   showDuplicateSubscriptionModal.value = true
 
-  setTimeout(() => {
+  nextTick(() => {
     duplicateSubscriptionNameInput.value?.focus()
-  }, 100)
+  })
 }
 
 const confirmDuplicateSubscription = async () => {
   if (!subscriptionToDuplicate.value || !currentProjectId.value) return
 
-  const nameError = validateSubscriptionName(duplicateSubscriptionName.value)
+  // Capture the name immediately to use in all toast messages
+  const targetName = duplicateSubscriptionName.value.trim()
+
+  const nameError = validateSubscriptionName(targetName)
   if (nameError) {
     duplicateSubscriptionNameError.value = nameError
     return
@@ -846,8 +854,8 @@ const confirmDuplicateSubscription = async () => {
         ? 'bigquery'
         : 'pull'
 
-    const createRequest: any = {
-      name: duplicateSubscriptionName.value.trim(),
+    const createRequest: CreateSubscriptionRequest = {
+      name: targetName,
       topic:
         topic.value?.name ||
         source.topicName ||
@@ -863,6 +871,7 @@ const confirmDuplicateSubscription = async () => {
         messageRetentionDuration: source.messageRetentionDuration,
       }),
       ...(source.filter && source.filter.trim() && { filter: source.filter.trim() }),
+      ...(source.labels && { labels: source.labels }),
     }
 
     if (deliveryType === 'push' && source.pushConfig?.pushEndpoint) {
@@ -901,7 +910,7 @@ const confirmDuplicateSubscription = async () => {
     appStore.showToast({
       type: 'success',
       title: 'Subscription Duplicated',
-      message: `Subscription "${duplicateSubscriptionName.value}" has been created`,
+      message: `Subscription "${targetName}" has been created`,
     })
 
     await loadSubscriptions()
@@ -916,7 +925,7 @@ const confirmDuplicateSubscription = async () => {
       appStore.showToast({
         type: 'warning',
         title: 'Subscription Exists',
-        message: `A subscription named "${duplicateSubscriptionName.value}" already exists. Please choose a different name.`,
+        message: `A subscription named "${targetName}" already exists. Please choose a different name.`,
         duration: 8000,
       })
     } else {
@@ -992,7 +1001,7 @@ const saveNewSubscription = async () => {
 
   isCreatingSubscription.value = true
   try {
-    const subRequest: any = {
+    const subRequest: CreateSubscriptionRequest = {
       name: newSubscription.value.name.trim(),
       topic: topic.value.name,
       ackDeadlineSeconds: newSubscription.value.ackDeadlineSeconds,
