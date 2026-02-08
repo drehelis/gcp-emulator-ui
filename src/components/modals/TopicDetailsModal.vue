@@ -164,14 +164,26 @@
                     </svg>
                   </button>
                 </div>
-                <button
-                  @click.stop="showDeleteSubscriptionConfirmation(subscription)"
-                  :disabled="isDeletingSubscription || !subscription?.name"
-                  class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Delete subscription"
-                >
-                  <TrashIcon class="w-4 h-4" />
-                </button>
+                <div class="flex items-center space-x-1">
+                  <button
+                    @click.stop="openDuplicateSubscriptionModal(subscription)"
+                    :disabled="isDuplicatingSubscription || !subscription?.name"
+                    class="p-1 text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Duplicate subscription"
+                    aria-label="Duplicate subscription"
+                  >
+                    <DocumentDuplicateIcon class="w-4 h-4" />
+                  </button>
+                  <button
+                    @click.stop="showDeleteSubscriptionConfirmation(subscription)"
+                    :disabled="isDeletingSubscription || !subscription?.name"
+                    class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Delete subscription"
+                    aria-label="Delete subscription"
+                  >
+                    <TrashIcon class="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
               <div
@@ -287,12 +299,66 @@
       @cancel="cancelDeleteSubscription"
     />
   </BaseModal>
+
+  <Teleport to="body">
+    <BaseModal
+      v-model="showDuplicateSubscriptionModal"
+      title="Duplicate Subscription"
+      :icon="DocumentDuplicateIcon"
+      icon-color="primary"
+      size="md"
+      :actions="duplicateModalActions"
+      @close="handleDuplicateModalClose"
+    >
+      <form @submit.prevent="confirmDuplicateSubscription" class="space-y-4">
+        <div>
+          <label
+            for="duplicate-subscription-name"
+            class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+          >
+            Subscription Name
+          </label>
+          <input
+            id="duplicate-subscription-name"
+            ref="duplicateSubscriptionNameInput"
+            v-model="duplicateSubscriptionName"
+            type="text"
+            placeholder="Enter name for the duplicated subscription..."
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+            :class="{
+              'border-red-300 focus:border-red-500 focus:ring-red-500':
+                duplicateSubscriptionNameError,
+            }"
+            @input="clearDuplicateSubscriptionNameError"
+          />
+          <p
+            v-if="duplicateSubscriptionNameError"
+            class="mt-1 text-sm text-red-600 dark:text-red-400"
+          >
+            {{ duplicateSubscriptionNameError }}
+          </p>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            This will create a copy of "{{
+              subscriptionToDuplicate
+                ? getSubscriptionDisplayName(subscriptionToDuplicate.name)
+                : ''
+            }}" with the same settings.
+          </p>
+        </div>
+      </form>
+    </BaseModal>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
-import { PlusIcon, InboxStackIcon, TrashIcon } from '@heroicons/vue/24/outline'
+import {
+  PlusIcon,
+  InboxStackIcon,
+  TrashIcon,
+  DocumentDuplicateIcon,
+} from '@heroicons/vue/24/outline'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
 import SubscriptionFormFields from '@/components/forms/SubscriptionFormFields.vue'
@@ -300,7 +366,7 @@ import { topicsApi, subscriptionsApi } from '@/api/pubsub'
 import { useAppStore } from '@/stores/app'
 import { useTopicsStore } from '@/stores/topics'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
-import type { PubSubTopic, PubSubSubscription } from '@/types'
+import type { PubSubTopic, PubSubSubscription, CreateSubscriptionRequest } from '@/types'
 import { getMeaningfulErrorMessage } from '@/utils/errorMessages'
 
 interface Props {
@@ -345,6 +411,7 @@ const isUpdating = ref(false)
 const isCreatingSubscription = ref(false)
 const isDeletingSubscription = ref(false)
 const isUpdatingSubscription = ref(false)
+const isDuplicatingSubscription = ref(false)
 
 const topic = ref<PubSubTopic | null>(null)
 const subscriptions = ref<PubSubSubscription[]>([])
@@ -353,6 +420,11 @@ const showEditSubscriptionForm = ref(false)
 const editingSubscription = ref<PubSubSubscription | null>(null)
 const showDeleteSubscriptionModal = ref(false)
 const subscriptionToDelete = ref<PubSubSubscription | null>(null)
+const showDuplicateSubscriptionModal = ref(false)
+const subscriptionToDuplicate = ref<PubSubSubscription | null>(null)
+const duplicateSubscriptionName = ref('')
+const duplicateSubscriptionNameError = ref('')
+const duplicateSubscriptionNameInput = ref<HTMLInputElement | null>(null)
 
 const editForm = ref({
   messageRetentionDuration: '7d',
@@ -395,6 +467,22 @@ const modalActions = computed<ModalAction[]>(() => [
   },
 ])
 
+const duplicateModalActions = computed<ModalAction[]>(() => [
+  {
+    label: 'Cancel',
+    handler: handleDuplicateModalClose,
+    variant: 'secondary',
+    disabled: isDuplicatingSubscription.value,
+  },
+  {
+    label: 'Duplicate Subscription',
+    handler: confirmDuplicateSubscription,
+    variant: 'primary',
+    loading: isDuplicatingSubscription.value,
+    disabled: !duplicateSubscriptionName.value.trim() || isDuplicatingSubscription.value,
+  },
+])
+
 const getTopicDisplayName = (fullName: string): string => {
   const parts = fullName.split('/')
   return parts[parts.length - 1] || fullName
@@ -432,8 +520,11 @@ const validateSubscriptionForm = (
   const errors: Record<string, string> = {}
 
   // Name validation (only for new subscriptions)
-  if (options.validateName && !subscription.name.trim()) {
-    errors.name = 'Subscription name is required'
+  if (options.validateName) {
+    const nameError = validateSubscriptionName(subscription.name)
+    if (nameError) {
+      errors.name = nameError
+    }
   }
 
   // Ack deadline range validation
@@ -474,6 +565,36 @@ const validateSubscriptionForm = (
   }
 
   return errors
+}
+
+const validateSubscriptionName = (name: string): string => {
+  if (!name.trim()) {
+    return 'Subscription name is required'
+  }
+
+  if (!/^[a-zA-Z][a-zA-Z0-9-_]*$/.test(name)) {
+    return 'Subscription name must start with a letter and contain only letters, numbers, hyphens, and underscores'
+  }
+
+  if (name.length > 255) {
+    return 'Subscription name must be less than 255 characters'
+  }
+
+  return ''
+}
+
+const normalizeSubscriptionName = (name: string): string => {
+  const trimmed = name.trim()
+  if (!trimmed) return ''
+
+  let normalized = trimmed.replace(/[^a-zA-Z0-9-_]/g, '-').replace(/-+/g, '-')
+  normalized = normalized.replace(/^-+/, '').replace(/-+$/, '')
+
+  if (!/^[a-zA-Z]/.test(normalized)) {
+    normalized = `sub-${normalized}`
+  }
+
+  return normalized
 }
 
 const loadTopic = async () => {
@@ -700,6 +821,139 @@ const addSubscription = () => {
   }
 }
 
+const openDuplicateSubscriptionModal = (subscription: PubSubSubscription) => {
+  subscriptionToDuplicate.value = subscription
+  duplicateSubscriptionName.value = normalizeSubscriptionName(
+    `${getSubscriptionDisplayName(subscription.name)}-copy`
+  )
+  duplicateSubscriptionNameError.value = ''
+  showDuplicateSubscriptionModal.value = true
+
+  nextTick(() => {
+    duplicateSubscriptionNameInput.value?.focus()
+  })
+}
+
+const confirmDuplicateSubscription = async () => {
+  if (!subscriptionToDuplicate.value || !currentProjectId.value) return
+
+  // Capture the name immediately to use in all toast messages
+  const targetName = duplicateSubscriptionName.value.trim()
+
+  const nameError = validateSubscriptionName(targetName)
+  if (nameError) {
+    duplicateSubscriptionNameError.value = nameError
+    return
+  }
+
+  isDuplicatingSubscription.value = true
+  try {
+    const source = subscriptionToDuplicate.value
+    const deliveryType = source.pushConfig?.pushEndpoint
+      ? 'push'
+      : source.bigqueryConfig
+        ? 'bigquery'
+        : 'pull'
+
+    const createRequest: CreateSubscriptionRequest = {
+      name: targetName,
+      topic:
+        topic.value?.name ||
+        source.topicName ||
+        (source as { topic?: string }).topic ||
+        props.topicName ||
+        '',
+      ackDeadlineSeconds: source.ackDeadlineSeconds || 60,
+      enableMessageOrdering: source.enableMessageOrdering || false,
+      ...(source.retainAckedMessages !== undefined && {
+        retainAckedMessages: source.retainAckedMessages,
+      }),
+      ...(source.messageRetentionDuration && {
+        messageRetentionDuration: source.messageRetentionDuration,
+      }),
+      ...(source.filter && source.filter.trim() && { filter: source.filter.trim() }),
+      ...(source.labels && { labels: source.labels }),
+    }
+
+    if (deliveryType === 'push' && source.pushConfig?.pushEndpoint) {
+      createRequest.pushConfig = {
+        pushEndpoint: source.pushConfig.pushEndpoint,
+        ...(source.pushConfig.attributes && { attributes: source.pushConfig.attributes }),
+      }
+    }
+
+    if (deliveryType === 'bigquery' && source.bigqueryConfig) {
+      createRequest.bigqueryConfig = {
+        table: source.bigqueryConfig.table,
+        useTopicSchema: source.bigqueryConfig.useTopicSchema,
+        writeMetadata: source.bigqueryConfig.writeMetadata,
+        dropUnknownFields: source.bigqueryConfig.dropUnknownFields,
+        serviceAccountEmail: source.bigqueryConfig.serviceAccountEmail,
+      }
+    }
+
+    if (source.deadLetterPolicy) {
+      createRequest.deadLetterPolicy = {
+        deadLetterTopic: source.deadLetterPolicy.deadLetterTopic,
+        maxDeliveryAttempts: source.deadLetterPolicy.maxDeliveryAttempts,
+      }
+    }
+
+    if (source.retryPolicy) {
+      createRequest.retryPolicy = {
+        minimumBackoff: source.retryPolicy.minimumBackoff,
+        maximumBackoff: source.retryPolicy.maximumBackoff,
+      }
+    }
+
+    await subscriptionsApi.createSubscription(currentProjectId.value, createRequest)
+
+    appStore.showToast({
+      type: 'success',
+      title: 'Subscription Duplicated',
+      message: `Subscription "${targetName}" has been created`,
+    })
+
+    await loadSubscriptions()
+    emit('subscriptions-changed')
+    handleDuplicateModalClose()
+  } catch (error: any) {
+    if (
+      error.response?.status === 409 ||
+      error.message?.includes('ALREADY_EXISTS') ||
+      error.response?.data?.message?.includes('ALREADY_EXISTS')
+    ) {
+      appStore.showToast({
+        type: 'warning',
+        title: 'Subscription Exists',
+        message: `A subscription named "${targetName}" already exists. Please choose a different name.`,
+        duration: 8000,
+      })
+    } else {
+      appStore.showToast({
+        type: 'error',
+        title: 'Duplication Failed',
+        message: `Failed to duplicate subscription: ${getMeaningfulErrorMessage(error)}`,
+        duration: 5000,
+      })
+    }
+  } finally {
+    isDuplicatingSubscription.value = false
+  }
+}
+
+const handleDuplicateModalClose = () => {
+  showDuplicateSubscriptionModal.value = false
+  subscriptionToDuplicate.value = null
+  duplicateSubscriptionName.value = ''
+  duplicateSubscriptionNameError.value = ''
+  isDuplicatingSubscription.value = false
+}
+
+const clearDuplicateSubscriptionNameError = () => {
+  duplicateSubscriptionNameError.value = ''
+}
+
 const cancelSubscriptionForm = () => {
   showNewSubscriptionForm.value = false
   showEditSubscriptionForm.value = false
@@ -748,7 +1002,7 @@ const saveNewSubscription = async () => {
 
   isCreatingSubscription.value = true
   try {
-    const subRequest: any = {
+    const subRequest: CreateSubscriptionRequest = {
       name: newSubscription.value.name.trim(),
       topic: topic.value.name,
       ackDeadlineSeconds: newSubscription.value.ackDeadlineSeconds,
