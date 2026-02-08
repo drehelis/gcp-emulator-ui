@@ -437,7 +437,7 @@ const routes: RouteRecordRaw[] = [
           if (selectedProject) {
             return `/projects/${selectedProject}/pubsub/topics`
           }
-          return '/' // Redirect to dashboard if no project selected
+          return '/'
         },
       },
       {
@@ -448,7 +448,7 @@ const routes: RouteRecordRaw[] = [
           if (selectedProject) {
             return `/projects/${selectedProject}/pubsub/subscriptions`
           }
-          return '/' // Redirect to dashboard if no project selected
+          return '/'
         },
       },
       {

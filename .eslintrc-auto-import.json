@@ -243,7 +243,6 @@
     "useInterval": true,
     "useIntervalFn": true,
     "useKeyModifier": true,
-    "useKeyboardShortcuts": true,
     "useLastChanged": true,
     "useLink": true,
     "useLocalStorage": true,
