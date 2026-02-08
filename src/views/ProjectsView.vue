@@ -105,10 +105,13 @@
           <li
             v-for="projectId in projectsStore.projectList"
             :key="projectId"
-            @click="navigateToProject(projectId)"
-            class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer px-6 py-4"
+            class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
-            <div class="flex items-center justify-between">
+            <router-link
+              :to="{ name: 'project-services', params: { projectId } }"
+              @click="() => projectsStore.selectProject(projectId)"
+              class="flex items-center justify-between px-6 py-4 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 block"
+            >
               <div class="flex items-center space-x-4">
                 <div
                   class="flex-shrink-0 w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center"
@@ -145,7 +148,7 @@
                   d="M9 5l7 7-7 7"
                 />
               </svg>
-            </div>
+            </router-link>
           </li>
         </ul>
       </div>
@@ -155,11 +158,9 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import { useProjectsStore } from '@/stores/projects'
 
 const projectsStore = useProjectsStore()
-const router = useRouter()
 
 async function loadProjects() {
   try {
@@ -167,11 +168,6 @@ async function loadProjects() {
   } catch (err) {
     console.error('Failed to load projects:', err)
   }
-}
-
-function navigateToProject(projectId: string) {
-  projectsStore.selectProject(projectId)
-  router.push({ name: 'project-services', params: { projectId } })
 }
 
 onMounted(loadProjects)
