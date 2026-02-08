@@ -98,11 +98,6 @@ export interface ApiEndpoints {
   createSnapshot: Function
   deleteSnapshot: Function
 
-  // Monitoring & Metrics
-  getTopicMetrics: Function
-  getSubscriptionMetrics: Function
-  getProjectMetrics: Function
-
   // Admin operations
   getIamPolicy: Function
   setIamPolicy: Function
@@ -202,7 +197,6 @@ export interface RequestTracker {
 export interface FeatureFlags {
   enableBatchOperations: boolean
   enableRealtimeUpdates: boolean
-  enableAdvancedMetrics: boolean
   enableSchemaValidation: boolean
   enableDeadLetterQueues: boolean
   maxConcurrentRequests: number
@@ -236,15 +230,6 @@ export interface MockApiConfig {
   delay: number
   failureRate: number
   dataPath: string
-}
-
-export interface MockData {
-  projects: any[]
-  topics: any[]
-  subscriptions: any[]
-  schemas: any[]
-  messages: any[]
-  metrics: any[]
 }
 
 // API validation

@@ -193,12 +193,6 @@ export const topicsApi = {
     )
     return response.data
   },
-
-  async getTopicMetrics(projectId: string, topicName: string): Promise<any> {
-    const api = getApi()
-    const response = await api.get(`/v1/projects/${projectId}/topics/${topicName}/metrics`)
-    return response.data
-  },
 }
 
 // Subscriptions API
@@ -328,14 +322,6 @@ export const subscriptionsApi = {
       ackIds,
     })
   },
-
-  async getSubscriptionMetrics(projectId: string, subscriptionName: string): Promise<any> {
-    const api = getApi()
-    const response = await api.get(
-      `/v1/projects/${projectId}/subscriptions/${subscriptionName}/metrics`
-    )
-    return response.data
-  },
 }
 
 // Schemas API
@@ -372,39 +358,6 @@ export const schemasApi = {
     const response = await api.post(`/v1/projects/${projectId}/schemas/${schemaName}:validate`, {
       message,
     })
-    return response.data
-  },
-}
-
-// Monitoring & Metrics API
-export const monitoringApi = {
-  async getDashboardMetrics(projectId: string): Promise<any> {
-    const api = getApi()
-    const response = await api.get(`/v1/projects/${projectId}/metrics/dashboard`)
-    return response.data
-  },
-
-  async getTopicMetrics(projectId: string, topicName?: string, timeRange?: string): Promise<any> {
-    const params = new URLSearchParams()
-    if (topicName) params.append('topic', topicName)
-    if (timeRange) params.append('timeRange', timeRange)
-
-    const api = getApi()
-    const response = await api.get(`/v1/projects/${projectId}/metrics/topics?${params}`)
-    return response.data
-  },
-
-  async getSubscriptionMetrics(
-    projectId: string,
-    subscriptionName?: string,
-    timeRange?: string
-  ): Promise<any> {
-    const params = new URLSearchParams()
-    if (subscriptionName) params.append('subscription', subscriptionName)
-    if (timeRange) params.append('timeRange', timeRange)
-
-    const api = getApi()
-    const response = await api.get(`/v1/projects/${projectId}/metrics/subscriptions?${params}`)
     return response.data
   },
 }
@@ -487,7 +440,6 @@ export const pubsubApi = {
   topics: topicsApi,
   subscriptions: subscriptionsApi,
   schemas: schemasApi,
-  monitoring: monitoringApi,
   health: healthApi,
   config: configApi,
   bulk: bulkApi,

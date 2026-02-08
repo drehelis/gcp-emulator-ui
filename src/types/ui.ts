@@ -434,16 +434,6 @@ export interface ViewportState {
   desktop: boolean
 }
 
-// Performance monitoring
-export interface PerformanceMetrics {
-  renderTime: number
-  loadTime: number
-  memoryUsage: number
-  bundleSize: number
-  cacheHits: number
-  apiCalls: number
-}
-
 // Feature flags for UI
 export interface UIFeatureFlags {
   enableAdvancedSearch: boolean

@@ -92,7 +92,7 @@ docker run \
 
 Browse to http://localhost:9090
 
-### Runtime Config (`/config.json`)
+**Runtime Config (`/config.json`)**
 
 The UI can load optional runtime settings from `/config.json` at startup. This file is intended for container deployments where you want to inject configuration without rebuilding the app.
 

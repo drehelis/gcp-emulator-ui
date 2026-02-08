@@ -20,18 +20,6 @@ const routes: RouteRecordRaw[] = [
     component: DefaultLayout,
     children: [
       {
-        path: '',
-        name: 'dashboard',
-        component: () => import('@/views/DashboardView.vue'),
-        meta: {
-          title: 'Dashboard',
-          description: 'Overview of your Pub/Sub resources and metrics',
-          icon: 'ChartBarIcon',
-          requiresAuth: true,
-          breadcrumbs: [{ label: 'Home', route: '/' }],
-        },
-      },
-      {
         path: 'projects',
         name: 'projects',
         component: () => import('@/views/ProjectsView.vue'),
@@ -517,58 +505,6 @@ const routes: RouteRecordRaw[] = [
         ],
       },
       {
-        path: 'monitoring',
-        children: [
-          {
-            path: '',
-            name: 'monitoring',
-            component: () => import('@/views/monitoring/MonitoringDashboardView.vue'),
-            meta: {
-              title: 'Monitoring',
-              description: 'Real-time monitoring and metrics',
-              icon: 'ChartLineIcon',
-              requiresAuth: true,
-              requiresProject: true,
-              breadcrumbs: [{ label: 'Home', route: '/' }, { label: 'Monitoring' }],
-            },
-          },
-          {
-            path: 'metrics',
-            name: 'metrics',
-            component: () => import('@/views/monitoring/MetricsView.vue'),
-            meta: {
-              title: 'Metrics',
-              description: 'Detailed metrics and analytics',
-              icon: 'ChartBarIcon',
-              requiresAuth: true,
-              requiresProject: true,
-              breadcrumbs: [
-                { label: 'Home', route: '/' },
-                { label: 'Monitoring', route: '/monitoring' },
-                { label: 'Metrics' },
-              ],
-            },
-          },
-          {
-            path: 'alerts',
-            name: 'alerts',
-            component: () => import('@/views/monitoring/AlertsView.vue'),
-            meta: {
-              title: 'Alerts',
-              description: 'Configure and manage alerts',
-              icon: 'BellIcon',
-              requiresAuth: true,
-              requiresProject: true,
-              breadcrumbs: [
-                { label: 'Home', route: '/' },
-                { label: 'Monitoring', route: '/monitoring' },
-                { label: 'Alerts' },
-              ],
-            },
-          },
-        ],
-      },
-      {
         path: 'analytics',
         name: 'analytics',
         component: () => import('@/views/AnalyticsView.vue'),
@@ -624,17 +560,6 @@ const routes: RouteRecordRaw[] = [
           title: 'Message Viewer',
           description: 'Fullscreen message viewer',
           requiresAuth: true,
-        },
-      },
-      {
-        path: 'metrics-dashboard',
-        name: 'fullscreen-metrics',
-        component: () => import('@/views/fullscreen/MetricsDashboardView.vue'),
-        meta: {
-          title: 'Metrics Dashboard',
-          description: 'Fullscreen metrics dashboard',
-          requiresAuth: true,
-          requiresProject: true,
         },
       },
     ],

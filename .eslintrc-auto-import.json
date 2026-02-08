@@ -255,7 +255,6 @@
     "useMemory": true,
     "useMessagePublisher": true,
     "useMessageTemplatesStore": true,
-    "useMetricsStore": true,
     "useModalManager": true,
     "useModel": true,
     "useMounted": true,

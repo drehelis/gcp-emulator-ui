@@ -259,20 +259,6 @@ describe('useTopicsStore', () => {
     })
   })
 
-  describe('fetchTopicMetrics', () => {
-    it('generates mock metrics', async () => {
-      const store = useTopicsStore()
-      const promise = store.fetchTopicMetrics('topic1')
-
-      await vi.advanceTimersByTimeAsync(600) // Advance for the debounce/delay in fetchTopicMetrics
-
-      const metrics = await promise
-      expect(metrics).toBeDefined()
-      expect(metrics?.messageCount.length).toBeGreaterThan(0)
-      expect(store.topicMetrics.has('projects/test-project/topics/topic1')).toBe(true)
-    })
-  })
-
   describe('batch operations', () => {
     it('createBatchTopics runs and completes', async () => {
       const store = useTopicsStore()
@@ -354,12 +340,9 @@ describe('useTopicsStore', () => {
         { projectId: 'p2', name: 't2', fullName: 'projects/p2/topics/t2' },
       ] as any
 
-      // Populate cache and metrics with p1 and p2 data
+      // Populate cache with p1 and p2 data
       store.topicCache.set('projects/p1/topics/t1', {} as any)
       store.topicCache.set('projects/p2/topics/t2', {} as any)
-
-      store.topicMetrics.set('projects/p1/topics/t1', {} as any)
-      store.topicMetrics.set('projects/p2/topics/t2', {} as any)
 
       // Set selection to p1
       store.selectedTopic = { projectId: 'p1' } as any
@@ -369,12 +352,9 @@ describe('useTopicsStore', () => {
       expect(store.topics).toHaveLength(1)
       expect(store.topics[0].projectId).toBe('p2')
 
-      // Verify cache/metrics cleared for p1 but kept for p2
+      // Verify cache cleared for p1 but kept for p2
       expect(store.topicCache.has('projects/p1/topics/t1')).toBe(false)
       expect(store.topicCache.has('projects/p2/topics/t2')).toBe(true)
-
-      expect(store.topicMetrics.has('projects/p1/topics/t1')).toBe(false)
-      expect(store.topicMetrics.has('projects/p2/topics/t2')).toBe(true)
 
       // Verify selection cleared
       expect(store.selectedTopic).toBeNull()
@@ -423,13 +403,10 @@ describe('useTopicsStore', () => {
     it('clears all caches', () => {
       const store = useTopicsStore()
       store.topicCache.set('k', {} as any)
-      store.topicMetrics.set('k', {} as any)
 
       store.clearCache()
 
       expect(store.topicCache.size).toBe(0)
-      expect(store.topicCache.size).toBe(0)
-      expect(store.topicMetrics.size).toBe(0)
     })
   })
 
