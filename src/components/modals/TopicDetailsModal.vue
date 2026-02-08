@@ -298,7 +298,6 @@
       @confirm="deleteSubscription"
       @cancel="cancelDeleteSubscription"
     />
-
   </BaseModal>
 
   <Teleport to="body">
@@ -339,9 +338,11 @@
             {{ duplicateSubscriptionNameError }}
           </p>
           <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            This will create a copy of
-            "{{ subscriptionToDuplicate ? getSubscriptionDisplayName(subscriptionToDuplicate.name) : '' }}"
-            with the same settings.
+            This will create a copy of "{{
+              subscriptionToDuplicate
+                ? getSubscriptionDisplayName(subscriptionToDuplicate.name)
+                : ''
+            }}" with the same settings.
           </p>
         </div>
       </form>
