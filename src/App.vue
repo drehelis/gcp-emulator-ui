@@ -79,130 +79,17 @@
       </div>
     </div>
   </Transition>
-
-  <!-- Keyboard shortcuts help -->
-  <Transition
-    enter-active-class="transition-opacity"
-    leave-active-class="transition-opacity"
-    enter-from-class="opacity-0"
-    leave-to-class="opacity-0"
-  >
-    <div
-      v-if="showKeyboardHelp"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-      @click="showKeyboardHelp = false"
-    >
-      <div
-        class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto theme-transition-bg"
-        @click.stop
-      >
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Keyboard Shortcuts</h2>
-            <button
-              @click="showKeyboardHelp = false"
-              class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300"
-            >
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
-          </div>
-
-          <div class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <h3 class="font-medium text-gray-900 dark:text-white mb-2">Navigation</h3>
-                <div class="space-y-2 text-sm">
-                  <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Go to Dashboard</span>
-                    <kbd class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded">g d</kbd>
-                  </div>
-                  <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Go to Topics</span>
-                    <kbd class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded">g t</kbd>
-                  </div>
-                  <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Go to Subscriptions</span>
-                    <kbd class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded">g s</kbd>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <h3 class="font-medium text-gray-900 dark:text-white mb-2">Actions</h3>
-                <div class="space-y-2 text-sm">
-                  <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Create New</span>
-                    <kbd class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded">c</kbd>
-                  </div>
-                  <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Search</span>
-                    <kbd class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded">/</kbd>
-                  </div>
-                  <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Toggle Theme</span>
-                    <kbd class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded"
-                      >ctrl+shift+t</kbd
-                    >
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h3 class="font-medium text-gray-900 dark:text-white mb-2">General</h3>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="space-y-2 text-sm">
-                  <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Show Help</span>
-                    <kbd class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded">?</kbd>
-                  </div>
-                  <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Close Modal/Dialog</span>
-                    <kbd class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded">esc</kbd>
-                  </div>
-                </div>
-                <div class="space-y-2 text-sm">
-                  <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Refresh</span>
-                    <kbd class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded">r</kbd>
-                  </div>
-                  <div class="flex justify-between">
-                    <span class="text-gray-600 dark:text-gray-400">Toggle Sidebar</span>
-                    <kbd class="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 rounded"
-                      >ctrl+\\</kbd
-                    >
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </Transition>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useAppStore } from '@/stores/app'
-import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 
 const appStore = useAppStore()
 
 // PWA update handling
 const showUpdatePrompt = ref(false)
 let updateSW: (() => Promise<void>) | undefined
-
-// Keyboard shortcuts
-const showKeyboardHelp = ref(false)
-const { registerShortcuts, unregisterShortcuts } = useKeyboardShortcuts()
 
 // Handle online/offline status
 function handleOnline() {
@@ -217,7 +104,6 @@ function handleOffline() {
 onUnmounted(() => {
   window.removeEventListener('online', handleOnline)
   window.removeEventListener('offline', handleOffline)
-  unregisterShortcuts()
 })
 
 onMounted(async () => {
@@ -246,59 +132,6 @@ onMounted(async () => {
       },
     })
   }
-
-  // Register global keyboard shortcuts
-  registerShortcuts([
-    {
-      key: '?',
-      description: 'Show keyboard shortcuts help',
-      action: () => {
-        showKeyboardHelp.value = !showKeyboardHelp.value
-      },
-      global: true,
-    },
-    {
-      key: 'Escape',
-      description: 'Close modals and dialogs',
-      action: () => {
-        if (showKeyboardHelp.value) {
-          showKeyboardHelp.value = false
-          return
-        }
-
-        if (appStore.hasActiveModals) {
-          appStore.closeAllModals()
-        }
-      },
-      global: true,
-    },
-    {
-      key: 't',
-      modifiers: ['ctrl', 'shift'],
-      description: 'Toggle theme',
-      action: () => {
-        const currentTheme = appStore.theme
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark'
-        appStore.setTheme(newTheme)
-
-        appStore.showToast({
-          type: 'info',
-          title: 'Theme changed',
-          message: `Switched to ${newTheme} mode`,
-        })
-      },
-      global: true,
-    },
-    {
-      key: '\\',
-      modifiers: ['ctrl'],
-      description: 'Toggle sidebar',
-      action: () => {
-        appStore.toggleSidebar()
-      },
-      global: true,
-    },
-  ])
 
   // Add event listeners for online/offline status
   window.addEventListener('online', handleOnline)

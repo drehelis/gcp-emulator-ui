@@ -434,35 +434,6 @@ describe('Pub/Sub API', () => {
     })
   })
 
-  describe('monitoringApi', () => {
-    it('gets dashboard metrics', async () => {
-      mockGet.mockResolvedValue({ data: { messageCount: 100 } })
-
-      const { monitoringApi } = await import('@/api/pubsub')
-      const metrics = await monitoringApi.getDashboardMetrics('my-project')
-
-      expect(metrics.messageCount).toBe(100)
-    })
-
-    it('gets topic metrics with filters', async () => {
-      mockGet.mockResolvedValue({ data: {} })
-
-      const { monitoringApi } = await import('@/api/pubsub')
-      await monitoringApi.getTopicMetrics('my-project', 'my-topic', '1h')
-
-      expect(mockGet).toHaveBeenCalledWith(expect.stringContaining('topic=my-topic'))
-    })
-
-    it('gets subscription metrics with filters', async () => {
-      mockGet.mockResolvedValue({ data: {} })
-
-      const { monitoringApi } = await import('@/api/pubsub')
-      await monitoringApi.getSubscriptionMetrics('my-project', 'my-sub', '24h')
-
-      expect(mockGet).toHaveBeenCalledWith(expect.stringContaining('subscription=my-sub'))
-    })
-  })
-
   describe('configApi', () => {
     it('sets current host', async () => {
       mockPost.mockResolvedValue({})

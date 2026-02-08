@@ -60,7 +60,6 @@ export const useAppStore = defineStore(
       enableDragAndDrop: true,
       enableVirtualScrolling: true,
       enableRealTimeUpdates: true,
-      enableKeyboardShortcuts: true,
       enableContextMenu: true,
       maxTableRows: 1000,
       maxChartDataPoints: 10000,

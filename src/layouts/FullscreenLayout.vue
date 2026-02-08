@@ -60,7 +60,6 @@ const toggleTheme = () => {
 }
 
 const goBack = () => {
-  // Try to go back in history, otherwise go to dashboard
   if (window.history.length > 1) {
     router.go(-1)
   } else {

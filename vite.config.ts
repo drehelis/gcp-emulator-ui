@@ -106,7 +106,7 @@ export default defineConfig({
       manifest: {
         name: 'GCP Emulator UI - Google Cloud Emulator Management',
         short_name: 'GCP Emulator UI',
-        description: 'Modern, comprehensive Google Cloud Emulator management interface with real-time monitoring, advanced analytics, and workflow automation',
+        description: 'Modern, comprehensive Google Cloud Emulator management interface',
         theme_color: '#1f2937',
         background_color: '#ffffff',
         display: 'standalone',

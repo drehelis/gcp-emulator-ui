@@ -327,16 +327,6 @@ export interface VirtualScrollConfig {
   enabled?: boolean
 }
 
-// Keyboard shortcuts types
-export interface KeyboardShortcut {
-  key: string
-  modifiers?: ('ctrl' | 'alt' | 'shift' | 'meta')[]
-  description: string
-  action: () => void
-  enabled?: boolean
-  global?: boolean
-}
-
 // Context menu types
 export interface ContextMenuItem {
   label: string
@@ -434,16 +424,6 @@ export interface ViewportState {
   desktop: boolean
 }
 
-// Performance monitoring
-export interface PerformanceMetrics {
-  renderTime: number
-  loadTime: number
-  memoryUsage: number
-  bundleSize: number
-  cacheHits: number
-  apiCalls: number
-}
-
 // Feature flags for UI
 export interface UIFeatureFlags {
   enableAdvancedSearch: boolean
@@ -451,7 +431,6 @@ export interface UIFeatureFlags {
   enableDragAndDrop: boolean
   enableVirtualScrolling: boolean
   enableRealTimeUpdates: boolean
-  enableKeyboardShortcuts: boolean
   enableContextMenu: boolean
   maxTableRows: number
   maxChartDataPoints: number

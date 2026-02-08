@@ -233,7 +233,6 @@ declare global {
   const useMemory: typeof import('@vueuse/core').useMemory
   const useMessagePublisher: typeof import('./src/composables/useMessagePublisher').useMessagePublisher
   const useMessageTemplatesStore: typeof import('./src/stores/messageTemplates').useMessageTemplatesStore
-  const useMetricsStore: typeof import('./src/stores/metrics').useMetricsStore
   const useModalManager: typeof import('./src/composables/useModalManager').useModalManager
   const useModel: typeof import('vue').useModel
   const useMounted: typeof import('@vueuse/core').useMounted

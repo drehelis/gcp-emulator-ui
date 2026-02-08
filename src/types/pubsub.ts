@@ -282,36 +282,6 @@ export interface Snapshot extends BaseEntity {
   expireTime?: Date
 }
 
-// Metrics and monitoring types
-export interface MetricValue {
-  timestamp: Date
-  value: number
-}
-
-export interface TopicMetrics {
-  messageCount: MetricValue[]
-  messageBytes: MetricValue[]
-  publishMessageCount: MetricValue[]
-  publishedMessageBytes: MetricValue[]
-  publishRequestCount: MetricValue[]
-}
-
-export interface SubscriptionMetrics {
-  messageCount: MetricValue[]
-  oldestUnackedMessageAge: MetricValue[]
-  unackedMessageCount: MetricValue[]
-  pullMessageCount: MetricValue[]
-  pullRequestCount: MetricValue[]
-  pushMessageCount: MetricValue[]
-  pushRequestCount: MetricValue[]
-  deadLetterMessageCount?: MetricValue[]
-  retainedAckedMessageCount?: MetricValue[]
-  retainedAckedMessageBytes?: MetricValue[]
-  streamingPullMessageCount?: MetricValue[]
-  streamingPullRequestCount?: MetricValue[]
-  deliveryAttemptCount?: MetricValue[]
-}
-
 // Search and filtering types
 export interface SearchFilters {
   projectId?: string
@@ -536,25 +506,4 @@ export interface PublishMessageForm {
   data: string
   attributes: Record<string, string>
   orderingKey?: string
-}
-
-// Analytics and reporting types
-export interface AnalyticsData {
-  timeRange: DateRange
-  topicMetrics: Record<string, TopicMetrics>
-  subscriptionMetrics: Record<string, SubscriptionMetrics>
-  summary: {
-    totalTopics: number
-    totalSubscriptions: number
-    totalMessages: number
-    errorRate: number
-  }
-}
-
-export interface ReportConfig {
-  entities: ('topics' | 'subscriptions' | 'schemas')[]
-  metrics: string[]
-  timeRange: DateRange
-  format: 'pdf' | 'excel' | 'csv'
-  includeCharts: boolean
 }
