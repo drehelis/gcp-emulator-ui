@@ -504,19 +504,6 @@ const routes: RouteRecordRaw[] = [
           },
         ],
       },
-      {
-        path: 'analytics',
-        name: 'analytics',
-        component: () => import('@/views/AnalyticsView.vue'),
-        meta: {
-          title: 'Analytics',
-          description: 'Advanced analytics and insights',
-          icon: 'ChartPieIcon',
-          requiresAuth: true,
-          requiresProject: true,
-          breadcrumbs: [{ label: 'Home', route: '/' }, { label: 'Analytics' }],
-        },
-      },
     ],
   },
   // Authentication routes
