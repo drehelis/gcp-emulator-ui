@@ -517,13 +517,19 @@ export const useStorageStore = defineStore('storage', () => {
       state.value.error = null
 
       // Convert display names to full paths for API calls
-      const objectsToDelete = objects.value.filter(obj => objectNames.includes(obj.name))
+      const objectsToDelete = objects.value.filter(obj => {
+        const identifier = obj.fullPath || obj.name
+        return objectNames.includes(identifier) || objectNames.includes(obj.name)
+      })
       const fullPaths = objectsToDelete.map(obj => obj.fullPath || obj.name)
 
       await storageApi.deleteMultipleObjects(bucketName, fullPaths)
 
       // Remove from local state
-      objects.value = objects.value.filter(obj => !objectNames.includes(obj.name))
+      objects.value = objects.value.filter(obj => {
+        const identifier = obj.fullPath || obj.name
+        return !objectNames.includes(identifier) && !objectNames.includes(obj.name)
+      })
       selectedObjects.value = []
 
       // Check if we need to navigate up after deleting the last file in a folder
@@ -664,7 +670,9 @@ export const useStorageStore = defineStore('storage', () => {
   }
 
   function selectAllObjects(): void {
-    selectedObjects.value = objects.value.filter(obj => !obj.isFolder).map(obj => obj.name)
+    selectedObjects.value = objects.value
+      .filter(obj => !obj.isFolder)
+      .map(obj => obj.fullPath || obj.name)
   }
 
   function clearSelection(): void {

@@ -116,6 +116,15 @@
             }}</span>
           </button>
           <button
+            v-if="storageStore.selectedObjects.length === 1 && !downloadingZip"
+            @click="copyLinkToClipboard"
+            class="inline-flex items-center px-1 sm:px-2 text-xs sm:text-sm font-medium text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded focus:outline-none transition-colors"
+            title="Copy link to file"
+          >
+            <LinkIcon class="w-3 h-3 sm:w-4 sm:h-4 sm:mr-1" />
+            <span class="hidden sm:inline">Copy Link</span>
+          </button>
+          <button
             @click="confirmBulkDelete"
             :disabled="storageStore.loading.delete"
             class="inline-flex items-center px-1 sm:px-2 text-xs sm:text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 rounded focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -398,7 +407,7 @@
                 :class="[
                   {
                     'bg-blue-50 dark:bg-blue-900/20': storageStore.selectedObjects.includes(
-                      object.name
+                      object.fullPath || object.name
                     ),
                   },
                   index !== storageStore.objects.length - 1
@@ -411,8 +420,8 @@
                   <input
                     v-if="!object.isFolder"
                     type="checkbox"
-                    :checked="storageStore.selectedObjects.includes(object.name)"
-                    @click.stop="storageStore.selectObject(object.name)"
+                    :checked="storageStore.selectedObjects.includes(object.fullPath || object.name)"
+                    @click.stop="storageStore.selectObject(object.fullPath || object.name)"
                     @change="() => {}"
                     class="w-3.5 h-3.5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
                   />
@@ -509,7 +518,7 @@
               class="p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
               :class="{
                 'bg-blue-50 dark:bg-blue-900/20': storageStore.selectedObjects.includes(
-                  object.name
+                  object.fullPath || object.name
                 ),
               }"
               @click="handleObjectClick(object)"
@@ -518,8 +527,8 @@
                 <input
                   v-if="!object.isFolder"
                   type="checkbox"
-                  :checked="storageStore.selectedObjects.includes(object.name)"
-                  @click.stop="storageStore.selectObject(object.name)"
+                  :checked="storageStore.selectedObjects.includes(object.fullPath || object.name)"
+                  @click.stop="storageStore.selectObject(object.fullPath || object.name)"
                   @change="() => {}"
                   class="mt-1 w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
                 />
@@ -584,7 +593,7 @@
           class="group relative bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-4 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-md dark:hover:shadow-blue-900/10 transition-all cursor-pointer"
           :class="{
             'ring-2 ring-blue-500 dark:ring-blue-400': storageStore.selectedObjects.includes(
-              object.name
+              object.fullPath || object.name
             ),
           }"
           @click="handleObjectClick(object)"
@@ -594,15 +603,15 @@
             v-if="!object.isFolder"
             class="absolute top-2 left-2 transition-opacity"
             :class="[
-              storageStore.selectedObjects.includes(object.name)
+              storageStore.selectedObjects.includes(object.fullPath || object.name)
                 ? 'opacity-100'
                 : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100',
             ]"
           >
             <input
               type="checkbox"
-              :checked="storageStore.selectedObjects.includes(object.name)"
-              @click.stop="storageStore.selectObject(object.name)"
+              :checked="storageStore.selectedObjects.includes(object.fullPath || object.name)"
+              @click.stop="storageStore.selectObject(object.fullPath || object.name)"
               @change="() => {}"
               class="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
             />
@@ -1313,6 +1322,7 @@ import {
   TrashIcon,
   ExclamationTriangleIcon,
   XMarkIcon,
+  LinkIcon,
 } from '@heroicons/vue/24/outline'
 import { Dialog, DialogPanel, DialogTitle, TransitionChild, TransitionRoot } from '@headlessui/vue'
 import { useStorageStore } from '@/stores/storage'
@@ -1397,6 +1407,29 @@ async function refreshObjects(): Promise<void> {
   await storageStore.fetchObjects(bucketName.value, currentPath.value, true)
 }
 
+async function copyLinkToClipboard(): Promise<void> {
+  const selectedObjects = [...storageStore.selectedObjects]
+  if (selectedObjects.length !== 1) return
+
+  const objectName = selectedObjects[0]
+  const downloadUrl = storageApi.getObjectDownloadUrl(bucketName.value, objectName)
+  try {
+    await navigator.clipboard.writeText(downloadUrl)
+    appStore.showToast({
+      type: 'success',
+      title: 'Link Copied',
+      message: 'Download link copied to clipboard',
+    })
+  } catch (error: any) {
+    console.error('Failed to copy link:', error)
+    appStore.showToast({
+      type: 'error',
+      title: 'Copy Failed',
+      message: 'Failed to copy link to clipboard',
+    })
+  }
+}
+
 async function downloadSelectedAsZip(): Promise<void> {
   const selectedObjects = [...storageStore.selectedObjects] // Create a copy to avoid reactivity issues
   if (selectedObjects.length === 0) return
@@ -1434,11 +1467,7 @@ async function downloadSelectedAsZip(): Promise<void> {
     } else {
       // Multiple files - create ZIP
       const fileName = `${bucketName.value}-selected-${selectedObjects.length}-files.zip`
-      const zipBlob = await storageApi.downloadObjectsAsZip(
-        bucketName.value,
-        selectedObjects,
-        fileName
-      )
+      const zipBlob = await storageApi.downloadObjectsAsZip(bucketName.value, selectedObjects)
 
       // Create download link and trigger download
       const url = URL.createObjectURL(zipBlob)

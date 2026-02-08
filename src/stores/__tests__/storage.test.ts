@@ -579,5 +579,50 @@ describe('useStorageStore', () => {
       expect(store.objects).toHaveLength(1)
       expect(store.objects[0].name).toBe('file2.txt')
     })
+
+    it('deletes prefixed objects using full paths', async () => {
+      vi.mocked(storageApi.listObjects).mockResolvedValue({
+        items: [
+          {
+            name: 'folder1/file1.txt',
+            size: '100',
+            contentType: 'text/plain',
+            bucket: 'my-bucket',
+            storageClass: 'STANDARD',
+            timeCreated: '',
+            updated: '',
+          },
+          {
+            name: 'folder1/file2.txt',
+            size: '200',
+            contentType: 'text/plain',
+            bucket: 'my-bucket',
+            storageClass: 'STANDARD',
+            timeCreated: '',
+            updated: '',
+          },
+        ],
+        prefixes: [],
+      })
+      vi.mocked(storageApi.deleteMultipleObjects).mockResolvedValue({
+        success: ['folder1/file1.txt', 'folder1/file2.txt'],
+        errors: [],
+      })
+
+      const store = useStorageStore()
+      await store.fetchObjects('my-bucket', 'folder1/')
+
+      store.selectAllObjects()
+      expect(store.selectedObjects).toEqual(['folder1/file1.txt', 'folder1/file2.txt'])
+
+      await store.deleteObjects('my-bucket', store.selectedObjects)
+
+      expect(storageApi.deleteMultipleObjects).toHaveBeenCalledTimes(1)
+      expect(storageApi.deleteMultipleObjects).toHaveBeenCalledWith('my-bucket', [
+        'folder1/file1.txt',
+        'folder1/file2.txt',
+      ])
+      expect(store.objects).toEqual([])
+    })
   })
 })
