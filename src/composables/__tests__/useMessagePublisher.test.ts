@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { Buffer } from 'buffer'
 import { useMessagePublisher } from '../useMessagePublisher'
 
 const mocks = vi.hoisted(() => ({
