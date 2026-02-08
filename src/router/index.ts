@@ -20,6 +20,18 @@ const routes: RouteRecordRaw[] = [
     component: DefaultLayout,
     children: [
       {
+        path: '',
+        name: 'home',
+        component: () => import('@/views/HomeView.vue'),
+        meta: {
+          title: 'Home',
+          description: 'Home',
+          icon: 'HomeIcon',
+          requiresAuth: true,
+          breadcrumbs: [{ label: 'Home', route: '/' }],
+        },
+      },
+      {
         path: 'projects',
         name: 'projects',
         component: () => import('@/views/ProjectsView.vue'),
@@ -554,6 +566,7 @@ const routes: RouteRecordRaw[] = [
   // Error pages
   {
     path: '/error',
+    component: DefaultLayout,
     children: [
       {
         path: '404',
