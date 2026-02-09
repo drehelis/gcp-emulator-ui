@@ -1,4 +1,3 @@
-
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { getFileExtension, getFilesFromDataTransfer, readDirectoryEntries } from '../fileSystem'
 
@@ -45,33 +44,33 @@ describe('fileSystem utils', () => {
           readEntries: (cb: any) => {
             // Return file2 on first call, then empty on second to stop
             cb([mockFile2])
-          }
-        })
+          },
+        }),
       }
 
       const mockRootDir = {
         createReader: () => ({
           readEntries: (cb: any) => {
-             // Mock returning one file and one directory
-             // We need to handle the recursive nature: readEntries is called until empty
-             let callCount = 0
-             return {
-               readEntries: (callback: any) => {
-                  if (callCount === 0) {
-                    callCount++
-                    callback([mockFile1, mockSubDir])
-                  } else {
-                    callback([])
-                  }
-               }
-             }
-          }
-        })
+            // Mock returning one file and one directory
+            // We need to handle the recursive nature: readEntries is called until empty
+            let callCount = 0
+            return {
+              readEntries: (callback: any) => {
+                if (callCount === 0) {
+                  callCount++
+                  callback([mockFile1, mockSubDir])
+                } else {
+                  callback([])
+                }
+              },
+            }
+          },
+        }),
       }
-      
+
       // Fix: The simplified mock above doesn't fully match the complex recursion in source.
       // Let's create a more robust mock structure.
-      
+
       const createMockFileEntry = (name: string) => ({
         isFile: true,
         isDirectory: false,
@@ -132,12 +131,12 @@ describe('fileSystem utils', () => {
       expect(files).toHaveLength(1)
       expect(files[0].name).toBe('test.txt')
     })
-    
-     it('handles fallback for no items support', async () => {
+
+    it('handles fallback for no items support', async () => {
       const mockFile = new File([''], 'test.txt')
       const mockDataTransfer = {
         items: undefined,
-        files: [mockFile]
+        files: [mockFile],
       }
 
       // @ts-ignore
