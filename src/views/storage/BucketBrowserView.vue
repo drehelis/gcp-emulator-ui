@@ -1019,6 +1019,7 @@
                                 !createFolderValidationError,
                             }"
                             @input="createFolderValidationError = ''"
+                            @keyup.enter="handleCreateFolder"
                           />
                           <div
                             v-if="createFolderValidationError"
@@ -1558,8 +1559,6 @@ function openCreateFileFromUpload(): void {
   showCreateFileModal.value = true
 }
 
-
-
 // Handle ESC key for upload modal
 const handleUploadModalEscKey = (event: KeyboardEvent) => {
   if (event.key === 'Escape' && showUploadModal.value && !isUploading.value) {
@@ -1570,9 +1569,9 @@ const handleUploadModalEscKey = (event: KeyboardEvent) => {
 }
 
 // Create file functions
-// Note: We are shadowing the imported getFileExtension. 
+// Note: We are shadowing the imported getFileExtension.
 // We should remove this local function and use the imported one.
-// But getContentTypeFromExtension uses it. 
+// But getContentTypeFromExtension uses it.
 // I'll remove this definition and let it use the imported one.
 
 function getContentTypeFromExtension(filename: string): string {

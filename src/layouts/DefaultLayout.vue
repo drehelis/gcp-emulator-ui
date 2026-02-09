@@ -85,9 +85,7 @@
         <!-- Dynamic Navigation -->
         <div
           class="flex-1 py-4 space-y-2 overflow-y-auto overflow-x-hidden scrollbar-thin"
-          :class="[
-            appStore.layout.sidebar.collapsed && !isMobile ? 'px-2' : 'px-4'
-          ]"
+          :class="[appStore.layout.sidebar.collapsed && !isMobile ? 'px-2' : 'px-4']"
           v-if="navigationItems.length > 0"
         >
           <template v-for="item in navigationItems" :key="item.id">
@@ -255,11 +253,15 @@
             />
           </template>
         </div>
-        
+
         <!-- Sidebar Footer -->
-        <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 theme-transition-colors">
+        <div
+          class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 theme-transition-colors"
+        >
           <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-            <span v-if="!appStore.layout.sidebar.collapsed || isMobile">Version {{ $APP_VERSION }}</span>
+            <span v-if="!appStore.layout.sidebar.collapsed || isMobile"
+              >Version {{ $APP_VERSION }}</span
+            >
             <span v-else class="mx-auto">{{ $APP_VERSION }}</span>
           </div>
         </div>

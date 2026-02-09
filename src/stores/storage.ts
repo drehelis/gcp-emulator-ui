@@ -517,14 +517,50 @@ export const useStorageStore = defineStore('storage', () => {
       loading.value.delete = true
       state.value.error = null
 
-      // Convert display names to full paths for API calls
+      // 1. Identify objects from the current list
       const objectsToDelete = objects.value.filter(obj => {
         const identifier = obj.fullPath || obj.name
         return objectNames.includes(identifier) || objectNames.includes(obj.name)
       })
-      const fullPaths = objectsToDelete.map(obj => obj.fullPath || obj.name)
 
-      await storageApi.deleteMultipleObjects(bucketName, fullPaths)
+      // 2. Collect all actual object paths to delete (handling folders recursively)
+      const allPathsToDelete: string[] = []
+
+      for (const obj of objectsToDelete) {
+        if (obj.isFolder) {
+          // For folders, we must list and delete all contents
+          // The folder itself might be a 0-byte object, which will be returned in the list if it exists
+          const prefix = obj.fullPath || obj.name
+          let pageToken: string | undefined = undefined
+
+          do {
+            const response = await storageApi.listObjects({
+              bucket: bucketName,
+              prefix: prefix,
+              // No delimiter means recursive listing
+              maxResults: 1000,
+              pageToken,
+            })
+
+            if (response.items) {
+              const paths = response.items.map(item => item.name)
+              allPathsToDelete.push(...paths)
+            }
+
+            pageToken = response.nextPageToken
+          } while (pageToken)
+        } else {
+          // For regular files, just add the path
+          allPathsToDelete.push(obj.fullPath || obj.name)
+        }
+      }
+
+      // Remove duplicates
+      const uniquePathsToDelete = [...new Set(allPathsToDelete)]
+
+      if (uniquePathsToDelete.length > 0) {
+        await storageApi.deleteMultipleObjects(bucketName, uniquePathsToDelete)
+      }
 
       // Remove from local state
       objects.value = objects.value.filter(obj => {
