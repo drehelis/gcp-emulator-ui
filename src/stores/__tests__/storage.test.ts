@@ -641,5 +641,54 @@ describe('useStorageStore', () => {
         })
       )
     })
+    it('deletes folder contents recursively', async () => {
+      // Mock listObjects to return contents for the folder
+      vi.mocked(storageApi.listObjects)
+        .mockResolvedValueOnce({
+          // Initial list (what is in the store)
+          items: [],
+          prefixes: ['folder1/'],
+        })
+        .mockResolvedValueOnce({
+          // content of 'folder1/' - used by deletion logic
+          items: [
+            { name: 'folder1/fileA.txt', isFile: true } as any,
+            { name: 'folder1/sub/fileB.txt', isFile: true } as any,
+          ],
+          prefixes: [],
+        })
+
+      vi.mocked(storageApi.deleteMultipleObjects).mockResolvedValue({ success: [], errors: [] })
+      vi.mocked(storageApi.getBucket).mockResolvedValue({ name: 'my-bucket' } as any)
+
+      const store = useStorageStore()
+      await store.fetchBucket('my-bucket')
+
+      // Populate store with a folder by calling fetchObjects
+      await store.fetchObjects('my-bucket')
+
+      // Verify folder is present
+      expect(store.objects.find(o => o.name === 'folder1')).toBeDefined()
+
+      // Call deleteObjects with the folder
+      await store.deleteObjects('my-bucket', ['folder1'])
+
+      // Verify listObjects was called to find contents
+      // 1st call: fetchObjects (initial)
+      // 2nd call: inside deleteObjects to list folder contents
+      expect(storageApi.listObjects).toHaveBeenCalledTimes(2)
+      expect(storageApi.listObjects).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          bucket: 'my-bucket',
+          prefix: 'folder1/',
+        })
+      )
+
+      // Verify deleteMultipleObjects was called with internal files
+      expect(storageApi.deleteMultipleObjects).toHaveBeenCalledWith(
+        'my-bucket',
+        expect.arrayContaining(['folder1/fileA.txt', 'folder1/sub/fileB.txt'])
+      )
+    })
   })
 })

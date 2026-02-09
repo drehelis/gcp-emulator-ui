@@ -44,6 +44,14 @@
               </button>
 
               <button
+                @click="showCreateFolderModal = true"
+                class="inline-flex items-center px-2 sm:px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+              >
+                <FolderPlusIcon class="w-4 h-4 sm:mr-2" />
+                <span class="hidden sm:inline">New Folder</span>
+              </button>
+
+              <button
                 @click="showUploadModal = true"
                 class="inline-flex items-center px-2 sm:px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
               >
@@ -180,123 +188,14 @@
 
       <!-- Empty State with Drag & Drop -->
       <div v-else-if="!storageStore.objects.length" class="text-center py-12">
-        <div
-          class="bg-white dark:bg-gray-800 rounded-xl border-2 border-dashed border-gray-300 dark:border-gray-600 p-8 max-w-2xl mx-auto transition-colors"
-          :class="{
-            'border-blue-400 dark:border-blue-500 bg-blue-50 dark:bg-blue-900/10': isDragOver,
-          }"
-          @dragover.prevent="handleDragOver"
-          @dragenter.prevent="handleDragEnter"
-          @dragleave.prevent="handleDragLeave"
-          @drop.prevent="handleDrop"
-        >
-          <!-- Upload Icon -->
-          <div
-            class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-4 mx-auto"
-          >
-            <ArrowUpTrayIcon
-              v-if="!storageStore.loading.upload"
-              class="w-8 h-8 text-blue-600 dark:text-blue-400"
-            />
-            <ArrowPathIcon v-else class="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
-          </div>
-
-          <!-- Upload Text -->
-          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-            <span v-if="!storageStore.loading.upload">No Objects Found</span>
-            <span v-else>Uploading Files...</span>
-          </h3>
-
-          <p
-            v-if="!storageStore.loading.upload"
-            class="text-gray-600 dark:text-gray-400 text-sm mb-6"
-          >
-            <span v-if="!isDragOver">
-              This {{ currentPath ? 'folder' : 'bucket' }} is empty.
-              <strong>Drag and drop files here</strong> or click to upload.
-            </span>
-            <span v-else class="text-blue-600 dark:text-blue-400 font-medium">
-              Drop files here to upload
-            </span>
-          </p>
-
-          <!-- Upload Progress -->
-          <div
-            v-if="storageStore.loading.upload && storageStore.uploadProgress.length > 0"
-            class="mb-6"
-          >
-            <div class="space-y-2">
-              <div
-                v-for="progress in storageStore.uploadProgress"
-                :key="progress.file.name"
-                class="flex items-center justify-between text-xs"
-              >
-                <span class="text-gray-600 dark:text-gray-400 truncate mr-4">{{
-                  progress.file.name
-                }}</span>
-                <div class="flex items-center space-x-2">
-                  <div class="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                    <div
-                      class="bg-blue-600 h-1.5 rounded-full transition-all"
-                      :style="{ width: `${progress.percentage}%` }"
-                    ></div>
-                  </div>
-                  <span class="text-gray-500 dark:text-gray-400 w-8 text-right"
-                    >{{ progress.percentage }}%</span
-                  >
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Upload Buttons -->
-          <div
-            v-if="!storageStore.loading.upload"
-            class="flex flex-col items-center justify-center"
-          >
-            <div class="flex flex-col sm:flex-row gap-3 items-center justify-center mb-3">
-              <button
-                @click="showCreateFolderModal = true"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
-              >
-                <FolderPlusIcon class="w-4 h-4 mr-2" />
-                Create Folder
-              </button>
-              <button
-                @click="showCreateFileModal = true"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
-              >
-                <DocumentTextIcon class="w-4 h-4 mr-2" />
-                Create File
-              </button>
-              <button
-                @click="triggerFileInput"
-                class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
-              >
-                <ArrowUpTrayIcon class="w-4 h-4 mr-2" />
-                Choose Files
-              </button>
-            </div>
-            <div class="text-center">
-              <div class="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                or drag and drop files here
-              </div>
-              <div class="text-xs text-gray-500 dark:text-gray-400">
-                Multiple files supported • Max 100MB per file
-              </div>
-            </div>
-          </div>
-
-          <!-- Hidden File Input -->
-          <input
-            ref="fileInput"
-            type="file"
-            multiple
-            class="hidden"
-            @change="handleFileSelect"
-            accept="*/*"
-          />
-        </div>
+        <FileDropZone
+          :bucket-name="bucketName"
+          :current-path="currentPath"
+          :loading="storageStore.loading.upload"
+          :upload-progress="storageStore.uploadProgress"
+          @files-selected="uploadFiles"
+          @create-file="showCreateFileModal = true"
+        />
       </div>
 
       <!-- Objects List View -->
@@ -738,82 +637,21 @@
                 class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pt-5 pb-4 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-2xl sm:p-6"
               >
                 <div>
-                  <div
-                    class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/20"
-                  >
-                    <ArrowUpTrayIcon class="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div class="mt-3 text-center sm:mt-5">
-                    <DialogTitle
-                      as="h3"
-                      class="text-lg font-semibold leading-6 text-gray-900 dark:text-white"
-                    >
-                      Upload Files
-                    </DialogTitle>
-                    <div class="mt-2">
-                      <p class="text-sm text-gray-500 dark:text-gray-400">
-                        Upload files to <span class="font-medium">{{ bucketName }}</span
-                        >{{ currentPath ? `/${currentPath}` : '' }}
-                      </p>
-                    </div>
-                  </div>
+                  <!-- Header removed as requested -->
                 </div>
 
                 <!-- Upload Area -->
-                <div class="mt-6">
-                  <div
-                    @drop.prevent="handleModalDrop"
-                    @dragover.prevent="isDragOver = true"
-                    @dragleave.prevent="isDragOver = false"
-                    :class="[
-                      'border-2 border-dashed rounded-lg p-6 text-center transition-colors',
-                      isDragOver
-                        ? 'border-blue-400 bg-blue-50 dark:bg-blue-900/20'
-                        : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500',
-                    ]"
-                  >
-                    <ArrowUpTrayIcon class="mx-auto h-12 w-12 text-gray-400" />
-                    <div class="mt-4">
-                      <div class="flex flex-col sm:flex-row gap-3 items-center justify-center">
-                        <button
-                          @click="openCreateFileFromUpload"
-                          class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
-                        >
-                          <DocumentTextIcon class="w-4 h-4 mr-2" />
-                          Create File
-                        </button>
-                        <button
-                          @click="openCreateFolderFromUpload"
-                          class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
-                        >
-                          <FolderPlusIcon class="w-4 h-4 mr-2" />
-                          Create Folder
-                        </button>
-                        <label for="upload-files" class="cursor-pointer">
-                          <span
-                            class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-colors"
-                          >
-                            <ArrowUpTrayIcon class="w-4 h-4 mr-2" />
-                            Choose Files
-                          </span>
-                          <input
-                            id="upload-files"
-                            ref="modalFileInput"
-                            type="file"
-                            multiple
-                            class="sr-only"
-                            @change="handleModalFileSelect"
-                          />
-                        </label>
-                      </div>
-                      <p class="text-xs text-gray-500 dark:text-gray-400 mt-3">
-                        or drag and drop files here
-                      </p>
-                    </div>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                      Multiple files supported • Max 100MB per file
-                    </p>
-                  </div>
+                <div class="mt-2">
+                  <FileDropZone
+                    :bucket-name="bucketName"
+                    :current-path="currentPath"
+                    title="Upload Files"
+                    description="Drag and drop files here to add them to the upload list"
+                    :loading="isUploading"
+                    :upload-progress="uploadProgress"
+                    @files-selected="onModalFilesSelected"
+                    @create-file="openCreateFileFromUpload"
+                  />
                 </div>
 
                 <!-- Selected Files -->
@@ -844,35 +682,6 @@
                       >
                         <XMarkIcon class="w-4 h-4" />
                       </button>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Upload Progress -->
-                <div v-if="uploadProgress.length > 0" class="mt-4">
-                  <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
-                    Upload Progress
-                  </h4>
-                  <div class="space-y-2">
-                    <div
-                      v-for="progress in uploadProgress"
-                      :key="progress.fileName"
-                      class="bg-gray-50 dark:bg-gray-700 rounded-lg p-3"
-                    >
-                      <div class="flex justify-between items-center mb-1">
-                        <span class="text-sm text-gray-900 dark:text-white">{{
-                          progress.fileName
-                        }}</span>
-                        <span class="text-xs text-gray-500 dark:text-gray-400"
-                          >{{ Math.round(progress.progress * 100) }}%</span
-                        >
-                      </div>
-                      <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
-                        <div
-                          class="bg-blue-600 h-2 rounded-full transition-all"
-                          :style="{ width: `${progress.progress * 100}%` }"
-                        ></div>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -1202,6 +1011,7 @@
                                 !createFolderValidationError,
                             }"
                             @input="createFolderValidationError = ''"
+                            @keyup.enter="handleCreateFolder"
                           />
                           <div
                             v-if="createFolderValidationError"
@@ -1263,62 +1073,8 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 
 // TypeScript declarations for webkit File System API
-declare global {
-  interface DataTransferItem {
-    webkitGetAsEntry(): FileSystemEntry | null
-  }
+// FileSystem types imported from utils or handled nicely
 
-  interface FileSystemEntry {
-    isFile: boolean
-    isDirectory: boolean
-    name: string
-  }
-
-  interface FileSystemFileEntry extends FileSystemEntry {
-    file(): void
-  }
-
-  interface FileSystemDirectoryEntry extends FileSystemEntry {
-    createReader(): FileSystemDirectoryReader
-  }
-
-  interface FileSystemDirectoryReader {
-    readEntries(): void
-  }
-
-  interface HTMLSelectElement extends HTMLElement {
-    value: string
-  }
-
-  interface Node {
-    contains(): boolean
-  }
-
-  interface DataTransferItemList {
-    length: number
-  }
-
-  interface FileList {
-    length: number
-  }
-
-  interface DataTransfer {
-    items: DataTransferItemList
-    files: FileList
-  }
-
-  interface Window {
-    DOMParser: {
-      new (): {
-        parseFromString(): {
-          getElementsByTagName(): {
-            length: number
-          }
-        }
-      }
-    }
-  }
-}
 import {
   ArchiveBoxIcon,
   ArrowLeftIcon,
@@ -1344,6 +1100,8 @@ import { useProjectsStore } from '@/stores/projects'
 import { useAppStore } from '@/stores/app'
 import storageApi from '@/api/storage'
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
+import FileDropZone from '@/components/storage/FileDropZone.vue'
+import { getFileExtension } from '@/utils/fileSystem'
 import type { StorageObjectWithPreview } from '@/types'
 
 const router = useRouter()
@@ -1361,8 +1119,6 @@ const deleteModal = ref<{
 })
 
 // Drag and drop state
-const isDragOver = ref(false)
-const fileInput = ref<HTMLInputElement | null>(null)
 const showUploadModal = ref(false)
 const showCreateFileModal = ref(false)
 const showCreateFolderModal = ref(false)
@@ -1371,7 +1127,6 @@ const downloadContext = ref<{ count: number; objects: string[] } | null>(null)
 
 // Upload modal state
 const selectedFiles = ref<File[]>([])
-const modalFileInput = ref<HTMLInputElement | null>(null)
 const isUploading = ref(false)
 const uploadProgress = ref<Array<{ fileName: string; progress: number }>>([])
 const appStore = useAppStore()
@@ -1489,7 +1244,7 @@ async function downloadItemsAsZip(items: string[]): Promise<void> {
       do {
         const response = await storageApi.listObjects({
           bucket: bucketName.value,
-          prefix: prefix,
+          prefix,
           // No delimiter means recursive listing
           maxResults: 1000,
           pageToken,
@@ -1737,30 +1492,8 @@ function formatDate(dateString?: string): string {
 }
 
 // Upload modal functions
-function handleModalFileSelect(event: Event): void {
-  const target = event.target as HTMLInputElement
-  const files = target.files
-  if (files) {
-    selectedFiles.value = [...selectedFiles.value, ...Array.from(files)]
-  }
-}
-
-async function handleModalDrop(event: DragEvent): Promise<void> {
-  isDragOver.value = false
-
-  try {
-    const files = await getFilesFromDataTransfer(event.dataTransfer!)
-    if (files.length > 0) {
-      selectedFiles.value = [...selectedFiles.value, ...files]
-    }
-  } catch (error) {
-    console.error('Error processing dropped files/folders in modal:', error)
-    appStore.showToast({
-      type: 'error',
-      title: 'Upload Error',
-      message: 'Failed to process dropped files or folders',
-    })
-  }
+function onModalFilesSelected(files: File[]): void {
+  selectedFiles.value = [...selectedFiles.value, ...files]
 }
 
 function removeFile(index: number): void {
@@ -1810,20 +1543,12 @@ function closeUploadModal(): void {
   showUploadModal.value = false
   selectedFiles.value = []
   uploadProgress.value = []
-  isDragOver.value = false
-  if (modalFileInput.value) {
-    modalFileInput.value.value = ''
-  }
+  // isDragOver and modalFileInput are removed
 }
 
 function openCreateFileFromUpload(): void {
   showUploadModal.value = false
   showCreateFileModal.value = true
-}
-
-function openCreateFolderFromUpload(): void {
-  showUploadModal.value = false
-  showCreateFolderModal.value = true
 }
 
 // Handle ESC key for upload modal
@@ -1833,12 +1558,6 @@ const handleUploadModalEscKey = (event: KeyboardEvent) => {
     event.stopPropagation()
     closeUploadModal()
   }
-}
-
-// Create file functions
-function getFileExtension(filename: string): string {
-  if (!filename) return ''
-  return filename.split('.').pop()?.toLowerCase() || ''
 }
 
 function getContentTypeFromExtension(filename: string): string {
@@ -2038,140 +1757,6 @@ async function handleCreateFolder(): Promise<void> {
       title: 'Folder creation failed',
       message: error instanceof Error ? error.message : 'Failed to create folder',
     })
-  }
-}
-
-// Drag and drop functions
-function handleDragOver(event: DragEvent): void {
-  event.preventDefault()
-  isDragOver.value = true
-}
-
-function handleDragEnter(event: DragEvent): void {
-  event.preventDefault()
-  isDragOver.value = true
-}
-
-function handleDragLeave(event: DragEvent): void {
-  event.preventDefault()
-  // Only set isDragOver to false if we're actually leaving the drop zone
-  if (!event.currentTarget?.contains(event.relatedTarget as any)) {
-    isDragOver.value = false
-  }
-}
-
-// Helper function to read directory entries recursively
-async function readDirectoryEntries(directoryEntry: any, path = ''): Promise<File[]> {
-  return new Promise((resolve, reject) => {
-    const reader = directoryEntry.createReader()
-    const allFiles: File[] = []
-
-    const readEntries = () => {
-      reader.readEntries(async entries => {
-        if (entries.length === 0) {
-          resolve(allFiles)
-          return
-        }
-
-        const promises = entries.map(async entry => {
-          const currentPath = path ? `${path}/${entry.name}` : entry.name
-
-          if (entry.isFile) {
-            return new Promise<File>((fileResolve, fileReject) => {
-              ;(entry as any).file((file: any) => {
-                // Create a new File with the full path
-                const fileWithPath = new File([file], currentPath, { type: file.type })
-                fileResolve(fileWithPath)
-              }, fileReject)
-            })
-          } else if (entry.isDirectory) {
-            return readDirectoryEntries(entry as any, currentPath)
-          }
-          return []
-        })
-
-        try {
-          const results = await Promise.all(promises)
-          results.forEach(result => {
-            if (Array.isArray(result)) {
-              allFiles.push(...result)
-            } else if (result) {
-              allFiles.push(result)
-            }
-          })
-          readEntries() // Continue reading more entries
-        } catch (error) {
-          reject(error)
-        }
-      }, reject)
-    }
-
-    readEntries()
-  })
-}
-
-// Helper function to get all files from DataTransferItems (supports both files and folders)
-async function getFilesFromDataTransfer(dataTransfer: any): Promise<File[]> {
-  const allFiles: File[] = []
-
-  if (dataTransfer.items) {
-    // Use DataTransferItems API for folder support
-    const items = Array.from(dataTransfer.items)
-
-    for (const item of items) {
-      if (item.kind === 'file') {
-        const entry = item.webkitGetAsEntry()
-
-        if (entry?.isFile) {
-          const file = item.getAsFile()
-          if (file) {
-            allFiles.push(file)
-          }
-        } else if (entry?.isDirectory) {
-          // Include the root folder name in the path
-          const directoryFiles = await readDirectoryEntries(entry as any, entry.name)
-          allFiles.push(...directoryFiles)
-        }
-      }
-    }
-  } else {
-    // Fallback to files API (files only, no folders)
-    allFiles.push(...Array.from(dataTransfer.files))
-  }
-
-  return allFiles
-}
-
-async function handleDrop(event: DragEvent): Promise<void> {
-  event.preventDefault()
-  isDragOver.value = false
-
-  try {
-    const files = await getFilesFromDataTransfer(event.dataTransfer!)
-    if (files.length > 0) {
-      await uploadFiles(files)
-    }
-  } catch (error) {
-    console.error('Error processing dropped files/folders:', error)
-    appStore.showToast({
-      type: 'error',
-      title: 'Upload Error',
-      message: 'Failed to process dropped files or folders',
-    })
-  }
-}
-
-function triggerFileInput(): void {
-  fileInput.value?.click()
-}
-
-async function handleFileSelect(event: Event): Promise<void> {
-  const target = event.target as HTMLInputElement
-  const files = Array.from(target.files || [])
-  if (files.length > 0) {
-    await uploadFiles(files)
-    // Clear the input so the same files can be selected again
-    target.value = ''
   }
 }
 

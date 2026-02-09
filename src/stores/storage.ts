@@ -517,14 +517,97 @@ export const useStorageStore = defineStore('storage', () => {
       loading.value.delete = true
       state.value.error = null
 
-      // Convert display names to full paths for API calls
+      // 1. Identify objects from the current list
       const objectsToDelete = objects.value.filter(obj => {
         const identifier = obj.fullPath || obj.name
         return objectNames.includes(identifier) || objectNames.includes(obj.name)
       })
-      const fullPaths = objectsToDelete.map(obj => obj.fullPath || obj.name)
 
-      await storageApi.deleteMultipleObjects(bucketName, fullPaths)
+      // 2. Separate folder objects from file objects
+      const folderObjects = objectsToDelete.filter(obj => obj.isFolder)
+      const fileObjects = objectsToDelete.filter(obj => !obj.isFolder)
+
+      const allPathsToDelete: string[] = []
+
+      // For regular files, just add the path
+      for (const obj of fileObjects) {
+        allPathsToDelete.push(obj.fullPath || obj.name)
+      }
+
+      // Helper to list all objects for a prefix
+      const listAllObjectsForPrefix = async (bucket: string, prefix: string): Promise<string[]> => {
+        const collectedPaths: string[] = []
+        let pageToken: string | undefined = undefined
+
+        do {
+          const response = await storageApi.listObjects({
+            bucket,
+            prefix,
+            // No delimiter means recursive listing
+            maxResults: 1000,
+            pageToken,
+          })
+
+          if (response.items) {
+            const paths = response.items.map(item => item.name)
+            collectedPaths.push(...paths)
+          }
+
+          pageToken = response.nextPageToken
+        } while (pageToken)
+
+        return collectedPaths
+      }
+
+      // Helper for concurrency
+      const runWithConcurrencyLimit = async <T, R>(
+        items: T[],
+        limit: number,
+        iteratorFn: (_item: T) => Promise<R>
+      ): Promise<R[]> => {
+        const results: R[] = []
+        const executing: Promise<void>[] = []
+
+        for (const item of items) {
+          const p = Promise.resolve().then(() => iteratorFn(item))
+          results.push(p as unknown as R)
+
+          const e: Promise<void> = p.then(() => {
+            executing.splice(executing.indexOf(e), 1)
+          })
+          executing.push(e)
+
+          if (executing.length >= limit) {
+            await Promise.race(executing)
+          }
+        }
+
+        return Promise.all(results)
+      }
+
+      // For folders, list and collect all contents in parallel with a concurrency limit
+      if (folderObjects.length > 0) {
+        const folderPrefixes = folderObjects.map(obj => obj.fullPath || obj.name)
+        // Sensible concurrency limit to avoid overwhelming the API
+        const CONCURRENCY_LIMIT = 5
+
+        const folderResults = await runWithConcurrencyLimit(
+          folderPrefixes,
+          CONCURRENCY_LIMIT,
+          prefix => listAllObjectsForPrefix(bucketName, prefix)
+        )
+
+        for (const paths of folderResults) {
+          allPathsToDelete.push(...paths)
+        }
+      }
+
+      // Remove duplicates
+      const uniquePathsToDelete = [...new Set(allPathsToDelete)]
+
+      if (uniquePathsToDelete.length > 0) {
+        await storageApi.deleteMultipleObjects(bucketName, uniquePathsToDelete)
+      }
 
       // Remove from local state
       objects.value = objects.value.filter(obj => {

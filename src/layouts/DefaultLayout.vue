@@ -13,7 +13,7 @@
         :class="[
           appStore.layout.sidebar.collapsed && !isMobile ? 'w-16' : 'w-80',
           'bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 theme-transition-colors',
-          'flex flex-col overflow-y-auto overflow-x-visible transition-all',
+          'flex flex-col overflow-hidden transition-all',
         ]"
       >
         <!-- Sidebar Header -->
@@ -77,14 +77,15 @@
 
         <!-- Project Selector -->
         <div
-          class="px-4 py-4 border-b border-gray-200 dark:border-gray-700 overflow-visible relative z-50 theme-transition-colors"
+          class="px-4 border-b border-gray-200 dark:border-gray-700 overflow-x-hidden relative z-50 theme-transition-colors flex items-center h-[70px]"
         >
           <ProjectSelector :collapsed="appStore.layout.sidebar.collapsed && !isMobile" />
         </div>
 
         <!-- Dynamic Navigation -->
         <div
-          class="flex-1 px-4 py-4 space-y-2 overflow-y-auto scrollbar-thin"
+          class="flex-1 py-4 space-y-2 overflow-y-auto overflow-x-hidden scrollbar-thin"
+          :class="[appStore.layout.sidebar.collapsed && !isMobile ? 'px-2' : 'px-4']"
           v-if="navigationItems.length > 0"
         >
           <template v-for="item in navigationItems" :key="item.id">
@@ -251,6 +252,18 @@
               @click="handleMobileNavClick"
             />
           </template>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div
+          class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 theme-transition-colors"
+        >
+          <div class="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+            <span v-if="!appStore.layout.sidebar.collapsed || isMobile"
+              >Version {{ $APP_VERSION }}</span
+            >
+            <span v-else class="mx-auto">{{ $APP_VERSION }}</span>
+          </div>
         </div>
       </aside>
     </Transition>
