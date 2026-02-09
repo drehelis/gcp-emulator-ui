@@ -421,17 +421,17 @@
                     v-if="!object.isFolder"
                     type="checkbox"
                     :checked="storageStore.selectedObjects.includes(object.fullPath || object.name)"
-                    @click.stop="storageStore.selectObject(object.fullPath || object.name)"
-                    @change="() => {}"
-                    class="w-3.5 h-3.5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
+                    @change.stop="storageStore.selectObject(object.fullPath || object.name)"
+                    class="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
+                    @click.stop
                   />
                   <input
                     v-else
                     type="checkbox"
                     :checked="storageStore.selectedObjects.includes(object.fullPath || object.name)"
-                    @click.stop="storageStore.selectObject(object.fullPath || object.name)"
-                    @change="() => {}"
-                    class="w-3.5 h-3.5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
+                    @change.stop="storageStore.selectObject(object.fullPath || object.name)"
+                    class="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
+                    @click.stop
                   />
                 </td>
                 <td class="px-3 py-1.5">
@@ -530,17 +530,17 @@
                   v-if="!object.isFolder"
                   type="checkbox"
                   :checked="storageStore.selectedObjects.includes(object.fullPath || object.name)"
-                  @click.stop="storageStore.selectObject(object.fullPath || object.name)"
-                  @change="() => {}"
+                  @change.stop="storageStore.selectObject(object.fullPath || object.name)"
                   class="mt-1 w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
+                  @click.stop
                 />
                 <input
                   v-else
                   type="checkbox"
                   :checked="storageStore.selectedObjects.includes(object.fullPath || object.name)"
-                  @click.stop="storageStore.selectObject(object.fullPath || object.name)"
-                  @change="() => {}"
+                  @change.stop="storageStore.selectObject(object.fullPath || object.name)"
                   class="mt-1 w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
+                  @click.stop
                 />
 
                 <FolderIcon
@@ -615,9 +615,9 @@
             <input
               type="checkbox"
               :checked="storageStore.selectedObjects.includes(object.fullPath || object.name)"
-              @click.stop="storageStore.selectObject(object.fullPath || object.name)"
-              @change="() => {}"
+              @change.stop="storageStore.selectObject(object.fullPath || object.name)"
               class="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+              @click.stop
             />
           </div>
           <!-- Folder checkbox -->
@@ -633,9 +633,9 @@
             <input
               type="checkbox"
               :checked="storageStore.selectedObjects.includes(object.fullPath || object.name)"
-              @click.stop="storageStore.selectObject(object.fullPath || object.name)"
-              @change="() => {}"
+              @change.stop="storageStore.selectObject(object.fullPath || object.name)"
               class="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+              @click.stop
             />
           </div>
 
@@ -1433,14 +1433,15 @@ async function copyLinkToClipboard(): Promise<void> {
   let urlToCopy = ''
 
   if (isFolder) {
-    // Generate deep link to folder
-    const baseUrl = window.location.origin
-    const projectPart = `/projects/${currentProjectId.value}`
-    const bucketPart = `/storage/buckets/${bucketName.value}`
-    // We need to encode the path parameter
-    const queryPart = `?path=${encodeURIComponent(objectName)}&download=true`
-
-    urlToCopy = `${baseUrl}${projectPart}${bucketPart}${queryPart}`
+    // Generate deep link to folder using the router to respect base/publicPath
+    const routeLocation = router.resolve({
+      path: `/projects/${currentProjectId.value}/storage/buckets/${encodeURIComponent(bucketName.value)}`,
+      query: {
+        path: objectName,
+        download: 'true',
+      },
+    })
+    urlToCopy = new URL(routeLocation.href, window.location.origin).toString()
   } else {
     // Use existing download URL for files
     urlToCopy = storageApi.getObjectDownloadUrl(bucketName.value, objectName)
