@@ -139,5 +139,7 @@ export async function getFilesFromDataTransfer(dataTransfer: DataTransfer): Prom
  */
 export function getFileExtension(filename: string): string {
   if (!filename) return ''
-  return filename.split('.').pop()?.toLowerCase() || ''
+  const parts = filename.split('.')
+  if (parts.length === 1) return ''
+  return parts.pop()?.toLowerCase() || ''
 }

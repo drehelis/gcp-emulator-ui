@@ -1568,12 +1568,6 @@ const handleUploadModalEscKey = (event: KeyboardEvent) => {
   }
 }
 
-// Create file functions
-// Note: We are shadowing the imported getFileExtension.
-// We should remove this local function and use the imported one.
-// But getContentTypeFromExtension uses it.
-// I'll remove this definition and let it use the imported one.
-
 function getContentTypeFromExtension(filename: string): string {
   const extension = getFileExtension(filename)
   const contentTypeMap: Record<string, string> = {

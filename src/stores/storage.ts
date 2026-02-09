@@ -523,35 +523,82 @@ export const useStorageStore = defineStore('storage', () => {
         return objectNames.includes(identifier) || objectNames.includes(obj.name)
       })
 
-      // 2. Collect all actual object paths to delete (handling folders recursively)
+      // 2. Separate folder objects from file objects
+      const folderObjects = objectsToDelete.filter(obj => obj.isFolder)
+      const fileObjects = objectsToDelete.filter(obj => !obj.isFolder)
+
       const allPathsToDelete: string[] = []
 
-      for (const obj of objectsToDelete) {
-        if (obj.isFolder) {
-          // For folders, we must list and delete all contents
-          // The folder itself might be a 0-byte object, which will be returned in the list if it exists
-          const prefix = obj.fullPath || obj.name
-          let pageToken: string | undefined = undefined
+      // For regular files, just add the path
+      for (const obj of fileObjects) {
+        allPathsToDelete.push(obj.fullPath || obj.name)
+      }
 
-          do {
-            const response = await storageApi.listObjects({
-              bucket: bucketName,
-              prefix: prefix,
-              // No delimiter means recursive listing
-              maxResults: 1000,
-              pageToken,
-            })
+      // Helper to list all objects for a prefix
+      const listAllObjectsForPrefix = async (bucket: string, prefix: string): Promise<string[]> => {
+        const collectedPaths: string[] = []
+        let pageToken: string | undefined = undefined
 
-            if (response.items) {
-              const paths = response.items.map(item => item.name)
-              allPathsToDelete.push(...paths)
-            }
+        do {
+          const response = await storageApi.listObjects({
+            bucket,
+            prefix,
+            // No delimiter means recursive listing
+            maxResults: 1000,
+            pageToken,
+          })
 
-            pageToken = response.nextPageToken
-          } while (pageToken)
-        } else {
-          // For regular files, just add the path
-          allPathsToDelete.push(obj.fullPath || obj.name)
+          if (response.items) {
+            const paths = response.items.map(item => item.name)
+            collectedPaths.push(...paths)
+          }
+
+          pageToken = response.nextPageToken
+        } while (pageToken)
+
+        return collectedPaths
+      }
+
+      // Helper for concurrency
+      const runWithConcurrencyLimit = async <T, R>(
+        items: T[],
+        limit: number,
+        iteratorFn: (item: T) => Promise<R>
+      ): Promise<R[]> => {
+        const results: R[] = []
+        const executing: Promise<void>[] = []
+
+        for (const item of items) {
+          const p = Promise.resolve().then(() => iteratorFn(item))
+          results.push(p as unknown as R)
+
+          const e: Promise<void> = p.then(() => {
+            executing.splice(executing.indexOf(e), 1)
+          })
+          executing.push(e)
+
+          if (executing.length >= limit) {
+            await Promise.race(executing)
+          }
+        }
+
+        return Promise.all(results)
+      }
+
+      // For folders, list and collect all contents in parallel with a concurrency limit
+      if (folderObjects.length > 0) {
+        const folderPrefixes = folderObjects.map(obj => obj.fullPath || obj.name)
+        // Sensible concurrency limit to avoid overwhelming the API
+        const CONCURRENCY_LIMIT = 5
+
+        const folderResults = await runWithConcurrencyLimit(
+          folderPrefixes,
+          CONCURRENCY_LIMIT,
+          prefix => listAllObjectsForPrefix(bucketName, prefix)
+        )
+
+        for (const paths of folderResults) {
+          allPathsToDelete.push(...paths)
         }
       }
 
