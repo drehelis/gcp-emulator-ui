@@ -328,6 +328,7 @@ export const useStorageStore = defineStore('storage', () => {
 
           processedObjects.push({
             name: folderName,
+            fullPath: prefix,
             bucket: bucketName,
             isFolder: true,
             size: '0',
@@ -671,7 +672,6 @@ export const useStorageStore = defineStore('storage', () => {
 
   function selectAllObjects(): void {
     selectedObjects.value = objects.value
-      .filter(obj => !obj.isFolder)
       .map(obj => obj.fullPath || obj.name)
   }
 
