@@ -320,15 +320,17 @@
                     v-if="!object.isFolder"
                     type="checkbox"
                     :checked="storageStore.selectedObjects.includes(object.fullPath || object.name)"
-                    @click.stop="storageStore.selectObject(object.fullPath || object.name)"
-                    @change="() => {}"
-                    class="w-3.5 h-3.5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
+                    @change.stop="storageStore.selectObject(object.fullPath || object.name)"
+                    class="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
+                    @click.stop
                   />
                   <input
                     v-else
                     type="checkbox"
-                    disabled
-                    class="w-3.5 h-3.5 text-gray-400 bg-gray-100 border-gray-300 rounded cursor-not-allowed dark:bg-gray-600 dark:border-gray-500 opacity-50"
+                    :checked="storageStore.selectedObjects.includes(object.fullPath || object.name)"
+                    @change.stop="storageStore.selectObject(object.fullPath || object.name)"
+                    class="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
+                    @click.stop
                   />
                 </td>
                 <td class="px-3 py-1.5">
@@ -427,15 +429,17 @@
                   v-if="!object.isFolder"
                   type="checkbox"
                   :checked="storageStore.selectedObjects.includes(object.fullPath || object.name)"
-                  @click.stop="storageStore.selectObject(object.fullPath || object.name)"
-                  @change="() => {}"
+                  @change.stop="storageStore.selectObject(object.fullPath || object.name)"
                   class="mt-1 w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
+                  @click.stop
                 />
                 <input
                   v-else
                   type="checkbox"
-                  disabled
-                  class="mt-1 w-4 h-4 text-gray-400 bg-gray-100 border-gray-300 rounded cursor-not-allowed dark:bg-gray-600 dark:border-gray-500 opacity-50"
+                  :checked="storageStore.selectedObjects.includes(object.fullPath || object.name)"
+                  @change.stop="storageStore.selectObject(object.fullPath || object.name)"
+                  class="mt-1 w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
+                  @click.stop
                 />
 
                 <FolderIcon
@@ -510,17 +514,27 @@
             <input
               type="checkbox"
               :checked="storageStore.selectedObjects.includes(object.fullPath || object.name)"
-              @click.stop="storageStore.selectObject(object.fullPath || object.name)"
-              @change="() => {}"
+              @change.stop="storageStore.selectObject(object.fullPath || object.name)"
               class="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+              @click.stop
             />
           </div>
-          <!-- Disabled checkbox for folders -->
-          <div v-else class="absolute top-2 left-2 opacity-50">
+          <!-- Folder checkbox -->
+          <div
+            v-else
+            class="absolute top-2 left-2 transition-opacity"
+            :class="[
+              storageStore.selectedObjects.includes(object.fullPath || object.name)
+                ? 'opacity-100'
+                : 'opacity-100 sm:opacity-0 sm:group-hover:opacity-100',
+            ]"
+          >
             <input
               type="checkbox"
-              disabled
-              class="w-4 h-4 text-gray-400 bg-gray-100 border-gray-300 rounded cursor-not-allowed dark:bg-gray-600 dark:border-gray-500"
+              :checked="storageStore.selectedObjects.includes(object.fullPath || object.name)"
+              @change.stop="storageStore.selectObject(object.fullPath || object.name)"
+              class="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+              @click.stop
             />
           </div>
 
@@ -1143,18 +1157,18 @@ const currentPath = computed(() => storageStore.currentPath)
 
 // Computed
 const allObjectsSelected = computed(() => {
-  const nonFolderObjects = storageStore.objects.filter(obj => !obj.isFolder)
   return (
-    nonFolderObjects.length > 0 &&
-    nonFolderObjects.every(obj => storageStore.selectedObjects.includes(obj.name))
+    storageStore.objects.length > 0 &&
+    storageStore.objects.every(obj =>
+      storageStore.selectedObjects.includes(obj.fullPath || obj.name)
+    )
   )
 })
 
 const someObjectsSelected = computed(() => {
-  const nonFolderObjects = storageStore.objects.filter(obj => !obj.isFolder)
   return (
     storageStore.selectedObjects.length > 0 &&
-    storageStore.selectedObjects.length < nonFolderObjects.length
+    storageStore.selectedObjects.length < storageStore.objects.length
   )
 })
 
@@ -1174,13 +1188,33 @@ async function copyLinkToClipboard(): Promise<void> {
   if (selectedObjects.length !== 1) return
 
   const objectName = selectedObjects[0]
-  const downloadUrl = storageApi.getObjectDownloadUrl(bucketName.value, objectName)
+
+  // Check if it's a folder (folders end with /)
+  const isFolder = objectName.endsWith('/')
+
+  let urlToCopy = ''
+
+  if (isFolder) {
+    // Generate deep link to folder using the router to respect base/publicPath
+    const routeLocation = router.resolve({
+      path: `/projects/${currentProjectId.value}/storage/buckets/${encodeURIComponent(bucketName.value)}`,
+      query: {
+        path: objectName,
+        download: 'true',
+      },
+    })
+    urlToCopy = new URL(routeLocation.href, window.location.origin).toString()
+  } else {
+    // Use existing download URL for files
+    urlToCopy = storageApi.getObjectDownloadUrl(bucketName.value, objectName)
+  }
+
   try {
-    await navigator.clipboard.writeText(downloadUrl)
+    await navigator.clipboard.writeText(urlToCopy)
     appStore.showToast({
       type: 'success',
       title: 'Link Copied',
-      message: 'Download link copied to clipboard',
+      message: isFolder ? 'Folder link copied to clipboard' : 'Download link copied to clipboard',
     })
   } catch (error: any) {
     console.error('Failed to copy link:', error)
@@ -1193,19 +1227,89 @@ async function copyLinkToClipboard(): Promise<void> {
 }
 
 async function downloadSelectedAsZip(): Promise<void> {
-  const selectedObjects = [...storageStore.selectedObjects] // Create a copy to avoid reactivity issues
-  if (selectedObjects.length === 0) return
+  await downloadItemsAsZip([...storageStore.selectedObjects])
+}
+
+async function downloadItemsAsZip(items: string[]): Promise<void> {
+  if (items.length === 0) return
 
   try {
     downloadingZip.value = true
-    downloadContext.value = { count: selectedObjects.length, objects: selectedObjects }
+    downloadContext.value = { count: items.length, objects: items }
 
     // Add a small delay to ensure loading state is visible
     await new Promise(resolve => setTimeout(resolve, 500))
 
-    if (selectedObjects.length === 1) {
+    // Expand non-folders and folders
+    const filesToDownload: string[] = []
+
+    // Helper to list all files recursively in a folder
+    const listAllFiles = async (prefix: string): Promise<string[]> => {
+      const allFiles: string[] = []
+      let pageToken: string | undefined = undefined
+
+      do {
+        const response = await storageApi.listObjects({
+          bucket: bucketName.value,
+          prefix: prefix,
+          // No delimiter means recursive listing
+          maxResults: 1000,
+          pageToken,
+        })
+
+        if (response.items) {
+          // Add files, ignore the folder placeholder itself if it exists (0-byte object ending in /)
+          const fileNames = response.items
+            .filter(item => !item.name.endsWith('/'))
+            .map(item => item.name)
+          allFiles.push(...fileNames)
+        }
+
+        pageToken = response.nextPageToken
+      } while (pageToken)
+
+      return allFiles
+    }
+
+    // Process all items
+    for (const item of items) {
+      // Check if it's a folder in the current view
+      // We need to look up in the store because items only has the identifier
+      const obj = storageStore.objects.find(o => (o.fullPath || o.name) === item)
+
+      if (obj && obj.isFolder) {
+        // It is a folder, fetch all contents recursively
+        // Use fullPath which includes the trailing slash
+        const folderPath = obj.fullPath || obj.name
+        const folderFiles = await listAllFiles(folderPath)
+        filesToDownload.push(...folderFiles)
+      } else {
+        // It's a file (or we can't find it, assume file)
+        // Check if it ends in / just in case
+        if (item.endsWith('/')) {
+          const folderFiles = await listAllFiles(item)
+          filesToDownload.push(...folderFiles)
+        } else {
+          filesToDownload.push(item)
+        }
+      }
+    }
+
+    // Remove duplicates
+    const uniqueFiles = [...new Set(filesToDownload)]
+
+    if (uniqueFiles.length === 0) {
+      appStore.showToast({
+        type: 'warning',
+        title: 'No Files',
+        message: 'No actual files found to download.',
+      })
+      return
+    }
+
+    if (uniqueFiles.length === 1) {
       // Single file - download directly without zipping
-      const objectName = selectedObjects[0]
+      const objectName = uniqueFiles[0]
       const blob = await storageApi.downloadObject({
         bucket: bucketName.value,
         object: objectName,
@@ -1215,7 +1319,7 @@ async function downloadSelectedAsZip(): Promise<void> {
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = objectName
+      link.download = objectName.split('/').pop() || objectName
       document.body.appendChild(link)
       link.click()
       document.body.removeChild(link)
@@ -1228,8 +1332,8 @@ async function downloadSelectedAsZip(): Promise<void> {
       })
     } else {
       // Multiple files - create ZIP
-      const fileName = `${bucketName.value}-selected-${selectedObjects.length}-files.zip`
-      const zipBlob = await storageApi.downloadObjectsAsZip(bucketName.value, selectedObjects)
+      const fileName = `${bucketName.value}-selected-${uniqueFiles.length}-files.zip`
+      const zipBlob = await storageApi.downloadObjectsAsZip(bucketName.value, uniqueFiles)
 
       // Create download link and trigger download
       const url = URL.createObjectURL(zipBlob)
@@ -1244,7 +1348,7 @@ async function downloadSelectedAsZip(): Promise<void> {
       appStore.showToast({
         type: 'success',
         title: 'Download Complete',
-        message: `Successfully downloaded ${selectedObjects.length} selected files`,
+        message: `Successfully downloaded ${uniqueFiles.length} files`,
       })
     }
   } catch (error: any) {
@@ -1294,12 +1398,31 @@ async function loadMore(): Promise<void> {
 }
 
 function navigateToPath(path: string): void {
+  storageStore.clearSelection()
   storageStore.fetchObjects(bucketName.value, path, true)
+
+  // Update URL query parameter
+  router.push({
+    query: {
+      ...route.query,
+      path: path || undefined,
+    },
+  })
 }
 
 function handleObjectClick(object: StorageObjectWithPreview): void {
   if (object.isFolder) {
-    const newPath = `${currentPath.value + object.name}/`
+    // Prefer fullPath which includes the trailing slash
+    if (object.fullPath) {
+      navigateToPath(object.fullPath)
+      return
+    }
+
+    // Fallback: manually construct path ensuring trailing slash
+    // object.name is relative name without slash
+    const folderName = object.name
+    const parentPath = currentPath.value || ''
+    const newPath = `${parentPath}${folderName}/`
     navigateToPath(newPath)
   } else {
     // Navigate to object details using fullPath if available, otherwise use name
@@ -1680,9 +1803,18 @@ onMounted(async () => {
         storageStore.clearCurrentPath()
       }
 
-      // Use existing currentPath from store, or default to root if none exists
-      const pathToLoad = storageStore.currentPath || ''
+      // Use existing currentPath from store, or check query param, or default to root
+      const queryPath = route.query.path as string
+      const pathToLoad = queryPath || storageStore.currentPath || ''
       await storageStore.fetchObjects(bucketName.value, pathToLoad, true)
+
+      // Handle deep link download
+      if (route.query.download === 'true' && queryPath) {
+        // Automatically start download for the specified path
+        // Ensure it ends with / so it's treated as a folder if it is one
+        const path = queryPath.endsWith('/') ? queryPath : `${queryPath}/`
+        await downloadItemsAsZip([path])
+      }
     } catch (error) {
       console.error('Error loading bucket:', error)
     }
