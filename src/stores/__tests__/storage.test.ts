@@ -581,35 +581,43 @@ describe('useStorageStore', () => {
     })
 
     it('deletes prefixed objects using full paths', async () => {
-      vi.mocked(storageApi.listObjects).mockResolvedValue({
-        items: [
-          {
-            name: 'folder1/file1.txt',
-            size: '100',
-            contentType: 'text/plain',
-            bucket: 'my-bucket',
-            storageClass: 'STANDARD',
-            timeCreated: '',
-            updated: '',
-          },
-          {
-            name: 'folder1/file2.txt',
-            size: '200',
-            contentType: 'text/plain',
-            bucket: 'my-bucket',
-            storageClass: 'STANDARD',
-            timeCreated: '',
-            updated: '',
-          },
-        ],
-        prefixes: [],
-      })
+      vi.mocked(storageApi.listObjects)
+        .mockResolvedValueOnce({
+          items: [
+            {
+              name: 'folder1/file1.txt',
+              size: '100',
+              contentType: 'text/plain',
+              bucket: 'my-bucket',
+              storageClass: 'STANDARD',
+              timeCreated: '',
+              updated: '',
+            },
+            {
+              name: 'folder1/file2.txt',
+              size: '200',
+              contentType: 'text/plain',
+              bucket: 'my-bucket',
+              storageClass: 'STANDARD',
+              timeCreated: '',
+              updated: '',
+            },
+          ],
+          prefixes: [],
+        })
+        .mockResolvedValueOnce({ items: [], prefixes: [] }) // For parent directory fetch
       vi.mocked(storageApi.deleteMultipleObjects).mockResolvedValue({
         success: ['folder1/file1.txt', 'folder1/file2.txt'],
         errors: [],
       })
 
       const store = useStorageStore()
+
+      // Setup current bucket to enable navigation logic
+      const mockBucket = { name: 'my-bucket', selfLink: '', timeCreated: '', updated: '' }
+      vi.mocked(storageApi.getBucket).mockResolvedValue(mockBucket)
+      await store.fetchBucket('my-bucket')
+
       await store.fetchObjects('my-bucket', 'folder1/')
 
       store.selectAllObjects()
@@ -623,6 +631,15 @@ describe('useStorageStore', () => {
         'folder1/file2.txt',
       ])
       expect(store.objects).toEqual([])
+
+      // Verify it attempts to navigate up (fetch parent directory)
+      // The parent path of 'folder1/' is ''
+      expect(storageApi.listObjects).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          bucket: 'my-bucket',
+          prefix: '',
+        })
+      )
     })
   })
 })
