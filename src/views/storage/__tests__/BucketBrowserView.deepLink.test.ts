@@ -40,7 +40,7 @@ const useRouteMock = vi.fn()
 vi.mock('vue-router', () => ({
   useRouter: () => ({
     push: pushMock,
-    resolve: vi.fn((to) => {
+    resolve: vi.fn(to => {
       // Basic mock implementation to return a href that includes the query params
       const query = new URLSearchParams(to.query).toString()
       return { href: `${to.path}?${query}` }
