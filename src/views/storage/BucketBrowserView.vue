@@ -1244,7 +1244,7 @@ async function downloadItemsAsZip(items: string[]): Promise<void> {
       do {
         const response = await storageApi.listObjects({
           bucket: bucketName.value,
-          prefix: prefix,
+          prefix,
           // No delimiter means recursive listing
           maxResults: 1000,
           pageToken,

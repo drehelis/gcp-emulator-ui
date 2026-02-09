@@ -563,7 +563,7 @@ export const useStorageStore = defineStore('storage', () => {
       const runWithConcurrencyLimit = async <T, R>(
         items: T[],
         limit: number,
-        iteratorFn: (item: T) => Promise<R>
+        iteratorFn: (_item: T) => Promise<R>
       ): Promise<R[]> => {
         const results: R[] = []
         const executing: Promise<void>[] = []
