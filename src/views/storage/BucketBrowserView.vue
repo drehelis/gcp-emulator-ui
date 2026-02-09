@@ -686,14 +686,6 @@
                   </div>
                 </div>
 
-                <!-- Upload Progress (handled by drop zone currently, but if we want it separate we can keep it, but drop zone also shows it. Let's remove this if drop zone shows it) -->
-                <!-- Actually, we removed the progress list from drop zone when uploading? No, drop zone shows it if loading is true. -->
-                <!-- In modal, we have a separate Confirm Upload button. The drop zone doesn't have a confirm button. -->
-                <!-- If we are uploading, drop zone shows progress. -->
-                <!-- So we can probably remove this block, OR strictly use this block and tell DropZone NOT to show progress? -->
-                <!-- DropZone shows progress if loading is true. -->
-                <!-- Let's utilize DropZone's progress. -->
-
                 <!-- Modal Actions -->
                 <div class="mt-6 sm:flex sm:flex-row-reverse gap-3">
                   <button
