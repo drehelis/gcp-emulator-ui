@@ -621,7 +621,9 @@
             />
           </div>
           <!-- Folder checkbox -->
-          <div v-else class="absolute top-2 left-2 transition-opacity"
+          <div
+            v-else
+            class="absolute top-2 left-2 transition-opacity"
             :class="[
               storageStore.selectedObjects.includes(object.fullPath || object.name)
                 ? 'opacity-100'
@@ -1395,7 +1397,9 @@ const currentPath = computed(() => storageStore.currentPath)
 const allObjectsSelected = computed(() => {
   return (
     storageStore.objects.length > 0 &&
-    storageStore.objects.every(obj => storageStore.selectedObjects.includes(obj.fullPath || obj.name))
+    storageStore.objects.every(obj =>
+      storageStore.selectedObjects.includes(obj.fullPath || obj.name)
+    )
   )
 })
 
@@ -1422,12 +1426,12 @@ async function copyLinkToClipboard(): Promise<void> {
   if (selectedObjects.length !== 1) return
 
   const objectName = selectedObjects[0]
-  
+
   // Check if it's a folder (folders end with /)
   const isFolder = objectName.endsWith('/')
-  
+
   let urlToCopy = ''
-  
+
   if (isFolder) {
     // Generate deep link to folder
     const baseUrl = window.location.origin
@@ -1435,7 +1439,7 @@ async function copyLinkToClipboard(): Promise<void> {
     const bucketPart = `/storage/buckets/${bucketName.value}`
     // We need to encode the path parameter
     const queryPart = `?path=${encodeURIComponent(objectName)}&download=true`
-    
+
     urlToCopy = `${baseUrl}${projectPart}${bucketPart}${queryPart}`
   } else {
     // Use existing download URL for files
@@ -1493,8 +1497,8 @@ async function downloadItemsAsZip(items: string[]): Promise<void> {
         if (response.items) {
           // Add files, ignore the folder placeholder itself if it exists (0-byte object ending in /)
           const fileNames = response.items
-             .filter(item => !item.name.endsWith('/'))
-             .map(item => item.name)
+            .filter(item => !item.name.endsWith('/'))
+            .map(item => item.name)
           allFiles.push(...fileNames)
         }
 
@@ -1511,20 +1515,20 @@ async function downloadItemsAsZip(items: string[]): Promise<void> {
       const obj = storageStore.objects.find(o => (o.fullPath || o.name) === item)
 
       if (obj && obj.isFolder) {
-         // It is a folder, fetch all contents recursively
-         // Use fullPath which includes the trailing slash
-         const folderPath = obj.fullPath || obj.name
-         const folderFiles = await listAllFiles(folderPath)
-         filesToDownload.push(...folderFiles)
+        // It is a folder, fetch all contents recursively
+        // Use fullPath which includes the trailing slash
+        const folderPath = obj.fullPath || obj.name
+        const folderFiles = await listAllFiles(folderPath)
+        filesToDownload.push(...folderFiles)
       } else {
-         // It's a file (or we can't find it, assume file)
-         // Check if it ends in / just in case
-         if (item.endsWith('/')) {
-             const folderFiles = await listAllFiles(item)
-             filesToDownload.push(...folderFiles)
-         } else {
-             filesToDownload.push(item)
-         }
+        // It's a file (or we can't find it, assume file)
+        // Check if it ends in / just in case
+        if (item.endsWith('/')) {
+          const folderFiles = await listAllFiles(item)
+          filesToDownload.push(...folderFiles)
+        } else {
+          filesToDownload.push(item)
+        }
       }
     }
 
@@ -1532,7 +1536,7 @@ async function downloadItemsAsZip(items: string[]): Promise<void> {
     const uniqueFiles = [...new Set(filesToDownload)]
 
     if (uniqueFiles.length === 0) {
-       appStore.showToast({
+      appStore.showToast({
         type: 'warning',
         title: 'No Files',
         message: 'No actual files found to download.',
@@ -1633,13 +1637,13 @@ async function loadMore(): Promise<void> {
 function navigateToPath(path: string): void {
   storageStore.clearSelection()
   storageStore.fetchObjects(bucketName.value, path, true)
-  
+
   // Update URL query parameter
   router.push({
     query: {
       ...route.query,
-      path: path || undefined
-    }
+      path: path || undefined,
+    },
   })
 }
 

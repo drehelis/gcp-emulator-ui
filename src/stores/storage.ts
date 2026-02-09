@@ -671,8 +671,7 @@ export const useStorageStore = defineStore('storage', () => {
   }
 
   function selectAllObjects(): void {
-    selectedObjects.value = objects.value
-      .map(obj => obj.fullPath || obj.name)
+    selectedObjects.value = objects.value.map(obj => obj.fullPath || obj.name)
   }
 
   function clearSelection(): void {

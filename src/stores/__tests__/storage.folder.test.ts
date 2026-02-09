@@ -1,4 +1,3 @@
-
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useStorageStore } from '../storage'
@@ -51,14 +50,14 @@ describe('useStorageStore Folder Logic', () => {
     vi.mocked(storageApi.listObjects).mockResolvedValue({
       items: [
         {
-            name: 'file1.txt',
-            size: '100',
-            contentType: 'text/plain',
-            bucket: 'my-bucket',
-            storageClass: 'STANDARD',
-            timeCreated: '',
-            updated: '',
-        }
+          name: 'file1.txt',
+          size: '100',
+          contentType: 'text/plain',
+          bucket: 'my-bucket',
+          storageClass: 'STANDARD',
+          timeCreated: '',
+          updated: '',
+        },
       ],
       prefixes: ['folder1/'],
     })

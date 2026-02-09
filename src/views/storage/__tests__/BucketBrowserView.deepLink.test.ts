@@ -1,4 +1,3 @@
-
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import { createTestingPinia } from '@pinia/testing'
@@ -54,7 +53,7 @@ vi.mock('@/api/storage', () => ({
     getBucket: vi.fn(),
     downloadObjectsAsZip: vi.fn(),
     downloadObject: vi.fn(),
-  }
+  },
 }))
 
 describe('BucketBrowserView Deep Linking', () => {
@@ -77,19 +76,21 @@ describe('BucketBrowserView Deep Linking', () => {
 
     wrapper = mount(BucketBrowserView, {
       global: {
-        plugins: [createTestingPinia({ 
-          createSpy: vi.fn,
-        })],
+        plugins: [
+          createTestingPinia({
+            createSpy: vi.fn,
+          }),
+        ],
         stubs: {
-           ConfirmationModal: true
-        }
+          ConfirmationModal: true,
+        },
       },
     })
-    
+
     storageStore = useStorageStore()
-    
+
     await flushPromises()
-    
+
     // Verify fetchObjects was called with the path from query
     expect(storageStore.fetchObjects).toHaveBeenCalledWith('test-bucket', 'folder/subfolder/', true)
   })
@@ -97,73 +98,83 @@ describe('BucketBrowserView Deep Linking', () => {
   it('updates router query when navigating to folder', async () => {
     wrapper = mount(BucketBrowserView, {
       global: {
-        plugins: [createTestingPinia({ 
-          createSpy: vi.fn,
-          // stubActions: true is default which is what we want
-        })],
+        plugins: [
+          createTestingPinia({
+            createSpy: vi.fn,
+            // stubActions: true is default which is what we want
+          }),
+        ],
         stubs: {
-           ConfirmationModal: true
-        }
+          ConfirmationModal: true,
+        },
       },
     })
-    
+
     storageStore = useStorageStore()
-    
+
     // Simulate clicking a folder
     // We need to trigger handleObjectClick via the component method or by clicking an element
     // Since we mocked objects as empty, let's populate them
-    storageStore.objects = [
-        { name: 'test-folder', isFolder: true, fullPath: 'test-folder/' }
-    ]
+    storageStore.objects = [{ name: 'test-folder', isFolder: true, fullPath: 'test-folder/' }]
     await wrapper.vm.$nextTick()
-    
+
     // Call the method directly for simplicity as accessing via click requires rendering list/grid
-    await wrapper.vm.handleObjectClick({ name: 'test-folder', isFolder: true, fullPath: 'test-folder/' })
-    
-    expect(pushMock).toHaveBeenCalledWith(expect.objectContaining({
+    await wrapper.vm.handleObjectClick({
+      name: 'test-folder',
+      isFolder: true,
+      fullPath: 'test-folder/',
+    })
+
+    expect(pushMock).toHaveBeenCalledWith(
+      expect.objectContaining({
         query: expect.objectContaining({
-            path: 'test-folder/'
-        })
-    }))
+          path: 'test-folder/',
+        }),
+      })
+    )
   })
 
   it('navigates correctly using fallback when fullPath is missing', async () => {
     wrapper = mount(BucketBrowserView, {
       global: {
-        plugins: [createTestingPinia({ 
-          createSpy: vi.fn,
-          stubActions: true
-        })],
+        plugins: [
+          createTestingPinia({
+            createSpy: vi.fn,
+            stubActions: true,
+          }),
+        ],
         stubs: {
-           ConfirmationModal: true
-        }
+          ConfirmationModal: true,
+        },
       },
     })
-    
+
     storageStore = useStorageStore()
     // Mock current path
     storageStore.currentPath = 'parent/'
-    
+
     // Object without fullPath
     const folderObj = { name: 'child', isFolder: true }
     // Manually add to objects to avoid type errors in test if strict
-    // storageStore.objects = [folderObj] 
-    
+    // storageStore.objects = [folderObj]
+
     await wrapper.vm.handleObjectClick(folderObj)
-    
+
     // Should append slash: parent/child/
     expect(storageStore.fetchObjects).toHaveBeenCalledWith('test-bucket', 'parent/child/', true)
-    
-    expect(pushMock).toHaveBeenCalledWith(expect.objectContaining({
+
+    expect(pushMock).toHaveBeenCalledWith(
+      expect.objectContaining({
         query: expect.objectContaining({
-            path: 'parent/child/'
-        })
-    }))
+          path: 'parent/child/',
+        }),
+      })
+    )
   })
 
   it('triggers download when download query param is present', async () => {
     vi.useFakeTimers()
-    
+
     useRouteMock.mockReturnValue({
       params: { bucketName: 'test-bucket', projectId: 'test-project' },
       query: { path: 'folder/', download: 'true' },
@@ -171,43 +182,47 @@ describe('BucketBrowserView Deep Linking', () => {
 
     wrapper = mount(BucketBrowserView, {
       global: {
-        plugins: [createTestingPinia({ 
-          createSpy: vi.fn,
-          stubActions: true
-        })],
+        plugins: [
+          createTestingPinia({
+            createSpy: vi.fn,
+            stubActions: true,
+          }),
+        ],
         stubs: {
-           ConfirmationModal: true
-        }
+          ConfirmationModal: true,
+        },
       },
     })
-    
+
     storageStore = useStorageStore()
-    
+
     // Mock listObjects to return some files
     const storageApi = await import('@/api/storage')
     // @ts-ignore
     storageApi.default.listObjects.mockResolvedValue({
-        items: [{ name: 'folder/file.txt' }]
+      items: [{ name: 'folder/file.txt' }],
     })
     // @ts-ignore
     storageApi.default.downloadObjectsAsZip.mockResolvedValue(new Blob())
-    
+
     // Wait for initial mount and fetchObjects
     await flushPromises()
-    
+
     // Advance time to get past the 500ms delay in downloadItemsAsZip
     vi.advanceTimersByTime(500)
     // Wait for the async logic after timeout to execute
     await flushPromises()
-    
+
     // It should have called listObjects to prepare download
     expect(storageApi.default.listObjects).toHaveBeenCalled()
     // Ideally check if downloadObjectsAsZip was called, but that requires waiting for async internal logic
     // We can check if listObjects was called with prefix 'folder/'
-    expect(storageApi.default.listObjects).toHaveBeenCalledWith(expect.objectContaining({
-        prefix: 'folder/'
-    }))
-    
+    expect(storageApi.default.listObjects).toHaveBeenCalledWith(
+      expect.objectContaining({
+        prefix: 'folder/',
+      })
+    )
+
     vi.useRealTimers()
   })
 
@@ -222,35 +237,39 @@ describe('BucketBrowserView Deep Linking', () => {
 
     wrapper = mount(BucketBrowserView, {
       global: {
-        plugins: [createTestingPinia({ 
-          createSpy: vi.fn,
-          stubActions: true
-        })],
+        plugins: [
+          createTestingPinia({
+            createSpy: vi.fn,
+            stubActions: true,
+          }),
+        ],
         stubs: {
-           ConfirmationModal: true
-        }
+          ConfirmationModal: true,
+        },
       },
     })
-    
+
     storageStore = useStorageStore()
     storageStore.selectedObjects = ['folder/']
-    
+
     // Call copyLinkToClipboard directly as it is not exposed on vm but we can trigger button if we render it
-    // But we need to make sure the button is rendered. 
+    // But we need to make sure the button is rendered.
     // The button has v-if="storageStore.selectedObjects.length === 1"
-    
+
     await wrapper.vm.$nextTick()
-    
+
     // Find the button. It has Title "Copy link to file" in the template
     // <button title="Copy link to file" ...>
     // But wait, "Copy link to file" might be misleading for folder?
     // Template: title="Copy link to file"
-    
+
     const copyButton = wrapper.find('button[title="Copy link to file"]')
     expect(copyButton.exists()).toBe(true)
-    
+
     await copyButton.trigger('click')
-    
-    expect(writeTextMock).toHaveBeenCalledWith(expect.stringContaining('?path=folder%2F&download=true'))
+
+    expect(writeTextMock).toHaveBeenCalledWith(
+      expect.stringContaining('?path=folder%2F&download=true')
+    )
   })
 })
