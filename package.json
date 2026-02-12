@@ -16,7 +16,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@google-cloud/pubsub": "^5.2.2",
+    "@google-cloud/pubsub": "^5.2.3",
     "@headlessui/vue": "^1.7.22",
     "@heroicons/vue": "^2.1.5",
     "@tailwindcss/postcss": "^4.1.18",
