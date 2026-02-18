@@ -1,0 +1,44 @@
+name: Post Test Summary
+
+on:
+  workflow_run:
+    workflows: [ "Tests" ]
+    types: [ completed ]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.event == 'pull_request'
+
+    steps:
+    - name: Download test summary artifact
+      uses: actions/download-artifact@v7
+      with:
+        name: test-summary
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        run-id: ${{ github.event.workflow_run.id }}
+
+    - name: Post comment to PR
+      uses: actions/github-script@v8
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const fs = require('fs');
+          const md = fs.readFileSync('vitest-summary.md', 'utf8');
+          const pr = parseInt(fs.readFileSync('pr-number.txt', 'utf8').trim(), 10);
+
+          if (!pr) {
+            console.log('No PR number found, skipping comment.');
+            return;
+          }
+
+          await github.rest.issues.createComment({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: pr,
+            body: md
+          });
