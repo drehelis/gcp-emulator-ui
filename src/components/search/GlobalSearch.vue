@@ -805,32 +805,27 @@ const groupedResults = computed(() => {
   const groups: Record<string, SearchResult[]> = {}
 
   searchResults.value.forEach(result => {
-    let groupName = ''
-    switch (result.type) {
-      case 'topic':
-        groupName = 'Topics'
-        break
-      case 'subscription':
-        groupName = 'Subscriptions'
-        break
-      case 'template':
-        groupName = 'Message Templates'
-        break
-      case 'bucket':
-        groupName = 'Storage Buckets'
-        break
-      case 'object':
-        groupName = 'Storage Objects'
-        break
-      case 'collection':
-        groupName = 'Firestore Collections'
-        break
-      case 'document':
-        groupName = 'Firestore Documents'
-        break
-      default:
-        groupName = 'Other'
+    const getGroupName = (type: string) => {
+      switch (type) {
+        case 'topic':
+          return 'Topics'
+        case 'subscription':
+          return 'Subscriptions'
+        case 'template':
+          return 'Message Templates'
+        case 'bucket':
+          return 'Storage Buckets'
+        case 'object':
+          return 'Storage Objects'
+        case 'collection':
+          return 'Firestore Collections'
+        case 'document':
+          return 'Firestore Documents'
+        default:
+          return 'Other'
+      }
     }
+    const groupName = getGroupName(result.type)
 
     if (!groups[groupName]) {
       groups[groupName] = []

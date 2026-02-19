@@ -1493,29 +1493,24 @@ const runQuery = async () => {
         }
 
         // Build value object based on type
-        let valueObj: any = {}
-        switch (clause.valueType) {
-          case 'string':
-            valueObj = { stringValue: clause.value }
-            break
-          case 'integer':
-            valueObj = { integerValue: clause.value }
-            break
-          case 'double':
-            valueObj = { doubleValue: parseFloat(clause.value || '0') }
-            break
-          case 'boolean':
-            valueObj = { booleanValue: clause.value === 'true' || clause.value === '1' }
-            break
-          case 'timestamp':
-            valueObj = { timestampValue: clause.value }
-            break
-          case 'null':
-            valueObj = { nullValue: null }
-            break
-          default:
-            valueObj = { stringValue: clause.value }
-        }
+        const valueObj: any = (() => {
+          switch (clause.valueType) {
+            case 'string':
+              return { stringValue: clause.value }
+            case 'integer':
+              return { integerValue: clause.value }
+            case 'double':
+              return { doubleValue: parseFloat(clause.value || '0') }
+            case 'boolean':
+              return { booleanValue: clause.value === 'true' || clause.value === '1' }
+            case 'timestamp':
+              return { timestampValue: clause.value }
+            case 'null':
+              return { nullValue: null }
+            default:
+              return { stringValue: clause.value }
+          }
+        })()
 
         return {
           propertyFilter: {
