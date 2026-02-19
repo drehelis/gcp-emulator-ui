@@ -127,7 +127,7 @@ docker run \
    code .
    (run in devcontainer)
    
-   npm install
+   bun install
    ```
 
 2. **Configure environment**
@@ -138,7 +138,7 @@ docker run \
 
 3. **Start the development server**
    ```bash
-   npm run dev
+   bun run dev
    ```
 
 4. **Open your browser**
