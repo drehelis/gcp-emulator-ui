@@ -426,8 +426,7 @@ const formatRelativeTime = (date: Date): string => {
 const getDataSize = (data: string | Uint8Array | null): string => {
   if (!data) return '0 bytes'
 
-  const size =
-    typeof data === 'string' ? Math.floor((data.length * 3) / 4) : data.byteLength
+  const size = typeof data === 'string' ? Math.floor((data.length * 3) / 4) : data.byteLength
 
   if (size < 1024) return `${size} bytes`
   if (size < 1024 * 1024) return `${Math.round(size / 1024)} KB`
