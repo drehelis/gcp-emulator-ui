@@ -14,12 +14,15 @@ jobs:
     steps:
     - uses: actions/checkout@v6
 
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+
     - name: Install dependencies
-      run: npm install
+      run: bun install --frozen-lockfile
 
     - name: Run tests with coverage
       continue-on-error: true
-      run: npm run test:coverage
+      run: bun run test:coverage
 
     - name: Generate test summary
       run: |

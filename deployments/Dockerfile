@@ -1,15 +1,15 @@
 # Build
-FROM node:25-alpine AS build-stage
+FROM oven/bun:alpine AS build-stage
 
 WORKDIR /src
 
-COPY package*.json ./
+COPY package.json bun.lock ./
 
-RUN npm ci
+RUN bun install --frozen-lockfile
 
 COPY . .
 
-RUN npm run build
+RUN bun run build
 
 # Runtime
 FROM nginx:alpine
