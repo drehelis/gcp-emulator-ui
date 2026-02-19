@@ -1185,22 +1185,22 @@ async function copyLinkToClipboard(): Promise<void> {
   // Check if it's a folder (folders end with /)
   const isFolder = objectName.endsWith('/')
 
-  let urlToCopy = ''
-
-  if (isFolder) {
-    // Generate deep link to folder using the router to respect base/publicPath
-    const routeLocation = router.resolve({
-      path: `/projects/${currentProjectId.value}/storage/buckets/${encodeURIComponent(bucketName.value)}`,
-      query: {
-        path: objectName,
-        download: 'true',
-      },
-    })
-    urlToCopy = new URL(routeLocation.href, window.location.origin).toString()
-  } else {
-    // Use existing download URL for files
-    urlToCopy = storageApi.getObjectDownloadUrl(bucketName.value, objectName)
-  }
+  const urlToCopy = (() => {
+    if (isFolder) {
+      // Generate deep link to folder using the router to respect base/publicPath
+      const routeLocation = router.resolve({
+        path: `/projects/${currentProjectId.value}/storage/buckets/${encodeURIComponent(bucketName.value)}`,
+        query: {
+          path: objectName,
+          download: 'true',
+        },
+      })
+      return new URL(routeLocation.href, window.location.origin).toString()
+    } else {
+      // Use existing download URL for files
+      return storageApi.getObjectDownloadUrl(bucketName.value, objectName)
+    }
+  })()
 
   try {
     await navigator.clipboard.writeText(urlToCopy)

@@ -597,7 +597,7 @@ export const datastoreApi = {
     } catch (error: any) {
       const errorMsg = error.response?.data?.error?.message || error.message
       console.error('[Datastore API] Delete failed:', errorMsg)
-      throw new Error(`Failed to delete entity: ${errorMsg}`)
+      throw new Error(`Failed to delete entity: ${errorMsg}`, { cause: error })
     }
   },
 
