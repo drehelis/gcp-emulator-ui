@@ -23,7 +23,7 @@
 #
 # Automatically check Google Cloud SDK release notes for emulator updates and open an issue if any are found.
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"8f90ad8212953e5048e5351fd4439d48b2751b0af0ee87098541d514d68c7169","compiler_version":"v0.47.2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"e1ebe461fa01c4d16bb5c72614ba599c500283925d9ab1414f57a16153036fc0","compiler_version":"v0.47.2"}
 
 name: "Check Google Cloud SDK Emulator Updates"
 "on":
@@ -356,7 +356,7 @@ jobs:
             const determineAutomaticLockdown = require('/opt/gh-aw/actions/determine_automatic_lockdown.cjs');
             await determineAutomaticLockdown(github, context, core);
       - name: Download container images
-        run: bash /opt/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.20.2 ghcr.io/github/gh-aw-firewall/api-proxy:0.20.2 ghcr.io/github/gh-aw-firewall/squid:0.20.2 ghcr.io/github/gh-aw-mcpg:v0.1.4 ghcr.io/github/github-mcp-server:v0.30.3 mcp/fetch node:lts-alpine
+        run: bash /opt/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.20.2 ghcr.io/github/gh-aw-firewall/api-proxy:0.20.2 ghcr.io/github/gh-aw-firewall/squid:0.20.2 ghcr.io/github/gh-aw-mcpg:v0.1.4 ghcr.io/github/github-mcp-server:v0.30.3 node:lts-alpine
       - name: Write Safe Outputs Config
         run: |
           mkdir -p /opt/gh-aw/safeoutputs
@@ -633,15 +633,6 @@ jobs:
           
           [mcp_servers.safeoutputs.headers]
           Authorization = "$GH_AW_SAFE_OUTPUTS_API_KEY"
-          
-          [mcp_servers."web-fetch"]
-          command = "docker"
-          args = [
-            "run",
-            "-i",
-            "--rm",
-            "mcp/fetch"
-          ]
           GH_AW_MCP_CONFIG_EOF
           
           # Generate JSON config for MCP gateway
@@ -663,15 +654,6 @@ jobs:
                 "headers": {
                   "Authorization": "$GH_AW_SAFE_OUTPUTS_API_KEY"
                 }
-              },
-              "web-fetch": {
-                "command": "docker",
-                "args": [
-                  "run",
-                  "-i",
-                  "--rm",
-                  "mcp/fetch"
-                ]
               }
             },
             "gateway": {

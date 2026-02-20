@@ -12,7 +12,9 @@ permissions:
   issues: read
 
 tools:
-  web-fetch:
+  bash:
+    - "curl -s *"
+    - "grep -i *"
 
 network:
   allowed:
@@ -29,9 +31,9 @@ You are an AI agent that checks the Google Cloud SDK announcements group for any
 
 ## Your Task
 
-1. Navigate to https://groups.google.com/g/google-cloud-sdk-announce
-2. Look for recent announcements regarding updates to the Google Cloud SDK.
-3. Check the release notes or announcement text specifically for any mentions of "emulator" (e.g., Pub/Sub emulator, Datastore emulator, Spanner emulator, Storage emulator, Bigtable emulator, Firestore emulator).
+1. Use your bash tool to run `curl -sL https://groups.google.com/g/google-cloud-sdk-announce` and fetch the contents.
+2. Look through the output for recent announcements regarding updates to the Google Cloud SDK.
+3. Check the text specifically for any mentions of "emulator" (e.g., Pub/Sub emulator, Datastore emulator, Spanner emulator, Storage emulator, Bigtable emulator, Firestore emulator).
 
 ## Safe Outputs
 
