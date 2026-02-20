@@ -23,7 +23,7 @@
 #
 # Automatically check Google Cloud SDK release notes for emulator updates and open an issue if any are found.
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"a66692b476c49ccc2dba67da627a9b557fb771c555593c591e565c7073d5be54","compiler_version":"v0.47.2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4a6203490b3bbf628f97a16970af32615637fa3cb171d96a7cc81e1112dcf159","compiler_version":"v0.47.2"}
 
 name: "Check Google Cloud SDK Emulator Updates"
 "on":
@@ -166,6 +166,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_PROMPT: /tmp/gh-aw/aw-prompts/prompt.txt
+          GH_AW_GITHUB_REPOSITORY: ${{ github.repository }}
         with:
           script: |
             const { setupGlobals } = require('/opt/gh-aw/actions/setup_globals.cjs');
@@ -231,6 +232,7 @@ jobs:
     permissions:
       contents: read
       issues: read
+      pull-requests: read
     concurrency:
       group: "gh-aw-codex-${{ github.workflow }}"
     env:
@@ -356,7 +358,7 @@ jobs:
             const determineAutomaticLockdown = require('/opt/gh-aw/actions/determine_automatic_lockdown.cjs');
             await determineAutomaticLockdown(github, context, core);
       - name: Download container images
-        run: bash /opt/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.20.2 ghcr.io/github/gh-aw-firewall/api-proxy:0.20.2 ghcr.io/github/gh-aw-firewall/squid:0.20.2 ghcr.io/github/gh-aw-mcpg:v0.1.4 node:lts-alpine
+        run: bash /opt/gh-aw/actions/download_docker_images.sh ghcr.io/github/gh-aw-firewall/agent:0.20.2 ghcr.io/github/gh-aw-firewall/api-proxy:0.20.2 ghcr.io/github/gh-aw-firewall/squid:0.20.2 ghcr.io/github/gh-aw-mcpg:v0.1.4 ghcr.io/github/github-mcp-server:v0.30.3 node:lts-alpine
       - name: Write Safe Outputs Config
         run: |
           mkdir -p /opt/gh-aw/safeoutputs
@@ -623,8 +625,9 @@ jobs:
           user_agent = "check-google-cloud-sdk-emulator-updates"
           startup_timeout_sec = 120
           tool_timeout_sec = 60
-          url = "https://api.githubcopilot.com/mcp-readonly/"
-          bearer_token_env_var = "GH_AW_GITHUB_TOKEN"
+          container = "ghcr.io/github/github-mcp-server:v0.30.3"
+          env = { "GITHUB_PERSONAL_ACCESS_TOKEN" = "$GH_AW_GITHUB_TOKEN", "GITHUB_READ_ONLY" = "1", "GITHUB_TOOLSETS" = "context,repos,issues,pull_requests" }
+          env_vars = ["GITHUB_PERSONAL_ACCESS_TOKEN", "GITHUB_READ_ONLY", "GITHUB_TOOLSETS"]
           
           [mcp_servers.safeoutputs]
           type = "http"
@@ -639,13 +642,12 @@ jobs:
           {
             "mcpServers": {
               "github": {
-                "type": "http",
-                "url": "https://api.githubcopilot.com/mcp/",
-                "headers": {
-                  "Authorization": "Bearer $GITHUB_MCP_SERVER_TOKEN",
-                  "X-MCP-Lockdown": "$([ "$GITHUB_MCP_LOCKDOWN" = "1" ] && echo true || echo false)",
-                  "X-MCP-Readonly": "true",
-                  "X-MCP-Toolsets": "issues"
+                "container": "ghcr.io/github/github-mcp-server:v0.30.3",
+                "env": {
+                  "GITHUB_LOCKDOWN_MODE": "$GITHUB_MCP_LOCKDOWN",
+                  "GITHUB_PERSONAL_ACCESS_TOKEN": "$GITHUB_MCP_SERVER_TOKEN",
+                  "GITHUB_READ_ONLY": "1",
+                  "GITHUB_TOOLSETS": "context,repos,issues,pull_requests"
                 }
               },
               "safeoutputs": {
@@ -681,7 +683,7 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p "$CODEX_HOME/logs"
-          sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains 172.30.0.1,api.githubcopilot.com,api.openai.com,groups.google.com,host.docker.internal,openai.com,r.jina.ai --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.20.2 --skip-pull --enable-api-proxy \
+          sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains 172.30.0.1,api.openai.com,groups.google.com,host.docker.internal,openai.com,r.jina.ai --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.20.2 --skip-pull --enable-api-proxy \
             -- /bin/bash -c 'export PATH="$(find /opt/hostedtoolcache -maxdepth 4 -type d -name bin 2>/dev/null | tr '\''\n'\'' '\'':'\'')$PATH"; [ -n "$GOROOT" ] && export PATH="$GOROOT/bin:$PATH" || true && INSTRUCTION="$(cat /tmp/gh-aw/aw-prompts/prompt.txt)" && codex -c model=gpt-5.1-codex-mini exec --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check "$INSTRUCTION"' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
         env:
           CODEX_API_KEY: ${{ secrets.CODEX_API_KEY || secrets.OPENAI_API_KEY }}
