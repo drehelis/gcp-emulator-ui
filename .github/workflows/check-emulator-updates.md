@@ -19,6 +19,7 @@ tools:
 network:
   allowed:
     - groups.google.com
+    - r.jina.ai
 
 safe-outputs:
   create-issue:
@@ -31,9 +32,10 @@ You are an AI agent that checks the Google Cloud SDK announcements group for any
 
 ## Your Task
 
-1. Use your bash tool to run `curl -sL https://groups.google.com/g/google-cloud-sdk-announce` and fetch the contents.
-2. Look through the output for recent announcements regarding updates to the Google Cloud SDK.
-3. Check the text specifically for any mentions of "emulator" (e.g., Pub/Sub emulator, Datastore emulator, Spanner emulator, Storage emulator, Bigtable emulator, Firestore emulator).
+1. Use your bash tool to run `curl -sL "https://r.jina.ai/https://groups.google.com/g/google-cloud-sdk-announce"` to fetch the group's contents as markdown.
+2. Extract the URL for the latest announcement that looks like `https://groups.google.com/g/google-cloud-sdk-announce/c/[ID]`.
+3. Prepend `https://r.jina.ai/` to that URL (e.g., `https://r.jina.ai/https://groups.google.com/g/google-cloud-sdk-announce/c/[ID]`) and `curl -sL` it to fetch the actual announcement text.
+4. Check the loaded text specifically for any mentions of "emulator" (e.g., Pub/Sub emulator, Datastore emulator, Spanner emulator, Storage emulator, Bigtable emulator, Firestore emulator).
 
 ## Safe Outputs
 
