@@ -17,9 +17,9 @@ tools:
   bash:
     - "curl -s *"
     - "grep -i *"
+    - "gh issue list *"
+    - "gh issue view *"
   github:
-    toolsets: [issues]
-    mode: remote
 
 network:
   allowed:
@@ -41,8 +41,9 @@ You are an AI agent that checks the Google Cloud SDK announcements group for any
 2. Extract the URL for the latest announcement that looks like `https://groups.google.com/g/google-cloud-sdk-announce/c/[ID]`.
 3. Prepend `https://r.jina.ai/` to that URL (e.g., `https://r.jina.ai/https://groups.google.com/g/google-cloud-sdk-announce/c/[ID]`) and `curl -sL` it to fetch the actual announcement text.
 4. Check the loaded text specifically for any mentions of "emulator" (e.g., Pub/Sub emulator, Datastore emulator, Spanner emulator, Storage emulator, Bigtable emulator, Firestore emulator).
-5. If you find an update, use the `github` tool to query the repository's issues and check if an issue about this specific announcement already exists (e.g. check for the announcement URL or title).
-6. ONLY if an issue doesn't already exist, create a new issue for the update using `create-issue`. Otherwise, call `noop`.
+5. Before creating an issue, you MUST check if it already exists. Use your bash tool to run: `gh issue list --search "[emulator status] in:title" --state all --repo ${{ github.repository }} -L 20`
+6. Review the resulting list of issues. If ANY of those issues are for this specific announcement (read the issue bodies if necessary by using `gh issue view <number> --repo ${{ github.repository }}`), DO NOT create a new issue.
+7. ONLY if you are absolutely certain no issue exists for this announcement, create a new issue for the update using the `create-issue` tool with the title prefix `[emulator status]`. Otherwise, exit completely by reporting success with `noop`.
 
 ## Safe Outputs
 
