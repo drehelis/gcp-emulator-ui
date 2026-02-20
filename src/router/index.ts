@@ -623,7 +623,7 @@ const router = createRouter({
 })
 
 // Global navigation guards
-router.beforeEach(async (to, from, next) => {
+router.beforeEach(async (to, _from) => {
   const appStore = useAppStore()
   const projectsStore = useProjectsStore()
 
@@ -668,11 +668,10 @@ router.beforeEach(async (to, from, next) => {
 
     if (!isAuthenticated) {
       appStore.setGlobalLoading(false)
-      next({
+      return {
         name: 'login',
         query: { redirect: to.fullPath },
-      })
-      return
+      }
     }
   }
 
@@ -685,8 +684,7 @@ router.beforeEach(async (to, from, next) => {
     })
 
     appStore.setGlobalLoading(false)
-    next({ name: 'projects' })
-    return
+    return { name: 'projects' }
   }
 
   // Role-based access control
@@ -696,8 +694,7 @@ router.beforeEach(async (to, from, next) => {
 
     if (!hasRequiredRole) {
       appStore.setGlobalLoading(false)
-      next({ name: 'forbidden' })
-      return
+      return { name: 'forbidden' }
     }
   }
 
@@ -710,12 +707,11 @@ router.beforeEach(async (to, from, next) => {
 
     if (!hasRequiredPermission) {
       appStore.setGlobalLoading(false)
-      next({ name: 'forbidden' })
-      return
+      return { name: 'forbidden' }
     }
   }
 
-  next()
+  return true
 })
 
 router.afterEach((to, from) => {
