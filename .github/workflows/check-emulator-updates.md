@@ -5,6 +5,8 @@ on:
     daily
   workflow_dispatch:
 
+engine: codex
+
 permissions:
   contents: read
   issues: read
