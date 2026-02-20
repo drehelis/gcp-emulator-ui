@@ -5,7 +5,9 @@ on:
     daily
   workflow_dispatch:
 
-engine: codex
+engine:
+  id: codex
+  model: gpt-5.1-codex-mini
 
 permissions:
   contents: read
