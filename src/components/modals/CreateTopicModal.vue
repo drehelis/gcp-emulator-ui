@@ -168,9 +168,10 @@
             </div>
 
             <SubscriptionFormFields
-              :model-value="subscription"
+              :model-value="(subscription as any)"
               mode="create"
-              @update:model-value="value => (subscriptions[index] = value)"
+              :available-topics="availableTopics"
+              @update:model-value="value => (subscriptions[index] = value as any)"
             />
           </div>
         </div>
@@ -188,6 +189,9 @@ import SubscriptionFormFields from '@/components/forms/SubscriptionFormFields.vu
 import { topicsApi, subscriptionsApi } from '@/api/pubsub'
 import { useAppStore } from '@/stores/app'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
+import { validateSubscriptionForm, buildSubscriptionRequest } from '@/utils/subscriptionUtils'
+import type { SubscriptionForm } from '@/utils/subscriptionUtils'
+import { useTopicsStore } from '@/stores/topics'
 
 interface Props {
   modelValue: boolean
@@ -198,24 +202,8 @@ interface TopicLabel {
   value: string
 }
 
-interface SubscriptionForm {
-  name: string
-  deliveryType: 'pull' | 'push' | 'bigquery'
-  pushEndpoint?: string
-  bigqueryTable?: string
-  useTopicSchema?: boolean
-  writeMetadata?: boolean
-  ackDeadlineSeconds: number
-  enableMessageOrdering: boolean
-  filter?: string
-  useDeadLetter?: boolean
-  deadLetterTopic?: string
-  maxDeliveryAttempts?: number
-  useRetryPolicy?: boolean
-  minimumBackoff?: string
-  maximumBackoff?: string
-  errors?: Record<string, string>
-}
+// Removed local SubscriptionForm
+
 
 const props = defineProps<Props>()
 const emit = defineEmits<{
@@ -225,6 +213,14 @@ const emit = defineEmits<{
 
 const route = useRoute()
 const appStore = useAppStore()
+const topicsStore = useTopicsStore()
+
+const availableTopics = computed(() =>
+  topicsStore.topics
+    .filter(t => t.projectId === currentProjectId.value)
+    .map(t => t.fullName)
+    .filter(Boolean)
+)
 
 const topicNameInput = ref<HTMLInputElement>()
 const isSubmitting = ref(false)
@@ -279,26 +275,7 @@ const validateTopicName = (name: string): string => {
   return ''
 }
 
-const validateSubscription = (subscription: SubscriptionForm): Record<string, string> => {
-  const errors: Record<string, string> = {}
-
-  if (!subscription.name.trim()) {
-    errors.name = 'Subscription name is required'
-  } else if (!/^[a-zA-Z][a-zA-Z0-9-_]*$/.test(subscription.name)) {
-    errors.name =
-      'Subscription name must start with a letter and contain only letters, numbers, hyphens, and underscores'
-  }
-
-  if (subscription.deliveryType === 'push' && !subscription.pushEndpoint?.trim()) {
-    errors.pushEndpoint = 'Push endpoint is required for push subscriptions'
-  }
-
-  if (subscription.deliveryType === 'bigquery' && !subscription.bigqueryTable?.trim()) {
-    errors.bigqueryTable = 'BigQuery table is required for BigQuery subscriptions'
-  }
-
-  return errors
-}
+// Using validateSubscriptionForm directly
 
 const handleSubmit = async () => {
   const nameError = validateTopicName(topicForm.value.name)
@@ -310,7 +287,7 @@ const handleSubmit = async () => {
   // Validate subscriptions
   let hasSubscriptionErrors = false
   subscriptions.value.forEach(sub => {
-    const errors = validateSubscription(sub)
+    const errors = validateSubscriptionForm(sub, { validateName: true, validateBigQuery: true })
     sub.errors = errors
     if (Object.keys(errors).length > 0) {
       hasSubscriptionErrors = true
@@ -353,42 +330,9 @@ const handleSubmit = async () => {
 
     // Create subscriptions
     for (const subscription of subscriptions.value) {
-      const subRequest = {
-        name: subscription.name.trim(),
-        topic: `projects/${currentProjectId.value}/topics/${topicForm.value.name.trim()}`,
-        ackDeadlineSeconds: subscription.ackDeadlineSeconds,
-        enableMessageOrdering: subscription.enableMessageOrdering,
-        ...(subscription.filter &&
-          subscription.filter.trim() && { filter: subscription.filter.trim() }),
-        pushConfig:
-          subscription.deliveryType === 'push'
-            ? {
-                pushEndpoint: subscription.pushEndpoint,
-              }
-            : undefined,
-        bigqueryConfig:
-          subscription.deliveryType === 'bigquery'
-            ? {
-                table: subscription.bigqueryTable,
-                useTopicSchema: subscription.useTopicSchema,
-                writeMetadata: subscription.writeMetadata,
-              }
-            : undefined,
-        deadLetterPolicy: subscription.useDeadLetter
-          ? {
-              deadLetterTopic: subscription.deadLetterTopic
-                ? `projects/${currentProjectId.value}/topics/${subscription.deadLetterTopic}`
-                : undefined,
-              maxDeliveryAttempts: subscription.maxDeliveryAttempts || 5,
-            }
-          : undefined,
-        retryPolicy: subscription.useRetryPolicy
-          ? {
-              minimumBackoff: subscription.minimumBackoff || '1s',
-              maximumBackoff: subscription.maximumBackoff || '600s',
-            }
-          : undefined,
-      }
+      const topicFullName = `projects/${currentProjectId.value}/topics/${topicForm.value.name.trim()}`
+      const subRequest = buildSubscriptionRequest(currentProjectId.value, topicFullName, subscription)
+
 
       await subscriptionsApi.createSubscription(currentProjectId.value, subRequest)
     }
@@ -455,9 +399,9 @@ const addSubscription = () => {
     deliveryType: 'pull',
     ackDeadlineSeconds: 60,
     enableMessageOrdering: false,
-    useDeadLetter: false,
+    enableDeadLetter: false,
     maxDeliveryAttempts: 5,
-    useRetryPolicy: false,
+    enableRetryPolicy: false,
     minimumBackoff: '1s',
     maximumBackoff: '600s',
     useTopicSchema: false,

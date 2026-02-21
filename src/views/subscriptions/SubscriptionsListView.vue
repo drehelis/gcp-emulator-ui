@@ -153,9 +153,12 @@
                       
                       <div class="flex-1 flex flex-col xl:flex-row xl:items-center justify-between min-w-0 gap-1.5 xl:gap-4 cursor-pointer">
                         <!-- Name & Desc -->
-                        <div class="min-w-0 shrink cursor-pointer">
-                          <span class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors truncate block cursor-pointer">
+                        <div class="min-w-0 shrink cursor-pointer group/name" @click.stop="editSubscription(subscription)">
+                          <span class="inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 group-hover/name:text-blue-800 dark:group-hover/name:text-blue-300 group-hover/name:underline transition-colors truncate cursor-pointer">
                             {{ getSubscriptionDisplayName(subscription.name) }}
+                            <svg class="w-3 h-3 ml-1 opacity-60 group-hover/name:opacity-100 transition-opacity shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
                           </span>
                           <p class="text-[11px] leading-tight text-gray-500 dark:text-gray-400 truncate group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors mt-0.5 cursor-pointer">
                             {{ subscription.name }}
@@ -180,6 +183,41 @@
                             </svg>
                             <span class="font-medium mr-1 cursor-pointer">Type:</span>
                             <span class="cursor-pointer">{{ subscription.pushConfig?.pushEndpoint ? 'Push' : 'Pull' }}</span>
+                          </div>
+
+                          <!-- Ordered -->
+                          <div v-if="subscription.enableMessageOrdering" class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer">
+                            <svg class="w-3 h-3 mr-1 text-gray-500 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                            </svg>
+                            <span class="cursor-pointer">Ordering</span>
+                          </div>
+
+                          <!-- Dead Letter Policy -->
+                          <div v-if="subscription.deadLetterPolicy" class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer" title="Dead Letter Policy enabled">
+                            <svg class="w-3 h-3 text-gray-500 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            <svg class="w-2.5 h-2.5 -ml-1 -mt-2 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                              <circle cx="12" cy="12" r="10" />
+                              <path fill="white" d="M15 9l-6 6M9 9l6 6" stroke="white" stroke-width="2" stroke-linecap="round" />
+                            </svg>
+                          </div>
+
+                          <!-- Retry Policy -->
+                          <div v-if="subscription.retryPolicy" class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer" :title="`Retry Policy: ${subscription.retryPolicy.minimumBackoff} – ${subscription.retryPolicy.maximumBackoff}`">
+                            <svg class="w-3 h-3 mr-1 text-gray-500 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            <span class="cursor-pointer">{{ subscription.retryPolicy.minimumBackoff }} → {{ subscription.retryPolicy.maximumBackoff }}</span>
+                          </div>
+
+                          <!-- Filter -->
+                          <div v-if="subscription.filter" class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer" :title="subscription.filter">
+                            <svg class="w-3 h-3 mr-1 text-gray-500 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
+                            </svg>
+                            <span class="cursor-pointer">Filter</span>
                           </div>
 
                           <!-- Detached Status -->
@@ -272,6 +310,14 @@
       @acknowledge-all="acknowledgePulledMessages"
     />
 
+    <!-- Edit Subscription Modal -->
+    <EditSubscriptionModal
+      v-model="showEditSubscriptionModal"
+      :subscription="subscriptionToEdit"
+      :project-id="currentProjectId"
+      @subscriptions-changed="handleSubscriptionsChanged"
+    />
+
     <!-- Delete Subscription Confirmation Modal -->
     <ConfirmationModal
       v-model="showDeleteSubscriptionModal"
@@ -308,6 +354,7 @@ import type { PubSubSubscription, ReceivedMessage, PullRequest } from '@/types/p
 import SubscriptionMessagesModal from '@/components/modals/SubscriptionMessagesModal.vue'
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
 import PublishMessageModal from '@/components/modals/PublishMessageModal.vue'
+import EditSubscriptionModal from '@/components/modals/EditSubscriptionModal.vue'
 import {
   ArrowPathIcon,
   ExclamationCircleIcon,
@@ -336,17 +383,34 @@ const isDeletingSubscription = ref(false)
 const expandedTopics = ref(new Set<string>())
 const selectedSubscription = ref<PubSubSubscription | null>(null)
 const showSubscriptionMessagesModal = ref(false)
+const showEditSubscriptionModal = ref(false)
+const subscriptionToEdit = ref<PubSubSubscription | null>(null)
 const showDeleteSubscriptionModal = ref(false)
 const subscriptionToDelete = ref<PubSubSubscription | null>(null)
 const showPublishMessageModal = ref(false)
 const selectedTopicForPublish = ref<string>('')
+
+// Helper to extract topic name from subscription full name
+const extractTopicName = (subscriptionFullName: string | undefined): string => {
+  if (!subscriptionFullName) return 'unknown'
+  // Expected format: projects/PROJECT_ID/subscriptions/SUBSCRIPTION_ID
+  // We need to find the topic name associated with this subscription.
+  // If subscription.topicName is not available, we can't reliably get it from subscription name.
+  // This function is a fallback for when subscription.topicName is missing.
+  // It's safer to rely on subscription.topicName or subscription.topic from the API response.
+  // For now, return 'unknown' if topicName is not explicitly provided.
+  return 'unknown'
+}
 
 // Computed
 const subscriptionsByTopic = computed(() => {
   const grouped = new Map<string, PubSubSubscription[]>()
 
   subscriptions.value.forEach(subscription => {
-    const topicName = subscription.topicName || 'unknown'
+    // Topic name might not be an explicit field, extracting it from subscription topic
+    // if not already attached (sometimes API results differ from interface definition)
+    const topicName = subscription.topicName || (subscription as any).topic || extractTopicName(subscription.name)
+    if (!topicName) return // Skip if topicName is still undefined/null
     if (!grouped.has(topicName)) {
       grouped.set(topicName, [])
     }
@@ -394,7 +458,7 @@ const loadSubscriptions = async (options: { preserveExpandedTopics?: boolean } =
     const safeResponse = Array.isArray(response) ? response : []
     const transformedSubscriptions = safeResponse.map((sub: any) => ({
       ...sub,
-      topicName: sub.topic || sub.topicName || 'unknown', // Handle both field names with fallback
+      topicName: sub.topic || sub.topicName || extractTopicName(sub.name || ''), // Handle both field names with fallback
       projectId: currentProjectId.value,
       id: sub.name || `sub-${Date.now()}`,
       fullName: sub.name || '',
@@ -536,8 +600,16 @@ const pullMessages = async (subscription: PubSubSubscription, retryCount = 0) =>
   }
 }
 
-const acknowledgePulledMessages = async (subscriptionName: string) => {
-  if (!currentProjectId.value || acknowledgingMessages.value.has(subscriptionName)) return
+const handleModalPullMessages = async () => {
+  if (selectedSubscription.value) {
+    await pullMessages(selectedSubscription.value)
+  }
+}
+
+const acknowledgePulledMessages = async (subscriptionName: string | undefined) => {
+  if (!currentProjectId.value || !subscriptionName) return
+  
+  if (acknowledgingMessages.value.has(subscriptionName)) return
 
   const messages = pulledMessages.value.get(subscriptionName)
   if (!messages || messages.length === 0) return
@@ -575,8 +647,11 @@ const acknowledgePulledMessages = async (subscriptionName: string) => {
   }
 }
 
-const acknowledgeIndividualMessage = async (subscriptionName: string, ackId: string) => {
-  if (!currentProjectId.value || acknowledgingMessages.value.has(subscriptionName)) return
+const acknowledgeIndividualMessage = async (
+  subscriptionName: string | undefined,
+  ackId: string
+) => {
+  if (!subscriptionName || !currentProjectId.value || acknowledgingMessages.value.has(subscriptionName)) return
 
   acknowledgingMessages.value.add(subscriptionName)
 
@@ -611,6 +686,15 @@ const acknowledgeIndividualMessage = async (subscriptionName: string, ackId: str
 }
 
 // Removed unused function openSubscriptionDetails
+
+const editSubscription = (subscription: PubSubSubscription) => {
+  subscriptionToEdit.value = subscription
+  showEditSubscriptionModal.value = true
+}
+
+const handleSubscriptionsChanged = async () => {
+  await loadSubscriptions({ preserveExpandedTopics: true })
+}
 
 const deleteSubscription = async (subscription: PubSubSubscription) => {
   subscriptionToDelete.value = subscription
@@ -722,13 +806,7 @@ const selectSubscriptionAndOpenModal = async (subscription: PubSubSubscription) 
   // Automatically pull messages when opening the modal
   await pullMessages(subscription)
 }
-
-const handleModalPullMessages = async () => {
-  if (selectedSubscription.value) {
-    await pullMessages(selectedSubscription.value)
-  }
-}
-
+// removed duplicate handleModalPullMessages
 const handleTopicFocus = async () => {
   const hash = route.hash.slice(1) || window.location.hash.slice(1) // Remove # from hash
   await handleTopicFocusUtil(
