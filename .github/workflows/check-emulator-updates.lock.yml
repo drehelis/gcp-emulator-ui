@@ -21,9 +21,9 @@
 #
 # For more information: https://github.github.com/gh-aw/introduction/overview/
 #
-# Automatically check Google Cloud SDK release notes for emulator updates and open an issue if any are found.
+# Automatically check Google Cloud SDK release notes for emulator updates
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"4a6203490b3bbf628f97a16970af32615637fa3cb171d96a7cc81e1112dcf159","compiler_version":"v0.47.2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"582b07d0674cec47cd21ca961bb296036ea67bda5ee65f7998e0c4f769cc4d1d","compiler_version":"v0.47.2"}
 
 name: "Check Google Cloud SDK Emulator Updates"
 "on":
@@ -314,7 +314,7 @@ jobs:
               actor: context.actor,
               event_name: context.eventName,
               staged: false,
-              allowed_domains: ["groups.google.com","r.jina.ai"],
+              allowed_domains: ["r.jina.ai"],
               firewall_enabled: true,
               awf_version: "v0.20.2",
               awmg_version: "v0.1.4",
@@ -370,7 +370,7 @@ jobs:
           cat > /opt/gh-aw/safeoutputs/tools.json << 'GH_AW_SAFE_OUTPUTS_TOOLS_EOF'
           [
             {
-              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created.",
+              "description": "Create a new GitHub issue for tracking bugs, feature requests, or tasks. Use this for actionable work items that need assignment, labeling, and status tracking. For reports, announcements, or status updates that don't require task tracking, use create_discussion instead. CONSTRAINTS: Maximum 1 issue(s) can be created. Labels [report agentic-workflows] will be automatically added.",
               "inputSchema": {
                 "additionalProperties": false,
                 "properties": {
@@ -673,7 +673,7 @@ jobs:
             const { generateWorkflowOverview } = require('/opt/gh-aw/actions/generate_workflow_overview.cjs');
             await generateWorkflowOverview(core);
       - name: Download prompt artifact
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
         with:
           name: prompt
           path: /tmp/gh-aw/aw-prompts
@@ -683,7 +683,7 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p "$CODEX_HOME/logs"
-          sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains 172.30.0.1,api.openai.com,groups.google.com,host.docker.internal,openai.com,r.jina.ai --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.20.2 --skip-pull --enable-api-proxy \
+          sudo -E awf --env-all --container-workdir "${GITHUB_WORKSPACE}" --allow-domains 172.30.0.1,api.openai.com,host.docker.internal,openai.com,r.jina.ai --log-level info --proxy-logs-dir /tmp/gh-aw/sandbox/firewall/logs --enable-host-access --image-tag 0.20.2 --skip-pull --enable-api-proxy \
             -- /bin/bash -c 'export PATH="$(find /opt/hostedtoolcache -maxdepth 4 -type d -name bin 2>/dev/null | tr '\''\n'\'' '\'':'\'')$PATH"; [ -n "$GOROOT" ] && export PATH="$GOROOT/bin:$PATH" || true && INSTRUCTION="$(cat /tmp/gh-aw/aw-prompts/prompt.txt)" && codex -c model=gpt-5.1-codex-mini exec --dangerously-bypass-approvals-and-sandbox --skip-git-repo-check "$INSTRUCTION"' 2>&1 | tee -a /tmp/gh-aw/agent-stdio.log
         env:
           CODEX_API_KEY: ${{ secrets.CODEX_API_KEY || secrets.OPENAI_API_KEY }}
@@ -743,7 +743,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_SAFE_OUTPUTS: ${{ env.GH_AW_SAFE_OUTPUTS }}
-          GH_AW_ALLOWED_DOMAINS: "172.30.0.1,api.openai.com,groups.google.com,host.docker.internal,openai.com,r.jina.ai"
+          GH_AW_ALLOWED_DOMAINS: "172.30.0.1,api.openai.com,host.docker.internal,openai.com,r.jina.ai"
           GITHUB_SERVER_URL: ${{ github.server_url }}
           GITHUB_API_URL: ${{ github.api_url }}
         with:
@@ -839,7 +839,7 @@ jobs:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
         continue-on-error: true
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
         with:
           name: agent-output
           path: /tmp/gh-aw/safeoutputs/
@@ -929,13 +929,13 @@ jobs:
           destination: /opt/gh-aw/actions
       - name: Download agent artifacts
         continue-on-error: true
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
         with:
           name: agent-artifacts
           path: /tmp/gh-aw/threat-detection/
       - name: Download agent output artifact
         continue-on-error: true
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
         with:
           name: agent-output
           path: /tmp/gh-aw/threat-detection/
@@ -948,7 +948,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           WORKFLOW_NAME: "Check Google Cloud SDK Emulator Updates"
-          WORKFLOW_DESCRIPTION: "Automatically check Google Cloud SDK release notes for emulator updates and open an issue if any are found."
+          WORKFLOW_DESCRIPTION: "Automatically check Google Cloud SDK release notes for emulator updates"
           HAS_PATCH: ${{ needs.agent.outputs.has_patch }}
         with:
           script: |
@@ -1031,7 +1031,7 @@ jobs:
           destination: /opt/gh-aw/actions
       - name: Download agent output artifact
         continue-on-error: true
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6
         with:
           name: agent-output
           path: /tmp/gh-aw/safeoutputs/
@@ -1045,7 +1045,7 @@ jobs:
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GH_AW_AGENT_OUTPUT: ${{ env.GH_AW_AGENT_OUTPUT }}
-          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"max\":1},\"missing_data\":{},\"missing_tool\":{}}"
+          GH_AW_SAFE_OUTPUTS_HANDLER_CONFIG: "{\"create_issue\":{\"labels\":[\"report\",\"agentic-workflows\"],\"max\":1},\"missing_data\":{},\"missing_tool\":{}}"
         with:
           github-token: ${{ secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
           script: |
