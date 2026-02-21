@@ -37,7 +37,7 @@
     <!-- Templates List -->
     <div v-else-if="filteredTemplates.length > 0" class="space-y-6">
       <!-- Header -->
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+      <div class="bg-white dark:bg-gray-800 rounded-lg">
         <div class="px-4 sm:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-medium text-gray-900 dark:text-white">
@@ -300,7 +300,7 @@
     <!-- Empty State -->
     <div v-else class="space-y-6">
       <!-- Header -->
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+      <div class="bg-white dark:bg-gray-800 rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-medium text-gray-900 dark:text-white">Templates (0)</h2>

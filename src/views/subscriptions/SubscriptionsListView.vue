@@ -35,7 +35,7 @@
     <!-- Subscriptions List -->
     <div v-else-if="subscriptionsByTopic.size > 0" class="space-y-6">
       <!-- Header -->
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+      <div class="bg-white dark:bg-gray-800 rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-medium text-gray-900 dark:text-white">
@@ -73,33 +73,33 @@
                 : 'border-transparent',
             ]"
           >
-            <div class="flex items-center justify-between">
-              <div class="flex items-start space-x-3">
+            <div class="flex items-center justify-between cursor-pointer">
+              <div class="flex items-start space-x-3 cursor-pointer">
                 <ChevronRightIcon
                   v-if="!isTopicExpanded(topicName)"
-                  class="h-4 w-4 text-gray-400 transition-transform"
+                  class="h-4 w-4 text-gray-400 transition-transform cursor-pointer"
                 />
-                <ChevronDownIcon v-else class="h-4 w-4 text-gray-400 transition-transform" />
-                <QueueListIcon class="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center space-x-2 mb-1">
+                <ChevronDownIcon v-else class="h-4 w-4 text-gray-400 transition-transform cursor-pointer" />
+                <QueueListIcon class="h-5 w-5 text-blue-500 mt-0.5 shrink-0 cursor-pointer" />
+                <div class="flex-1 min-w-0 cursor-pointer">
+                  <div class="flex items-center space-x-2 mb-1 cursor-pointer">
                     <button
                       v-if="topicName !== 'unknown'"
                       @click.stop="openPublishMessageModal(topicName)"
-                      class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline truncate text-left"
+                      class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline truncate text-left cursor-pointer"
                     >
                       {{ getTopicDisplayName(topicName) }}
                     </button>
-                    <span v-else class="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    <span v-else class="text-sm font-medium text-gray-900 dark:text-white truncate cursor-pointer">
                       {{ getTopicDisplayName(topicName) }}
                     </span>
                   </div>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">{{ topicName }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer">{{ topicName }}</p>
                 </div>
               </div>
-              <div class="flex items-center space-x-3">
+              <div class="flex items-center space-x-3 cursor-pointer">
                 <span
-                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300"
+                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 cursor-pointer"
                 >
                   {{ (topicSubscriptions || []).length }} subscription{{
                     (topicSubscriptions || []).length !== 1 ? 's' : ''
@@ -107,10 +107,10 @@
                 </span>
                 <button
                   @click.stop="openPublishMessageModal(topicName)"
-                  class="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                  class="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors cursor-pointer"
                   title="Publish message to topic"
                 >
-                  <PaperAirplaneIcon class="w-4 h-4" />
+                  <PaperAirplaneIcon class="w-4 h-4 cursor-pointer" />
                 </button>
               </div>
             </div>
@@ -119,121 +119,101 @@
           <!-- Subscriptions for this topic -->
           <div
             v-if="isTopicExpanded(topicName)"
-            class="divide-y divide-gray-200 dark:divide-gray-700"
+            class="relative px-4 sm:px-6 py-4 bg-gray-50/50 dark:bg-gray-800/20 border-t border-gray-100 dark:border-gray-700"
           >
-            <div
-              v-for="subscription in topicSubscriptions"
-              :key="subscription.name"
-              @click="selectSubscriptionAndOpenModal(subscription)"
-              :class="[
-                'px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer',
-                selectedSubscription?.name === subscription.name
-                  ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
-                  : '',
-              ]"
-            >
-              <div class="flex items-start justify-between cursor-pointer">
-                <div class="flex items-start space-x-3 flex-1 cursor-pointer">
-                  <InboxStackIcon class="h-5 w-5 text-green-500 mt-0.5 shrink-0" />
-                  <div class="flex-1 min-w-0 cursor-pointer">
-                    <div class="flex items-center space-x-2 mb-1">
-                      <span class="text-sm font-medium text-gray-900 dark:text-white">
-                        {{ getSubscriptionDisplayName(subscription.name) }}
-                      </span>
+            <div class="ml-4 sm:ml-8 relative">
+              <div
+                v-for="(subscription, index) in topicSubscriptions"
+                :key="subscription.name"
+                @click="selectSubscriptionAndOpenModal(subscription)"
+                class="relative py-1.5 pl-8 group"
+              >
+                <!-- Horizontal branch -->
+                <div class="absolute left-0 top-1/2 w-8 h-px bg-gray-300 dark:bg-gray-600 -translate-y-1/2"></div>
+                
+                <!-- Vertical branch -->
+                <div 
+                  class="absolute left-0 w-px bg-gray-300 dark:bg-gray-600" 
+                  :class="[
+                    index === (topicSubscriptions || []).length - 1 ? 'bottom-1/2' : 'bottom-0',
+                    index === 0 ? '-top-4' : 'top-0'
+                  ]"
+                ></div>
+                
+                <!-- Subscription Card -->
+                <div :class="[
+                  'w-full bg-white dark:bg-gray-800 border rounded-lg p-2.5 sm:p-3 shadow-sm transition-all duration-200 cursor-pointer hover:shadow-md',
+                  selectedSubscription?.name === subscription.name
+                    ? 'border-green-500 ring-1 ring-green-500 dark:bg-gray-800'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-600',
+                ]">
+                  <div class="flex items-center justify-between cursor-pointer" @click="selectSubscriptionAndOpenModal(subscription)">
+                    <div class="flex items-center space-x-3 flex-1 min-w-0 pr-2 cursor-pointer">
+                      <InboxStackIcon class="h-4 w-4 text-green-500 shrink-0 group-hover:scale-110 group-hover:text-green-600 transition-transform cursor-pointer" />
+                      
+                      <div class="flex-1 flex flex-col xl:flex-row xl:items-center justify-between min-w-0 gap-1.5 xl:gap-4 cursor-pointer">
+                        <!-- Name & Desc -->
+                        <div class="min-w-0 shrink cursor-pointer">
+                          <span class="text-sm font-medium text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors truncate block cursor-pointer">
+                            {{ getSubscriptionDisplayName(subscription.name) }}
+                          </span>
+                          <p class="text-[11px] leading-tight text-gray-500 dark:text-gray-400 truncate group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors mt-0.5 cursor-pointer">
+                            {{ subscription.name }}
+                          </p>
+                        </div>
+
+                        <!-- Subscription Properties Grid -->
+                        <div class="flex flex-wrap gap-1.5 text-[11px] shrink-0 cursor-pointer">
+                          <!-- Ack Deadline -->
+                          <div class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer">
+                            <svg class="w-3 h-3 mr-1 text-gray-500 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span class="font-medium mr-1 cursor-pointer">Ack:</span>
+                            <span class="cursor-pointer">{{ subscription.ackDeadlineSeconds }}s</span>
+                          </div>
+
+                          <!-- Type -->
+                          <div class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer">
+                            <svg class="w-3 h-3 mr-1 text-gray-500 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                            </svg>
+                            <span class="font-medium mr-1 cursor-pointer">Type:</span>
+                            <span class="cursor-pointer">{{ subscription.pushConfig?.pushEndpoint ? 'Push' : 'Pull' }}</span>
+                          </div>
+
+                          <!-- Detached Status -->
+                          <div v-if="subscription.detached" class="inline-flex items-center text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 px-1.5 py-0.5 rounded border border-yellow-200 dark:border-yellow-900/50 cursor-pointer">
+                            <svg class="w-3 h-3 mr-1 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L5.636 5.636" />
+                            </svg>
+                            <span class="font-medium mr-1 cursor-pointer">Status:</span>
+                            <span class="cursor-pointer">Detached</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
-                      {{ subscription.name }}
-                    </p>
 
-                    <!-- Subscription Properties Grid -->
-                    <div
-                      class="mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs cursor-pointer"
-                    >
-                      <!-- Ack Deadline -->
-                      <div
-                        class="flex items-center text-gray-600 dark:text-gray-400 cursor-pointer"
+                    <!-- Subscription Actions -->
+                    <div class="flex items-center space-x-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity focus-within:opacity-100 shrink-0">
+                      <button
+                        @click.stop="selectSubscriptionAndOpenModal(subscription)"
+                        :disabled="pullingMessages.has(subscription.name)"
+                        class="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/40 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="View subscription messages"
                       >
-                        <svg
-                          class="w-3 h-3 mr-1.5 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                        <span class="font-medium mr-1">Ack Deadline:</span>
-                        <span>{{ subscription.ackDeadlineSeconds }}s</span>
-                      </div>
-
-                      <!-- Type -->
-                      <div
-                        class="flex items-center text-gray-600 dark:text-gray-400 cursor-pointer"
+                        <EyeIcon class="w-4 h-4" />
+                      </button>
+                      <button
+                        @click.stop="deleteSubscription(subscription)"
+                        :disabled="isDeletingSubscription"
+                        class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Delete subscription"
                       >
-                        <svg
-                          class="w-3 h-3 mr-1.5 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
-                          />
-                        </svg>
-                        <span class="font-medium mr-1">Type:</span>
-                        <span>{{ subscription.pushConfig?.pushEndpoint ? 'Push' : 'Pull' }}</span>
-                      </div>
-
-                      <!-- Detached Status -->
-                      <div
-                        v-if="subscription.detached"
-                        class="flex items-center text-gray-600 dark:text-gray-400 cursor-pointer"
-                      >
-                        <svg
-                          class="w-3 h-3 mr-1.5 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L5.636 5.636"
-                          />
-                        </svg>
-                        <span class="font-medium mr-1">Status:</span>
-                        <span class="text-yellow-600 dark:text-yellow-400">Detached</span>
-                      </div>
+                        <TrashIcon class="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
-                </div>
-
-                <!-- Subscription Actions -->
-                <div class="flex items-center space-x-2 ml-4">
-                  <button
-                    @click.stop="selectSubscriptionAndOpenModal(subscription)"
-                    :disabled="pullingMessages.has(subscription.name)"
-                    class="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="View subscription messages"
-                  >
-                    <EyeIcon class="w-4 h-4" />
-                  </button>
-                  <button
-                    @click.stop="deleteSubscription(subscription)"
-                    :disabled="isDeletingSubscription"
-                    class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Delete subscription"
-                  >
-                    <TrashIcon class="w-4 h-4" />
-                  </button>
                 </div>
               </div>
             </div>
@@ -245,7 +225,7 @@
     <!-- Empty State -->
     <div v-else class="space-y-6">
       <!-- Header -->
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+      <div class="bg-white dark:bg-gray-800 rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-medium text-gray-900 dark:text-white">Subscriptions (0)</h2>
@@ -696,12 +676,37 @@ const cancelDeleteSubscription = () => {
   subscriptionToDelete.value = null
 }
 
+const getExpandedTopicsKey = () => `expandedTopics_${currentProjectId.value}`
+
+const saveExpandedTopics = () => {
+  try {
+    localStorage.setItem(getExpandedTopicsKey(), JSON.stringify(Array.from(expandedTopics.value)))
+  } catch (e) {
+    console.error('Failed to save expanded topics to localStorage', e)
+  }
+}
+
+const loadExpandedTopics = () => {
+  try {
+    const saved = localStorage.getItem(getExpandedTopicsKey())
+    if (saved) {
+      const parsed = JSON.parse(saved)
+      if (Array.isArray(parsed)) {
+        expandedTopics.value = new Set(parsed)
+      }
+    }
+  } catch (e) {
+    console.error('Failed to load expanded topics from localStorage', e)
+  }
+}
+
 const toggleTopicExpansion = (topicName: string) => {
   if (expandedTopics.value.has(topicName)) {
     expandedTopics.value.delete(topicName)
   } else {
     expandedTopics.value.add(topicName)
   }
+  saveExpandedTopics()
 }
 
 const isTopicExpanded = (topicName: string) => {
@@ -748,8 +753,10 @@ watch(
   () => currentProjectId.value,
   (newProjectId, oldProjectId) => {
     if (newProjectId !== oldProjectId && newProjectId) {
+      // Load saved expanded topics for the new project
+      loadExpandedTopics()
       // Reset expanded topics when switching projects (initial load for new project)
-      loadSubscriptions({ preserveExpandedTopics: false })
+      loadSubscriptions({ preserveExpandedTopics: true })
     }
   },
   { immediate: true }
@@ -779,8 +786,8 @@ watch(
 // Lifecycle
 onMounted(() => {
   if (currentProjectId.value) {
-    // Reset expanded topics on initial mount
-    loadSubscriptions({ preserveExpandedTopics: false })
+    loadExpandedTopics()
+    loadSubscriptions({ preserveExpandedTopics: true })
   }
 })
 </script>

@@ -77,7 +77,7 @@
 
         <!-- Project Selector -->
         <div
-          class="px-4 border-b border-gray-200 dark:border-gray-700 overflow-x-hidden relative z-50 theme-transition-colors flex items-center h-[70px]"
+          class="px-4 border-b border-gray-200 dark:border-gray-700 overflow-x-hidden relative z-50 theme-transition-colors flex items-center h-[71px]"
         >
           <ProjectSelector :collapsed="appStore.layout.sidebar.collapsed && !isMobile" />
         </div>
