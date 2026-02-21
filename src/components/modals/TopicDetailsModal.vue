@@ -27,7 +27,7 @@
             >
               {{ getTopicDisplayName(topic.name) }}
             </div>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Full path: {{ topic.name }}</p>
+
           </div>
 
           <!-- Message Retention -->
@@ -193,7 +193,7 @@
               </div>
 
               <!-- Right: actions (fade in on hover) -->
-              <div class="flex items-center space-x-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity focus-within:opacity-100 shrink-0">
+              <div class="flex items-center space-x-1 ml-2 transition-opacity focus-within:opacity-100 shrink-0">
                 <button
                   @click.stop="openDuplicateSubscriptionModal(subscription)"
                   :disabled="isDuplicatingSubscription || !subscription?.name"

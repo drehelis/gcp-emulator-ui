@@ -98,13 +98,12 @@
                 </div>
               </div>
               <div class="flex items-center space-x-3 cursor-pointer">
-                <span
-                  class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 cursor-pointer"
-                >
-                  {{ (topicSubscriptions || []).length }} subscription{{
-                    (topicSubscriptions || []).length !== 1 ? 's' : ''
-                  }}
-                </span>
+                <div class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 text-[11px]">
+                  <svg class="w-3 h-3 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                  </svg>
+                  <span>{{ (topicSubscriptions || []).length }} subs</span>
+                </div>
                 <button
                   @click.stop="openPublishMessageModal(topicName)"
                   class="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors cursor-pointer"
@@ -233,7 +232,7 @@
                     </div>
 
                     <!-- Subscription Actions -->
-                    <div class="flex items-center space-x-1 ml-2 opacity-0 group-hover:opacity-100 transition-opacity focus-within:opacity-100 shrink-0">
+                    <div class="flex items-center space-x-1 ml-2 transition-opacity focus-within:opacity-100 shrink-0">
                       <button
                         @click.stop="selectSubscriptionAndOpenModal(subscription)"
                         :disabled="pullingMessages.has(subscription.name)"

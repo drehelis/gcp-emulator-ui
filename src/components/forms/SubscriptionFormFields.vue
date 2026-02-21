@@ -207,26 +207,37 @@
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Dead Letter Topic
           </label>
-          <!-- Topic dropdown when available topics are provided -->
-          <select
+          <!-- Searchable dropdown when topics are available -->
+          <SearchableDropdown
             v-if="availableTopics && availableTopics.length > 0"
-            :value="modelValue.deadLetterTopic"
-            @change="updateField('deadLetterTopic', ($event.target as HTMLSelectElement).value)"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+            :model-value="modelValue.deadLetterTopic ?? ''"
+            @update:model-value="updateField('deadLetterTopic', $event)"
+            :options="availableTopicsAsOptions"
+            placeholder="Select a topic..."
+            search-placeholder="Search topics..."
+            :clearable="true"
+            clear-label="None"
+            empty-text="No topics available"
+            no-results-text="No topics match your search"
           >
-            <option value="">Select a topic...</option>
-            <option v-for="topic in availableTopics" :key="topic" :value="topic">
-              {{ topic.split('/topics/').pop() }}
-            </option>
-          </select>
-          <!-- Fallback text input -->
+            <template #icon>
+              <svg class="h-4 w-4 text-blue-500 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </template>
+            <template #option-icon>
+              <svg class="h-4 w-4 text-blue-500 mr-2 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+            </template>
+          </SearchableDropdown>
+          <!-- Fallback text input when no topics provided -->
           <input
             v-else
             :value="modelValue.deadLetterTopic"
             @input="updateField('deadLetterTopic', ($event.target as HTMLInputElement).value)"
             type="text"
             :placeholder="deadLetterPlaceholder"
-            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
           />
         </div>
         <div>
@@ -295,6 +306,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import SearchableDropdown from '@/components/ui/SearchableDropdown.vue'
 
 interface SubscriptionForm {
   name: string
@@ -335,6 +347,14 @@ const props = withDefaults(defineProps<Props>(), {
   mode: 'create',
   availableTopics: () => [],
 })
+
+// Transform availableTopics into { value, label } options for SearchableDropdown
+const availableTopicsAsOptions = computed(() =>
+  props.availableTopics.map(t => ({
+    value: t,
+    label: t.split('/topics/').pop() ?? t,
+  }))
+)
 
 const emit = defineEmits<{
   'update:modelValue': [value: SubscriptionForm]
