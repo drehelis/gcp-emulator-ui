@@ -27,7 +27,6 @@
             >
               {{ getTopicDisplayName(topic.name) }}
             </div>
-
           </div>
 
           <!-- Message Retention -->
@@ -118,18 +117,39 @@
             <div class="flex items-center justify-between">
               <!-- Left: icon + name + badges -->
               <div class="flex items-center space-x-3 flex-1 min-w-0 pr-2">
-                <InboxStackIcon class="h-4 w-4 text-green-500 shrink-0 group-hover:scale-110 group-hover:text-green-600 transition-transform" />
+                <InboxStackIcon
+                  class="h-4 w-4 text-green-500 shrink-0 group-hover:scale-110 group-hover:text-green-600 transition-transform"
+                />
 
-                <div class="flex-1 flex flex-col xl:flex-row xl:items-center justify-between min-w-0 gap-1.5 xl:gap-4">
+                <div
+                  class="flex-1 flex flex-col xl:flex-row xl:items-center justify-between min-w-0 gap-1.5 xl:gap-4"
+                >
                   <!-- Name -->
-                  <div class="min-w-0 shrink group/name" @click.stop="editSubscription(subscription)">
-                    <span class="inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 group-hover/name:text-blue-800 dark:group-hover/name:text-blue-300 group-hover/name:underline transition-colors truncate cursor-pointer">
+                  <div
+                    class="min-w-0 shrink group/name"
+                    @click.stop="editSubscription(subscription)"
+                  >
+                    <span
+                      class="inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 group-hover/name:text-blue-800 dark:group-hover/name:text-blue-300 group-hover/name:underline transition-colors truncate cursor-pointer"
+                    >
                       {{ getSubscriptionDisplayName(subscription.name) }}
-                      <svg class="w-3 h-3 ml-1 opacity-60 group-hover/name:opacity-100 transition-opacity shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      <svg
+                        class="w-3 h-3 ml-1 opacity-60 group-hover/name:opacity-100 transition-opacity shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        />
                       </svg>
                     </span>
-                    <p class="text-[11px] leading-tight text-gray-500 dark:text-gray-400 truncate mt-0.5">
+                    <p
+                      class="text-[11px] leading-tight text-gray-500 dark:text-gray-400 truncate mt-0.5"
+                    >
                       {{ subscription.name }}
                     </p>
                   </div>
@@ -137,54 +157,152 @@
                   <!-- Badges -->
                   <div class="flex flex-wrap gap-1.5 text-[11px] shrink-0">
                     <!-- Ack Deadline -->
-                    <div class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600">
-                      <svg class="w-3 h-3 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <div
+                      class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600"
+                    >
+                      <svg
+                        class="w-3 h-3 mr-1 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
                       </svg>
                       <span class="font-medium mr-1">Ack:</span>
                       <span>{{ subscription.ackDeadlineSeconds || 60 }}s</span>
                     </div>
 
                     <!-- Type -->
-                    <div class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600">
-                      <svg class="w-3 h-3 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                    <div
+                      class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600"
+                    >
+                      <svg
+                        class="w-3 h-3 mr-1 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
+                        />
                       </svg>
                       <span class="font-medium mr-1">Type:</span>
-                      <span>{{ subscription.pushConfig?.pushEndpoint ? 'Push' : subscription.bigqueryConfig ? 'BigQuery' : 'Pull' }}</span>
+                      <span>{{
+                        subscription.pushConfig?.pushEndpoint
+                          ? 'Push'
+                          : subscription.bigqueryConfig
+                            ? 'BigQuery'
+                            : 'Pull'
+                      }}</span>
                     </div>
 
                     <!-- Ordering -->
-                    <div v-if="subscription.enableMessageOrdering" class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600">
-                      <svg class="w-3 h-3 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                    <div
+                      v-if="subscription.enableMessageOrdering"
+                      class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600"
+                    >
+                      <svg
+                        class="w-3 h-3 mr-1 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
+                        />
                       </svg>
                       <span>Ordering</span>
                     </div>
 
                     <!-- Dead Letter Policy -->
-                    <div v-if="subscription.deadLetterPolicy" class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600" title="Dead Letter Policy enabled">
-                      <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    <div
+                      v-if="subscription.deadLetterPolicy"
+                      class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600"
+                      title="Dead Letter Policy enabled"
+                    >
+                      <svg
+                        class="w-3 h-3 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                        />
                       </svg>
-                      <svg class="w-2.5 h-2.5 -ml-1 -mt-2 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                      <svg
+                        class="w-2.5 h-2.5 -ml-1 -mt-2 text-red-500"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
                         <circle cx="12" cy="12" r="10" />
-                        <path fill="white" d="M15 9l-6 6M9 9l6 6" stroke="white" stroke-width="2" stroke-linecap="round" />
+                        <path
+                          fill="white"
+                          d="M15 9l-6 6M9 9l6 6"
+                          stroke="white"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                        />
                       </svg>
                     </div>
 
                     <!-- Retry Policy -->
-                    <div v-if="subscription.retryPolicy" class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600" :title="`Retry Policy: ${subscription.retryPolicy.minimumBackoff} – ${subscription.retryPolicy.maximumBackoff}`">
-                      <svg class="w-3 h-3 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    <div
+                      v-if="subscription.retryPolicy"
+                      class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600"
+                      :title="`Retry Policy: ${subscription.retryPolicy.minimumBackoff} – ${subscription.retryPolicy.maximumBackoff}`"
+                    >
+                      <svg
+                        class="w-3 h-3 mr-1 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                        />
                       </svg>
-                      <span>{{ subscription.retryPolicy.minimumBackoff }} → {{ subscription.retryPolicy.maximumBackoff }}</span>
+                      <span
+                        >{{ subscription.retryPolicy.minimumBackoff }} →
+                        {{ subscription.retryPolicy.maximumBackoff }}</span
+                      >
                     </div>
 
                     <!-- Filter -->
-                    <div v-if="subscription.filter" class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600" :title="subscription.filter">
-                      <svg class="w-3 h-3 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
+                    <div
+                      v-if="subscription.filter"
+                      class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600"
+                      :title="subscription.filter"
+                    >
+                      <svg
+                        class="w-3 h-3 mr-1 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"
+                        />
                       </svg>
                       <span>Filter</span>
                     </div>
@@ -193,7 +311,9 @@
               </div>
 
               <!-- Right: actions (fade in on hover) -->
-              <div class="flex items-center space-x-1 ml-2 transition-opacity focus-within:opacity-100 shrink-0">
+              <div
+                class="flex items-center space-x-1 ml-2 transition-opacity focus-within:opacity-100 shrink-0"
+              >
                 <button
                   @click.stop="openDuplicateSubscriptionModal(subscription)"
                   :disabled="isDuplicatingSubscription || !subscription?.name"
@@ -521,7 +641,7 @@ const loadSubscriptions = async () => {
     const safeAllSubs = Array.isArray(allSubs) ? allSubs : []
     const filteredSubs = safeAllSubs.filter(sub => {
       // Try different possible field names for the topic reference
-      const subTopic = sub.topic
+      const subTopic = (sub as any).topic || sub.topicName
 
       // Check multiple possible matches
       return (
@@ -657,20 +777,22 @@ const handleUpdate = async () => {
   isUpdating.value = true
   try {
     // Prepare update data
-    const updateData = {
+    const updateData: Partial<PubSubTopic> = {
       labels: {},
       messageRetentionDuration: editForm.value.messageRetentionDuration,
-      schemaSettings:
-        editForm.value.useSchema && editForm.value.schemaName
-          ? {
-              schema: `projects/${currentProjectId.value}/schemas/${editForm.value.schemaName}`,
-              encoding: 'JSON' as const,
-            }
-          : undefined,
       // Preserve existing data
-      createdAt: topic.value.createdAt,
-      messageCount: topic.value.messageCount,
-      subscriptionsCount: topic.value.subscriptionsCount,
+      createdAt: topic.value.createdAt!,
+      ...(topic.value.messageCount !== undefined && { messageCount: topic.value.messageCount }),
+      ...(topic.value.subscriptionsCount !== undefined && {
+        subscriptionsCount: topic.value.subscriptionsCount,
+      }),
+    }
+
+    if (editForm.value.useSchema && editForm.value.schemaName) {
+      updateData.schemaSettings = {
+        schema: `projects/${currentProjectId.value}/schemas/${editForm.value.schemaName}`,
+        encoding: 'JSON',
+      }
     }
 
     // Call the update API
@@ -807,18 +929,24 @@ const confirmDuplicateSubscription = async () => {
     if (source.pushConfig?.pushEndpoint) subForm.pushEndpoint = source.pushConfig.pushEndpoint
     if (source.bigqueryConfig?.table) {
       subForm.bigqueryTable = source.bigqueryConfig.table
-      if (source.bigqueryConfig.useTopicSchema !== undefined) subForm.useTopicSchema = source.bigqueryConfig.useTopicSchema
-      if (source.bigqueryConfig.writeMetadata !== undefined) subForm.writeMetadata = source.bigqueryConfig.writeMetadata
+      if (source.bigqueryConfig.useTopicSchema !== undefined)
+        subForm.useTopicSchema = source.bigqueryConfig.useTopicSchema
+      if (source.bigqueryConfig.writeMetadata !== undefined)
+        subForm.writeMetadata = source.bigqueryConfig.writeMetadata
     }
-    
+
     if (source.deadLetterPolicy) {
-      if (source.deadLetterPolicy.deadLetterTopic) subForm.deadLetterTopic = source.deadLetterPolicy.deadLetterTopic
-      if (source.deadLetterPolicy.maxDeliveryAttempts) subForm.maxDeliveryAttempts = source.deadLetterPolicy.maxDeliveryAttempts
+      if (source.deadLetterPolicy.deadLetterTopic)
+        subForm.deadLetterTopic = source.deadLetterPolicy.deadLetterTopic
+      if (source.deadLetterPolicy.maxDeliveryAttempts)
+        subForm.maxDeliveryAttempts = source.deadLetterPolicy.maxDeliveryAttempts
     }
 
     if (source.retryPolicy) {
-      if (source.retryPolicy.minimumBackoff) subForm.minimumBackoff = source.retryPolicy.minimumBackoff
-      if (source.retryPolicy.maximumBackoff) subForm.maximumBackoff = source.retryPolicy.maximumBackoff
+      if (source.retryPolicy.minimumBackoff)
+        subForm.minimumBackoff = source.retryPolicy.minimumBackoff
+      if (source.retryPolicy.maximumBackoff)
+        subForm.maximumBackoff = source.retryPolicy.maximumBackoff
     }
 
     const topicFullName =
@@ -828,24 +956,24 @@ const confirmDuplicateSubscription = async () => {
       props.topicName ||
       ''
 
-    const createRequest = buildSubscriptionRequest(
-      currentProjectId.value,
-      topicFullName,
-      subForm
-    )
+    const createRequest = buildSubscriptionRequest(currentProjectId.value, topicFullName, subForm)
 
     // Preserve fields that buildSubscriptionRequest doesn't handle natively
-    if (source.retainAckedMessages !== undefined) createRequest.retainAckedMessages = source.retainAckedMessages
-    if (source.messageRetentionDuration) createRequest.messageRetentionDuration = source.messageRetentionDuration
+    if (source.retainAckedMessages !== undefined)
+      createRequest.retainAckedMessages = source.retainAckedMessages
+    if (source.messageRetentionDuration)
+      createRequest.messageRetentionDuration = source.messageRetentionDuration
     if (source.labels) createRequest.labels = source.labels
-    
+
     // Preserve advanced push/bigquery attributes that SubscriptionForm lacks
     if (deliveryType === 'push' && source.pushConfig?.attributes && createRequest.pushConfig) {
       createRequest.pushConfig.attributes = source.pushConfig.attributes
     }
     if (deliveryType === 'bigquery' && source.bigqueryConfig && createRequest.bigqueryConfig) {
-      if (source.bigqueryConfig.dropUnknownFields !== undefined) createRequest.bigqueryConfig.dropUnknownFields = source.bigqueryConfig.dropUnknownFields
-      if (source.bigqueryConfig.serviceAccountEmail) createRequest.bigqueryConfig.serviceAccountEmail = source.bigqueryConfig.serviceAccountEmail
+      if (source.bigqueryConfig.dropUnknownFields !== undefined)
+        createRequest.bigqueryConfig.dropUnknownFields = source.bigqueryConfig.dropUnknownFields
+      if (source.bigqueryConfig.serviceAccountEmail)
+        createRequest.bigqueryConfig.serviceAccountEmail = source.bigqueryConfig.serviceAccountEmail
     }
 
     await subscriptionsApi.createSubscription(currentProjectId.value, createRequest)

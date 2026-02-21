@@ -540,7 +540,6 @@ const isSavingTemplate = ref(false)
 const isUpdatingTemplate = ref(false)
 const templateNameInput = ref<HTMLInputElement>()
 
-
 // Validation
 const jsonValidationError = computed(() => {
   if (!formatAsJson.value || !messageData.value.trim()) return null
@@ -769,8 +768,6 @@ const handlePublishMessage = async () => {
   }
 }
 
-
-
 const handleSaveAsTemplate = () => {
   if (!messageData.value.trim() || (formatAsJson.value && jsonValidationError.value)) {
     return
@@ -961,12 +958,9 @@ watch(
   }
 )
 
-
-
 onMounted(async () => {
   await initializeFromTemplate()
 })
 
-onUnmounted(() => {
-})
+onUnmounted(() => {})
 </script>

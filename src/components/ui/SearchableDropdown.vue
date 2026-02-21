@@ -15,9 +15,16 @@
         <svg
           class="h-4 w-4 text-gray-400 shrink-0 transition-transform"
           :class="{ 'rotate-180': isOpen }"
-          fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
         >
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 9l-7 7-7-7"
+          />
         </svg>
       </div>
     </button>
@@ -28,11 +35,24 @@
       class="absolute z-20 mt-1 w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg"
     >
       <!-- Search (only when options exceed threshold) -->
-      <div v-if="options.length > searchThreshold" class="p-2 border-b border-gray-200 dark:border-gray-600">
+      <div
+        v-if="options.length > searchThreshold"
+        class="p-2 border-b border-gray-200 dark:border-gray-600"
+      >
         <div class="relative">
           <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            <svg
+              class="h-4 w-4 text-gray-400"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
             </svg>
           </div>
           <input
@@ -66,7 +86,8 @@
           type="button"
           class="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none transition-colors"
           :class="{
-            'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400': modelValue === option.value,
+            'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400':
+              modelValue === option.value,
             'text-gray-900 dark:text-white': modelValue !== option.value,
           }"
         >
@@ -76,9 +97,16 @@
             <svg
               v-if="modelValue === option.value"
               class="h-4 w-4 text-blue-600 dark:text-blue-400 ml-auto shrink-0"
-              fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M5 13l4 4L19 7"
+              />
             </svg>
           </div>
         </button>
@@ -142,7 +170,9 @@ const selectedLabel = computed(() => {
 const filteredOptions = computed(() => {
   if (!query.value.trim()) return props.options
   const q = query.value.toLowerCase()
-  return props.options.filter(o => o.label.toLowerCase().includes(q) || o.value.toLowerCase().includes(q))
+  return props.options.filter(
+    o => o.label.toLowerCase().includes(q) || o.value.toLowerCase().includes(q)
+  )
 })
 
 const toggle = () => {
@@ -170,5 +200,7 @@ onMounted(() => document.addEventListener('mousedown', onClickOutside))
 onUnmounted(() => document.removeEventListener('mousedown', onClickOutside))
 
 // Reset query when closed
-watch(isOpen, open => { if (!open) query.value = '' })
+watch(isOpen, open => {
+  if (!open) query.value = ''
+})
 </script>

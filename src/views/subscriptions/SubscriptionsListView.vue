@@ -22,7 +22,7 @@
         <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ error }}</p>
         <div class="mt-4">
           <button
-            @click="loadSubscriptions"
+            @click="() => loadSubscriptions()"
             class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 transition-colors"
           >
             <ArrowPathIcon class="h-4 w-4 mr-2" />
@@ -79,7 +79,10 @@
                   v-if="!isTopicExpanded(topicName)"
                   class="h-4 w-4 text-gray-400 transition-transform cursor-pointer"
                 />
-                <ChevronDownIcon v-else class="h-4 w-4 text-gray-400 transition-transform cursor-pointer" />
+                <ChevronDownIcon
+                  v-else
+                  class="h-4 w-4 text-gray-400 transition-transform cursor-pointer"
+                />
                 <QueueListIcon class="h-5 w-5 text-blue-500 mt-0.5 shrink-0 cursor-pointer" />
                 <div class="flex-1 min-w-0 cursor-pointer">
                   <div class="flex items-center space-x-2 mb-1 cursor-pointer">
@@ -90,17 +93,34 @@
                     >
                       {{ getTopicDisplayName(topicName) }}
                     </button>
-                    <span v-else class="text-sm font-medium text-gray-900 dark:text-white truncate cursor-pointer">
+                    <span
+                      v-else
+                      class="text-sm font-medium text-gray-900 dark:text-white truncate cursor-pointer"
+                    >
                       {{ getTopicDisplayName(topicName) }}
                     </span>
                   </div>
-                  <p class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer">{{ topicName }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-400 cursor-pointer">
+                    {{ topicName }}
+                  </p>
                 </div>
               </div>
               <div class="flex items-center space-x-3 cursor-pointer">
-                <div class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 text-[11px]">
-                  <svg class="w-3 h-3 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                <div
+                  class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 text-[11px]"
+                >
+                  <svg
+                    class="w-3 h-3 mr-1 text-gray-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                    />
                   </svg>
                   <span>{{ (topicSubscriptions || []).length }} subs</span>
                 </div>
@@ -128,38 +148,66 @@
                 class="relative py-1.5 pl-8 group"
               >
                 <!-- Horizontal branch -->
-                <div class="absolute left-0 top-1/2 w-8 h-px bg-gray-300 dark:bg-gray-600 -translate-y-1/2"></div>
-                
+                <div
+                  class="absolute left-0 top-1/2 w-8 h-px bg-gray-300 dark:bg-gray-600 -translate-y-1/2"
+                ></div>
+
                 <!-- Vertical branch -->
-                <div 
-                  class="absolute left-0 w-px bg-gray-300 dark:bg-gray-600" 
+                <div
+                  class="absolute left-0 w-px bg-gray-300 dark:bg-gray-600"
                   :class="[
                     index === (topicSubscriptions || []).length - 1 ? 'bottom-1/2' : 'bottom-0',
-                    index === 0 ? '-top-4' : 'top-0'
+                    index === 0 ? '-top-4' : 'top-0',
                   ]"
                 ></div>
-                
+
                 <!-- Subscription Card -->
-                <div :class="[
-                  'w-full bg-white dark:bg-gray-800 border rounded-lg p-2.5 sm:p-3 shadow-sm transition-all duration-200 cursor-pointer hover:shadow-md',
-                  selectedSubscription?.name === subscription.name
-                    ? 'border-green-500 ring-1 ring-green-500 dark:bg-gray-800'
-                    : 'border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-600',
-                ]">
-                  <div class="flex items-center justify-between cursor-pointer" @click="selectSubscriptionAndOpenModal(subscription)">
+                <div
+                  :class="[
+                    'w-full bg-white dark:bg-gray-800 border rounded-lg p-2.5 sm:p-3 shadow-sm transition-all duration-200 cursor-pointer hover:shadow-md',
+                    selectedSubscription?.name === subscription.name
+                      ? 'border-green-500 ring-1 ring-green-500 dark:bg-gray-800'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-600',
+                  ]"
+                >
+                  <div
+                    class="flex items-center justify-between cursor-pointer"
+                    @click="selectSubscriptionAndOpenModal(subscription)"
+                  >
                     <div class="flex items-center space-x-3 flex-1 min-w-0 pr-2 cursor-pointer">
-                      <InboxStackIcon class="h-4 w-4 text-green-500 shrink-0 group-hover:scale-110 group-hover:text-green-600 transition-transform cursor-pointer" />
-                      
-                      <div class="flex-1 flex flex-col xl:flex-row xl:items-center justify-between min-w-0 gap-1.5 xl:gap-4 cursor-pointer">
+                      <InboxStackIcon
+                        class="h-4 w-4 text-green-500 shrink-0 group-hover:scale-110 group-hover:text-green-600 transition-transform cursor-pointer"
+                      />
+
+                      <div
+                        class="flex-1 flex flex-col xl:flex-row xl:items-center justify-between min-w-0 gap-1.5 xl:gap-4 cursor-pointer"
+                      >
                         <!-- Name & Desc -->
-                        <div class="min-w-0 shrink cursor-pointer group/name" @click.stop="editSubscription(subscription)">
-                          <span class="inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 group-hover/name:text-blue-800 dark:group-hover/name:text-blue-300 group-hover/name:underline transition-colors truncate cursor-pointer">
+                        <div
+                          class="min-w-0 shrink cursor-pointer group/name"
+                          @click.stop="editSubscription(subscription)"
+                        >
+                          <span
+                            class="inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 group-hover/name:text-blue-800 dark:group-hover/name:text-blue-300 group-hover/name:underline transition-colors truncate cursor-pointer"
+                          >
                             {{ getSubscriptionDisplayName(subscription.name) }}
-                            <svg class="w-3 h-3 ml-1 opacity-60 group-hover/name:opacity-100 transition-opacity shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            <svg
+                              class="w-3 h-3 ml-1 opacity-60 group-hover/name:opacity-100 transition-opacity shrink-0"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                              />
                             </svg>
                           </span>
-                          <p class="text-[11px] leading-tight text-gray-500 dark:text-gray-400 truncate group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors mt-0.5 cursor-pointer">
+                          <p
+                            class="text-[11px] leading-tight text-gray-500 dark:text-gray-400 truncate group-hover:text-gray-600 dark:group-hover:text-gray-300 transition-colors mt-0.5 cursor-pointer"
+                          >
                             {{ subscription.name }}
                           </p>
                         </div>
@@ -167,62 +215,171 @@
                         <!-- Subscription Properties Grid -->
                         <div class="flex flex-wrap gap-1.5 text-[11px] shrink-0 cursor-pointer">
                           <!-- Ack Deadline -->
-                          <div class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer">
-                            <svg class="w-3 h-3 mr-1 text-gray-500 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          <div
+                            class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer"
+                          >
+                            <svg
+                              class="w-3 h-3 mr-1 text-gray-500 cursor-pointer"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
                             </svg>
                             <span class="font-medium mr-1 cursor-pointer">Ack:</span>
-                            <span class="cursor-pointer">{{ subscription.ackDeadlineSeconds }}s</span>
+                            <span class="cursor-pointer"
+                              >{{ subscription.ackDeadlineSeconds }}s</span
+                            >
                           </div>
 
                           <!-- Type -->
-                          <div class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer">
-                            <svg class="w-3 h-3 mr-1 text-gray-500 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
+                          <div
+                            class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer"
+                          >
+                            <svg
+                              class="w-3 h-3 mr-1 text-gray-500 cursor-pointer"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
+                              />
                             </svg>
                             <span class="font-medium mr-1 cursor-pointer">Type:</span>
-                            <span class="cursor-pointer">{{ subscription.pushConfig?.pushEndpoint ? 'Push' : 'Pull' }}</span>
+                            <span class="cursor-pointer">{{
+                              subscription.pushConfig?.pushEndpoint ? 'Push' : 'Pull'
+                            }}</span>
                           </div>
 
                           <!-- Ordered -->
-                          <div v-if="subscription.enableMessageOrdering" class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer">
-                            <svg class="w-3 h-3 mr-1 text-gray-500 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                          <div
+                            v-if="subscription.enableMessageOrdering"
+                            class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer"
+                          >
+                            <svg
+                              class="w-3 h-3 mr-1 text-gray-500 cursor-pointer"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
+                              />
                             </svg>
                             <span class="cursor-pointer">Ordering</span>
                           </div>
 
                           <!-- Dead Letter Policy -->
-                          <div v-if="subscription.deadLetterPolicy" class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer" title="Dead Letter Policy enabled">
-                            <svg class="w-3 h-3 text-gray-500 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                          <div
+                            v-if="subscription.deadLetterPolicy"
+                            class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer"
+                            title="Dead Letter Policy enabled"
+                          >
+                            <svg
+                              class="w-3 h-3 text-gray-500 cursor-pointer"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                              />
                             </svg>
-                            <svg class="w-2.5 h-2.5 -ml-1 -mt-2 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                            <svg
+                              class="w-2.5 h-2.5 -ml-1 -mt-2 text-red-500"
+                              fill="currentColor"
+                              viewBox="0 0 24 24"
+                            >
                               <circle cx="12" cy="12" r="10" />
-                              <path fill="white" d="M15 9l-6 6M9 9l6 6" stroke="white" stroke-width="2" stroke-linecap="round" />
+                              <path
+                                fill="white"
+                                d="M15 9l-6 6M9 9l6 6"
+                                stroke="white"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                              />
                             </svg>
                           </div>
 
                           <!-- Retry Policy -->
-                          <div v-if="subscription.retryPolicy" class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer" :title="`Retry Policy: ${subscription.retryPolicy.minimumBackoff} – ${subscription.retryPolicy.maximumBackoff}`">
-                            <svg class="w-3 h-3 mr-1 text-gray-500 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          <div
+                            v-if="subscription.retryPolicy"
+                            class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer"
+                            :title="`Retry Policy: ${subscription.retryPolicy.minimumBackoff} – ${subscription.retryPolicy.maximumBackoff}`"
+                          >
+                            <svg
+                              class="w-3 h-3 mr-1 text-gray-500 cursor-pointer"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                              />
                             </svg>
-                            <span class="cursor-pointer">{{ subscription.retryPolicy.minimumBackoff }} → {{ subscription.retryPolicy.maximumBackoff }}</span>
+                            <span class="cursor-pointer"
+                              >{{ subscription.retryPolicy.minimumBackoff }} →
+                              {{ subscription.retryPolicy.maximumBackoff }}</span
+                            >
                           </div>
 
                           <!-- Filter -->
-                          <div v-if="subscription.filter" class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer" :title="subscription.filter">
-                            <svg class="w-3 h-3 mr-1 text-gray-500 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
+                          <div
+                            v-if="subscription.filter"
+                            class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer"
+                            :title="subscription.filter"
+                          >
+                            <svg
+                              class="w-3 h-3 mr-1 text-gray-500 cursor-pointer"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"
+                              />
                             </svg>
                             <span class="cursor-pointer">Filter</span>
                           </div>
 
                           <!-- Detached Status -->
-                          <div v-if="subscription.detached" class="inline-flex items-center text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 px-1.5 py-0.5 rounded border border-yellow-200 dark:border-yellow-900/50 cursor-pointer">
-                            <svg class="w-3 h-3 mr-1 cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L5.636 5.636" />
+                          <div
+                            v-if="subscription.detached"
+                            class="inline-flex items-center text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 px-1.5 py-0.5 rounded border border-yellow-200 dark:border-yellow-900/50 cursor-pointer"
+                          >
+                            <svg
+                              class="w-3 h-3 mr-1 cursor-pointer"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L5.636 5.636"
+                              />
                             </svg>
                             <span class="font-medium mr-1 cursor-pointer">Status:</span>
                             <span class="cursor-pointer">Detached</span>
@@ -232,7 +389,9 @@
                     </div>
 
                     <!-- Subscription Actions -->
-                    <div class="flex items-center space-x-1 ml-2 transition-opacity focus-within:opacity-100 shrink-0">
+                    <div
+                      class="flex items-center space-x-1 ml-2 transition-opacity focus-within:opacity-100 shrink-0"
+                    >
                       <button
                         @click.stop="selectSubscriptionAndOpenModal(subscription)"
                         :disabled="pullingMessages.has(subscription.name)"
@@ -408,7 +567,8 @@ const subscriptionsByTopic = computed(() => {
   subscriptions.value.forEach(subscription => {
     // Topic name might not be an explicit field, extracting it from subscription topic
     // if not already attached (sometimes API results differ from interface definition)
-    const topicName = subscription.topicName || (subscription as any).topic || extractTopicName(subscription.name)
+    const topicName =
+      subscription.topicName || (subscription as any).topic || extractTopicName(subscription.name)
     if (!topicName) return // Skip if topicName is still undefined/null
     if (!grouped.has(topicName)) {
       grouped.set(topicName, [])
@@ -426,16 +586,16 @@ const subscriptionsByTopic = computed(() => {
 })
 
 // Methods
-const getTopicDisplayName = (topicName: string) => {
+const getTopicDisplayName = (topicName: string): string => {
   if (!topicName) return 'unknown'
   const parts = topicName.split('/')
-  return parts[parts.length - 1]
+  return parts[parts.length - 1] || topicName
 }
 
-const getSubscriptionDisplayName = (subscriptionName: string) => {
+const getSubscriptionDisplayName = (subscriptionName: string | undefined): string => {
   if (!subscriptionName) return 'unknown'
   const parts = subscriptionName.split('/')
-  return parts[parts.length - 1]
+  return parts[parts.length - 1] || subscriptionName
 }
 
 const loadSubscriptions = async (options: { preserveExpandedTopics?: boolean } = {}) => {
@@ -457,7 +617,7 @@ const loadSubscriptions = async (options: { preserveExpandedTopics?: boolean } =
     const safeResponse = Array.isArray(response) ? response : []
     const transformedSubscriptions = safeResponse.map((sub: any) => ({
       ...sub,
-      topicName: sub.topic || sub.topicName || extractTopicName(sub.name || ''), // Handle both field names with fallback
+      topicName: (sub as any).topic || sub.topicName || extractTopicName(sub.name || ''), // Handle both field names with fallback
       projectId: currentProjectId.value,
       id: sub.name || `sub-${Date.now()}`,
       fullName: sub.name || '',
@@ -533,7 +693,11 @@ const pullMessages = async (subscription: PubSubSubscription, retryCount = 0) =>
     const timeoutId = setTimeout(() => abortController.abort(), 320000) // 5.3 minute timeout (slightly longer than HTTP)
 
     const response = (await Promise.race([
-      subscriptionsApi.pullMessages(currentProjectId.value, subscriptionDisplayName, pullRequest),
+      subscriptionsApi.pullMessages(
+        currentProjectId.value,
+        subscriptionDisplayName as string,
+        pullRequest
+      ),
       new Promise((_, reject) => {
         abortController.signal.addEventListener('abort', () => {
           reject(new Error('Pull operation timed out after 3 minutes'))
@@ -607,7 +771,7 @@ const handleModalPullMessages = async () => {
 
 const acknowledgePulledMessages = async (subscriptionName: string | undefined) => {
   if (!currentProjectId.value || !subscriptionName) return
-  
+
   if (acknowledgingMessages.value.has(subscriptionName)) return
 
   const messages = pulledMessages.value.get(subscriptionName)
@@ -621,7 +785,7 @@ const acknowledgePulledMessages = async (subscriptionName: string | undefined) =
 
     await subscriptionsApi.acknowledgeMessages(
       currentProjectId.value,
-      subscriptionDisplayName,
+      subscriptionDisplayName as string,
       ackIds
     )
 
@@ -650,16 +814,21 @@ const acknowledgeIndividualMessage = async (
   subscriptionName: string | undefined,
   ackId: string
 ) => {
-  if (!subscriptionName || !currentProjectId.value || acknowledgingMessages.value.has(subscriptionName)) return
+  if (
+    !subscriptionName ||
+    !currentProjectId.value ||
+    acknowledgingMessages.value.has(subscriptionName)
+  )
+    return
 
   acknowledgingMessages.value.add(subscriptionName)
 
   try {
-    const subscriptionDisplayName = getSubscriptionDisplayName(subscriptionName)
-
-    await subscriptionsApi.acknowledgeMessages(currentProjectId.value, subscriptionDisplayName, [
-      ackId,
-    ])
+    await subscriptionsApi.acknowledgeMessages(
+      currentProjectId.value,
+      getSubscriptionDisplayName(subscriptionName),
+      [ackId]
+    )
 
     // Remove the acknowledged message from pulled messages
     const messages = pulledMessages.value.get(subscriptionName) || []
@@ -711,7 +880,10 @@ const confirmDeleteSubscription = async () => {
   isDeletingSubscription.value = true
   try {
     console.log('Attempting to delete subscription:', subscriptionDisplayName)
-    await subscriptionsApi.deleteSubscription(currentProjectId.value, subscriptionDisplayName)
+    await subscriptionsApi.deleteSubscription(
+      currentProjectId.value,
+      subscriptionDisplayName as string
+    )
     console.log('Delete API call successful')
 
     appStore.showToast({
@@ -817,7 +989,7 @@ const handleTopicFocus = async () => {
 }
 
 const openPublishMessageModal = (topicName: string) => {
-  selectedTopicForPublish.value = getTopicDisplayName(topicName)
+  selectedTopicForPublish.value = getTopicDisplayName(topicName || '')
   showPublishMessageModal.value = true
 }
 

@@ -72,26 +72,58 @@
             <div class="flex items-center justify-between">
               <!-- Left: icon + name + full path + badges -->
               <div class="flex items-center space-x-3 flex-1 min-w-0 pr-2">
-                <QueueListIcon class="h-5 w-5 text-blue-500 shrink-0 group-hover:scale-110 group-hover:text-blue-600 transition-transform" />
+                <QueueListIcon
+                  class="h-5 w-5 text-blue-500 shrink-0 group-hover:scale-110 group-hover:text-blue-600 transition-transform"
+                />
 
-                <div class="flex-1 flex flex-col xl:flex-row xl:items-center justify-between min-w-0 gap-1.5 xl:gap-4">
+                <div
+                  class="flex-1 flex flex-col xl:flex-row xl:items-center justify-between min-w-0 gap-1.5 xl:gap-4"
+                >
                   <!-- Name & full path -->
                   <div class="min-w-0 shrink group/name" @click.stop="openTopicDetails(topic)">
-                    <span class="inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 group-hover/name:text-blue-800 dark:group-hover/name:text-blue-300 group-hover/name:underline transition-colors cursor-pointer">
+                    <span
+                      class="inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 group-hover/name:text-blue-800 dark:group-hover/name:text-blue-300 group-hover/name:underline transition-colors cursor-pointer"
+                    >
                       {{ getTopicDisplayName(topic.name) }}
-                      <svg class="w-3 h-3 ml-1 opacity-60 group-hover/name:opacity-100 transition-opacity shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      <svg
+                        class="w-3 h-3 ml-1 opacity-60 group-hover/name:opacity-100 transition-opacity shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        />
                       </svg>
                     </span>
-                    <p class="text-[11px] leading-tight text-gray-500 dark:text-gray-400 truncate mt-0.5">{{ topic.name }}</p>
+                    <p
+                      class="text-[11px] leading-tight text-gray-500 dark:text-gray-400 truncate mt-0.5"
+                    >
+                      {{ topic.name }}
+                    </p>
                   </div>
 
                   <!-- Inline badges -->
                   <div class="flex flex-wrap gap-1.5 text-[11px] shrink-0">
                     <!-- Retention -->
-                    <div class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600">
-                      <svg class="w-3 h-3 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <div
+                      class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600"
+                    >
+                      <svg
+                        class="w-3 h-3 mr-1 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
                       </svg>
                       <span>{{ topic.messageRetentionDuration || '7d' }}</span>
                     </div>
@@ -102,8 +134,18 @@
                       @click.stop="navigateToSubscriptions(topic)"
                       :title="`${topic.subscriptionsCount || 0} subscription(s) — click to view`"
                     >
-                      <svg class="w-3 h-3 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                      <svg
+                        class="w-3 h-3 mr-1 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                        />
                       </svg>
                       <span>{{ topic.subscriptionsCount || 0 }} subs</span>
                     </div>
@@ -114,8 +156,18 @@
                       class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600"
                       :title="getSchemaDisplayName(topic.schemaSettings.schema)"
                     >
-                      <svg class="w-3 h-3 mr-1 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      <svg
+                        class="w-3 h-3 mr-1 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                        />
                       </svg>
                       <span>{{ getSchemaDisplayName(topic.schemaSettings.schema) }}</span>
                     </div>
@@ -126,8 +178,18 @@
                       class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600"
                       title="KMS Encrypted"
                     >
-                      <svg class="w-3 h-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      <svg
+                        class="w-3 h-3 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                        />
                       </svg>
                     </div>
 
@@ -148,15 +210,19 @@
               <!-- Right: actions (fade in on hover) -->
               <div class="flex items-center space-x-1 ml-2 shrink-0">
                 <button
-                  @click.stop="(topic.subscriptionsCount || 0) > 0 && navigateToSubscriptions(topic)"
+                  @click.stop="
+                    (topic.subscriptionsCount || 0) > 0 && navigateToSubscriptions(topic)
+                  "
                   :disabled="(topic.subscriptionsCount || 0) === 0"
                   :class="[
                     'p-1.5 rounded-full transition-colors',
                     (topic.subscriptionsCount || 0) > 0
                       ? 'text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/40 cursor-pointer'
-                      : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+                      : 'text-gray-300 dark:text-gray-600 cursor-not-allowed',
                   ]"
-                  :title="(topic.subscriptionsCount || 0) > 0 ? 'View subscriptions' : 'No subscriptions'"
+                  :title="
+                    (topic.subscriptionsCount || 0) > 0 ? 'View subscriptions' : 'No subscriptions'
+                  "
                 >
                   <InboxStackIcon class="w-4 h-4" />
                 </button>
@@ -372,9 +438,15 @@ const openTopicDetails = (topic: PubSubTopic) => {
   showTopicDetailsModal.value = true
 }
 
-const handleTopicCreated = () => { fetchTopics() }
-const handleTopicUpdated = () => { fetchTopics() }
-const handleSubscriptionsChanged = () => { fetchTopics() }
+const handleTopicCreated = () => {
+  fetchTopics()
+}
+const handleTopicUpdated = () => {
+  fetchTopics()
+}
+const handleSubscriptionsChanged = () => {
+  fetchTopics()
+}
 
 const showDeleteConfirmation = (topic: PubSubTopic) => {
   topicToDelete.value = topic
@@ -454,14 +526,20 @@ watch(
 
 watch(
   () => topics.value.length,
-  newLength => { if (newLength > 0) handleTopicFocus() }
+  newLength => {
+    if (newLength > 0) handleTopicFocus()
+  }
 )
 
 watch(
   () => route.hash,
-  newHash => { if (newHash && topics.value.length > 0) handleTopicFocus() },
+  newHash => {
+    if (newHash && topics.value.length > 0) handleTopicFocus()
+  },
   { immediate: true }
 )
 
-onMounted(() => { fetchTopics() })
+onMounted(() => {
+  fetchTopics()
+})
 </script>

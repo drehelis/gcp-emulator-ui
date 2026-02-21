@@ -168,7 +168,7 @@
             </div>
 
             <SubscriptionFormFields
-              :model-value="(subscription as any)"
+              :model-value="subscription as any"
               mode="create"
               :available-topics="availableTopics"
               @update:model-value="value => (subscriptions[index] = value as any)"
@@ -203,7 +203,6 @@ interface TopicLabel {
 }
 
 // Removed local SubscriptionForm
-
 
 const props = defineProps<Props>()
 const emit = defineEmits<{
@@ -331,8 +330,11 @@ const handleSubmit = async () => {
     // Create subscriptions
     for (const subscription of subscriptions.value) {
       const topicFullName = `projects/${currentProjectId.value}/topics/${topicForm.value.name.trim()}`
-      const subRequest = buildSubscriptionRequest(currentProjectId.value, topicFullName, subscription)
-
+      const subRequest = buildSubscriptionRequest(
+        currentProjectId.value,
+        topicFullName,
+        subscription
+      )
 
       await subscriptionsApi.createSubscription(currentProjectId.value, subRequest)
     }

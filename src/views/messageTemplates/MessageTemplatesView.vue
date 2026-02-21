@@ -72,7 +72,9 @@
               <!-- Header with icon, name and actions -->
               <div class="flex items-start justify-between cursor-pointer">
                 <div class="flex items-start space-x-3 min-w-0 flex-1 cursor-pointer">
-                  <DocumentDuplicateIcon class="h-5 w-5 text-purple-500 mt-0.5 shrink-0 cursor-pointer" />
+                  <DocumentDuplicateIcon
+                    class="h-5 w-5 text-purple-500 mt-0.5 shrink-0 cursor-pointer"
+                  />
                   <div class="min-w-0 flex-1 cursor-pointer">
                     <div class="text-sm font-medium text-gray-900 dark:text-white cursor-pointer">
                       {{ template.name }}
@@ -112,9 +114,13 @@
               </div>
 
               <!-- Topic -->
-              <div class="inline-flex items-center text-[11px] text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer">
+              <div
+                class="inline-flex items-center text-[11px] text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer"
+              >
                 <QueueListIcon class="w-3.5 h-3.5 mr-1.5 text-gray-400 shrink-0 cursor-pointer" />
-                <span class="cursor-pointer truncate max-w-[150px] sm:max-w-[200px]">{{ template.topicName }}</span>
+                <span class="cursor-pointer truncate max-w-[150px] sm:max-w-[200px]">{{
+                  template.topicName
+                }}</span>
               </div>
 
               <!-- Variables, Attributes & Tags -->
@@ -124,12 +130,21 @@
                   v-if="Object.keys(template.variables).length > 0"
                   class="flex items-center flex-wrap gap-x-3 gap-y-1 cursor-pointer"
                 >
-                  <span class="text-xs text-purple-600 dark:text-purple-400 font-medium cursor-pointer"
+                  <span
+                    class="text-xs text-purple-600 dark:text-purple-400 font-medium cursor-pointer"
                     >Variables:</span
                   >
-                  <span v-for="(value, key) in template.variables" :key="key" class="text-xs cursor-pointer">
-                    <span class="font-medium text-gray-900 dark:text-white cursor-pointer">{{ key }}</span>
-                    <span class="text-gray-500 dark:text-gray-400 ml-1 cursor-pointer">{{ value }}</span>
+                  <span
+                    v-for="(value, key) in template.variables"
+                    :key="key"
+                    class="text-xs cursor-pointer"
+                  >
+                    <span class="font-medium text-gray-900 dark:text-white cursor-pointer">{{
+                      key
+                    }}</span>
+                    <span class="text-gray-500 dark:text-gray-400 ml-1 cursor-pointer">{{
+                      value
+                    }}</span>
                   </span>
                 </div>
 
@@ -141,9 +156,17 @@
                   <span class="text-xs text-blue-600 dark:text-blue-400 font-medium cursor-pointer"
                     >Attributes:</span
                   >
-                  <span v-for="(value, key) in template.attributes" :key="key" class="text-xs cursor-pointer">
-                    <span class="font-medium text-gray-900 dark:text-white cursor-pointer">{{ key }}</span>
-                    <span class="text-gray-500 dark:text-gray-400 ml-1 cursor-pointer">{{ value }}</span>
+                  <span
+                    v-for="(value, key) in template.attributes"
+                    :key="key"
+                    class="text-xs cursor-pointer"
+                  >
+                    <span class="font-medium text-gray-900 dark:text-white cursor-pointer">{{
+                      key
+                    }}</span>
+                    <span class="text-gray-500 dark:text-gray-400 ml-1 cursor-pointer">{{
+                      value
+                    }}</span>
                   </span>
                 </div>
 
@@ -152,7 +175,10 @@
                   v-if="template.tags && template.tags.length > 0"
                   class="flex items-center flex-wrap gap-1 cursor-pointer"
                 >
-                  <span class="text-xs text-green-600 dark:text-green-400 font-medium cursor-pointer">Tags:</span>
+                  <span
+                    class="text-xs text-green-600 dark:text-green-400 font-medium cursor-pointer"
+                    >Tags:</span
+                  >
                   <span
                     v-for="tag in template.tags"
                     :key="tag"
@@ -186,9 +212,13 @@
             <!-- Template Name & Description -->
             <div class="col-span-4 min-w-0 cursor-pointer">
               <div class="flex items-start space-x-3 cursor-pointer">
-                <DocumentDuplicateIcon class="h-5 w-5 text-purple-500 mt-0.5 shrink-0 cursor-pointer" />
+                <DocumentDuplicateIcon
+                  class="h-5 w-5 text-purple-500 mt-0.5 shrink-0 cursor-pointer"
+                />
                 <div class="min-w-0 flex-1 cursor-pointer">
-                  <div class="text-sm font-medium text-gray-900 dark:text-white truncate cursor-pointer">
+                  <div
+                    class="text-sm font-medium text-gray-900 dark:text-white truncate cursor-pointer"
+                  >
                     {{ template.name }}
                   </div>
                   <div
@@ -212,7 +242,9 @@
 
             <!-- Topic -->
             <div class="col-span-2 min-w-0 cursor-pointer">
-              <div class="inline-flex items-center text-[11px] text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer">
+              <div
+                class="inline-flex items-center text-[11px] text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer"
+              >
                 <QueueListIcon class="w-3.5 h-3.5 mr-1.5 text-gray-400 shrink-0 cursor-pointer" />
                 <span class="truncate cursor-pointer">{{ template.topicName }}</span>
               </div>
@@ -226,12 +258,21 @@
                   v-if="Object.keys(template.variables).length > 0"
                   class="flex items-center flex-wrap gap-x-3 gap-y-1 cursor-pointer"
                 >
-                  <span class="text-xs text-purple-600 dark:text-purple-400 font-medium cursor-pointer"
+                  <span
+                    class="text-xs text-purple-600 dark:text-purple-400 font-medium cursor-pointer"
                     >Variables:</span
                   >
-                  <span v-for="(value, key) in template.variables" :key="key" class="text-xs cursor-pointer">
-                    <span class="font-medium text-gray-900 dark:text-white cursor-pointer">{{ key }}</span>
-                    <span class="text-gray-500 dark:text-gray-400 ml-1 cursor-pointer">{{ value }}</span>
+                  <span
+                    v-for="(value, key) in template.variables"
+                    :key="key"
+                    class="text-xs cursor-pointer"
+                  >
+                    <span class="font-medium text-gray-900 dark:text-white cursor-pointer">{{
+                      key
+                    }}</span>
+                    <span class="text-gray-500 dark:text-gray-400 ml-1 cursor-pointer">{{
+                      value
+                    }}</span>
                   </span>
                 </div>
 
@@ -243,9 +284,17 @@
                   <span class="text-xs text-blue-600 dark:text-blue-400 font-medium cursor-pointer"
                     >Attributes:</span
                   >
-                  <span v-for="(value, key) in template.attributes" :key="key" class="text-xs cursor-pointer">
-                    <span class="font-medium text-gray-900 dark:text-white cursor-pointer">{{ key }}</span>
-                    <span class="text-gray-500 dark:text-gray-400 ml-1 cursor-pointer">{{ value }}</span>
+                  <span
+                    v-for="(value, key) in template.attributes"
+                    :key="key"
+                    class="text-xs cursor-pointer"
+                  >
+                    <span class="font-medium text-gray-900 dark:text-white cursor-pointer">{{
+                      key
+                    }}</span>
+                    <span class="text-gray-500 dark:text-gray-400 ml-1 cursor-pointer">{{
+                      value
+                    }}</span>
                   </span>
                 </div>
 
@@ -254,7 +303,10 @@
                   v-if="template.tags && template.tags.length > 0"
                   class="flex items-center flex-wrap gap-1 cursor-pointer"
                 >
-                  <span class="text-xs text-green-600 dark:text-green-400 font-medium cursor-pointer">Tags:</span>
+                  <span
+                    class="text-xs text-green-600 dark:text-green-400 font-medium cursor-pointer"
+                    >Tags:</span
+                  >
                   <span
                     v-for="tag in template.tags"
                     :key="tag"

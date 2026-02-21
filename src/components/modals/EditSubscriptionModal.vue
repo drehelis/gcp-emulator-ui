@@ -12,7 +12,9 @@
     </div>
 
     <div v-else-if="subscription" class="space-y-6">
-      <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-white dark:bg-gray-800">
+      <div
+        class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-white dark:bg-gray-800"
+      >
         <SubscriptionFormFields
           v-model="editSubscriptionForm"
           mode="edit"
@@ -114,8 +116,7 @@ const handleUpdate = async () => {
   if (!props.subscription || !currentProjectId.value) return
 
   const isEditingExistingPushSub =
-    props.subscription.pushConfig?.pushEndpoint &&
-    typeof props.subscription.pushConfig === 'object'
+    props.subscription.pushConfig?.pushEndpoint && typeof props.subscription.pushConfig === 'object'
   const existingPushEndpoint =
     isEditingExistingPushSub && props.subscription.pushConfig
       ? props.subscription.pushConfig.pushEndpoint
@@ -157,7 +158,9 @@ const handleUpdate = async () => {
       ackDeadlineSeconds: editSubscriptionForm.value.ackDeadlineSeconds,
       enableMessageOrdering: editSubscriptionForm.value.enableMessageOrdering,
       ...(editSubscriptionForm.value.filter &&
-        editSubscriptionForm.value.filter.trim() && { filter: editSubscriptionForm.value.filter.trim() }),
+        editSubscriptionForm.value.filter.trim() && {
+          filter: editSubscriptionForm.value.filter.trim(),
+        }),
     }
 
     if (editSubscriptionForm.value.deliveryType === 'push') {

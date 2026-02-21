@@ -143,14 +143,18 @@ export const buildSubscriptionRequest = (
     const dlTopicPath = form.deadLetterTopic.includes('/')
       ? form.deadLetterTopic
       : `projects/${projectId}/topics/${form.deadLetterTopic.trim()}`
-      
+
     request.deadLetterPolicy = {
       deadLetterTopic: dlTopicPath,
       maxDeliveryAttempts: form.maxDeliveryAttempts || 5,
     }
   }
 
-  if ((form.enableRetryPolicy || (form as any).useRetryPolicy) && form.minimumBackoff && form.maximumBackoff) {
+  if (
+    (form.enableRetryPolicy || (form as any).useRetryPolicy) &&
+    form.minimumBackoff &&
+    form.maximumBackoff
+  ) {
     request.retryPolicy = {
       minimumBackoff: form.minimumBackoff.trim(),
       maximumBackoff: form.maximumBackoff.trim(),
