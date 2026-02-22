@@ -10,19 +10,21 @@
  */
 export const getMeaningfulErrorMessage = (error: any): string => {
   // Check for specific status codes and provide meaningful messages
-  if (error.response?.status === 409) {
+  const statusCode = error.code || error.status || error.response?.status
+
+  if (statusCode === 409) {
     return 'ALREADY_EXISTS: Resource already exists'
   }
-  if (error.response?.status === 404) {
+  if (statusCode === 404) {
     return 'NOT_FOUND: Resource not found'
   }
-  if (error.response?.status === 400) {
+  if (statusCode === 400) {
     return 'INVALID_REQUEST: Invalid request parameters'
   }
-  if (error.response?.status === 403) {
+  if (statusCode === 403) {
     return 'PERMISSION_DENIED: Access denied'
   }
-  if (error.response?.status === 500) {
+  if (statusCode === 500) {
     return 'INTERNAL_ERROR: Server internal error'
   }
 

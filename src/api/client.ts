@@ -48,7 +48,8 @@ export function setupApiClient() {
         // Server responded with error status
         const apiError: ApiError = {
           code: error.response.status,
-          message: error.response.data?.message || error.message,
+          message:
+            error.response.data?.error?.message || error.response.data?.message || error.message,
           details: error.response.data?.details || [],
           timestamp: new Date(),
           requestId: error.config?.headers?.['X-Request-ID'],

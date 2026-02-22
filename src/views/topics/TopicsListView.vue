@@ -33,7 +33,7 @@
     <!-- Topics List -->
     <div v-else-if="topics.length > 0" class="space-y-6">
       <!-- Header -->
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+      <div class="bg-white dark:bg-gray-800 rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-medium text-gray-900 dark:text-white">
@@ -62,31 +62,31 @@
 
       <!-- Topics List Content -->
       <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
-        <div class="divide-y divide-gray-200 dark:divide-gray-700">
+        <div class="divide-y divide-gray-100 dark:divide-gray-700/50">
           <div
             v-for="topic in topics"
             :key="topic.name"
             :id="`topic-${getTopicDisplayName(topic.name)}`"
-            @click="selectTopicAndPublish(topic)"
-            :class="[
-              'px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer',
-              selectedTopic?.name === topic.name
-                ? 'bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500'
-                : '',
-            ]"
+            class="group relative px-4 py-2.5 border-b border-gray-100 dark:border-gray-700/50 last:border-0 transition-colors"
           >
-            <div class="flex items-start justify-between cursor-pointer">
-              <div class="flex items-start space-x-3 flex-1 cursor-pointer">
-                <QueueListIcon class="h-5 w-5 text-blue-500 mt-0.5 shrink-0" />
-                <div class="flex-1 min-w-0 cursor-pointer">
-                  <div class="flex items-center space-x-2 mb-1">
-                    <button
-                      @click.stop="openTopicDetails(topic)"
-                      class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 transition-colors group"
+            <div class="flex items-center justify-between">
+              <!-- Left: icon + name + full path + badges -->
+              <div class="flex items-center space-x-3 flex-1 min-w-0 pr-2">
+                <QueueListIcon
+                  class="h-5 w-5 text-blue-500 shrink-0 group-hover:scale-110 group-hover:text-blue-600 transition-transform"
+                />
+
+                <div
+                  class="flex-1 flex flex-col xl:flex-row xl:items-center justify-between min-w-0 gap-1.5 xl:gap-4"
+                >
+                  <!-- Name & full path -->
+                  <div class="min-w-0 shrink group/name" @click.stop="openTopicDetails(topic)">
+                    <span
+                      class="inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 group-hover/name:text-blue-800 dark:group-hover/name:text-blue-300 group-hover/name:underline transition-colors cursor-pointer"
                     >
-                      <span>{{ getTopicDisplayName(topic.name) }}</span>
+                      {{ getTopicDisplayName(topic.name) }}
                       <svg
-                        class="w-3 h-3 ml-1 opacity-60 group-hover:opacity-100 transition-opacity"
+                        class="w-3 h-3 ml-1 opacity-60 group-hover/name:opacity-100 transition-opacity shrink-0"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -98,40 +98,22 @@
                           d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                         />
                       </svg>
-                    </button>
-                    <div v-if="topic.schemaSettings" class="flex items-center">
-                      <span
-                        class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200"
-                      >
-                        <svg
-                          class="w-3 h-3 mr-1"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                          />
-                        </svg>
-                        Schema
-                      </span>
-                    </div>
+                    </span>
+                    <p
+                      class="text-[11px] leading-tight text-gray-500 dark:text-gray-400 truncate mt-0.5"
+                    >
+                      {{ topic.name }}
+                    </p>
                   </div>
-                  <p class="text-xs text-gray-500 dark:text-gray-400 truncate">
-                    {{ topic.name }}
-                  </p>
 
-                  <!-- Topic Properties Grid -->
-                  <div
-                    class="mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 text-xs cursor-pointer"
-                  >
-                    <!-- Message Retention - Always show default -->
-                    <div class="flex items-center text-gray-600 dark:text-gray-400 cursor-pointer">
+                  <!-- Inline badges -->
+                  <div class="flex flex-wrap gap-1.5 text-[11px] shrink-0">
+                    <!-- Retention -->
+                    <div
+                      class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600"
+                    >
                       <svg
-                        class="w-3 h-3 mr-1.5 text-gray-400"
+                        class="w-3 h-3 mr-1 text-gray-500"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -143,38 +125,17 @@
                           d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
                         />
                       </svg>
-                      <span class="font-medium mr-1">Retention:</span>
-                      <span>{{ topic.messageRetentionDuration || '7d (default)' }}</span>
+                      <span>{{ topic.messageRetentionDuration || '7d' }}</span>
                     </div>
 
-                    <!-- Schema Information -->
+                    <!-- Subscriptions count -->
                     <div
-                      v-if="topic.schemaSettings"
-                      class="flex items-center text-gray-600 dark:text-gray-400 cursor-pointer"
+                      class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer"
+                      @click.stop="navigateToSubscriptions(topic)"
+                      :title="`${topic.subscriptionsCount || 0} subscription(s) — click to view`"
                     >
                       <svg
-                        class="w-3 h-3 mr-1.5 text-gray-400"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          stroke-width="2"
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
-                      <span class="font-medium mr-1">Schema:</span>
-                      <span class="truncate">{{
-                        getSchemaDisplayName(topic.schemaSettings.schema)
-                      }}</span>
-                    </div>
-
-                    <!-- Subscriptions Count - Always show -->
-                    <div class="flex items-center text-gray-600 dark:text-gray-400 cursor-pointer">
-                      <svg
-                        class="w-3 h-3 mr-1.5 text-gray-400"
+                        class="w-3 h-3 mr-1 text-gray-500"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -186,17 +147,17 @@
                           d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
                         />
                       </svg>
-                      <span class="font-medium mr-1">Subscriptions:</span>
-                      <span>{{ topic.subscriptionsCount || 0 }}</span>
+                      <span>{{ topic.subscriptionsCount || 0 }} subs</span>
                     </div>
 
-                    <!-- KMS Key -->
+                    <!-- Schema -->
                     <div
-                      v-if="topic.kmsKeyName"
-                      class="flex items-center text-gray-600 dark:text-gray-400 cursor-pointer"
+                      v-if="topic.schemaSettings"
+                      class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600"
+                      :title="getSchemaDisplayName(topic.schemaSettings.schema)"
                     >
                       <svg
-                        class="w-3 h-3 mr-1.5 text-gray-400"
+                        class="w-3 h-3 mr-1 text-gray-500"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -205,48 +166,69 @@
                           stroke-linecap="round"
                           stroke-linejoin="round"
                           stroke-width="2"
-                          d="M15 7a2 2 0 012 2m0 0a2 2 0 012 2 2 2 0 01-2 2 2 2 0 01-2-2m2-2H9a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V9a2 2 0 00-2-2z"
+                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                         />
                       </svg>
-                      <span class="font-medium mr-1">Encrypted:</span>
-                      <span class="text-green-600 dark:text-green-400">Yes</span>
+                      <span>{{ getSchemaDisplayName(topic.schemaSettings.schema) }}</span>
                     </div>
-                  </div>
 
-                  <!-- Topic Labels -->
-                  <div
-                    v-if="topic.labels && Object.keys(topic.labels).length > 0"
-                    class="mt-2 flex flex-wrap gap-1"
-                  >
-                    <span
-                      v-for="(value, key) in topic.labels"
-                      :key="key"
-                      class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
+                    <!-- KMS -->
+                    <div
+                      v-if="topic.kmsKeyName"
+                      class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600"
+                      title="KMS Encrypted"
                     >
-                      {{ key }}: {{ value }}
-                    </span>
+                      <svg
+                        class="w-3 h-3 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                        />
+                      </svg>
+                    </div>
+
+                    <!-- Labels -->
+                    <template v-if="topic.labels && Object.keys(topic.labels).length > 0">
+                      <div
+                        v-for="(value, key) in topic.labels"
+                        :key="key"
+                        class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600"
+                      >
+                        <span>{{ key }}: {{ value }}</span>
+                      </div>
+                    </template>
                   </div>
                 </div>
               </div>
 
-              <!-- Topic Actions -->
-              <div class="flex items-center space-x-2 ml-4">
+              <!-- Right: actions (fade in on hover) -->
+              <div class="flex items-center space-x-1 ml-2 shrink-0">
                 <button
-                  v-if="(topic.subscriptionsCount || 0) > 0"
-                  @click.stop="navigateToSubscriptions(topic)"
-                  class="p-1.5 text-gray-400 hover:text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors"
-                  title="View subscriptions"
+                  @click.stop="
+                    (topic.subscriptionsCount || 0) > 0 && navigateToSubscriptions(topic)
+                  "
+                  :disabled="(topic.subscriptionsCount || 0) === 0"
+                  :class="[
+                    'p-1.5 rounded-full transition-colors',
+                    (topic.subscriptionsCount || 0) > 0
+                      ? 'text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/40 cursor-pointer'
+                      : 'text-gray-300 dark:text-gray-600 cursor-not-allowed',
+                  ]"
+                  :title="
+                    (topic.subscriptionsCount || 0) > 0 ? 'View subscriptions' : 'No subscriptions'
+                  "
                 >
                   <InboxStackIcon class="w-4 h-4" />
                 </button>
                 <button
                   @click.stop="showPublishMessage(topic)"
-                  :class="[
-                    'p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors',
-                    selectedTopic?.name === topic.name
-                      ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                      : '',
-                  ]"
+                  class="p-1.5 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/40 rounded-full transition-colors"
                   title="Publish message"
                 >
                   <PaperAirplaneIcon class="w-4 h-4" />
@@ -254,7 +236,7 @@
                 <button
                   @click.stop="showDeleteConfirmation(topic)"
                   :disabled="isDeletingTopic"
-                  class="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Delete topic"
                 >
                   <TrashIcon class="w-4 h-4" />
@@ -269,7 +251,7 @@
     <!-- Empty State -->
     <div v-else class="space-y-6">
       <!-- Header -->
-      <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
+      <div class="bg-white dark:bg-gray-800 rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-medium text-gray-900 dark:text-white">Topics (0)</h2>
@@ -314,6 +296,7 @@
         </div>
       </div>
     </div>
+
     <!-- Create Topic Modal -->
     <CreateTopicModal v-model="showCreateTopicModal" @topic-created="handleTopicCreated" />
 
@@ -392,18 +375,15 @@ const showDeleteTopicModal = ref(false)
 const topicToDelete = ref<PubSubTopic | null>(null)
 const showPublishMessageModal = ref(false)
 const selectedTopicForPublish = ref<PubSubTopic | null>(null)
-const selectedTopic = ref<PubSubTopic | null>(null)
 
 const currentProjectId = computed(() => route.params.projectId as string)
 
 const getTopicDisplayName = (fullName: string): string => {
-  // Extract topic name from full resource name (projects/project-id/topics/topic-name)
   const parts = fullName.split('/')
   return parts[parts.length - 1] || fullName
 }
 
 const getSchemaDisplayName = (schemaFullName: string): string => {
-  // Extract schema name from full resource name (projects/project-id/schemas/schema-name)
   const parts = schemaFullName.split('/')
   return parts[parts.length - 1] || schemaFullName
 }
@@ -420,12 +400,8 @@ const fetchTopics = async () => {
   try {
     const fetchedTopics = await topicsApi.getTopics(currentProjectId.value)
 
-    // Calculate subscription counts for each topic
     const allSubscriptions = await subscriptionsApi.getSubscriptions(currentProjectId.value)
-
-    // Create a map of topic name to subscription count
     const subscriptionCounts = new Map<string, number>()
-    // Ensure allSubscriptions is an array before calling forEach
     const subscriptionsArray = Array.isArray(allSubscriptions) ? allSubscriptions : []
     subscriptionsArray.forEach((sub: any) => {
       const topicField = sub.topic || sub.topicName
@@ -436,20 +412,15 @@ const fetchTopics = async () => {
       }
     })
 
-    // Update subscription counts on topics
     const topicsWithCounts = fetchedTopics.map((topic: any) => {
       const topicName = topic.name?.split('/').pop() || ''
       const count = subscriptionCounts.get(topicName) || 0
-      return {
-        ...topic,
-        subscriptionsCount: count,
-      }
+      return { ...topic, subscriptionsCount: count }
     })
 
     topics.value = topicsWithCounts
   } catch (err: any) {
     console.error('Error fetching topics:', err)
-
     if (err.response?.status === 404) {
       error.value = `Project "${currentProjectId.value}" not found. Make sure the project exists in the emulator.`
     } else if (err.code === 'ECONNREFUSED' || err.message.includes('Network Error')) {
@@ -468,17 +439,12 @@ const openTopicDetails = (topic: PubSubTopic) => {
 }
 
 const handleTopicCreated = () => {
-  // Refresh the topics list after successful creation
   fetchTopics()
 }
-
 const handleTopicUpdated = () => {
-  // Refresh the topics list after successful update
   fetchTopics()
 }
-
 const handleSubscriptionsChanged = () => {
-  // Refresh the topics list after subscriptions are created/deleted
   fetchTopics()
 }
 
@@ -495,12 +461,8 @@ const deleteTopic = async () => {
 
   isDeletingTopic.value = true
   try {
-    // Use the store method which includes cascading subscription deletion
     await topicsStore.deleteTopic(topicDisplayName, currentProjectId.value)
-
-    // Remove the topic from local state immediately for better UX
     topics.value = topics.value.filter(t => t.name !== topic.name)
-
     appStore.showToast({
       type: 'success',
       title: 'Topic Deleted',
@@ -508,19 +470,12 @@ const deleteTopic = async () => {
     })
   } catch (error: any) {
     console.error('Error deleting topic:', error)
-
     let errorMessage = 'Failed to delete topic'
     if (error.response?.status === 404) {
       errorMessage = 'Topic not found or already deleted'
-      // Remove from local state anyway since it doesn't exist
       topics.value = topics.value.filter(t => t.name !== topic.name)
     }
-
-    appStore.showToast({
-      type: 'error',
-      title: 'Delete Failed',
-      message: errorMessage,
-    })
+    appStore.showToast({ type: 'error', title: 'Delete Failed', message: errorMessage })
   } finally {
     isDeletingTopic.value = false
     showDeleteTopicModal.value = false
@@ -538,19 +493,10 @@ const showPublishMessage = (topic: PubSubTopic) => {
   showPublishMessageModal.value = true
 }
 
-const selectTopicAndPublish = (topic: PubSubTopic) => {
-  selectedTopic.value = topic
-  selectedTopicForPublish.value = topic
-  showPublishMessageModal.value = true
-}
-
-const handleMessagePublished = () => {
-  // Message published successfully
-}
+const handleMessagePublished = () => {}
 
 const navigateToSubscriptions = (topic: PubSubTopic) => {
   const topicName = getTopicDisplayName(topic.name)
-  // Navigate to subscriptions page with hash for topic focus
   router.push({
     name: 'project-subscriptions',
     params: { projectId: currentProjectId.value },
@@ -558,7 +504,6 @@ const navigateToSubscriptions = (topic: PubSubTopic) => {
   })
 }
 
-// Handle URL hash for topic focus
 const handleTopicFocus = async () => {
   const hash = route.hash.slice(1) || window.location.hash.slice(1)
   if (hash && topics.value.length > 0) {
@@ -566,44 +511,30 @@ const handleTopicFocus = async () => {
   }
 }
 
-// Watch for project changes and refetch topics
 watch(
   () => currentProjectId.value,
   (newProjectId, oldProjectId) => {
     if (newProjectId !== oldProjectId && oldProjectId) {
-      // Clear store data for the old project
       topicsStore.clearProjectData(oldProjectId)
-
-      // Clear local data when project changes
       topics.value = []
       error.value = null
-
-      // Fetch topics for new project
-      if (newProjectId) {
-        fetchTopics()
-      }
+      if (newProjectId) fetchTopics()
     }
   },
   { immediate: false }
 )
 
-// Watch for topics data changes to handle focus
 watch(
   () => topics.value.length,
   newLength => {
-    if (newLength > 0) {
-      handleTopicFocus()
-    }
+    if (newLength > 0) handleTopicFocus()
   }
 )
 
-// Watch for route hash changes
 watch(
   () => route.hash,
   newHash => {
-    if (newHash && topics.value.length > 0) {
-      handleTopicFocus()
-    }
+    if (newHash && topics.value.length > 0) handleTopicFocus()
   },
   { immediate: true }
 )

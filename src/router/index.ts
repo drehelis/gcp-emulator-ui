@@ -722,7 +722,7 @@ router.afterEach((to, from) => {
 
   // Log route changes in development
   if (import.meta.env.DEV) {
-    console.log(`Route changed: ${from.path} → ${to.path}`)
+    console.debug(`Route changed: ${from.path} → ${to.path}`)
   }
 })
 

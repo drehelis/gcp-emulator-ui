@@ -105,10 +105,27 @@ export interface ModalAction {
   disabled?: boolean
 }
 
-interface Props {
+const MODAL_SIZE_MAP = {
+  xs: 'max-w-xs',
+  sm: 'max-w-sm',
+  md: 'max-w-md',
+  lg: 'max-w-lg',
+  xl: 'max-w-xl',
+  '2xl': 'max-w-2xl',
+  '3xl': 'max-w-3xl',
+  '4xl': 'max-w-4xl',
+  '5xl': 'max-w-5xl',
+  '6xl': 'max-w-6xl',
+  '7xl': 'max-w-7xl',
+  full: 'max-w-full sm:max-w-6xl',
+} as const
+
+export type ModalSize = keyof typeof MODAL_SIZE_MAP | (string & {})
+
+export interface ModalProps {
   modelValue: boolean
   title?: string
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | 'full'
+  size?: ModalSize
   icon?: Component
   iconColor?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger'
   persistent?: boolean
@@ -116,7 +133,7 @@ interface Props {
   zIndex?: number
 }
 
-const props = withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<ModalProps>(), {
   size: 'md',
   iconColor: 'primary',
   persistent: false,
@@ -131,19 +148,7 @@ const emit = defineEmits<{
 }>()
 
 const sizeClasses = computed(() => {
-  const sizes = {
-    xs: 'max-w-xs',
-    sm: 'max-w-sm',
-    md: 'max-w-md',
-    lg: 'max-w-lg',
-    xl: 'max-w-xl',
-    '2xl': 'max-w-2xl',
-    '3xl': 'max-w-3xl',
-    '4xl': 'max-w-4xl',
-    '5xl': 'max-w-full sm:max-w-5xl',
-    full: 'max-w-full sm:max-w-6xl',
-  }
-  return sizes[props.size]
+  return MODAL_SIZE_MAP[props.size as keyof typeof MODAL_SIZE_MAP] || MODAL_SIZE_MAP.md
 })
 
 const iconColorClass = computed(() => {
