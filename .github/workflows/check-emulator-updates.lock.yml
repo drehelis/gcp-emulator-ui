@@ -23,7 +23,7 @@
 #
 # Automatically check Google Cloud SDK release notes for emulator updates
 #
-# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"582b07d0674cec47cd21ca961bb296036ea67bda5ee65f7998e0c4f769cc4d1d","compiler_version":"v0.47.2"}
+# gh-aw-metadata: {"schema_version":"v1","frontmatter_hash":"75b66884ee403b3cbe89a8bcfca9814602258a4c04c455a7a0d6413a39335f50","compiler_version":"v0.47.2"}
 
 name: "Check Google Cloud SDK Emulator Updates"
 "on":
@@ -626,7 +626,7 @@ jobs:
           startup_timeout_sec = 120
           tool_timeout_sec = 60
           container = "ghcr.io/github/github-mcp-server:v0.30.3"
-          env = { "GITHUB_PERSONAL_ACCESS_TOKEN" = "$GH_AW_GITHUB_TOKEN", "GITHUB_READ_ONLY" = "1", "GITHUB_TOOLSETS" = "context,repos,issues,pull_requests" }
+          env = { "GITHUB_PERSONAL_ACCESS_TOKEN" = "$GH_AW_GITHUB_TOKEN", "GITHUB_READ_ONLY" = "1", "GITHUB_TOOLSETS" = "issues,repos" }
           env_vars = ["GITHUB_PERSONAL_ACCESS_TOKEN", "GITHUB_READ_ONLY", "GITHUB_TOOLSETS"]
           
           [mcp_servers.safeoutputs]
@@ -647,7 +647,7 @@ jobs:
                   "GITHUB_LOCKDOWN_MODE": "$GITHUB_MCP_LOCKDOWN",
                   "GITHUB_PERSONAL_ACCESS_TOKEN": "$GITHUB_MCP_SERVER_TOKEN",
                   "GITHUB_READ_ONLY": "1",
-                  "GITHUB_TOOLSETS": "context,repos,issues,pull_requests"
+                  "GITHUB_TOOLSETS": "issues,repos"
                 }
               },
               "safeoutputs": {
