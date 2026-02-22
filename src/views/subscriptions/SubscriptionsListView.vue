@@ -530,7 +530,6 @@ const appStore = useAppStore()
 
 const currentProjectId = computed(() => route.params.projectId as string)
 
-// State
 const subscriptions = ref<PubSubSubscription[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
@@ -548,41 +547,31 @@ const subscriptionToDelete = ref<PubSubSubscription | null>(null)
 const showPublishMessageModal = ref(false)
 const selectedTopicForPublish = ref<string>('')
 
-// Fallback label when subscription has no associated topic from the API response.
-// A subscription's name (projects/X/subscriptions/Y) doesn't encode its topic,
-// so we can't extract it — we use an explicit fallback instead.
 const UNKNOWN_TOPIC_FALLBACK = '_deleted_topic_'
 
-// Pull operation timeout – used for the abort controller, warning toasts, and error messages.
 const PULL_TIMEOUT_MS = 180_000 // 3 minutes
 const PULL_TIMEOUT_LABEL = `${PULL_TIMEOUT_MS / 60_000} minutes`
 
-// Computed
 const subscriptionsByTopic = computed(() => {
   const grouped = new Map<string, PubSubSubscription[]>()
 
   subscriptions.value.forEach(subscription => {
-    // Topic name might not be an explicit field, extracting it from subscription topic
-    // if not already attached (sometimes API results differ from interface definition)
     const topicName =
       subscription.topicName || (subscription as any).topic || UNKNOWN_TOPIC_FALLBACK
-    if (!topicName) return // Skip if topicName is still undefined/null
+    if (!topicName) return
     if (!grouped.has(topicName)) {
       grouped.set(topicName, [])
     }
     grouped.get(topicName)!.push(subscription)
   })
 
-  // Sort subscriptions within each topic
   grouped.forEach(subs => {
     subs.sort((a, b) => (a.name || '').localeCompare(b.name || ''))
   })
 
-  // Sort topics alphabetically
   return new Map([...grouped.entries()].sort(([a], [b]) => a.localeCompare(b)))
 })
 
-// Methods
 const getTopicDisplayName = (topicName: string): string => {
   if (!topicName) return 'unknown'
   const parts = topicName.split('/')
@@ -604,17 +593,14 @@ const loadSubscriptions = async (options: { preserveExpandedTopics?: boolean } =
   error.value = null
 
   try {
-    console.log('Loading subscriptions for project:', currentProjectId.value)
+    console.debug('Loading subscriptions for project:', currentProjectId.value)
     const response = await subscriptionsApi.getSubscriptions(currentProjectId.value)
-    console.log('Subscriptions API response in component:', response)
+    console.debug('Subscriptions API response in component:', response)
 
-    // Transform the API response to match our interface
-    // API returns 'topic' but our interface expects 'topicName'
-    // Ensure response is always an array to prevent .map() errors
     const safeResponse = Array.isArray(response) ? response : []
     const transformedSubscriptions = safeResponse.map((sub: any) => ({
       ...sub,
-      topicName: (sub as any).topic || sub.topicName || UNKNOWN_TOPIC_FALLBACK, // Handle both field names with fallback
+      topicName: (sub as any).topic || sub.topicName || UNKNOWN_TOPIC_FALLBACK,
       projectId: currentProjectId.value,
       id: sub.name || `sub-${Date.now()}`,
       fullName: sub.name || '',
@@ -639,7 +625,6 @@ const loadSubscriptions = async (options: { preserveExpandedTopics?: boolean } =
       expandedTopics.value = new Set()
     }
 
-    // Handle topic focus after data is loaded
     await nextTick()
     handleTopicFocus()
   } catch (err: any) {
@@ -660,7 +645,6 @@ const pullMessages = async (subscription: PubSubSubscription, retryCount = 0) =>
   const subscriptionDisplayName = getSubscriptionDisplayName(subscription.name)
   const startTime = Date.now()
 
-  // Progress indicators
   const warningTimer1 = setTimeout(() => {
     appStore.showToast({
       type: 'info',
@@ -685,7 +669,6 @@ const pullMessages = async (subscription: PubSubSubscription, retryCount = 0) =>
       maxMessages: 1000,
     }
 
-    // Create abort controller for timeout (longer than HTTP timeout)
     const abortController = new AbortController()
     const timeoutId = setTimeout(() => abortController.abort(), PULL_TIMEOUT_MS)
 
@@ -724,10 +707,8 @@ const pullMessages = async (subscription: PubSubSubscription, retryCount = 0) =>
   } catch (err: any) {
     const duration = Math.round((Date.now() - startTime) / 1000)
 
-    // Handle timeout specifically
     if (err.message?.includes('timed out') || err.name === 'AbortError') {
       if (retryCount < 2) {
-        // Allow 2 retries
         appStore.showToast({
           type: 'warning',
           title: 'Pull timed out, retrying...',
@@ -753,7 +734,6 @@ const pullMessages = async (subscription: PubSubSubscription, retryCount = 0) =>
       })
     }
   } finally {
-    // Clear all timers
     clearTimeout(warningTimer1)
     clearTimeout(warningTimer2)
     pullingMessages.value.delete(subscription.name)
@@ -786,7 +766,6 @@ const acknowledgePulledMessages = async (subscriptionName: string | undefined) =
       ackIds
     )
 
-    // Clear pulled messages after acknowledgment
     pulledMessages.value.set(subscriptionName, [])
 
     appStore.showToast({
@@ -794,7 +773,6 @@ const acknowledgePulledMessages = async (subscriptionName: string | undefined) =
       title: `Acknowledged ${ackIds.length} message(s)`,
     })
 
-    // Refresh subscription data to update message count
     await loadSubscriptions()
   } catch (err: any) {
     error.value = err.response?.data?.message || err.message || 'Failed to acknowledge messages'
@@ -827,7 +805,6 @@ const acknowledgeIndividualMessage = async (
       [ackId]
     )
 
-    // Remove the acknowledged message from pulled messages
     const messages = pulledMessages.value.get(subscriptionName) || []
     const updatedMessages = messages.filter(msg => msg.ackId !== ackId)
     pulledMessages.value.set(subscriptionName, updatedMessages)
@@ -837,7 +814,6 @@ const acknowledgeIndividualMessage = async (
       title: 'Message acknowledged',
     })
 
-    // Refresh subscription data to update message count
     await loadSubscriptions()
   } catch (err: any) {
     error.value = err.response?.data?.message || err.message || 'Failed to acknowledge message'
@@ -849,8 +825,6 @@ const acknowledgeIndividualMessage = async (
     acknowledgingMessages.value.delete(subscriptionName)
   }
 }
-
-// Removed unused function openSubscriptionDetails
 
 const editSubscription = (subscription: PubSubSubscription) => {
   subscriptionToEdit.value = subscription
@@ -889,17 +863,14 @@ const confirmDeleteSubscription = async () => {
       message: `Subscription "${subscriptionDisplayName}" deleted successfully`,
     })
 
-    // Remove from local array immediately for better UX
     subscriptions.value = subscriptions.value.filter(
       sub => getSubscriptionDisplayName(sub.name) !== subscriptionDisplayName
     )
 
-    // Refresh subscriptions list from API
     await loadSubscriptions({ preserveExpandedTopics: true })
   } catch (error: any) {
     console.error('Error deleting subscription:', error)
 
-    // Try to remove locally anyway if it's a 404 (subscription doesn't exist)
     if (error.response?.status === 404) {
       subscriptions.value = subscriptions.value.filter(
         sub => getSubscriptionDisplayName(sub.name) !== subscriptionDisplayName
@@ -970,13 +941,11 @@ const isTopicExpanded = (topicName: string) => {
 const selectSubscriptionAndOpenModal = async (subscription: PubSubSubscription) => {
   selectedSubscription.value = subscription
 
-  // Open the modal first, then pull messages (so user sees loading state)
   showSubscriptionMessagesModal.value = true
 
-  // Automatically pull messages when opening the modal
   await pullMessages(subscription)
 }
-// removed duplicate handleModalPullMessages
+
 const handleTopicFocus = async () => {
   const hash = route.hash.slice(1) || window.location.hash.slice(1) // Remove # from hash
   await handleTopicFocusUtil(
@@ -993,24 +962,19 @@ const openPublishMessageModal = (topicName: string) => {
 }
 
 const handleMessagePublished = () => {
-  // Can add a refresh or specific action if needed
 }
 
-// Watchers
 watch(
   () => currentProjectId.value,
   (newProjectId, oldProjectId) => {
     if (newProjectId !== oldProjectId && newProjectId) {
-      // Load saved expanded topics for the new project
       loadExpandedTopics()
-      // Reset expanded topics when switching projects (initial load for new project)
       loadSubscriptions({ preserveExpandedTopics: true })
     }
   },
   { immediate: true }
 )
 
-// Watch for subscriptions data changes to handle topic focus
 watch(
   () => subscriptionsByTopic.value.size,
   newSize => {
@@ -1020,7 +984,6 @@ watch(
   }
 )
 
-// Watch for route hash changes
 watch(
   () => route.hash,
   newHash => {
@@ -1031,7 +994,6 @@ watch(
   { immediate: true }
 )
 
-// Lifecycle
 onMounted(() => {
   if (currentProjectId.value) {
     loadExpandedTopics()
