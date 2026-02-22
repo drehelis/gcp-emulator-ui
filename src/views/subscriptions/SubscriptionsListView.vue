@@ -548,17 +548,14 @@ const subscriptionToDelete = ref<PubSubSubscription | null>(null)
 const showPublishMessageModal = ref(false)
 const selectedTopicForPublish = ref<string>('')
 
-// Helper to extract topic name from subscription full name
-const extractTopicName = (subscriptionFullName: string | undefined): string => {
-  if (!subscriptionFullName) return 'unknown'
-  // Expected format: projects/PROJECT_ID/subscriptions/SUBSCRIPTION_ID
-  // We need to find the topic name associated with this subscription.
-  // If subscription.topicName is not available, we can't reliably get it from subscription name.
-  // This function is a fallback for when subscription.topicName is missing.
-  // It's safer to rely on subscription.topicName or subscription.topic from the API response.
-  // For now, return 'unknown' if topicName is not explicitly provided.
-  return 'unknown'
-}
+// Fallback label when subscription has no associated topic from the API response.
+// A subscription's name (projects/X/subscriptions/Y) doesn't encode its topic,
+// so we can't extract it — we use an explicit fallback instead.
+const UNKNOWN_TOPIC_FALLBACK = '_deleted_topic_'
+
+// Pull operation timeout – used for the abort controller, warning toasts, and error messages.
+const PULL_TIMEOUT_MS = 180_000 // 3 minutes
+const PULL_TIMEOUT_LABEL = `${PULL_TIMEOUT_MS / 60_000} minutes`
 
 // Computed
 const subscriptionsByTopic = computed(() => {
@@ -568,7 +565,7 @@ const subscriptionsByTopic = computed(() => {
     // Topic name might not be an explicit field, extracting it from subscription topic
     // if not already attached (sometimes API results differ from interface definition)
     const topicName =
-      subscription.topicName || (subscription as any).topic || extractTopicName(subscription.name)
+      subscription.topicName || (subscription as any).topic || UNKNOWN_TOPIC_FALLBACK
     if (!topicName) return // Skip if topicName is still undefined/null
     if (!grouped.has(topicName)) {
       grouped.set(topicName, [])
@@ -617,7 +614,7 @@ const loadSubscriptions = async (options: { preserveExpandedTopics?: boolean } =
     const safeResponse = Array.isArray(response) ? response : []
     const transformedSubscriptions = safeResponse.map((sub: any) => ({
       ...sub,
-      topicName: (sub as any).topic || sub.topicName || extractTopicName(sub.name || ''), // Handle both field names with fallback
+      topicName: (sub as any).topic || sub.topicName || UNKNOWN_TOPIC_FALLBACK, // Handle both field names with fallback
       projectId: currentProjectId.value,
       id: sub.name || `sub-${Date.now()}`,
       fullName: sub.name || '',
@@ -677,7 +674,7 @@ const pullMessages = async (subscription: PubSubSubscription, retryCount = 0) =>
     appStore.showToast({
       type: 'warning',
       title: 'Pull operation in progress',
-      message: 'This can take up to 3 minutes. Please be patient.',
+      message: `This can take up to ${PULL_TIMEOUT_LABEL}. Please be patient.`,
       duration: 8000,
     })
   }, 60000) // 1 minute
@@ -690,7 +687,7 @@ const pullMessages = async (subscription: PubSubSubscription, retryCount = 0) =>
 
     // Create abort controller for timeout (longer than HTTP timeout)
     const abortController = new AbortController()
-    const timeoutId = setTimeout(() => abortController.abort(), 320000) // 5.3 minute timeout (slightly longer than HTTP)
+    const timeoutId = setTimeout(() => abortController.abort(), PULL_TIMEOUT_MS)
 
     const response = (await Promise.race([
       subscriptionsApi.pullMessages(
@@ -700,7 +697,7 @@ const pullMessages = async (subscription: PubSubSubscription, retryCount = 0) =>
       ),
       new Promise((_, reject) => {
         abortController.signal.addEventListener('abort', () => {
-          reject(new Error('Pull operation timed out after 3 minutes'))
+          reject(new Error(`Pull operation timed out after ${PULL_TIMEOUT_LABEL}`))
         })
       }),
     ])) as any

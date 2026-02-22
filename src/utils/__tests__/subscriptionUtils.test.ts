@@ -69,7 +69,7 @@ describe('subscriptionUtils', () => {
     it('returns error when name exceeds 255 characters', () => {
       const longName = 'a' + 'b'.repeat(255)
       expect(validateResourceName(longName, 'Subscription')).toBe(
-        'Subscription name must be less than 255 characters'
+        'Subscription name must be 255 characters or fewer'
       )
     })
 
@@ -96,6 +96,18 @@ describe('subscriptionUtils', () => {
     it('accepts a name with exactly 255 characters', () => {
       const name = 'a' + 'b'.repeat(254)
       expect(validateResourceName(name, 'Subscription')).toBe('')
+    })
+
+    it('accepts a name that is exactly 255 characters when trimmed', () => {
+      const name = '  ' + 'a' + 'b'.repeat(254) + '  '
+      expect(validateResourceName(name, 'Subscription')).toBe('')
+    })
+
+    it('returns error when trimmed name exceeds 255 characters', () => {
+      const name = '  ' + 'a' + 'b'.repeat(255) + '  '
+      expect(validateResourceName(name, 'Subscription')).toBe(
+        'Subscription name must be 255 characters or fewer'
+      )
     })
   })
 

@@ -473,7 +473,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch, onMounted, onUnmounted } from 'vue'
+import { computed, ref, watch, onMounted } from 'vue'
 import {
   ExclamationTriangleIcon,
   DocumentDuplicateIcon,
@@ -962,5 +962,5 @@ onMounted(async () => {
   await initializeFromTemplate()
 })
 
-onUnmounted(() => {})
+
 </script>

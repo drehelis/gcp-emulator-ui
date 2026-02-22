@@ -79,20 +79,21 @@ export const validateSubscriptionForm = (
 }
 
 export const validateResourceName = (name: string, resourceLabel: string): string => {
-  if (!name.trim()) {
+  const trimmedName = name.trim()
+  if (!trimmedName) {
     return `${resourceLabel} name is required`
   }
 
-  if (name.trim().length < 3) {
+  if (trimmedName.length < 3) {
     return `${resourceLabel} name must be at least 3 characters`
   }
 
-  if (!/^[a-zA-Z][a-zA-Z0-9-_]*$/.test(name)) {
+  if (!/^[a-zA-Z][a-zA-Z0-9-_]*$/.test(trimmedName)) {
     return `${resourceLabel} name must start with a letter and contain only letters, numbers, hyphens, and underscores`
   }
 
-  if (name.length > 255) {
-    return `${resourceLabel} name must be less than 255 characters`
+  if (trimmedName.length > 255) {
+    return `${resourceLabel} name must be 255 characters or fewer`
   }
 
   return ''

@@ -141,7 +141,6 @@ describe('SubscriptionsListView', () => {
 
     expect(deleteSubscriptionMock).toHaveBeenCalled()
     expect(wrapper.text()).toContain('sub-b')
-    expect(wrapper.text()).toContain('sub-b')
     expect(wrapper.text()).not.toContain('sub-a')
   })
 })

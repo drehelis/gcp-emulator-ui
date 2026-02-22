@@ -69,7 +69,20 @@ export interface ModalConfig {
   component: Component
   props?: Record<string, any>
   options?: {
-    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'full'
+    size?:
+      | 'xs'
+      | 'sm'
+      | 'md'
+      | 'lg'
+      | 'xl'
+      | '2xl'
+      | '3xl'
+      | '4xl'
+      | '5xl'
+      | '6xl'
+      | '7xl'
+      | 'full'
+      | (string & {})
     persistent?: boolean
     backdrop?: boolean
     keyboard?: boolean
