@@ -191,18 +191,15 @@
     <div class="lg:col-span-2">
       <label class="flex items-center mb-2">
         <input
-          :checked="modelValue.enableDeadLetter || modelValue.useDeadLetter"
-          @change="updateField(enableDeadLetterField, ($event.target as HTMLInputElement).checked)"
+          :checked="modelValue.enableDeadLetter"
+          @change="updateField('enableDeadLetter', ($event.target as HTMLInputElement).checked)"
           type="checkbox"
           class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
         />
         <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ deadLetterLabel }}</span>
       </label>
 
-      <div
-        v-if="modelValue.enableDeadLetter || modelValue.useDeadLetter"
-        class="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-2"
-      >
+      <div v-if="modelValue.enableDeadLetter" class="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-2">
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Dead Letter Topic
@@ -258,6 +255,11 @@
             @input="updateField('deadLetterTopic', ($event.target as HTMLInputElement).value)"
             type="text"
             :placeholder="deadLetterPlaceholder"
+            class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+            :class="{
+              'border-red-300 focus:border-red-500 focus:ring-red-500':
+                modelValue.errors?.deadLetterTopic,
+            }"
           />
         </div>
         <div>
@@ -283,18 +285,15 @@
     <div class="lg:col-span-2">
       <label class="flex items-center mb-2">
         <input
-          :checked="modelValue.enableRetryPolicy || modelValue.useRetryPolicy"
-          @change="updateField(enableRetryPolicyField, ($event.target as HTMLInputElement).checked)"
+          :checked="modelValue.enableRetryPolicy"
+          @change="updateField('enableRetryPolicy', ($event.target as HTMLInputElement).checked)"
           type="checkbox"
           class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
         />
         <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ retryPolicyLabel }}</span>
       </label>
 
-      <div
-        v-if="modelValue.enableRetryPolicy || modelValue.useRetryPolicy"
-        class="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-2"
-      >
+      <div v-if="modelValue.enableRetryPolicy" class="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-2">
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Minimum Backoff
@@ -339,11 +338,9 @@ interface SubscriptionForm {
   enableMessageOrdering: boolean
   filter?: string
   enableDeadLetter?: boolean
-  useDeadLetter?: boolean
   deadLetterTopic?: string
   maxDeliveryAttempts?: number
   enableRetryPolicy?: boolean
-  useRetryPolicy?: boolean
   minimumBackoff?: string
   maximumBackoff?: string
   errors?: Record<string, string>
@@ -380,13 +377,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: SubscriptionForm]
 }>()
 
-const enableDeadLetterField = computed(() =>
-  props.mode === 'create' ? 'useDeadLetter' : 'enableDeadLetter'
-)
-
-const enableRetryPolicyField = computed(() =>
-  props.mode === 'create' ? 'useRetryPolicy' : 'enableRetryPolicy'
-)
+// Dead letter and retry policy labels vary by mode but always use the same field names
 
 const deadLetterLabel = computed(() =>
   props.mode === 'create' ? 'Use Dead Letter Topic' : 'Enable Dead Letter Policy'

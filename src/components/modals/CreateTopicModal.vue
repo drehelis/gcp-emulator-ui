@@ -189,7 +189,11 @@ import SubscriptionFormFields from '@/components/forms/SubscriptionFormFields.vu
 import { topicsApi, subscriptionsApi } from '@/api/pubsub'
 import { useAppStore } from '@/stores/app'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
-import { validateSubscriptionForm, buildSubscriptionRequest } from '@/utils/subscriptionUtils'
+import {
+  validateSubscriptionForm,
+  validateResourceName,
+  buildSubscriptionRequest,
+} from '@/utils/subscriptionUtils'
 import type { SubscriptionForm } from '@/utils/subscriptionUtils'
 import { useTopicsStore } from '@/stores/topics'
 
@@ -258,21 +262,7 @@ const modalActions = computed<ModalAction[]>(() => [
   },
 ])
 
-const validateTopicName = (name: string): string => {
-  if (!name.trim()) {
-    return 'Topic name is required'
-  }
-
-  if (!/^[a-zA-Z][a-zA-Z0-9-_]*$/.test(name)) {
-    return 'Topic name must start with a letter and contain only letters, numbers, hyphens, and underscores'
-  }
-
-  if (name.length > 255) {
-    return 'Topic name must be less than 255 characters'
-  }
-
-  return ''
-}
+const validateTopicName = (name: string): string => validateResourceName(name, 'Topic')
 
 // Using validateSubscriptionForm directly
 

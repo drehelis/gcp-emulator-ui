@@ -78,21 +78,28 @@ export const validateSubscriptionForm = (
   return errors
 }
 
-export const validateSubscriptionName = (name: string): string => {
+export const validateResourceName = (name: string, resourceLabel: string): string => {
   if (!name.trim()) {
-    return 'Subscription name is required'
+    return `${resourceLabel} name is required`
+  }
+
+  if (name.trim().length < 3) {
+    return `${resourceLabel} name must be at least 3 characters`
   }
 
   if (!/^[a-zA-Z][a-zA-Z0-9-_]*$/.test(name)) {
-    return 'Subscription name must start with a letter and contain only letters, numbers, hyphens, and underscores'
+    return `${resourceLabel} name must start with a letter and contain only letters, numbers, hyphens, and underscores`
   }
 
   if (name.length > 255) {
-    return 'Subscription name must be less than 255 characters'
+    return `${resourceLabel} name must be less than 255 characters`
   }
 
   return ''
 }
+
+export const validateSubscriptionName = (name: string): string =>
+  validateResourceName(name, 'Subscription')
 
 export const normalizeSubscriptionName = (name: string): string => {
   const trimmed = name.trim()
@@ -138,7 +145,7 @@ export const buildSubscriptionRequest = (
     }
   }
 
-  if ((form.enableDeadLetter || (form as any).useDeadLetter) && form.deadLetterTopic?.trim()) {
+  if (form.enableDeadLetter && form.deadLetterTopic?.trim()) {
     // If user provided a short topic name, format it to full path. If it's already a full path, use it.
     const dlTopicPath = form.deadLetterTopic.includes('/')
       ? form.deadLetterTopic
@@ -150,11 +157,7 @@ export const buildSubscriptionRequest = (
     }
   }
 
-  if (
-    (form.enableRetryPolicy || (form as any).useRetryPolicy) &&
-    form.minimumBackoff &&
-    form.maximumBackoff
-  ) {
+  if (form.enableRetryPolicy && form.minimumBackoff && form.maximumBackoff) {
     request.retryPolicy = {
       minimumBackoff: form.minimumBackoff.trim(),
       maximumBackoff: form.maximumBackoff.trim(),

@@ -6,12 +6,7 @@
     :actions="modalActions"
     @close="handleClose"
   >
-    <div v-if="isLoading" class="flex items-center justify-center py-8">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-      <span class="ml-3 text-gray-600 dark:text-gray-400">Loading subscription details...</span>
-    </div>
-
-    <div v-else-if="subscription" class="space-y-6">
+    <div v-if="subscription" class="space-y-6">
       <div
         class="border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-white dark:bg-gray-800"
       >
@@ -37,7 +32,11 @@ import { useAppStore } from '@/stores/app'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
 import type { PubSubSubscription } from '@/types'
 import { getMeaningfulErrorMessage } from '@/utils/errorMessages'
-import { validateSubscriptionForm, type SubscriptionForm } from '@/utils/subscriptionUtils'
+import {
+  validateSubscriptionForm,
+  buildSubscriptionRequest,
+  type SubscriptionForm,
+} from '@/utils/subscriptionUtils'
 import { useTopicsStore } from '@/stores/topics'
 
 interface Props {
@@ -62,7 +61,6 @@ const availableTopics = computed(() =>
     .filter(Boolean)
 )
 
-const isLoading = ref(false)
 const isUpdating = ref(false)
 
 const editSubscriptionForm = ref<SubscriptionForm>({
@@ -148,49 +146,40 @@ const handleUpdate = async () => {
   try {
     const subscriptionName = getSubscriptionDisplayName(props.subscription.name)
 
+    // Resolve the topic full name — the emulator may return it as `topic` or `topicName`
+    const topicFullName = (props.subscription as any).topic || props.subscription.topicName
+    if (!topicFullName) {
+      appStore.showToast({
+        type: 'error',
+        title: 'Missing Topic',
+        message:
+          'Cannot update: the subscription has no associated topic. Please refresh the page and try again.',
+        duration: 6000,
+      })
+      return
+    }
+
     // Delete existing
     await subscriptionsApi.deleteSubscription(currentProjectId.value, subscriptionName)
 
-    // Recreate
-    const createRequest: any = {
-      name: subscriptionName,
-      topic: (props.subscription as any).topic || props.subscription.topicName,
-      ackDeadlineSeconds: editSubscriptionForm.value.ackDeadlineSeconds,
-      enableMessageOrdering: editSubscriptionForm.value.enableMessageOrdering,
-      ...(editSubscriptionForm.value.filter &&
-        editSubscriptionForm.value.filter.trim() && {
-          filter: editSubscriptionForm.value.filter.trim(),
-        }),
-    }
+    // Recreate using the shared helper for consistent request building
+    // (handles dead-letter topic path normalization, etc.)
+    const createRequest = buildSubscriptionRequest(
+      currentProjectId.value,
+      topicFullName,
+      editSubscriptionForm.value
+    )
+    // Override the name since buildSubscriptionRequest normalizes it but we want the original
+    createRequest.name = subscriptionName
 
-    if (editSubscriptionForm.value.deliveryType === 'push') {
+    // Preserve the existing push endpoint if the user didn't change it
+    if (
+      editSubscriptionForm.value.deliveryType === 'push' &&
+      !editSubscriptionForm.value.pushEndpoint?.trim() &&
+      props.subscription.pushConfig?.pushEndpoint
+    ) {
       createRequest.pushConfig = {
-        pushEndpoint:
-          editSubscriptionForm.value.pushEndpoint ||
-          props.subscription.pushConfig?.pushEndpoint ||
-          '',
-      }
-    }
-
-    if (editSubscriptionForm.value.deliveryType === 'bigquery') {
-      createRequest.bigqueryConfig = {
-        table: editSubscriptionForm.value.bigqueryTable,
-        useTopicSchema: editSubscriptionForm.value.useTopicSchema,
-        writeMetadata: editSubscriptionForm.value.writeMetadata,
-      }
-    }
-
-    if (editSubscriptionForm.value.enableDeadLetter) {
-      createRequest.deadLetterPolicy = {
-        deadLetterTopic: editSubscriptionForm.value.deadLetterTopic,
-        maxDeliveryAttempts: editSubscriptionForm.value.maxDeliveryAttempts,
-      }
-    }
-
-    if (editSubscriptionForm.value.enableRetryPolicy) {
-      createRequest.retryPolicy = {
-        minimumBackoff: editSubscriptionForm.value.minimumBackoff,
-        maximumBackoff: editSubscriptionForm.value.maximumBackoff,
+        pushEndpoint: props.subscription.pushConfig.pushEndpoint,
       }
     }
 

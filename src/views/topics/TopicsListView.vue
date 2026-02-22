@@ -67,7 +67,7 @@
             v-for="topic in topics"
             :key="topic.name"
             :id="`topic-${getTopicDisplayName(topic.name)}`"
-            class="group relative px-4 py-2.5 cursor-pointer border-b border-gray-100 dark:border-gray-700/50 last:border-0 hover:bg-gray-50/80 dark:hover:bg-gray-700/30 transition-colors"
+            class="group relative px-4 py-2.5 border-b border-gray-100 dark:border-gray-700/50 last:border-0 transition-colors"
           >
             <div class="flex items-center justify-between">
               <!-- Left: icon + name + full path + badges -->

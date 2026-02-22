@@ -956,11 +956,13 @@ const loadExpandedTopics = () => {
 }
 
 const toggleTopicExpansion = (topicName: string) => {
-  if (expandedTopics.value.has(topicName)) {
-    expandedTopics.value.delete(topicName)
+  const newExpanded = new Set(expandedTopics.value)
+  if (newExpanded.has(topicName)) {
+    newExpanded.delete(topicName)
   } else {
-    expandedTopics.value.add(topicName)
+    newExpanded.add(topicName)
   }
+  expandedTopics.value = newExpanded
   saveExpandedTopics()
 }
 
