@@ -108,7 +108,20 @@ export interface ModalAction {
 interface Props {
   modelValue: boolean
   title?: string
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | 'full'
+  size?:
+    | 'xs'
+    | 'sm'
+    | 'md'
+    | 'lg'
+    | 'xl'
+    | '2xl'
+    | '3xl'
+    | '4xl'
+    | '5xl'
+    | '6xl'
+    | '7xl'
+    | 'full'
+    | (string & {})
   icon?: Component
   iconColor?: 'primary' | 'secondary' | 'success' | 'warning' | 'danger'
   persistent?: boolean
@@ -143,7 +156,7 @@ const sizeClasses = computed(() => {
     '5xl': 'max-w-full sm:max-w-5xl',
     full: 'max-w-full sm:max-w-6xl',
   }
-  return sizes[props.size]
+  return sizes[props.size as keyof typeof sizes] || sizes.md
 })
 
 const iconColorClass = computed(() => {

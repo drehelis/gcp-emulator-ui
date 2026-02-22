@@ -191,28 +191,75 @@
     <div class="lg:col-span-2">
       <label class="flex items-center mb-2">
         <input
-          :checked="modelValue.enableDeadLetter || modelValue.useDeadLetter"
-          @change="updateField(enableDeadLetterField, ($event.target as HTMLInputElement).checked)"
+          :checked="modelValue.enableDeadLetter"
+          @change="updateField('enableDeadLetter', ($event.target as HTMLInputElement).checked)"
           type="checkbox"
           class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
         />
         <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ deadLetterLabel }}</span>
       </label>
 
-      <div
-        v-if="modelValue.enableDeadLetter || modelValue.useDeadLetter"
-        class="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-2"
-      >
+      <div v-if="modelValue.enableDeadLetter" class="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-2">
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Dead Letter Topic
           </label>
+          <!-- Searchable dropdown when topics are available -->
+          <SearchableDropdown
+            v-if="availableTopics && availableTopics.length > 0"
+            :model-value="modelValue.deadLetterTopic ?? ''"
+            @update:model-value="updateField('deadLetterTopic', $event)"
+            :options="availableTopicsAsOptions"
+            placeholder="Select a topic..."
+            search-placeholder="Search topics..."
+            :clearable="true"
+            clear-label="None"
+            empty-text="No topics available"
+            no-results-text="No topics match your search"
+          >
+            <template #icon>
+              <svg
+                class="h-4 w-4 text-blue-500 mr-2 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                />
+              </svg>
+            </template>
+            <template #option-icon>
+              <svg
+                class="h-4 w-4 text-blue-500 mr-2 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                />
+              </svg>
+            </template>
+          </SearchableDropdown>
+          <!-- Fallback text input when no topics provided -->
           <input
+            v-else
             :value="modelValue.deadLetterTopic"
             @input="updateField('deadLetterTopic', ($event.target as HTMLInputElement).value)"
             type="text"
             :placeholder="deadLetterPlaceholder"
             class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+            :class="{
+              'border-red-300 focus:border-red-500 focus:ring-red-500':
+                modelValue.errors?.deadLetterTopic,
+            }"
           />
         </div>
         <div>
@@ -238,18 +285,15 @@
     <div class="lg:col-span-2">
       <label class="flex items-center mb-2">
         <input
-          :checked="modelValue.enableRetryPolicy || modelValue.useRetryPolicy"
-          @change="updateField(enableRetryPolicyField, ($event.target as HTMLInputElement).checked)"
+          :checked="modelValue.enableRetryPolicy"
+          @change="updateField('enableRetryPolicy', ($event.target as HTMLInputElement).checked)"
           type="checkbox"
           class="rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 dark:bg-gray-700"
         />
         <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">{{ retryPolicyLabel }}</span>
       </label>
 
-      <div
-        v-if="modelValue.enableRetryPolicy || modelValue.useRetryPolicy"
-        class="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-2"
-      >
+      <div v-if="modelValue.enableRetryPolicy" class="grid grid-cols-1 lg:grid-cols-2 gap-3 mt-2">
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Minimum Backoff
@@ -281,6 +325,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import SearchableDropdown from '@/components/ui/SearchableDropdown.vue'
 
 interface SubscriptionForm {
   name: string
@@ -293,11 +338,9 @@ interface SubscriptionForm {
   enableMessageOrdering: boolean
   filter?: string
   enableDeadLetter?: boolean
-  useDeadLetter?: boolean
   deadLetterTopic?: string
   maxDeliveryAttempts?: number
   enableRetryPolicy?: boolean
-  useRetryPolicy?: boolean
   minimumBackoff?: string
   maximumBackoff?: string
   errors?: Record<string, string>
@@ -310,6 +353,7 @@ interface Props {
   readOnlyDeliveryType?: boolean
   readOnlyBigQueryTable?: boolean
   mode?: 'create' | 'edit'
+  availableTopics?: string[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -318,19 +362,22 @@ const props = withDefaults(defineProps<Props>(), {
   readOnlyDeliveryType: false,
   readOnlyBigQueryTable: false,
   mode: 'create',
+  availableTopics: () => [],
 })
+
+// Transform availableTopics into { value, label } options for SearchableDropdown
+const availableTopicsAsOptions = computed(() =>
+  props.availableTopics.map(t => ({
+    value: t,
+    label: t.split('/topics/').pop() ?? t,
+  }))
+)
 
 const emit = defineEmits<{
   'update:modelValue': [value: SubscriptionForm]
 }>()
 
-const enableDeadLetterField = computed(() =>
-  props.mode === 'create' ? 'useDeadLetter' : 'enableDeadLetter'
-)
-
-const enableRetryPolicyField = computed(() =>
-  props.mode === 'create' ? 'useRetryPolicy' : 'enableRetryPolicy'
-)
+// Dead letter and retry policy labels vary by mode but always use the same field names
 
 const deadLetterLabel = computed(() =>
   props.mode === 'create' ? 'Use Dead Letter Topic' : 'Enable Dead Letter Policy'

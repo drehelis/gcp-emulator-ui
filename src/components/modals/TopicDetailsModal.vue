@@ -27,7 +27,6 @@
             >
               {{ getTopicDisplayName(topic.name) }}
             </div>
-            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Full path: {{ topic.name }}</p>
           </div>
 
           <!-- Message Retention -->
@@ -109,175 +108,248 @@
           </p>
         </div>
 
-        <div v-else class="space-y-3">
+        <div v-else class="space-y-2">
           <div
             v-for="(subscription, index) in subscriptions"
             :key="subscription.name || index"
-            class="border border-gray-200 dark:border-gray-600 rounded-lg p-3 bg-white dark:bg-gray-800"
+            class="group w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-2.5 sm:p-3 shadow-sm transition-all duration-200 hover:shadow-md hover:border-green-300 dark:hover:border-green-600"
           >
-            <!-- Show edit form if this subscription is being edited -->
-            <div
-              v-if="
-                editingSubscription &&
-                getSubscriptionDisplayName(editingSubscription.name) ===
-                  getSubscriptionDisplayName(subscription.name)
-              "
-              class="space-y-4"
-            >
-              <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">
-                Edit Subscription
-              </h4>
+            <div class="flex items-center justify-between">
+              <!-- Left: icon + name + badges -->
+              <div class="flex items-center space-x-3 flex-1 min-w-0 pr-2">
+                <InboxStackIcon
+                  class="h-4 w-4 text-green-500 shrink-0 group-hover:scale-110 group-hover:text-green-600 transition-transform"
+                />
 
-              <SubscriptionFormFields
-                v-model="newSubscription"
-                :mode="editingSubscription ? 'edit' : 'create'"
-                read-only-name
-                read-only-delivery-type
-                read-only-big-query-table
-              />
-            </div>
-
-            <!-- Show normal subscription details if not being edited -->
-            <div v-else>
-              <div class="flex items-center justify-between mb-2">
-                <div class="flex items-center space-x-2">
-                  <InboxStackIcon class="w-4 h-4 text-green-500" />
-                  <button
+                <div
+                  class="flex-1 flex flex-col xl:flex-row xl:items-center justify-between min-w-0 gap-1.5 xl:gap-4"
+                >
+                  <!-- Name -->
+                  <div
+                    class="min-w-0 shrink group/name"
                     @click.stop="editSubscription(subscription)"
-                    :disabled="isUpdatingSubscription || !subscription?.name"
-                    class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-200 transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Edit subscription"
                   >
-                    <span>{{ getSubscriptionDisplayName(subscription.name) }}</span>
-                    <svg
-                      class="w-3 h-3 ml-1 opacity-60 group-hover:opacity-100 transition-opacity"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                    <span
+                      class="inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 group-hover/name:text-blue-800 dark:group-hover/name:text-blue-300 group-hover/name:underline transition-colors truncate cursor-pointer"
                     >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                      />
-                    </svg>
-                  </button>
-                </div>
-                <div class="flex items-center space-x-1">
-                  <button
-                    @click.stop="openDuplicateSubscriptionModal(subscription)"
-                    :disabled="isDuplicatingSubscription || !subscription?.name"
-                    class="p-1 text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Duplicate subscription"
-                    aria-label="Duplicate subscription"
-                  >
-                    <DocumentDuplicateIcon class="w-4 h-4" />
-                  </button>
-                  <button
-                    @click.stop="showDeleteSubscriptionConfirmation(subscription)"
-                    :disabled="isDeletingSubscription || !subscription?.name"
-                    class="p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Delete subscription"
-                    aria-label="Delete subscription"
-                  >
-                    <TrashIcon class="w-4 h-4" />
-                  </button>
+                      {{ getSubscriptionDisplayName(subscription.name) }}
+                      <svg
+                        class="w-3 h-3 ml-1 opacity-60 group-hover/name:opacity-100 transition-opacity shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                        />
+                      </svg>
+                    </span>
+                    <p
+                      class="text-[11px] leading-tight text-gray-500 dark:text-gray-400 truncate mt-0.5"
+                    >
+                      {{ subscription.name }}
+                    </p>
+                  </div>
+
+                  <!-- Badges -->
+                  <div class="flex flex-wrap gap-1.5 text-[11px] shrink-0">
+                    <!-- Ack Deadline -->
+                    <div
+                      class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600"
+                    >
+                      <svg
+                        class="w-3 h-3 mr-1 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      <span class="font-medium mr-1">Ack:</span>
+                      <span>{{ subscription.ackDeadlineSeconds || 60 }}s</span>
+                    </div>
+
+                    <!-- Type -->
+                    <div
+                      class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600"
+                    >
+                      <svg
+                        class="w-3 h-3 mr-1 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"
+                        />
+                      </svg>
+                      <span class="font-medium mr-1">Type:</span>
+                      <span>{{
+                        subscription.pushConfig?.pushEndpoint
+                          ? 'Push'
+                          : subscription.bigqueryConfig
+                            ? 'BigQuery'
+                            : 'Pull'
+                      }}</span>
+                    </div>
+
+                    <!-- Ordering -->
+                    <div
+                      v-if="subscription.enableMessageOrdering"
+                      class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600"
+                    >
+                      <svg
+                        class="w-3 h-3 mr-1 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"
+                        />
+                      </svg>
+                      <span>Ordering</span>
+                    </div>
+
+                    <!-- Dead Letter Policy -->
+                    <div
+                      v-if="subscription.deadLetterPolicy"
+                      class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600"
+                      title="Dead Letter Policy enabled"
+                    >
+                      <svg
+                        class="w-3 h-3 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                        />
+                      </svg>
+                      <svg
+                        class="w-2.5 h-2.5 -ml-1 -mt-2 text-red-500"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle cx="12" cy="12" r="10" />
+                        <path
+                          fill="white"
+                          d="M15 9l-6 6M9 9l6 6"
+                          stroke="white"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                        />
+                      </svg>
+                    </div>
+
+                    <!-- Retry Policy -->
+                    <div
+                      v-if="subscription.retryPolicy"
+                      class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600"
+                      :title="`Retry Policy: ${subscription.retryPolicy.minimumBackoff} – ${subscription.retryPolicy.maximumBackoff}`"
+                    >
+                      <svg
+                        class="w-3 h-3 mr-1 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                        />
+                      </svg>
+                      <span
+                        >{{ subscription.retryPolicy.minimumBackoff }} →
+                        {{ subscription.retryPolicy.maximumBackoff }}</span
+                      >
+                    </div>
+
+                    <!-- Filter -->
+                    <div
+                      v-if="subscription.filter"
+                      class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600"
+                      :title="subscription.filter"
+                    >
+                      <svg
+                        class="w-3 h-3 mr-1 text-gray-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"
+                        />
+                      </svg>
+                      <span>Filter</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
+              <!-- Right: actions (fade in on hover) -->
               <div
-                class="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs text-gray-600 dark:text-gray-400"
+                class="flex items-center space-x-1 ml-2 transition-opacity focus-within:opacity-100 shrink-0"
               >
-                <div class="flex items-center justify-center">
-                  <span class="font-medium">Type:</span>
-                  <span
-                    class="inline-flex items-center px-1.5 py-0.5 ml-1 text-xs rounded bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200"
-                  >
-                    {{
-                      subscription.pushConfig?.pushEndpoint
-                        ? 'Push'
-                        : subscription.bigqueryConfig
-                          ? 'BigQuery'
-                          : 'Pull'
-                    }}
-                  </span>
-                </div>
-                <div class="flex items-center justify-center">
-                  <span class="font-medium">Ack Deadline:</span>&nbsp;{{
-                    subscription?.ackDeadlineSeconds || 60
-                  }}s
-                </div>
-                <div
-                  v-if="subscription?.pushConfig?.pushEndpoint"
-                  class="flex items-center justify-center"
+                <button
+                  @click.stop="openDuplicateSubscriptionModal(subscription)"
+                  :disabled="isDuplicatingSubscription || !subscription?.name"
+                  class="p-1.5 text-gray-400 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-900/40 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Duplicate subscription"
+                  aria-label="Duplicate subscription"
                 >
-                  <span class="font-medium">Endpoint:</span>&nbsp;{{
-                    subscription.pushConfig.pushEndpoint
-                  }}
-                </div>
-                <div
-                  v-else-if="subscription?.bigqueryConfig"
-                  class="flex items-center justify-center"
+                  <DocumentDuplicateIcon class="w-4 h-4" />
+                </button>
+                <button
+                  @click.stop="showDeleteSubscriptionConfirmation(subscription)"
+                  :disabled="isDeletingSubscription || !subscription?.name"
+                  class="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/40 rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Delete subscription"
+                  aria-label="Delete subscription"
                 >
-                  <span class="font-medium">BigQuery Table:</span>&nbsp;{{
-                    subscription.bigqueryConfig.table
-                  }}
-                </div>
-                <div class="flex items-center justify-center">
-                  <span class="font-medium">Ordering:</span>&nbsp;{{
-                    subscription?.enableMessageOrdering ? 'Enabled' : 'Disabled'
-                  }}
-                </div>
-              </div>
-
-              <!-- Filter Expression Display -->
-              <div v-if="subscription?.filter" class="mt-2 text-xs">
-                <div
-                  class="bg-gray-50 dark:bg-gray-700 rounded px-2 py-1.5 border border-gray-200 dark:border-gray-600"
-                >
-                  <span class="font-medium text-gray-700 dark:text-gray-300">Filter:</span>
-                  <code class="ml-1 text-gray-900 dark:text-gray-100">{{
-                    subscription.filter
-                  }}</code>
-                </div>
-              </div>
-
-              <!-- Additional configuration details -->
-              <div
-                v-if="subscription?.deadLetterPolicy || subscription?.retryPolicy"
-                class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600 dark:text-gray-400"
-              >
-                <div v-if="subscription?.deadLetterPolicy">
-                  <span class="font-medium">Dead Letter:</span>
-                  {{ getTopicDisplayName(subscription.deadLetterPolicy.deadLetterTopic || '') }} ({{
-                    subscription.deadLetterPolicy.maxDeliveryAttempts
-                  }}
-                  attempts)
-                </div>
-                <div v-if="subscription?.retryPolicy">
-                  <span class="font-medium">Retry:</span>
-                  {{ subscription.retryPolicy.minimumBackoff }} -
-                  {{ subscription.retryPolicy.maximumBackoff }}
-                </div>
+                  <TrashIcon class="w-4 h-4" />
+                </button>
               </div>
             </div>
-            <!-- Close normal subscription details -->
           </div>
         </div>
 
-        <!-- New/Edit Subscription Form -->
+        <!-- New Subscription Form -->
         <div
-          v-if="showNewSubscriptionForm || showEditSubscriptionForm"
+          v-if="showNewSubscriptionForm"
           class="mt-4 border border-gray-200 dark:border-gray-600 rounded-lg p-4 bg-white dark:bg-gray-800"
         >
           <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-3">
-            {{ editingSubscription ? 'Edit Subscription' : 'Create New Subscription' }}
+            Create New Subscription
           </h4>
 
           <SubscriptionFormFields
             v-model="newSubscription"
-            :mode="editingSubscription ? 'edit' : 'create'"
+            mode="create"
+            :available-topics="availableTopicNames"
           />
         </div>
       </div>
@@ -299,6 +371,13 @@
       @cancel="cancelDeleteSubscription"
     />
   </BaseModal>
+
+  <EditSubscriptionModal
+    v-model="showEditSubscriptionModal"
+    :subscription="editingSubscription"
+    :project-id="currentProjectId"
+    @subscriptions-changed="handleSubscriptionsChanged"
+  />
 
   <Teleport to="body">
     <BaseModal
@@ -362,36 +441,32 @@ import {
 import BaseModal from '@/components/ui/BaseModal.vue'
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
 import SubscriptionFormFields from '@/components/forms/SubscriptionFormFields.vue'
+import EditSubscriptionModal from '@/components/modals/EditSubscriptionModal.vue'
 import { topicsApi, subscriptionsApi } from '@/api/pubsub'
 import { useAppStore } from '@/stores/app'
 import { useTopicsStore } from '@/stores/topics'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
-import type { PubSubTopic, PubSubSubscription, CreateSubscriptionRequest } from '@/types'
+import type { PubSubTopic, PubSubSubscription } from '@/types'
 import { getMeaningfulErrorMessage } from '@/utils/errorMessages'
+import {
+  validateSubscriptionForm,
+  validateSubscriptionName,
+  normalizeSubscriptionName,
+  buildSubscriptionRequest,
+  type SubscriptionForm,
+} from '@/utils/subscriptionUtils'
+
+const availableTopicNames = computed(() =>
+  topicsStore.topics
+    .filter(t => t.projectId === currentProjectId.value)
+    .map(t => t.fullName)
+    .filter(Boolean)
+)
 
 interface Props {
   modelValue: boolean
   topicName?: string
   projectId?: string
-}
-
-interface SubscriptionForm {
-  name: string
-  deliveryType: 'pull' | 'push' | 'bigquery'
-  pushEndpoint?: string
-  bigqueryTable?: string
-  useTopicSchema?: boolean
-  writeMetadata?: boolean
-  ackDeadlineSeconds: number
-  enableMessageOrdering: boolean
-  filter?: string
-  enableDeadLetter: boolean
-  deadLetterTopic?: string
-  maxDeliveryAttempts?: number
-  enableRetryPolicy: boolean
-  minimumBackoff?: string
-  maximumBackoff?: string
-  errors?: Record<string, string>
 }
 
 const props = defineProps<Props>()
@@ -416,7 +491,7 @@ const isDuplicatingSubscription = ref(false)
 const topic = ref<PubSubTopic | null>(null)
 const subscriptions = ref<PubSubSubscription[]>([])
 const showNewSubscriptionForm = ref(false)
-const showEditSubscriptionForm = ref(false)
+const showEditSubscriptionModal = ref(false)
 const editingSubscription = ref<PubSubSubscription | null>(null)
 const showDeleteSubscriptionModal = ref(false)
 const subscriptionToDelete = ref<PubSubSubscription | null>(null)
@@ -508,95 +583,6 @@ const getSubscriptionDisplayName = (fullName: string | undefined): string => {
   return displayName
 }
 
-const validateSubscriptionForm = (
-  subscription: SubscriptionForm,
-  options: {
-    validateName?: boolean
-    validateBigQuery?: boolean
-    skipPushEndpointIfExists?: boolean
-    existingPushEndpoint?: string
-  } = {}
-): Record<string, string> => {
-  const errors: Record<string, string> = {}
-
-  // Name validation (only for new subscriptions)
-  if (options.validateName) {
-    const nameError = validateSubscriptionName(subscription.name)
-    if (nameError) {
-      errors.name = nameError
-    }
-  }
-
-  // Ack deadline range validation
-  if (subscription.ackDeadlineSeconds < 10 || subscription.ackDeadlineSeconds > 600) {
-    errors.ackDeadlineSeconds = 'Ack deadline must be between 10 and 600 seconds'
-  }
-
-  // Push endpoint validation
-  if (subscription.deliveryType === 'push') {
-    const hasExistingEndpoint = options.skipPushEndpointIfExists && options.existingPushEndpoint
-    if (!subscription.pushEndpoint?.trim() && !hasExistingEndpoint) {
-      errors.pushEndpoint = 'Push endpoint is required for push subscriptions'
-    }
-  }
-
-  // BigQuery validation (only for new subscriptions)
-  if (
-    options.validateBigQuery &&
-    subscription.deliveryType === 'bigquery' &&
-    !subscription.bigqueryTable?.trim()
-  ) {
-    errors.bigqueryTable = 'BigQuery table is required for BigQuery subscriptions'
-  }
-
-  // Dead letter policy validation
-  if (subscription.enableDeadLetter && !subscription.deadLetterTopic?.trim()) {
-    errors.deadLetterTopic = 'Dead letter topic is required when dead letter policy is enabled'
-  }
-
-  // Retry policy validation
-  if (subscription.enableRetryPolicy) {
-    if (!subscription.minimumBackoff?.trim()) {
-      errors.minimumBackoff = 'Minimum backoff is required when retry policy is enabled'
-    }
-    if (!subscription.maximumBackoff?.trim()) {
-      errors.maximumBackoff = 'Maximum backoff is required when retry policy is enabled'
-    }
-  }
-
-  return errors
-}
-
-const validateSubscriptionName = (name: string): string => {
-  if (!name.trim()) {
-    return 'Subscription name is required'
-  }
-
-  if (!/^[a-zA-Z][a-zA-Z0-9-_]*$/.test(name)) {
-    return 'Subscription name must start with a letter and contain only letters, numbers, hyphens, and underscores'
-  }
-
-  if (name.length > 255) {
-    return 'Subscription name must be less than 255 characters'
-  }
-
-  return ''
-}
-
-const normalizeSubscriptionName = (name: string): string => {
-  const trimmed = name.trim()
-  if (!trimmed) return ''
-
-  let normalized = trimmed.replace(/[^a-zA-Z0-9-_]/g, '-').replace(/-+/g, '-')
-  normalized = normalized.replace(/^-+/, '').replace(/-+$/, '')
-
-  if (!/^[a-zA-Z]/.test(normalized)) {
-    normalized = `sub-${normalized}`
-  }
-
-  return normalized
-}
-
 const loadTopic = async () => {
   if (!props.topicName || !currentProjectId.value) return
 
@@ -655,7 +641,7 @@ const loadSubscriptions = async () => {
     const safeAllSubs = Array.isArray(allSubs) ? allSubs : []
     const filteredSubs = safeAllSubs.filter(sub => {
       // Try different possible field names for the topic reference
-      const subTopic = sub.topicName || sub.topic || sub.topicId || sub.topicPath
+      const subTopic = (sub as any).topic || sub.topicName
 
       // Check multiple possible matches
       return (
@@ -676,299 +662,6 @@ const loadSubscriptions = async () => {
     console.error('Error loading subscriptions:', error)
   } finally {
     isLoadingSubscriptions.value = false
-  }
-}
-
-const handleUpdate = async () => {
-  if (!topic.value || !currentProjectId.value) return
-
-  // If we're editing a subscription OR creating a new one, handle subscription operations
-  if (editingSubscription.value || showNewSubscriptionForm.value) {
-    console.log('Calling saveSubscription')
-    await saveSubscription()
-    return
-  }
-
-  isUpdating.value = true
-  try {
-    // Prepare update data
-    const updateData = {
-      labels: {},
-      messageRetentionDuration: editForm.value.messageRetentionDuration,
-      schemaSettings:
-        editForm.value.useSchema && editForm.value.schemaName
-          ? {
-              schema: `projects/${currentProjectId.value}/schemas/${editForm.value.schemaName}`,
-              encoding: 'JSON' as const,
-            }
-          : undefined,
-      // Preserve existing data
-      createdAt: topic.value.createdAt,
-      messageCount: topic.value.messageCount,
-      subscriptionsCount: topic.value.subscriptionsCount,
-    }
-
-    // Call the update API
-    const updatedTopic = await topicsApi.updateTopic(
-      currentProjectId.value,
-      getTopicDisplayName(topic.value.name),
-      updateData
-    )
-
-    // Update the local topic data
-    const mergedTopic = { ...topic.value, ...updatedTopic }
-    topic.value = mergedTopic
-
-    // Update the topic in the topics store so it persists
-    const existingTopics = topicsStore.topics
-    const topicIndex = existingTopics.findIndex(
-      t =>
-        getTopicDisplayName(t.name) === getTopicDisplayName(topic.value!.name) &&
-        t.projectId === currentProjectId.value
-    )
-
-    if (topicIndex !== -1) {
-      // Update existing topic in store
-      existingTopics[topicIndex] = mergedTopic
-    } else {
-      // Add new topic to store if not found
-      existingTopics.push(mergedTopic)
-    }
-
-    appStore.showToast({
-      type: 'success',
-      title: 'Topic Updated',
-      message: `Topic "${getTopicDisplayName(topic.value.name)}" has been updated successfully`,
-    })
-
-    emit('topic-updated')
-
-    // Close the modal after successful update
-    modelValue.value = false
-  } catch (error) {
-    console.error('Error updating topic:', error)
-    appStore.showToast({
-      type: 'error',
-      title: 'Update Failed',
-      message: 'Failed to update topic',
-    })
-  } finally {
-    isUpdating.value = false
-  }
-}
-
-const handleClose = () => {
-  if (!isUpdating.value && !isCreatingSubscription.value && !isUpdatingSubscription.value) {
-    modelValue.value = false
-    showNewSubscriptionForm.value = false
-    showEditSubscriptionForm.value = false
-    editingSubscription.value = null
-  }
-}
-
-const editSubscription = (subscription: PubSubSubscription) => {
-  editingSubscription.value = subscription
-  showNewSubscriptionForm.value = false
-  const displayName = getSubscriptionDisplayName(subscription.name)
-
-  // Determine delivery type based on subscription config
-  let deliveryType: 'pull' | 'push' | 'bigquery' = 'pull'
-  if (subscription.pushConfig?.pushEndpoint) {
-    deliveryType = 'push'
-  } else if (subscription.bigqueryConfig) {
-    deliveryType = 'bigquery'
-  }
-
-  // Pre-fill the form with existing subscription data
-  newSubscription.value = {
-    name: displayName,
-    deliveryType,
-    ackDeadlineSeconds: subscription.ackDeadlineSeconds || 60,
-    enableMessageOrdering: subscription.enableMessageOrdering || false,
-    filter: subscription.filter || '',
-    pushEndpoint: subscription.pushConfig?.pushEndpoint || '',
-    bigqueryTable: subscription.bigqueryConfig?.table || '',
-    useTopicSchema: subscription.bigqueryConfig?.useTopicSchema || false,
-    writeMetadata: subscription.bigqueryConfig?.writeMetadata || false,
-    deadLetterTopic: subscription.deadLetterPolicy?.deadLetterTopic
-      ? getTopicDisplayName(subscription.deadLetterPolicy.deadLetterTopic)
-      : '',
-    maxDeliveryAttempts: subscription.deadLetterPolicy?.maxDeliveryAttempts || 5,
-    minimumBackoff: subscription.retryPolicy?.minimumBackoff || '',
-    maximumBackoff: subscription.retryPolicy?.maximumBackoff || '',
-    enableDeadLetter: !!subscription.deadLetterPolicy,
-    enableRetryPolicy: !!subscription.retryPolicy,
-  }
-
-  // showEditSubscriptionForm.value = true  // Don't show separate form anymore
-}
-
-const addSubscription = () => {
-  editingSubscription.value = null
-  showEditSubscriptionForm.value = false
-  showNewSubscriptionForm.value = true
-  newSubscription.value = {
-    name: '',
-    deliveryType: 'pull',
-    ackDeadlineSeconds: 60,
-    enableMessageOrdering: false,
-    filter: '',
-    enableDeadLetter: false,
-    maxDeliveryAttempts: 5,
-    enableRetryPolicy: false,
-    minimumBackoff: '10s',
-    maximumBackoff: '600s',
-  }
-}
-
-const openDuplicateSubscriptionModal = (subscription: PubSubSubscription) => {
-  subscriptionToDuplicate.value = subscription
-  duplicateSubscriptionName.value = normalizeSubscriptionName(
-    `${getSubscriptionDisplayName(subscription.name)}-copy`
-  )
-  duplicateSubscriptionNameError.value = ''
-  showDuplicateSubscriptionModal.value = true
-
-  nextTick(() => {
-    duplicateSubscriptionNameInput.value?.focus()
-  })
-}
-
-const confirmDuplicateSubscription = async () => {
-  if (!subscriptionToDuplicate.value || !currentProjectId.value) return
-
-  // Capture the name immediately to use in all toast messages
-  const targetName = duplicateSubscriptionName.value.trim()
-
-  const nameError = validateSubscriptionName(targetName)
-  if (nameError) {
-    duplicateSubscriptionNameError.value = nameError
-    return
-  }
-
-  isDuplicatingSubscription.value = true
-  try {
-    const source = subscriptionToDuplicate.value
-    const deliveryType = source.pushConfig?.pushEndpoint
-      ? 'push'
-      : source.bigqueryConfig
-        ? 'bigquery'
-        : 'pull'
-
-    const createRequest: CreateSubscriptionRequest = {
-      name: targetName,
-      topic:
-        topic.value?.name ||
-        source.topicName ||
-        (source as { topic?: string }).topic ||
-        props.topicName ||
-        '',
-      ackDeadlineSeconds: source.ackDeadlineSeconds || 60,
-      enableMessageOrdering: source.enableMessageOrdering || false,
-      ...(source.retainAckedMessages !== undefined && {
-        retainAckedMessages: source.retainAckedMessages,
-      }),
-      ...(source.messageRetentionDuration && {
-        messageRetentionDuration: source.messageRetentionDuration,
-      }),
-      ...(source.filter && source.filter.trim() && { filter: source.filter.trim() }),
-      ...(source.labels && { labels: source.labels }),
-    }
-
-    if (deliveryType === 'push' && source.pushConfig?.pushEndpoint) {
-      createRequest.pushConfig = {
-        pushEndpoint: source.pushConfig.pushEndpoint,
-        ...(source.pushConfig.attributes && { attributes: source.pushConfig.attributes }),
-      }
-    }
-
-    if (deliveryType === 'bigquery' && source.bigqueryConfig) {
-      createRequest.bigqueryConfig = {
-        table: source.bigqueryConfig.table,
-        useTopicSchema: source.bigqueryConfig.useTopicSchema,
-        writeMetadata: source.bigqueryConfig.writeMetadata,
-        dropUnknownFields: source.bigqueryConfig.dropUnknownFields,
-        serviceAccountEmail: source.bigqueryConfig.serviceAccountEmail,
-      }
-    }
-
-    if (source.deadLetterPolicy) {
-      createRequest.deadLetterPolicy = {
-        deadLetterTopic: source.deadLetterPolicy.deadLetterTopic,
-        maxDeliveryAttempts: source.deadLetterPolicy.maxDeliveryAttempts,
-      }
-    }
-
-    if (source.retryPolicy) {
-      createRequest.retryPolicy = {
-        minimumBackoff: source.retryPolicy.minimumBackoff,
-        maximumBackoff: source.retryPolicy.maximumBackoff,
-      }
-    }
-
-    await subscriptionsApi.createSubscription(currentProjectId.value, createRequest)
-
-    appStore.showToast({
-      type: 'success',
-      title: 'Subscription Duplicated',
-      message: `Subscription "${targetName}" has been created`,
-    })
-
-    await loadSubscriptions()
-    emit('subscriptions-changed')
-    handleDuplicateModalClose()
-  } catch (error: any) {
-    if (
-      error.response?.status === 409 ||
-      error.message?.includes('ALREADY_EXISTS') ||
-      error.response?.data?.message?.includes('ALREADY_EXISTS')
-    ) {
-      appStore.showToast({
-        type: 'warning',
-        title: 'Subscription Exists',
-        message: `A subscription named "${targetName}" already exists. Please choose a different name.`,
-        duration: 8000,
-      })
-    } else {
-      appStore.showToast({
-        type: 'error',
-        title: 'Duplication Failed',
-        message: `Failed to duplicate subscription: ${getMeaningfulErrorMessage(error)}`,
-        duration: 5000,
-      })
-    }
-  } finally {
-    isDuplicatingSubscription.value = false
-  }
-}
-
-const handleDuplicateModalClose = () => {
-  showDuplicateSubscriptionModal.value = false
-  subscriptionToDuplicate.value = null
-  duplicateSubscriptionName.value = ''
-  duplicateSubscriptionNameError.value = ''
-  isDuplicatingSubscription.value = false
-}
-
-const clearDuplicateSubscriptionNameError = () => {
-  duplicateSubscriptionNameError.value = ''
-}
-
-const cancelSubscriptionForm = () => {
-  showNewSubscriptionForm.value = false
-  showEditSubscriptionForm.value = false
-  editingSubscription.value = null
-  newSubscription.value = {
-    name: '',
-    deliveryType: 'pull',
-    ackDeadlineSeconds: 60,
-    enableMessageOrdering: false,
-    filter: '',
-    enableDeadLetter: false,
-    maxDeliveryAttempts: 5,
-    enableRetryPolicy: false,
-    minimumBackoff: '10s',
-    maximumBackoff: '600s',
   }
 }
 
@@ -994,7 +687,7 @@ const saveNewSubscription = async () => {
     appStore.showToast({
       type: 'error',
       title: 'Validation Error',
-      message: errorMessage,
+      message: errorMessage || 'Validation failed',
       duration: 6000,
     })
     return
@@ -1002,46 +695,11 @@ const saveNewSubscription = async () => {
 
   isCreatingSubscription.value = true
   try {
-    const subRequest: CreateSubscriptionRequest = {
-      name: newSubscription.value.name.trim(),
-      topic: topic.value.name,
-      ackDeadlineSeconds: newSubscription.value.ackDeadlineSeconds,
-      enableMessageOrdering: newSubscription.value.enableMessageOrdering,
-      ...(newSubscription.value.filter &&
-        newSubscription.value.filter.trim() && { filter: newSubscription.value.filter.trim() }),
-    }
-
-    if (newSubscription.value.deliveryType === 'push' && newSubscription.value.pushEndpoint) {
-      subRequest.pushConfig = {
-        pushEndpoint: newSubscription.value.pushEndpoint,
-      }
-    }
-
-    if (newSubscription.value.deliveryType === 'bigquery' && newSubscription.value.bigqueryTable) {
-      subRequest.bigqueryConfig = {
-        table: newSubscription.value.bigqueryTable,
-        useTopicSchema: newSubscription.value.useTopicSchema,
-        writeMetadata: newSubscription.value.writeMetadata,
-      }
-    }
-
-    if (newSubscription.value.enableDeadLetter && newSubscription.value.deadLetterTopic) {
-      subRequest.deadLetterPolicy = {
-        deadLetterTopic: newSubscription.value.deadLetterTopic,
-        maxDeliveryAttempts: newSubscription.value.maxDeliveryAttempts,
-      }
-    }
-
-    if (
-      newSubscription.value.enableRetryPolicy &&
-      newSubscription.value.minimumBackoff &&
-      newSubscription.value.maximumBackoff
-    ) {
-      subRequest.retryPolicy = {
-        minimumBackoff: newSubscription.value.minimumBackoff,
-        maximumBackoff: newSubscription.value.maximumBackoff,
-      }
-    }
+    const subRequest = buildSubscriptionRequest(
+      currentProjectId.value,
+      topic.value.name,
+      newSubscription.value
+    )
 
     await subscriptionsApi.createSubscription(currentProjectId.value, subRequest)
 
@@ -1106,216 +764,281 @@ const saveNewSubscription = async () => {
   }
 }
 
-const saveSubscription = async () => {
-  console.log('saveSubscription called - editingSubscription.value:', editingSubscription.value)
-  console.log('showNewSubscriptionForm.value:', showNewSubscriptionForm.value)
+const handleUpdate = async () => {
+  if (!topic.value || !currentProjectId.value) return
 
-  if (editingSubscription.value) {
-    await saveEditedSubscription()
-  } else {
+  // If we're creating a new one, handle subscription operations
+  if (showNewSubscriptionForm.value) {
+    console.log('Calling saveNewSubscription')
     await saveNewSubscription()
-  }
-}
-
-const saveEditedSubscription = async () => {
-  console.log('saveEditedSubscription called')
-  console.log('editingSubscription.value:', editingSubscription.value)
-  console.log('currentProjectId.value:', currentProjectId.value)
-  console.log('newSubscription.value:', newSubscription.value)
-
-  if (!editingSubscription.value || !currentProjectId.value) return
-
-  // Validate form data BEFORE deleting the subscription
-  const isEditingExistingPushSub =
-    editingSubscription.value.pushConfig?.pushEndpoint &&
-    typeof editingSubscription.value.pushConfig === 'object'
-  const existingPushEndpoint =
-    isEditingExistingPushSub && editingSubscription.value.pushConfig
-      ? editingSubscription.value.pushConfig.pushEndpoint
-      : undefined
-
-  console.log('editingSubscription pushConfig:', editingSubscription.value.pushConfig)
-  console.log('Has existing pushEndpoint?', existingPushEndpoint)
-
-  const errors = validateSubscriptionForm(newSubscription.value, {
-    skipPushEndpointIfExists: true,
-    ...(existingPushEndpoint && { existingPushEndpoint }),
-  })
-
-  console.log('Validation errors:', errors)
-  if (Object.keys(errors).length > 0) {
-    newSubscription.value.errors = errors
-    console.log('Validation failed, returning early - subscription not deleted')
-
-    // Show specific validation errors
-    const errorMessages = Object.values(errors)
-    const errorMessage =
-      errorMessages.length === 1
-        ? errorMessages[0]
-        : `Validation errors: ${errorMessages.join(', ')}`
-
-    appStore.showToast({
-      type: 'error',
-      title: 'Validation Error',
-      message: errorMessage,
-      duration: 6000,
-    })
     return
   }
-  console.log('Validation passed, proceeding with delete+recreate')
 
-  isUpdatingSubscription.value = true
+  isUpdating.value = true
   try {
-    const subscriptionName = getSubscriptionDisplayName(editingSubscription.value.name)
-
-    // Prepare update data - include full subscription data with updates
-    const updateData: any = {
-      name: editingSubscription.value.name,
-      topic: editingSubscription.value.topic,
-      ackDeadlineSeconds: newSubscription.value.ackDeadlineSeconds,
-      enableMessageOrdering: newSubscription.value.enableMessageOrdering,
+    // Prepare update data
+    const updateData: Partial<PubSubTopic> = {
+      labels: {},
+      messageRetentionDuration: editForm.value.messageRetentionDuration,
+      // Preserve existing data
+      createdAt: topic.value.createdAt!,
+      ...(topic.value.messageCount !== undefined && { messageCount: topic.value.messageCount }),
+      ...(topic.value.subscriptionsCount !== undefined && {
+        subscriptionsCount: topic.value.subscriptionsCount,
+      }),
     }
 
-    // Add push config if it's a push subscription
-    if (newSubscription.value.deliveryType === 'push') {
-      updateData.pushConfig = {
-        pushEndpoint:
-          newSubscription.value.pushEndpoint ||
-          editingSubscription.value.pushConfig?.pushEndpoint ||
-          '',
-      }
-    } else if (editingSubscription.value.pushConfig?.pushEndpoint) {
-      // Preserve existing push config for existing push subscriptions
-      updateData.pushConfig = editingSubscription.value.pushConfig
-    }
-
-    // Add BigQuery config if it's a BigQuery subscription
-    if (newSubscription.value.deliveryType === 'bigquery') {
-      updateData.bigqueryConfig = {
-        table: newSubscription.value.bigqueryTable,
-        useTopicSchema: newSubscription.value.useTopicSchema,
-        writeMetadata: newSubscription.value.writeMetadata,
+    if (editForm.value.useSchema && editForm.value.schemaName) {
+      updateData.schemaSettings = {
+        schema: `projects/${currentProjectId.value}/schemas/${editForm.value.schemaName}`,
+        encoding: 'JSON',
       }
     }
 
-    // Add dead letter policy if enabled
-    if (newSubscription.value.enableDeadLetter) {
-      updateData.deadLetterPolicy = {
-        deadLetterTopic: newSubscription.value.deadLetterTopic,
-        maxDeliveryAttempts: newSubscription.value.maxDeliveryAttempts,
-      }
+    // Call the update API
+    const updatedTopic = await topicsApi.updateTopic(
+      currentProjectId.value,
+      getTopicDisplayName(topic.value.name),
+      updateData
+    )
+
+    // Update the local topic data
+    const mergedTopic = { ...topic.value, ...updatedTopic }
+    topic.value = mergedTopic
+
+    // Update the topic in the topics store so it persists
+    const existingTopics = topicsStore.topics
+    const topicIndex = existingTopics.findIndex(
+      t =>
+        getTopicDisplayName(t.name) === getTopicDisplayName(topic.value!.name) &&
+        t.projectId === currentProjectId.value
+    )
+
+    if (topicIndex !== -1) {
+      // Update existing topic in store
+      existingTopics[topicIndex] = mergedTopic
     } else {
-      // Explicitly remove dead letter policy if disabled
-      updateData.deadLetterPolicy = null
+      // Add new topic to store if not found
+      existingTopics.push(mergedTopic)
     }
-
-    // Add retry policy if enabled
-    if (newSubscription.value.enableRetryPolicy) {
-      updateData.retryPolicy = {
-        minimumBackoff: newSubscription.value.minimumBackoff,
-        maximumBackoff: newSubscription.value.maximumBackoff,
-      }
-    } else {
-      // Explicitly remove retry policy if disabled
-      updateData.retryPolicy = null
-    }
-
-    console.log('Deleting and recreating subscription with data:', updateData)
-
-    // Since emulator doesn't support updates, delete and recreate the subscription
-    console.log('Step 1: Deleting existing subscription...')
-    await subscriptionsApi.deleteSubscription(currentProjectId.value, subscriptionName)
-    console.log('Step 2: Creating new subscription with updated settings...')
-
-    // Prepare creation request
-    const createRequest = {
-      name: subscriptionName, // Just the name, not the full path
-      topic: editingSubscription.value.topic,
-      ackDeadlineSeconds: newSubscription.value.ackDeadlineSeconds,
-      enableMessageOrdering: newSubscription.value.enableMessageOrdering,
-      ...(newSubscription.value.filter &&
-        newSubscription.value.filter.trim() && { filter: newSubscription.value.filter.trim() }),
-    }
-
-    // Add delivery-specific config
-    if (newSubscription.value.deliveryType === 'push') {
-      createRequest.pushConfig = {
-        pushEndpoint:
-          newSubscription.value.pushEndpoint ||
-          editingSubscription.value.pushConfig?.pushEndpoint ||
-          '',
-      }
-    }
-
-    if (newSubscription.value.deliveryType === 'bigquery') {
-      createRequest.bigqueryConfig = {
-        table: newSubscription.value.bigqueryTable,
-        useTopicSchema: newSubscription.value.useTopicSchema,
-        writeMetadata: newSubscription.value.writeMetadata,
-      }
-    }
-
-    // Add dead letter policy if enabled
-    if (newSubscription.value.enableDeadLetter) {
-      createRequest.deadLetterPolicy = {
-        deadLetterTopic: newSubscription.value.deadLetterTopic,
-        maxDeliveryAttempts: newSubscription.value.maxDeliveryAttempts,
-      }
-    }
-
-    // Add retry policy if enabled
-    if (newSubscription.value.enableRetryPolicy) {
-      createRequest.retryPolicy = {
-        minimumBackoff: newSubscription.value.minimumBackoff,
-        maximumBackoff: newSubscription.value.maximumBackoff,
-      }
-    }
-
-    console.log('Creating subscription with request:', createRequest)
-    await subscriptionsApi.createSubscription(currentProjectId.value, createRequest)
-    console.log('Subscription updated successfully')
 
     appStore.showToast({
       type: 'success',
-      title: 'Subscription Updated',
-      message: `Subscription "${newSubscription.value.name}" updated successfully`,
+      title: 'Topic Updated',
+      message: `Topic "${getTopicDisplayName(topic.value.name)}" has been updated successfully`,
     })
 
-    // Refresh subscriptions list
+    emit('topic-updated')
+
+    // Close the modal after successful update
+    modelValue.value = false
+  } catch (error) {
+    console.error('Error updating topic:', error)
+    appStore.showToast({
+      type: 'error',
+      title: 'Update Failed',
+      message: 'Failed to update topic',
+    })
+  } finally {
+    isUpdating.value = false
+  }
+}
+
+const handleClose = () => {
+  if (!isUpdating.value && !isCreatingSubscription.value && !isUpdatingSubscription.value) {
+    modelValue.value = false
+    showNewSubscriptionForm.value = false
+    showEditSubscriptionModal.value = false
+    editingSubscription.value = null
+  }
+}
+
+const editSubscription = (subscription: PubSubSubscription) => {
+  editingSubscription.value = subscription
+  showEditSubscriptionModal.value = true
+}
+
+const handleSubscriptionsChanged = async () => {
+  await loadSubscriptions()
+  emit('subscriptions-changed')
+}
+
+const addSubscription = () => {
+  editingSubscription.value = null
+  showEditSubscriptionModal.value = false
+  showNewSubscriptionForm.value = true
+  newSubscription.value = {
+    name: '',
+    deliveryType: 'pull',
+    ackDeadlineSeconds: 60,
+    enableMessageOrdering: false,
+    filter: '',
+    enableDeadLetter: false,
+    maxDeliveryAttempts: 5,
+    enableRetryPolicy: false,
+    minimumBackoff: '10s',
+    maximumBackoff: '600s',
+  }
+}
+
+const openDuplicateSubscriptionModal = (subscription: PubSubSubscription) => {
+  subscriptionToDuplicate.value = subscription
+  duplicateSubscriptionName.value = normalizeSubscriptionName(
+    `${getSubscriptionDisplayName(subscription.name)}-copy`
+  )
+  duplicateSubscriptionNameError.value = ''
+  showDuplicateSubscriptionModal.value = true
+
+  nextTick(() => {
+    duplicateSubscriptionNameInput.value?.focus()
+  })
+}
+
+const confirmDuplicateSubscription = async () => {
+  if (!subscriptionToDuplicate.value || !currentProjectId.value) return
+
+  // Capture the name immediately to use in all toast messages
+  const targetName = duplicateSubscriptionName.value.trim()
+
+  const nameError = validateSubscriptionName(targetName)
+  if (nameError) {
+    duplicateSubscriptionNameError.value = nameError
+    return
+  }
+
+  isDuplicatingSubscription.value = true
+  try {
+    const source = subscriptionToDuplicate.value
+    const deliveryType = source.pushConfig?.pushEndpoint
+      ? 'push'
+      : source.bigqueryConfig
+        ? 'bigquery'
+        : 'pull'
+
+    // Map PubSubSubscription to SubscriptionForm
+    const subForm: SubscriptionForm = {
+      name: targetName,
+      deliveryType,
+      ackDeadlineSeconds: source.ackDeadlineSeconds || 60,
+      enableMessageOrdering: source.enableMessageOrdering || false,
+      enableDeadLetter: !!source.deadLetterPolicy,
+      enableRetryPolicy: !!source.retryPolicy,
+    }
+
+    if (source.filter) subForm.filter = source.filter
+    if (source.pushConfig?.pushEndpoint) subForm.pushEndpoint = source.pushConfig.pushEndpoint
+    if (source.bigqueryConfig?.table) {
+      subForm.bigqueryTable = source.bigqueryConfig.table
+      if (source.bigqueryConfig.useTopicSchema !== undefined)
+        subForm.useTopicSchema = source.bigqueryConfig.useTopicSchema
+      if (source.bigqueryConfig.writeMetadata !== undefined)
+        subForm.writeMetadata = source.bigqueryConfig.writeMetadata
+    }
+
+    if (source.deadLetterPolicy) {
+      if (source.deadLetterPolicy.deadLetterTopic)
+        subForm.deadLetterTopic = source.deadLetterPolicy.deadLetterTopic
+      if (source.deadLetterPolicy.maxDeliveryAttempts)
+        subForm.maxDeliveryAttempts = source.deadLetterPolicy.maxDeliveryAttempts
+    }
+
+    if (source.retryPolicy) {
+      if (source.retryPolicy.minimumBackoff)
+        subForm.minimumBackoff = source.retryPolicy.minimumBackoff
+      if (source.retryPolicy.maximumBackoff)
+        subForm.maximumBackoff = source.retryPolicy.maximumBackoff
+    }
+
+    const topicFullName =
+      topic.value?.name ||
+      source.topicName ||
+      (source as { topic?: string }).topic ||
+      props.topicName ||
+      ''
+
+    const createRequest = buildSubscriptionRequest(currentProjectId.value, topicFullName, subForm)
+
+    // Preserve fields that buildSubscriptionRequest doesn't handle natively
+    if (source.retainAckedMessages !== undefined)
+      createRequest.retainAckedMessages = source.retainAckedMessages
+    if (source.messageRetentionDuration)
+      createRequest.messageRetentionDuration = source.messageRetentionDuration
+    if (source.labels) createRequest.labels = source.labels
+
+    // Preserve advanced push/bigquery attributes that SubscriptionForm lacks
+    if (deliveryType === 'push' && source.pushConfig?.attributes && createRequest.pushConfig) {
+      createRequest.pushConfig.attributes = source.pushConfig.attributes
+    }
+    if (deliveryType === 'bigquery' && source.bigqueryConfig && createRequest.bigqueryConfig) {
+      if (source.bigqueryConfig.dropUnknownFields !== undefined)
+        createRequest.bigqueryConfig.dropUnknownFields = source.bigqueryConfig.dropUnknownFields
+      if (source.bigqueryConfig.serviceAccountEmail)
+        createRequest.bigqueryConfig.serviceAccountEmail = source.bigqueryConfig.serviceAccountEmail
+    }
+
+    await subscriptionsApi.createSubscription(currentProjectId.value, createRequest)
+
+    appStore.showToast({
+      type: 'success',
+      title: 'Subscription Duplicated',
+      message: `Subscription "${targetName}" has been created`,
+    })
+
     await loadSubscriptions()
-    cancelSubscriptionForm()
-
-    // Emit event to refresh topics list with updated subscription data
     emit('subscriptions-changed')
+    handleDuplicateModalClose()
   } catch (error: any) {
-    console.error('Error updating subscription (delete+create):', error)
-
-    // Handle specific error cases
-    if (error.response?.status === 409 || error.message?.includes('ALREADY_EXISTS')) {
+    if (
+      error.response?.status === 409 ||
+      error.message?.includes('ALREADY_EXISTS') ||
+      error.response?.data?.message?.includes('ALREADY_EXISTS')
+    ) {
       appStore.showToast({
         type: 'warning',
-        title: 'Update Blocked',
-        message:
-          'The subscription could not be updated because it still exists. The delete operation may have failed. Please try refreshing the page and try again.',
+        title: 'Subscription Exists',
+        message: `A subscription named "${targetName}" already exists. Please choose a different name.`,
         duration: 8000,
-      })
-    } else if (error.response?.status === 404 || error.message?.includes('NOT_FOUND')) {
-      appStore.showToast({
-        type: 'error',
-        title: 'Topic Missing',
-        message: 'The topic no longer exists. Please refresh the page to see the current state.',
-        duration: 6000,
       })
     } else {
       appStore.showToast({
         type: 'error',
-        title: 'Update Failed',
-        message: `Failed to update subscription: ${getMeaningfulErrorMessage(error)}`,
+        title: 'Duplication Failed',
+        message: `Failed to duplicate subscription: ${getMeaningfulErrorMessage(error)}`,
         duration: 5000,
       })
     }
   } finally {
-    isUpdatingSubscription.value = false
+    isDuplicatingSubscription.value = false
+  }
+}
+
+const handleDuplicateModalClose = () => {
+  showDuplicateSubscriptionModal.value = false
+  subscriptionToDuplicate.value = null
+  duplicateSubscriptionName.value = ''
+  duplicateSubscriptionNameError.value = ''
+  isDuplicatingSubscription.value = false
+}
+
+const clearDuplicateSubscriptionNameError = () => {
+  duplicateSubscriptionNameError.value = ''
+}
+
+const cancelSubscriptionForm = () => {
+  showNewSubscriptionForm.value = false
+  showEditSubscriptionModal.value = false
+  editingSubscription.value = null
+  newSubscription.value = {
+    name: '',
+    deliveryType: 'pull',
+    ackDeadlineSeconds: 60,
+    enableMessageOrdering: false,
+    filter: '',
+    enableDeadLetter: false,
+    maxDeliveryAttempts: 5,
+    enableRetryPolicy: false,
+    minimumBackoff: '10s',
+    maximumBackoff: '600s',
   }
 }
 
@@ -1329,57 +1052,30 @@ const deleteSubscription = async () => {
     return
   }
 
-  const subscription = subscriptionToDelete.value
-  const displayName = getSubscriptionDisplayName(subscription.name)
-
   isDeletingSubscription.value = true
   try {
-    console.log('Attempting to delete subscription:', displayName)
-    await subscriptionsApi.deleteSubscription(currentProjectId.value, displayName)
-    console.log('Delete API call successful')
-
+    const subscriptionName = getSubscriptionDisplayName(subscriptionToDelete.value.name)
+    await subscriptionsApi.deleteSubscription(currentProjectId.value, subscriptionName)
     appStore.showToast({
       type: 'success',
       title: 'Subscription Deleted',
-      message: `Subscription "${displayName}" deleted successfully`,
     })
 
-    // Also remove from local array immediately for better UX
-    subscriptions.value = subscriptions.value.filter(
-      sub => getSubscriptionDisplayName(sub.name) !== displayName
-    )
-
-    // Refresh subscriptions list from API
+    // Remove from local list immediately and emit to refresh parent
     await loadSubscriptions()
-  } catch (error: any) {
-    console.error('Error deleting subscription:', error)
-
-    // Try to remove locally anyway if it's a 404 (subscription doesn't exist)
-    if (error.response?.status === 404) {
-      subscriptions.value = subscriptions.value.filter(
-        sub => getSubscriptionDisplayName(sub.name) !== displayName
-      )
-      appStore.showToast({
-        type: 'info',
-        title: 'Subscription Removed',
-        message: `Subscription "${displayName}" was already deleted or doesn't exist`,
-      })
-    } else {
-      appStore.showToast({
-        type: 'error',
-        title: 'Delete Failed',
-        message: `Failed to delete subscription: ${getMeaningfulErrorMessage(error)}`,
-        duration: 5000,
-      })
-    }
+    emit('subscriptions-changed')
+  } catch (err: any) {
+    appStore.showToast({
+      type: 'error',
+      title: 'Delete Failed',
+      message: `Failed to delete subscription: ${getMeaningfulErrorMessage(err)}`,
+      duration: 5000,
+    })
   } finally {
     isDeletingSubscription.value = false
     showDeleteSubscriptionModal.value = false
     subscriptionToDelete.value = null
   }
-
-  // Emit event to refresh topics list with updated subscription count
-  emit('subscriptions-changed')
 }
 
 const cancelDeleteSubscription = () => {

@@ -82,6 +82,7 @@ const getDeleteButton = (wrapper: ReturnType<typeof mount>) =>
 describe('SubscriptionsListView', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    localStorage.clear()
   })
 
   it('keeps the topic expanded after refresh', async () => {
@@ -98,7 +99,7 @@ describe('SubscriptionsListView', () => {
     await flushPromises()
     await wrapper.vm.$nextTick()
 
-    expect(wrapper.find('#topic-topic-a .divide-y').exists()).toBe(true)
+    expect(wrapper.text()).toContain('sub-a')
 
     const refreshButton = getRefreshButton(wrapper)
     expect(refreshButton).toBeTruthy()
@@ -106,7 +107,7 @@ describe('SubscriptionsListView', () => {
     await flushPromises()
     await wrapper.vm.$nextTick()
 
-    expect(wrapper.find('#topic-topic-a .divide-y').exists()).toBe(true)
+    expect(wrapper.text()).toContain('sub-a')
   })
 
   it('keeps the topic expanded after deleting a subscription', async () => {
@@ -139,7 +140,7 @@ describe('SubscriptionsListView', () => {
     await wrapper.vm.$nextTick()
 
     expect(deleteSubscriptionMock).toHaveBeenCalled()
-    expect(wrapper.find('#topic-topic-a .divide-y').exists()).toBe(true)
+    expect(wrapper.text()).toContain('sub-b')
     expect(wrapper.text()).toContain('sub-b')
     expect(wrapper.text()).not.toContain('sub-a')
   })

@@ -25,82 +25,23 @@
         <div
           class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-gray-700"
         >
-          <!-- Custom Topic Dropdown -->
-          <div class="relative">
-            <button
-              @click="showTopicDropdown = !showTopicDropdown"
-              type="button"
-              class="w-full px-3 py-2 text-left border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              :class="{ 'text-gray-500 dark:text-gray-400': !selectedTopic }"
-            >
-              <div class="flex items-center justify-between">
-                <div class="flex items-center min-w-0">
-                  <QueueListIcon class="h-4 w-4 text-blue-500 mr-2 shrink-0" />
-                  <span class="truncate">
-                    {{ selectedTopic || 'Select a topic...' }}
-                  </span>
-                </div>
-                <ChevronUpDownIcon class="h-4 w-4 text-gray-400 shrink-0" />
-              </div>
-            </button>
-
-            <!-- Dropdown Menu -->
-            <div
-              v-if="showTopicDropdown"
-              class="absolute z-10 mt-1 w-full bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg"
-            >
-              <!-- Search Input -->
-              <div
-                v-if="availableTopics.length > 5"
-                class="p-2 border-b border-gray-200 dark:border-gray-600"
-              >
-                <div class="relative">
-                  <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <MagnifyingGlassIcon class="h-4 w-4 text-gray-400" />
-                  </div>
-                  <input
-                    ref="topicSearchInput"
-                    v-model="topicSearchQuery"
-                    type="text"
-                    placeholder="Search topics..."
-                    class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                    @click.stop
-                  />
-                </div>
-              </div>
-
-              <!-- Topics List -->
-              <div class="max-h-48 overflow-auto">
-                <div
-                  v-if="filteredTopics.length === 0"
-                  class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400"
-                >
-                  {{ topicSearchQuery ? 'No topics match your search' : 'No topics available' }}
-                </div>
-                <button
-                  v-for="topic in filteredTopics"
-                  :key="topic"
-                  @click="selectTopic(topic)"
-                  type="button"
-                  class="w-full px-3 py-2 text-left text-sm hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:bg-gray-50 dark:focus:bg-gray-600 transition-colors"
-                  :class="{
-                    'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400':
-                      selectedTopic === topic,
-                    'text-gray-900 dark:text-white': selectedTopic !== topic,
-                  }"
-                >
-                  <div class="flex items-center">
-                    <QueueListIcon class="h-4 w-4 text-blue-500 mr-2 shrink-0" />
-                    <span class="truncate">{{ topic }}</span>
-                    <CheckIcon
-                      v-if="selectedTopic === topic"
-                      class="h-4 w-4 text-blue-600 dark:text-blue-400 ml-auto shrink-0"
-                    />
-                  </div>
-                </button>
-              </div>
-            </div>
-          </div>
+          <!-- Searchable Dropdown -->
+          <SearchableDropdown
+            :model-value="selectedTopic"
+            @update:model-value="selectTopic"
+            :options="availableTopicsAsOptions"
+            placeholder="Select a topic..."
+            search-placeholder="Search topics..."
+            empty-text="No topics available"
+            no-results-text="No topics match your search"
+          >
+            <template #icon>
+              <QueueListIcon class="h-4 w-4 text-blue-500 mr-2 shrink-0" />
+            </template>
+            <template #option-icon>
+              <QueueListIcon class="h-4 w-4 text-blue-500 mr-2 shrink-0" />
+            </template>
+          </SearchableDropdown>
         </div>
       </section>
 
@@ -537,9 +478,6 @@ import {
   ExclamationTriangleIcon,
   DocumentDuplicateIcon,
   QueueListIcon,
-  ChevronUpDownIcon,
-  CheckIcon,
-  MagnifyingGlassIcon,
 } from '@heroicons/vue/24/outline'
 import { topicsApi } from '@/api/pubsub'
 import { useAppStore } from '@/stores/app'
@@ -548,6 +486,7 @@ import { useTopicsStore } from '@/stores/topics'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import TemplateVariableInput from '@/components/ui/TemplateVariableInput.vue'
 import MessageAttributeInput from '@/components/ui/MessageAttributeInput.vue'
+import SearchableDropdown from '@/components/ui/SearchableDropdown.vue'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
 import { usePreconfiguredMessageAttributes } from '@/utils/pubsubAttributes'
 
@@ -589,8 +528,6 @@ const publishCount = ref(1)
 const showPublishOptions = ref(false)
 const showSaveOptions = ref(false)
 const selectedTopic = ref('')
-const showTopicDropdown = ref(false)
-const topicSearchQuery = ref('')
 
 // Publishing state
 const isPublishing = ref(false)
@@ -602,7 +539,6 @@ const templateError = ref('')
 const isSavingTemplate = ref(false)
 const isUpdatingTemplate = ref(false)
 const templateNameInput = ref<HTMLInputElement>()
-const topicSearchInput = ref<HTMLInputElement>()
 
 // Validation
 const jsonValidationError = computed(() => {
@@ -629,24 +565,22 @@ const hasOriginalTemplate = computed(() => !!props.initialTemplate?.originalTemp
 
 // Get available topics for the dropdown
 const availableTopics = computed(() => {
-  // Filter topics by the current project ID from props, not from the store's selectedProject
   const projectTopics = topicsStore.topics.filter(topic => topic.projectId === props.projectId)
-
-  // Extract just the topic names for display in dropdown
-  const topicNames = projectTopics.map(topic => topic.name)
-
-  return topicNames
+  return projectTopics.map(topic => topic.name)
 })
 
-// Filter topics based on search query
-const filteredTopics = computed(() => {
-  if (!topicSearchQuery.value.trim()) {
-    return availableTopics.value
-  }
+// Transform to SearchableDropdown options
+const availableTopicsAsOptions = computed(() =>
+  availableTopics.value.map(name => ({
+    value: name,
+    label: name.split('/').pop() ?? name,
+  }))
+)
 
-  const query = topicSearchQuery.value.toLowerCase()
-  return availableTopics.value.filter(topic => topic.toLowerCase().includes(query))
-})
+// selectTopic is called by SearchableDropdown on selection
+const selectTopic = (value: string) => {
+  selectedTopic.value = value
+}
 
 // Modal actions
 const modalActions = computed<ModalAction[]>(() => {
@@ -832,13 +766,6 @@ const handlePublishMessage = async () => {
   } finally {
     isPublishing.value = false
   }
-}
-
-// Topic selection
-const selectTopic = (topic: string) => {
-  selectedTopic.value = topic
-  showTopicDropdown.value = false
-  topicSearchQuery.value = ''
 }
 
 const handleSaveAsTemplate = () => {
@@ -1031,35 +958,9 @@ watch(
   }
 )
 
-// Close dropdown when clicking outside
-const handleClickOutside = (event: Event) => {
-  if (showTopicDropdown.value) {
-    const target = event.target as Element
-    const dropdown = target.closest('.relative')
-    if (!dropdown || !dropdown.contains(target)) {
-      showTopicDropdown.value = false
-      topicSearchQuery.value = ''
-    }
-  }
-}
-
-// Focus search input when dropdown opens
-watch(
-  () => showTopicDropdown.value,
-  async isOpen => {
-    if (isOpen && availableTopics.value.length > 5) {
-      await new Promise(resolve => setTimeout(resolve, 100))
-      topicSearchInput.value?.focus()
-    }
-  }
-)
-
 onMounted(async () => {
   await initializeFromTemplate()
-  document.addEventListener('click', handleClickOutside)
 })
 
-onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
-})
+onUnmounted(() => {})
 </script>
