@@ -188,13 +188,14 @@ import BaseModal from '@/components/ui/BaseModal.vue'
 import SubscriptionFormFields from '@/components/forms/SubscriptionFormFields.vue'
 import { topicsApi, subscriptionsApi } from '@/api/pubsub'
 import { useAppStore } from '@/stores/app'
+import { getMeaningfulErrorMessage } from '@/utils/errorMessages'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
 import {
   validateSubscriptionForm,
   validateResourceName,
   buildSubscriptionRequest,
+  type SubscriptionForm,
 } from '@/utils/subscriptionUtils'
-import type { SubscriptionForm } from '@/utils/subscriptionUtils'
 import { useTopicsStore } from '@/stores/topics'
 
 interface Props {
@@ -205,8 +206,6 @@ interface TopicLabel {
   key: string
   value: string
 }
-
-// Removed local SubscriptionForm
 
 const props = defineProps<Props>()
 const emit = defineEmits<{
@@ -264,8 +263,6 @@ const modalActions = computed<ModalAction[]>(() => [
 
 const validateTopicName = (name: string): string => validateResourceName(name, 'Topic')
 
-// Using validateSubscriptionForm directly
-
 const handleSubmit = async () => {
   const nameError = validateTopicName(topicForm.value.name)
   if (nameError) {
@@ -273,7 +270,6 @@ const handleSubmit = async () => {
     return
   }
 
-  // Validate subscriptions
   let hasSubscriptionErrors = false
   subscriptions.value.forEach(sub => {
     const errors = validateSubscriptionForm(sub, { validateName: true, validateBigQuery: true })
@@ -290,7 +286,6 @@ const handleSubmit = async () => {
   isSubmitting.value = true
 
   try {
-    // Prepare topic data
     const labels = topicForm.value.labels
       .filter(label => label.key.trim() && label.value.trim())
       .reduce(
@@ -314,10 +309,8 @@ const handleSubmit = async () => {
         }),
     }
 
-    // Create topic
     await topicsApi.createTopic(currentProjectId.value, topicRequest)
 
-    // Create subscriptions
     for (const subscription of subscriptions.value) {
       const topicFullName = `projects/${currentProjectId.value}/topics/${topicForm.value.name.trim()}`
       const subRequest = buildSubscriptionRequest(
@@ -335,17 +328,34 @@ const handleSubmit = async () => {
       message: `Topic "${topicForm.value.name}" ${subscriptions.value.length > 0 ? `and ${subscriptions.value.length} subscription${subscriptions.value.length > 1 ? 's' : ''} ` : ''}created successfully`,
     })
 
-    // Close modal and emit success
     modelValue.value = false
     emit('topic-created')
     resetForm()
   } catch (err: any) {
     console.error('Error creating topic/subscriptions:', err)
-    appStore.showToast({
-      type: 'error',
-      title: 'Creation Failed',
-      message: err.message || 'Failed to create topic and subscriptions',
-    })
+    const statusCode = err.code || err.status || err.response?.status
+
+    if (
+      statusCode === 409 ||
+      err.message?.includes('ALREADY_EXISTS') ||
+      err.response?.data?.message?.includes('ALREADY_EXISTS')
+    ) {
+      topicErrors.value.name = 'Topic or subscription already exists'
+
+      appStore.showToast({
+        type: 'warning',
+        title: 'Resource Exists',
+        message:
+          'A topic or subscription with this name already exists. Please choose different names.',
+        duration: 8000,
+      })
+    } else {
+      appStore.showToast({
+        type: 'error',
+        title: 'Creation Failed',
+        message: getMeaningfulErrorMessage(err),
+      })
+    }
   } finally {
     isSubmitting.value = false
   }
@@ -405,7 +415,6 @@ const removeSubscription = (index: number) => {
   subscriptions.value.splice(index, 1)
 }
 
-// Focus input when modal opens
 watch(
   () => props.modelValue,
   async isOpen => {

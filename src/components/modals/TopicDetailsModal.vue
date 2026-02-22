@@ -725,18 +725,23 @@ const saveNewSubscription = async () => {
     })
 
     // Handle specific error cases for subscription creation
+    const statusCode = error.code || error.status || error.response?.status
     if (
-      error.response?.status === 409 ||
+      statusCode === 409 ||
       error.message?.includes('ALREADY_EXISTS') ||
       error.response?.data?.message?.includes('ALREADY_EXISTS')
     ) {
+      // Set inline validation error
+      if (!newSubscription.value.errors) newSubscription.value.errors = {}
+      newSubscription.value.errors.name = 'A subscription with this name already exists'
+
       appStore.showToast({
         type: 'warning',
         title: 'Subscription Exists',
         message: `A subscription named "${newSubscription.value.name}" already exists for this topic. Please choose a different name.`,
         duration: 8000,
       })
-    } else if (error.response?.status === 404 || error.message?.includes('NOT_FOUND')) {
+    } else if (statusCode === 404 || error.message?.includes('NOT_FOUND')) {
       appStore.showToast({
         type: 'error',
         title: 'Topic Missing',
@@ -988,11 +993,14 @@ const confirmDuplicateSubscription = async () => {
     emit('subscriptions-changed')
     handleDuplicateModalClose()
   } catch (error: any) {
+    const statusCode = error.code || error.status || error.response?.status
     if (
-      error.response?.status === 409 ||
+      statusCode === 409 ||
       error.message?.includes('ALREADY_EXISTS') ||
       error.response?.data?.message?.includes('ALREADY_EXISTS')
     ) {
+      duplicateSubscriptionNameError.value = 'A subscription with this name already exists'
+
       appStore.showToast({
         type: 'warning',
         title: 'Subscription Exists',

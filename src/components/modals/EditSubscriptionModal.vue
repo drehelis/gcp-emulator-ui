@@ -195,8 +195,17 @@ const handleUpdate = async () => {
     modelValue.value = false
   } catch (error: any) {
     console.error('Error updating subscription (delete+create):', error)
+    const statusCode = error.code || error.status || error.response?.status
 
-    if (error.response?.status === 409 || error.message?.includes('ALREADY_EXISTS')) {
+    if (
+      statusCode === 409 ||
+      error.message?.includes('ALREADY_EXISTS') ||
+      error.response?.data?.message?.includes('ALREADY_EXISTS')
+    ) {
+      // Set inline validation error
+      if (!editSubscriptionForm.value.errors) editSubscriptionForm.value.errors = {}
+      editSubscriptionForm.value.errors.name = 'A subscription with this name already exists'
+
       appStore.showToast({
         type: 'warning',
         title: 'Update Blocked',
@@ -204,7 +213,7 @@ const handleUpdate = async () => {
           'The subscription could not be updated because it still exists. The delete operation may have failed. Please try refreshing the page and try again.',
         duration: 8000,
       })
-    } else if (error.response?.status === 404 || error.message?.includes('NOT_FOUND')) {
+    } else if (statusCode === 404 || error.message?.includes('NOT_FOUND')) {
       appStore.showToast({
         type: 'error',
         title: 'Topic Missing',

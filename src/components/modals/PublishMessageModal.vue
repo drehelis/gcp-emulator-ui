@@ -961,6 +961,4 @@ watch(
 onMounted(async () => {
   await initializeFromTemplate()
 })
-
-
 </script>
