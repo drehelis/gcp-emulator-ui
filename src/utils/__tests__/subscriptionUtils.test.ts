@@ -38,38 +38,38 @@ describe('subscriptionUtils', () => {
 
     it('returns error when name is less than 3 characters', () => {
       expect(validateResourceName('ab', 'Subscription')).toBe(
-        'Subscription name must be at least 3 characters',
+        'Subscription name must be at least 3 characters'
       )
     })
 
     it('returns error when name starts with a number', () => {
       expect(validateResourceName('1abc', 'Topic')).toBe(
-        'Topic name must start with a letter and contain only letters, numbers, hyphens, and underscores',
+        'Topic name must start with a letter and contain only letters, numbers, hyphens, and underscores'
       )
     })
 
     it('returns error when name starts with a hyphen', () => {
       expect(validateResourceName('-abc', 'Subscription')).toBe(
-        'Subscription name must start with a letter and contain only letters, numbers, hyphens, and underscores',
+        'Subscription name must start with a letter and contain only letters, numbers, hyphens, and underscores'
       )
     })
 
     it('returns error when name contains special characters', () => {
       expect(validateResourceName('abc@def', 'Subscription')).toBe(
-        'Subscription name must start with a letter and contain only letters, numbers, hyphens, and underscores',
+        'Subscription name must start with a letter and contain only letters, numbers, hyphens, and underscores'
       )
     })
 
     it('returns error when name contains spaces', () => {
       expect(validateResourceName('abc def', 'Subscription')).toBe(
-        'Subscription name must start with a letter and contain only letters, numbers, hyphens, and underscores',
+        'Subscription name must start with a letter and contain only letters, numbers, hyphens, and underscores'
       )
     })
 
     it('returns error when name exceeds 255 characters', () => {
       const longName = 'a' + 'b'.repeat(255)
       expect(validateResourceName(longName, 'Subscription')).toBe(
-        'Subscription name must be less than 255 characters',
+        'Subscription name must be less than 255 characters'
       )
     })
 
@@ -247,7 +247,7 @@ describe('subscriptionUtils', () => {
       const form = createBaseForm({ enableDeadLetter: true, deadLetterTopic: '' })
       const errors = validateSubscriptionForm(form)
       expect(errors.deadLetterTopic).toBe(
-        'Dead letter topic is required when dead letter policy is enabled',
+        'Dead letter topic is required when dead letter policy is enabled'
       )
     })
 
@@ -255,7 +255,7 @@ describe('subscriptionUtils', () => {
       const form = createBaseForm({ enableDeadLetter: true, deadLetterTopic: '   ' })
       const errors = validateSubscriptionForm(form)
       expect(errors.deadLetterTopic).toBe(
-        'Dead letter topic is required when dead letter policy is enabled',
+        'Dead letter topic is required when dead letter policy is enabled'
       )
     })
 
@@ -530,7 +530,7 @@ describe('subscriptionUtils', () => {
       expect(request.filter).toBe('attributes.priority = "high"')
       expect(request.pushConfig?.pushEndpoint).toBe('https://example.com/push')
       expect(request.deadLetterPolicy?.deadLetterTopic).toBe(
-        'projects/test-project/topics/dl-topic',
+        'projects/test-project/topics/dl-topic'
       )
       expect(request.deadLetterPolicy?.maxDeliveryAttempts).toBe(10)
       expect(request.retryPolicy?.minimumBackoff).toBe('10s')
