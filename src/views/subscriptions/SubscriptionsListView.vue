@@ -36,16 +36,30 @@
     <div v-else-if="subscriptionsByTopic.size > 0" class="space-y-6">
       <!-- Header -->
       <div class="bg-white dark:bg-gray-800 rounded-lg">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div class="px-6 py-4">
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-medium text-gray-900 dark:text-white">
               Subscriptions ({{ subscriptions.length }})
             </h2>
             <div class="flex items-center space-x-3">
               <button
+                v-if="subscriptionsByTopic.size > 0"
+                @click="toggleAllExpansion"
+                class="inline-flex items-center px-2 sm:px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                :title="allExpanded ? 'Collapse All' : 'Expand All'"
+              >
+                <component
+                  :is="allExpanded ? ChevronDoubleUpIcon : ChevronDoubleDownIcon"
+                  class="h-4 w-4 sm:mr-2"
+                />
+                <span class="hidden sm:inline">{{
+                  allExpanded ? 'Collapse All' : 'Expand All'
+                }}</span>
+              </button>
+              <button
                 @click="loadSubscriptions({ preserveExpandedTopics: true })"
                 :disabled="loading"
-                class="inline-flex items-center px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                class="inline-flex items-center px-2 sm:px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
               >
                 <ArrowPathIcon class="h-4 w-4 sm:mr-2" :class="{ 'animate-spin': loading }" />
                 <span class="hidden sm:inline">Refresh</span>
@@ -422,14 +436,14 @@
     <div v-else class="space-y-6">
       <!-- Header -->
       <div class="bg-white dark:bg-gray-800 rounded-lg">
-        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <div class="px-6 py-4">
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-medium text-gray-900 dark:text-white">Subscriptions (0)</h2>
             <div class="flex items-center space-x-3">
               <button
                 @click="loadSubscriptions({ preserveExpandedTopics: true })"
                 :disabled="loading"
-                class="inline-flex items-center px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                class="inline-flex items-center px-2 sm:px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
               >
                 <ArrowPathIcon class="h-4 w-4 sm:mr-2" :class="{ 'animate-spin': loading }" />
                 <span class="hidden sm:inline">Refresh</span>
@@ -523,6 +537,8 @@ import {
   TrashIcon,
   EyeIcon,
   PaperAirplaneIcon,
+  ChevronDoubleDownIcon,
+  ChevronDoubleUpIcon,
 } from '@heroicons/vue/24/outline'
 
 const route = useRoute()
@@ -582,6 +598,21 @@ const getSubscriptionDisplayName = (subscriptionName: string | undefined): strin
   if (!subscriptionName) return 'unknown'
   const parts = subscriptionName.split('/')
   return parts[parts.length - 1] || subscriptionName
+}
+
+const allExpanded = computed(() => {
+  const topics = Array.from(subscriptionsByTopic.value.keys())
+  if (topics.length === 0) return false
+  return topics.every(topic => expandedTopics.value.has(topic))
+})
+
+const toggleAllExpansion = () => {
+  if (allExpanded.value) {
+    expandedTopics.value = new Set()
+  } else {
+    expandedTopics.value = new Set(subscriptionsByTopic.value.keys())
+  }
+  saveExpandedTopics()
 }
 
 const loadSubscriptions = async (options: { preserveExpandedTopics?: boolean } = {}) => {
