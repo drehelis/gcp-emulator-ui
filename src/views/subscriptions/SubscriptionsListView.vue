@@ -961,8 +961,7 @@ const openPublishMessageModal = (topicName: string) => {
   showPublishMessageModal.value = true
 }
 
-const handleMessagePublished = () => {
-}
+const handleMessagePublished = () => {}
 
 watch(
   () => currentProjectId.value,

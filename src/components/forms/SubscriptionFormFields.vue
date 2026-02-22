@@ -326,25 +326,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import SearchableDropdown from '@/components/ui/SearchableDropdown.vue'
-
-interface SubscriptionForm {
-  name: string
-  deliveryType: 'pull' | 'push' | 'bigquery'
-  pushEndpoint?: string
-  bigqueryTable?: string
-  useTopicSchema?: boolean
-  writeMetadata?: boolean
-  ackDeadlineSeconds: number
-  enableMessageOrdering: boolean
-  filter?: string
-  enableDeadLetter?: boolean
-  deadLetterTopic?: string
-  maxDeliveryAttempts?: number
-  enableRetryPolicy?: boolean
-  minimumBackoff?: string
-  maximumBackoff?: string
-  errors?: Record<string, string>
-}
+import type { SubscriptionForm } from '@/utils/subscriptionUtils'
 
 interface Props {
   modelValue: SubscriptionForm

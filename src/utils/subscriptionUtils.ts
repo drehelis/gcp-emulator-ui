@@ -10,10 +10,10 @@ export interface SubscriptionForm {
   ackDeadlineSeconds: number
   enableMessageOrdering: boolean
   filter?: string
-  enableDeadLetter: boolean
+  enableDeadLetter?: boolean
   deadLetterTopic?: string
   maxDeliveryAttempts?: number
-  enableRetryPolicy: boolean
+  enableRetryPolicy?: boolean
   minimumBackoff?: string
   maximumBackoff?: string
   errors?: Record<string, string>

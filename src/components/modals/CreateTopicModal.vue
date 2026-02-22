@@ -168,10 +168,10 @@
             </div>
 
             <SubscriptionFormFields
-              :model-value="subscription as any"
+              :model-value="subscription"
               mode="create"
               :available-topics="availableTopics"
-              @update:model-value="value => (subscriptions[index] = value as any)"
+              @update:model-value="value => (subscriptions[index] = value)"
             />
           </div>
         </div>
