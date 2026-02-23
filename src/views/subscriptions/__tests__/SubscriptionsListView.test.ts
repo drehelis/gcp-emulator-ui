@@ -176,11 +176,20 @@ describe('SubscriptionsListView', () => {
     expect(wrapper.text()).toContain('sub-c')
     expect(expandAllButton!.text()).toContain('Collapse All')
 
+    // Verify localStorage persistence
+    const savedExpanded = JSON.parse(localStorage.getItem('expandedTopics_test-project') || '[]')
+    expect(savedExpanded).toContain('projects/test-project/topics/topic-a')
+    expect(savedExpanded).toContain('projects/test-project/topics/topic-b')
+
     // Collapse All
     await expandAllButton!.trigger('click')
     await wrapper.vm.$nextTick()
     expect(wrapper.text()).not.toContain('sub-a')
     expect(wrapper.text()).not.toContain('sub-c')
     expect(expandAllButton!.text()).toContain('Expand All')
+
+    // Verify localStorage cleared
+    const clearedExpanded = JSON.parse(localStorage.getItem('expandedTopics_test-project') || '[]')
+    expect(clearedExpanded).toHaveLength(0)
   })
 })
