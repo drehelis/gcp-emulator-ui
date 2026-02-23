@@ -52,7 +52,9 @@
                   :is="allExpanded ? ChevronDoubleUpIcon : ChevronDoubleDownIcon"
                   class="h-4 w-4 sm:mr-2"
                 />
-                <span class="hidden sm:inline">{{ allExpanded ? 'Collapse All' : 'Expand All' }}</span>
+                <span class="hidden sm:inline">{{
+                  allExpanded ? 'Collapse All' : 'Expand All'
+                }}</span>
               </button>
               <button
                 @click="loadSubscriptions({ preserveExpandedTopics: true })"
