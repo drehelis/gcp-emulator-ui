@@ -19,7 +19,7 @@
     "@google-cloud/pubsub": "^5.2.4",
     "@headlessui/vue": "^1.7.22",
     "@heroicons/vue": "^2.1.5",
-    "@tailwindcss/postcss": "^4.2.0",
+    "@tailwindcss/postcss": "^4.2.1",
     "@tanstack/vue-query": "^5.92.9",
     "@vueuse/core": "^14.2.1",
     "@vueuse/head": "^2.0.0",
