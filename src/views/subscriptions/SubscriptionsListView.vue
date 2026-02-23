@@ -46,19 +46,19 @@
                 @click="toggleAllExpansion"
                 class="inline-flex items-center px-2 sm:px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 :title="allExpanded ? 'Collapse All' : 'Expand All'"
+                :aria-label="allExpanded ? 'Collapse All' : 'Expand All'"
               >
                 <component
                   :is="allExpanded ? ChevronDoubleUpIcon : ChevronDoubleDownIcon"
                   class="h-4 w-4 sm:mr-2"
                 />
-                <span class="hidden sm:inline">{{
-                  allExpanded ? 'Collapse All' : 'Expand All'
-                }}</span>
+                <span class="hidden sm:inline">{{ allExpanded ? 'Collapse All' : 'Expand All' }}</span>
               </button>
               <button
                 @click="loadSubscriptions({ preserveExpandedTopics: true })"
                 :disabled="loading"
                 class="inline-flex items-center px-2 sm:px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                aria-label="Refresh subscriptions"
               >
                 <ArrowPathIcon class="h-4 w-4 sm:mr-2" :class="{ 'animate-spin': loading }" />
                 <span class="hidden sm:inline">Refresh</span>
@@ -443,6 +443,7 @@
                 @click="loadSubscriptions({ preserveExpandedTopics: true })"
                 :disabled="loading"
                 class="inline-flex items-center px-2 sm:px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
+                aria-label="Refresh subscriptions"
               >
                 <ArrowPathIcon class="h-4 w-4 sm:mr-2" :class="{ 'animate-spin': loading }" />
                 <span class="hidden sm:inline">Refresh</span>
