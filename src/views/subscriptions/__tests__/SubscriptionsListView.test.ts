@@ -143,4 +143,53 @@ describe('SubscriptionsListView', () => {
     expect(wrapper.text()).toContain('sub-b')
     expect(wrapper.text()).not.toContain('sub-a')
   })
+
+  it('expands and collapses all topics', async () => {
+    const getSubscriptionsMock = vi.mocked(subscriptionsApi.getSubscriptions)
+    const subscriptions = [
+      ...baseSubscriptions,
+      {
+        name: 'projects/test-project/subscriptions/sub-c',
+        topic: 'projects/test-project/topics/topic-b',
+        ackDeadlineSeconds: 10,
+      },
+    ]
+
+    getSubscriptionsMock.mockResolvedValue(subscriptions)
+    const wrapper = mountView()
+    await flushPromises()
+    await wrapper.vm.$nextTick()
+
+    // Initially collapsed
+    expect(wrapper.text()).not.toContain('sub-a')
+    expect(wrapper.text()).not.toContain('sub-c')
+
+    const expandAllButton = wrapper
+      .findAll('button')
+      .find(button => button.text().includes('Expand All'))
+    expect(expandAllButton).toBeTruthy()
+
+    // Expand All
+    await expandAllButton!.trigger('click')
+    await wrapper.vm.$nextTick()
+    expect(wrapper.text()).toContain('sub-a')
+    expect(wrapper.text()).toContain('sub-c')
+    expect(expandAllButton!.text()).toContain('Collapse All')
+
+    // Verify localStorage persistence
+    const savedExpanded = JSON.parse(localStorage.getItem('expandedTopics_test-project') || '[]')
+    expect(savedExpanded).toContain('projects/test-project/topics/topic-a')
+    expect(savedExpanded).toContain('projects/test-project/topics/topic-b')
+
+    // Collapse All
+    await expandAllButton!.trigger('click')
+    await wrapper.vm.$nextTick()
+    expect(wrapper.text()).not.toContain('sub-a')
+    expect(wrapper.text()).not.toContain('sub-c')
+    expect(expandAllButton!.text()).toContain('Expand All')
+
+    // Verify localStorage cleared
+    const clearedExpanded = JSON.parse(localStorage.getItem('expandedTopics_test-project') || '[]')
+    expect(clearedExpanded).toHaveLength(0)
+  })
 })
