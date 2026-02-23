@@ -43,7 +43,6 @@
             </h2>
             <div class="flex items-center space-x-3">
               <button
-                v-if="subscriptionsByTopic.size > 0"
                 @click="toggleAllExpansion"
                 class="inline-flex items-center px-2 sm:px-3 py-2 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 :title="allExpanded ? 'Collapse All' : 'Expand All'"
