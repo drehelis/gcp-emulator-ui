@@ -174,7 +174,7 @@ export const storageApi = {
   async uploadObject(
     file: File,
     request: UploadObjectRequest,
-    onProgress?: () => void
+    onProgress?: (progress: { loaded: number; total: number; percentage: number }) => void
   ): Promise<StorageObject> {
     const api = getApi()
 
@@ -198,9 +198,12 @@ export const storageApi = {
             kmsKeyName: request.kmsKeyName,
             userProject: request.userProject,
           },
-          onUploadProgress: () => {
-            if (onProgress) {
-              onProgress()
+          onUploadProgress: (progressEvent) => {
+            if (onProgress && progressEvent.total) {
+              const loaded = progressEvent.loaded
+              const total = progressEvent.total
+              const percentage = Math.round((loaded * 100) / total)
+              onProgress({ loaded, total, percentage })
             }
           },
         }
@@ -241,9 +244,12 @@ export const storageApi = {
             kmsKeyName: request.kmsKeyName,
             userProject: request.userProject,
           },
-          onUploadProgress: () => {
-            if (onProgress) {
-              onProgress()
+          onUploadProgress: (progressEvent) => {
+            if (onProgress && progressEvent.total) {
+              const loaded = progressEvent.loaded
+              const total = progressEvent.total
+              const percentage = Math.round((loaded * 100) / total)
+              onProgress({ loaded, total, percentage })
             }
           },
         }

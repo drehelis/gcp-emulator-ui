@@ -1437,14 +1437,6 @@ function handleObjectClick(object: StorageObjectWithPreview): void {
   }
 }
 
-function toggleSelectAll(): void {
-  if (allObjectsSelected.value) {
-    storageStore.clearSelection()
-  } else {
-    storageStore.selectAllObjects()
-  }
-}
-
 async function downloadObject(object: StorageObjectWithPreview): Promise<void> {
   if (object.isFolder) return
   await storageStore.downloadObject(bucketName.value, object.name)

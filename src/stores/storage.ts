@@ -76,12 +76,9 @@ export const useStorageStore = defineStore('storage', () => {
   const settings = ref<StorageSettings>({
     defaultStorageClass: 'STANDARD',
     enableVersioning: false,
-    retentionPolicyDays: undefined,
     enableCors: false,
     corsOrigins: [],
     enableWebsite: false,
-    websiteMainPage: undefined,
-    websiteErrorPage: undefined,
   })
 
   // Computed properties
@@ -91,8 +88,8 @@ export const useStorageStore = defineStore('storage', () => {
     if (!objects.value) return []
 
     const sorted = [...objects.value].sort((a, b) => {
-      let aValue: any = a[sortBy.value]
-      let bValue: any = b[sortBy.value]
+      let aValue: any = (a as any)[sortBy.value]
+      let bValue: any = (b as any)[sortBy.value]
 
       // Handle special cases
       if (sortBy.value === 'size') {
@@ -143,7 +140,7 @@ export const useStorageStore = defineStore('storage', () => {
       state.value.error = null
 
       const response = await storageApi.listBuckets({
-        project: currentProjectId.value || undefined,
+        ...(currentProjectId.value ? { project: currentProjectId.value } : {}),
       })
 
       buckets.value = response.items || []
@@ -241,7 +238,7 @@ export const useStorageStore = defineStore('storage', () => {
         const response = await storageApi.listObjects({
           bucket: bucketName,
           maxResults: 1000,
-          pageToken,
+          ...(pageToken ? { pageToken } : {}),
         })
 
         if (response.items && response.items.length > 0) {
@@ -420,7 +417,7 @@ export const useStorageStore = defineStore('storage', () => {
             uploadProgress.value[index].status = 'uploading'
           }
 
-          const result = await storageApi.uploadObject(file, request, progress => {
+          const result = await storageApi.uploadObject(file, request, (progress: any) => {
             if (uploadProgress.value[index]) {
               uploadProgress.value[index] = { ...progress, status: 'uploading' }
             }
@@ -545,7 +542,7 @@ export const useStorageStore = defineStore('storage', () => {
             prefix,
             // No delimiter means recursive listing
             maxResults: 1000,
-            pageToken,
+            ...(pageToken ? { pageToken } : {}),
           })
 
           if (response.items) {
