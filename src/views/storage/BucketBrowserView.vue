@@ -213,9 +213,8 @@
                 <th class="w-10 px-3 py-2 text-left">
                   <input
                     type="checkbox"
-                    :checked="allObjectsSelected"
+                    v-model="allObjectsSelected"
                     :indeterminate="someObjectsSelected"
-                    @change="toggleSelectAll"
                     class="w-3.5 h-3.5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
                   />
                 </th>
@@ -302,7 +301,7 @@
               <tr
                 v-for="(object, index) in storageStore.objects"
                 :key="object.name"
-                class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
+                class="group relative hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors cursor-pointer"
                 :class="[
                   {
                     'bg-blue-50 dark:bg-blue-900/20': storageStore.selectedObjects.includes(
@@ -315,7 +314,7 @@
                 ]"
                 @click="handleObjectClick(object)"
               >
-                <td class="px-3 py-1.5">
+                <td class="px-3 py-1.5" @click.stop>
                   <input
                     v-if="!object.isFolder"
                     type="checkbox"
@@ -385,12 +384,11 @@
           <!-- Mobile Header with Sort -->
           <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between">
-              <div class="flex items-center space-x-3">
+              <div class="flex items-center space-x-3" @click.stop>
                 <input
                   type="checkbox"
-                  :checked="allObjectsSelected"
+                  v-model="allObjectsSelected"
                   :indeterminate="someObjectsSelected"
-                  @change="toggleSelectAll"
                   class="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
                 />
                 <span class="text-sm font-medium text-gray-900 dark:text-white">
@@ -425,22 +423,24 @@
               @click="handleObjectClick(object)"
             >
               <div class="flex items-start space-x-3">
-                <input
-                  v-if="!object.isFolder"
-                  type="checkbox"
-                  :checked="storageStore.selectedObjects.includes(object.fullPath || object.name)"
-                  @change.stop="storageStore.selectObject(object.fullPath || object.name)"
-                  class="mt-1 w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
-                  @click.stop
-                />
-                <input
-                  v-else
-                  type="checkbox"
-                  :checked="storageStore.selectedObjects.includes(object.fullPath || object.name)"
-                  @change.stop="storageStore.selectObject(object.fullPath || object.name)"
-                  class="mt-1 w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
-                  @click.stop
-                />
+                <div @click.stop>
+                  <input
+                    v-if="!object.isFolder"
+                    type="checkbox"
+                    :checked="storageStore.selectedObjects.includes(object.fullPath || object.name)"
+                    @change.stop="storageStore.selectObject(object.fullPath || object.name)"
+                    class="mt-1 w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
+                    @click.stop
+                  />
+                  <input
+                    v-else
+                    type="checkbox"
+                    :checked="storageStore.selectedObjects.includes(object.fullPath || object.name)"
+                    @change.stop="storageStore.selectObject(object.fullPath || object.name)"
+                    class="mt-1 w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
+                    @click.stop
+                  />
+                </div>
 
                 <FolderIcon
                   v-if="object.isFolder"
@@ -504,7 +504,8 @@
           <!-- Selection checkbox -->
           <div
             v-if="!object.isFolder"
-            class="absolute top-2 left-2 transition-opacity"
+            class="absolute top-2 left-2 transition-opacity z-10"
+            @click.stop
             :class="[
               storageStore.selectedObjects.includes(object.fullPath || object.name)
                 ? 'opacity-100'
@@ -522,7 +523,8 @@
           <!-- Folder checkbox -->
           <div
             v-else
-            class="absolute top-2 left-2 transition-opacity"
+            class="absolute top-2 left-2 transition-opacity z-10"
+            @click.stop
             :class="[
               storageStore.selectedObjects.includes(object.fullPath || object.name)
                 ? 'opacity-100'
@@ -1149,13 +1151,22 @@ const currentProjectId = computed(
 const currentPath = computed(() => storageStore.currentPath)
 
 // Computed
-const allObjectsSelected = computed(() => {
-  return (
-    storageStore.objects.length > 0 &&
-    storageStore.objects.every(obj =>
-      storageStore.selectedObjects.includes(obj.fullPath || obj.name)
+const allObjectsSelected = computed({
+  get: () => {
+    return (
+      storageStore.objects.length > 0 &&
+      storageStore.objects.every((obj) =>
+        storageStore.selectedObjects.includes(obj.fullPath || obj.name)
+      )
     )
-  )
+  },
+  set: (val: boolean) => {
+    if (val) {
+      storageStore.selectAllObjects()
+    } else {
+      storageStore.clearSelection()
+    }
+  },
 })
 
 const someObjectsSelected = computed(() => {

@@ -469,6 +469,12 @@ export const storageApi = {
       return false
     }
   },
+
+  // Internal emulator operations
+  async deleteAll(): Promise<void> {
+    const api = getApi()
+    await api.post('/_internal/delete_all')
+  },
 }
 
 export default storageApi

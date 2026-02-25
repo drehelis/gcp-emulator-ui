@@ -767,6 +767,36 @@ export const useStorageStore = defineStore('storage', () => {
     selectedObjects.value = []
   }
 
+  async function deleteAllBuckets(): Promise<void> {
+    try {
+      loading.value.delete = true
+      state.value.error = null
+
+      await storageApi.deleteAll()
+
+      // Reset local state
+      reset()
+
+      appStore.showToast({
+        type: 'success',
+        title: 'All Content Deleted',
+        message: 'Successfully deleted all buckets and objects from the emulator',
+      })
+    } catch (error: any) {
+      console.error('Error deleting all buckets:', error)
+      state.value.error = error.message || 'Failed to delete all buckets'
+
+      appStore.showToast({
+        type: 'error',
+        title: 'Delete All Error',
+        message: error.message || 'Failed to delete all buckets',
+      })
+      throw error
+    } finally {
+      loading.value.delete = false
+    }
+  }
+
   function reset(): void {
     buckets.value = []
     currentBucket.value = null
@@ -820,6 +850,7 @@ export const useStorageStore = defineStore('storage', () => {
     uploadFiles,
     downloadObject,
     deleteObjects,
+    deleteAllBuckets,
     setSortBy,
     setViewMode,
     selectObject,
