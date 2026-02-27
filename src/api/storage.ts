@@ -174,7 +174,7 @@ export const storageApi = {
   async uploadObject(
     file: File,
     request: UploadObjectRequest,
-    onProgress?: (progress: { loaded: number; total: number; percentage: number }) => void
+    onProgress?: (_progress: { loaded: number; total: number; percentage: number }) => void
   ): Promise<StorageObject> {
     const api = getApi()
 
@@ -198,7 +198,7 @@ export const storageApi = {
             kmsKeyName: request.kmsKeyName,
             userProject: request.userProject,
           },
-          onUploadProgress: (progressEvent) => {
+          onUploadProgress: progressEvent => {
             if (onProgress && progressEvent.total) {
               const loaded = progressEvent.loaded
               const total = progressEvent.total
@@ -244,7 +244,7 @@ export const storageApi = {
             kmsKeyName: request.kmsKeyName,
             userProject: request.userProject,
           },
-          onUploadProgress: (progressEvent) => {
+          onUploadProgress: progressEvent => {
             if (onProgress && progressEvent.total) {
               const loaded = progressEvent.loaded
               const total = progressEvent.total

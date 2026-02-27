@@ -84,8 +84,18 @@
                 <span class="hidden sm:inline">Create Bucket</span>
               </button>
               <button
+                v-if="selectedBuckets.length > 0"
+                @click="showDeleteSelectedModal = true"
+                class="inline-flex items-center px-2 sm:px-3 py-2 border border-red-300 dark:border-red-900/50 text-sm font-medium rounded-md text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
+                :title="`Delete ${selectedBuckets.length} selected bucket(s)`"
+              >
+                <TrashIcon class="h-4 w-4 sm:mr-2" />
+                <span class="hidden sm:inline">Delete Selected ({{ selectedBuckets.length }})</span>
+              </button>
+              <button
+                v-else-if="storageStore.buckets.length > 0"
                 @click="showDeleteAllModal = true"
-                class="inline-flex items-center px-2 sm:px-3 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-900/50 transition-colors"
+                class="inline-flex items-center px-2 sm:px-3 py-2 border border-red-300 dark:border-red-900/50 text-sm font-medium rounded-md text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors"
                 title="Delete all buckets and objects"
               >
                 <TrashIcon class="h-4 w-4 sm:mr-2" />
@@ -485,13 +495,6 @@
               <PlusIcon class="h-4 w-4 mr-2" />
               Create Bucket
             </button>
-            <button
-              @click="showDeleteAllModal = true"
-              class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-900/50 transition-colors ml-3"
-            >
-              <TrashIcon class="h-4 w-4 mr-2" />
-              Delete All
-            </button>
           </div>
         </div>
       </div>
@@ -523,6 +526,17 @@
       confirm-label="Delete Everything"
       :is-loading="storageStore.loading.delete"
       @confirm="handleDeleteAllBuckets"
+    />
+
+    <!-- Delete Selected Confirmation Modal -->
+    <ConfirmationModal
+      v-model="showDeleteSelectedModal"
+      title="Delete Selected Buckets"
+      :message="`Are you sure you want to delete ${selectedBuckets.length} selected bucket(s) and all their contents? This action cannot be undone.`"
+      confirm-label="Delete Selected"
+      confirm-color="danger"
+      :is-loading="storageStore.loading.delete"
+      @confirm="handleDeleteSelectedBuckets"
     />
   </div>
 </template>
@@ -562,6 +576,7 @@ const appStore = useAppStore()
 // Local state
 const showCreateBucketModal = ref(false)
 const showDeleteAllModal = ref(false)
+const showDeleteSelectedModal = ref(false)
 const deleteModal = ref<{
   show: boolean
   bucket: StorageBucket | null
@@ -577,12 +592,13 @@ const selectedBuckets = ref<string[]>([])
 const isAllSelected = computed({
   get: () => {
     return (
-      storageStore.buckets.length > 0 && selectedBuckets.value.length === storageStore.buckets.length
+      storageStore.buckets.length > 0 &&
+      selectedBuckets.value.length === storageStore.buckets.length
     )
   },
   set: (val: boolean) => {
     if (val) {
-      selectedBuckets.value = storageStore.buckets.map((b) => b.name)
+      selectedBuckets.value = storageStore.buckets.map(b => b.name)
     } else {
       selectedBuckets.value = []
     }
@@ -733,6 +749,16 @@ async function handleDeleteAllBuckets(): Promise<void> {
   }
 }
 
+async function handleDeleteSelectedBuckets(): Promise<void> {
+  try {
+    await storageStore.deleteMultipleBuckets(selectedBuckets.value)
+    selectedBuckets.value = []
+    showDeleteSelectedModal.value = false
+  } catch {
+    // Error is already handled in the store
+  }
+}
+
 function cancelDeleteBucket(): void {
   deleteModal.value = {
     show: false,
@@ -805,10 +831,10 @@ watch(
 
 watch(
   () => storageStore.buckets,
-  (newBuckets) => {
+  newBuckets => {
     // If buckets are removed, ensure selectedBuckets only contains valid bucket names
-    const validNames = new Set(newBuckets.map((b) => b.name))
-    selectedBuckets.value = selectedBuckets.value.filter((name) => validNames.has(name))
+    const validNames = new Set(newBuckets.map(b => b.name))
+    selectedBuckets.value = selectedBuckets.value.filter(name => validNames.has(name))
   },
   { deep: true }
 )

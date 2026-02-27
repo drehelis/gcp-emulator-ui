@@ -1155,7 +1155,7 @@ const allObjectsSelected = computed({
   get: () => {
     return (
       storageStore.objects.length > 0 &&
-      storageStore.objects.every((obj) =>
+      storageStore.objects.every(obj =>
         storageStore.selectedObjects.includes(obj.fullPath || obj.name)
       )
     )
