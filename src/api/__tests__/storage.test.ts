@@ -237,4 +237,11 @@ describe('storageApi', () => {
       expect(await storageApi.healthCheck()).toBe(false)
     })
   })
+
+  describe('deleteAll', () => {
+    it('sends post request to _internal/delete_all', async () => {
+      await storageApi.deleteAll()
+      expect(mockClient.post).toHaveBeenCalledWith('/_internal/delete_all')
+    })
+  })
 })
