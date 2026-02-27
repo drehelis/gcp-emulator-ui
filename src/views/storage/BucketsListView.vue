@@ -137,7 +137,7 @@
                       <input
                         type="checkbox"
                         v-model="isAllSelected"
-                        :indeterminate="isIndeterminate"
+                        :indeterminate.prop="isIndeterminate"
                         class="w-3.5 h-3.5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
                       />
                     </th>
@@ -835,8 +835,7 @@ watch(
     // If buckets are removed, ensure selectedBuckets only contains valid bucket names
     const validNames = new Set(newBuckets.map(b => b.name))
     selectedBuckets.value = selectedBuckets.value.filter(name => validNames.has(name))
-  },
-  { deep: true }
+  }
 )
 
 onMounted(async () => {

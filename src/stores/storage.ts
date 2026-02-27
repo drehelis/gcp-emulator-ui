@@ -224,12 +224,10 @@ export const useStorageStore = defineStore('storage', () => {
     }
   }
 
-  async function _deleteBucketInner(bucketName: string): Promise<void> {
-    // First, get all objects in the bucket and delete them
+  async function deleteBucketWithObjects(bucketName: string): Promise<void> {
     const allObjects: string[] = []
     let pageToken: string | undefined = undefined
 
-    // Fetch all objects in the bucket (handle pagination)
     do {
       const response = await storageApi.listObjects({
         bucket: bucketName,
@@ -238,7 +236,6 @@ export const useStorageStore = defineStore('storage', () => {
       })
 
       if (response.items && response.items.length > 0) {
-        // Get object names, excluding folders
         const objectNames = response.items
           .filter(obj => !obj.name.endsWith('/'))
           .map(obj => obj.name)
@@ -248,15 +245,12 @@ export const useStorageStore = defineStore('storage', () => {
       pageToken = response.nextPageToken
     } while (pageToken)
 
-    // Delete all objects if any exist
     if (allObjects.length > 0) {
       await storageApi.deleteMultipleObjects(bucketName, allObjects)
     }
 
-    // Now delete the empty bucket
     await storageApi.deleteBucket(bucketName)
 
-    // Remove from local state
     buckets.value = buckets.value.filter(b => b.name !== bucketName)
     if (currentBucket.value?.name === bucketName) {
       currentBucket.value = null
@@ -271,7 +265,7 @@ export const useStorageStore = defineStore('storage', () => {
       loading.value.delete = true
       state.value.error = null
 
-      await _deleteBucketInner(bucketName)
+      await deleteBucketWithObjects(bucketName)
 
       appStore.showToast({
         type: 'success',
@@ -298,7 +292,9 @@ export const useStorageStore = defineStore('storage', () => {
       loading.value.delete = true
       state.value.error = null
 
-      const results = await Promise.allSettled(bucketNames.map(name => _deleteBucketInner(name)))
+      const results = await Promise.allSettled(
+        bucketNames.map(name => deleteBucketWithObjects(name))
+      )
       const failed = results.filter(r => r.status === 'rejected')
       const succeeded = results.filter(r => r.status === 'fulfilled')
 

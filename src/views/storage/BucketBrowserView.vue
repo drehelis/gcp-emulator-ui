@@ -214,7 +214,7 @@
                   <input
                     type="checkbox"
                     v-model="allObjectsSelected"
-                    :indeterminate="someObjectsSelected"
+                    :indeterminate.prop="someObjectsSelected"
                     class="w-3.5 h-3.5 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
                   />
                 </th>
@@ -379,7 +379,7 @@
                 <input
                   type="checkbox"
                   v-model="allObjectsSelected"
-                  :indeterminate="someObjectsSelected"
+                  :indeterminate.prop="someObjectsSelected"
                   class="w-4 h-4 text-blue-600 bg-white border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:bg-gray-700 dark:border-gray-600"
                 />
                 <span class="text-sm font-medium text-gray-900 dark:text-white">
