@@ -47,7 +47,7 @@ jobs:
       run: echo "${{ github.event.pull_request.number }}" > pr-number.txt
 
     - name: Upload test summary artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: test-summary
         path: |
@@ -64,7 +64,7 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
 
     - name: Upload coverage artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: coverage-report
         path: coverage/
