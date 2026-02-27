@@ -31,7 +31,9 @@ vi.mock('@/api/storage', () => ({
     deleteMultipleObjects: vi.fn(),
     getObjectDownloadUrl: vi.fn(),
     getObjectPreviewUrl: vi.fn(),
+    deleteAll: vi.fn(),
   },
+
 }))
 
 describe('useStorageStore', () => {
@@ -366,6 +368,76 @@ describe('useStorageStore', () => {
     })
   })
 
+  describe('deleteMultipleBuckets', () => {
+    it('deletes multiple buckets on success', async () => {
+      const mockBucket1 = { name: 'bucket1', selfLink: '', timeCreated: '', updated: '' }
+      const mockBucket2 = { name: 'bucket2', selfLink: '', timeCreated: '', updated: '' }
+
+      vi.mocked(storageApi.createBucket).mockResolvedValueOnce(mockBucket1).mockResolvedValueOnce(mockBucket2)
+      vi.mocked(storageApi.listObjects).mockResolvedValue({ items: [], prefixes: [] })
+      vi.mocked(storageApi.deleteMultipleObjects).mockResolvedValue({ success: [], errors: [] })
+      vi.mocked(storageApi.deleteBucket).mockResolvedValue()
+
+      const store = useStorageStore()
+      await store.createBucket({ name: 'bucket1' })
+      await store.createBucket({ name: 'bucket2' })
+      expect(store.buckets).toHaveLength(2)
+
+      await store.deleteMultipleBuckets(['bucket1', 'bucket2'])
+      expect(store.buckets).toHaveLength(0)
+    })
+
+    it('handles failures for some buckets', async () => {
+      const mockBucket1 = { name: 'bucket1', selfLink: '', timeCreated: '', updated: '' }
+      
+      vi.mocked(storageApi.createBucket).mockResolvedValueOnce(mockBucket1)
+      
+      // Let bucket1 fail deletion
+      vi.mocked(storageApi.listObjects).mockRejectedValue(new Error('Failed to list objects'))
+      vi.mocked(storageApi.deleteBucket).mockResolvedValue()
+
+      const store = useStorageStore()
+      await store.createBucket({ name: 'bucket1' })
+      expect(store.buckets).toHaveLength(1)
+
+      await store.deleteMultipleBuckets(['bucket1'])
+      
+      // Bucket should still remain in store because deletion failed
+      expect(store.buckets).toHaveLength(1)
+      expect(store.state.error).toBe('Failed to delete 1 bucket(s)')
+    })
+  })
+
+  describe('deleteAllBuckets', () => {
+    it('calls api.deleteAll and resets store', async () => {
+      vi.mocked(storageApi.deleteAll).mockResolvedValue()
+
+      const store = useStorageStore()
+      // artificially populate store
+      store.$patch({
+        buckets: [{ name: 'b1' } as any],
+        currentBucket: { name: 'b1' } as any,
+        objects: [{ name: 'o1' } as any]
+      })
+
+      await store.deleteAllBuckets()
+
+      expect(storageApi.deleteAll).toHaveBeenCalled()
+      expect(store.buckets).toEqual([])
+      expect(store.currentBucket).toBeNull()
+      expect(store.objects).toEqual([])
+    })
+
+    it('handles clear all failure', async () => {
+      vi.mocked(storageApi.deleteAll).mockRejectedValue(new Error('Delete all failed'))
+
+      const store = useStorageStore()
+
+      await expect(store.deleteAllBuckets()).rejects.toThrow('Delete all failed')
+      expect(store.state.error).toBe('Delete all failed')
+    })
+  })
+
   describe('fetchBuckets error handling', () => {
     it('handles API error gracefully', async () => {
       vi.mocked(storageApi.listBuckets).mockRejectedValue(new Error('Network error'))
@@ -505,7 +577,7 @@ describe('useStorageStore', () => {
   describe('uploadFiles', () => {
     it('uploads files and refreshes list', async () => {
       const file = new File(['content'], 'test.txt', { type: 'text/plain' })
-      vi.mocked(storageApi.uploadObject).mockImplementation((file, req, onProgress) => {
+      vi.mocked(storageApi.uploadObject).mockImplementation((file: any, req: any, onProgress: any) => {
         if (onProgress) onProgress({ loaded: 100, total: 100, percentage: 100 })
         return Promise.resolve({
           name: 'test.txt',
