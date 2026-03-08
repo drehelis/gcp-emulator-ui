@@ -38,10 +38,11 @@ You are an AI agent that checks the Google Cloud SDK announcements group for any
 ## Your Task
 
 1. Use your bash tool to run `curl -sL "https://r.jina.ai/https://groups.google.com/g/google-cloud-sdk-announce" | grep -E "Google Cloud CLI [0-9.]+ is now available for download" | head -1` to fetch the group's contents as markdown.
-2. Extract the URL for the latest announcement that looks like `https://groups.google.com/g/google-cloud-sdk-announce/c/[ID]`.
-3. Prepend `https://r.jina.ai/` to that URL (e.g., `https://r.jina.ai/https://groups.google.com/g/google-cloud-sdk-announce/c/[ID]`) and `curl -sL` it to fetch the actual announcement text.
+2. Extract the URL for the latest announcement that looks like `https://groups.google.com/g/g/google-cloud-sdk-announce/c/[ID]`.
+3. Prepend `https://r.jina.ai/` to that URL (e.g., `https://r.jina.ai/https://groups.google.com/g/g/google-cloud-sdk-announce/c/[ID]`) and `curl -sL` it to fetch the actual announcement text.
 4. Check the loaded text specifically for any mentions of "emulator" (e.g., Pub/Sub emulator, Datastore emulator, Spanner emulator, Storage emulator, Bigtable emulator, Firestore emulator).
-5. Before creating an issue, you MUST check if it already exists. Use your github tool to search for issues with: `includes "emulator release notes" "[X.Y.Z]" in:title is:issue`, replacing `[X.Y.Z]` with the SDK version you found.
+5. Before creating an issue, you MUST check if it already exists. Use `search_issues` tool ONLY to search for issues with query: `includes "emulator release notes" "[X.Y.Z]" in:title is:issue`, replacing `[X.Y.Z]` with the SDK version you found.
+   **CRITICAL: DO NOT use `web_search` for this check. Standard web searches may provide stale or incomplete results. You MUST use the github-specific search tool to ensure accuracy.**
 6. Review the results. If ANY open or closed issues are found for this specific SDK version, DO NOT create a new issue.
 7. ONLY if you are absolutely certain no issue exists for this announcement, create a new issue for the update using the `create-issue` tool.
    Use EXACTLY the following format for the issue title (replace X.Y.Z and YYYY-MM-DD accordingly):
