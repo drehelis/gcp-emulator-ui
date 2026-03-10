@@ -10,7 +10,7 @@ on:
       - README.md
       - LICENSE
   release:
-    types: 
+    types:
       - published
 
 env:
