@@ -9,11 +9,9 @@ on:
       - '.github/**'
       - README.md
       - LICENSE
-  workflow_run:
-    workflows:
-      - Release
+  release:
     types:
-      - completed
+      - published
 
 env:
   REGISTRY_IMAGE: ghcr.io/${{ github.repository }}
