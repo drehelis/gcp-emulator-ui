@@ -55,3 +55,20 @@ jobs:
     - name: Run
       run: |
         bun run format:check
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v6
+
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+
+    - name: Install dependencies
+      run: |
+        bun install
+
+    - name: Run
+      run: |
+        bun run build

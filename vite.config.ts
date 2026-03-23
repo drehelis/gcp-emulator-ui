@@ -17,6 +17,20 @@ try {
   console.warn('Error details:', error)
 }
 
+const manualChunksMap: Record<string, string[]> = {
+  vendor: ['vue', 'vue-router'],
+  pinia: ['pinia', 'pinia-plugin-persistedstate'],
+  charts: ['chart.js', 'vue-chartjs', 'apexcharts', 'vue3-apexcharts'],
+  ui: ['@headlessui/vue', '@heroicons/vue'],
+  utils: ['lodash-es', 'date-fns', 'fuse.js', 'uuid'],
+  query: ['@tanstack/vue-query', 'axios'],
+  vueuse: ['@vueuse/core', '@vueuse/integrations'],
+  websocket: ['socket.io-client', 'reconnecting-websocket'],
+  storage: ['dexie', 'idb']
+}
+
+const manualChunksEntries = Object.entries(manualChunksMap)
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
@@ -193,16 +207,13 @@ export default defineConfig({
     reportCompressedSize: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['vue', 'vue-router'],
-          pinia: ['pinia', 'pinia-plugin-persistedstate'],
-          charts: ['chart.js', 'vue-chartjs', 'apexcharts', 'vue3-apexcharts'],
-          ui: ['@headlessui/vue', '@heroicons/vue'],
-          utils: ['lodash-es', 'date-fns', 'fuse.js', 'uuid'],
-          query: ['@tanstack/vue-query', 'axios'],
-          vueuse: ['@vueuse/core', '@vueuse/integrations'],
-          websocket: ['socket.io-client', 'reconnecting-websocket'],
-          storage: ['dexie', 'idb']
+        manualChunks: (id) => {
+          const normalizedId = id.replace(/\\/g, '/')
+          for (const [chunkName, packages] of manualChunksEntries) {
+            if (packages.some((pkg) => normalizedId.includes(`/node_modules/${pkg}/`))) {
+              return chunkName
+            }
+          }
         }
       }
     },
