@@ -193,16 +193,23 @@ export default defineConfig({
     reportCompressedSize: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['vue', 'vue-router'],
-          pinia: ['pinia', 'pinia-plugin-persistedstate'],
-          charts: ['chart.js', 'vue-chartjs', 'apexcharts', 'vue3-apexcharts'],
-          ui: ['@headlessui/vue', '@heroicons/vue'],
-          utils: ['lodash-es', 'date-fns', 'fuse.js', 'uuid'],
-          query: ['@tanstack/vue-query', 'axios'],
-          vueuse: ['@vueuse/core', '@vueuse/integrations'],
-          websocket: ['socket.io-client', 'reconnecting-websocket'],
-          storage: ['dexie', 'idb']
+        manualChunks: (id) => {
+          const chunks: Record<string, string[]> = {
+            vendor: ['vue', 'vue-router'],
+            pinia: ['pinia', 'pinia-plugin-persistedstate'],
+            charts: ['chart.js', 'vue-chartjs', 'apexcharts', 'vue3-apexcharts'],
+            ui: ['@headlessui/vue', '@heroicons/vue'],
+            utils: ['lodash-es', 'date-fns', 'fuse.js', 'uuid'],
+            query: ['@tanstack/vue-query', 'axios'],
+            vueuse: ['@vueuse/core', '@vueuse/integrations'],
+            websocket: ['socket.io-client', 'reconnecting-websocket'],
+            storage: ['dexie', 'idb']
+          }
+          for (const [chunkName, packages] of Object.entries(chunks)) {
+            if (packages.some((pkg) => id.includes(`/node_modules/${pkg}/`))) {
+              return chunkName
+            }
+          }
         }
       }
     },
