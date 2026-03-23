@@ -29,6 +29,8 @@ const manualChunksMap: Record<string, string[]> = {
   storage: ['dexie', 'idb']
 }
 
+const manualChunksEntries = Object.entries(manualChunksMap)
+
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
@@ -206,8 +208,9 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: (id) => {
-          for (const [chunkName, packages] of Object.entries(manualChunksMap)) {
-            if (packages.some((pkg) => id.includes(`/node_modules/${pkg}/`))) {
+          const normalizedId = id.replace(/\\/g, '/')
+          for (const [chunkName, packages] of manualChunksEntries) {
+            if (packages.some((pkg) => normalizedId.includes(`/node_modules/${pkg}/`))) {
               return chunkName
             }
           }
