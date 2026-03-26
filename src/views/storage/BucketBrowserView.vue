@@ -1421,7 +1421,7 @@ function handleObjectClick(object: StorageObjectWithPreview): void {
 
 async function downloadObject(object: StorageObjectWithPreview): Promise<void> {
   if (object.isFolder) return
-  await storageStore.downloadObject(bucketName.value, object.name)
+  await storageStore.downloadObject(bucketName.value, object.fullPath || object.name)
 }
 
 function confirmBulkDelete(): void {
