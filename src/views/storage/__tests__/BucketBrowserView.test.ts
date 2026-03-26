@@ -75,19 +75,19 @@ describe('BucketBrowserView Download Fix', () => {
     })
 
     storageStore = useStorageStore()
-    
+
     // Setup objects in a folder
     storageStore.objects = [
-      { 
-        name: 'data.json', 
-        fullPath: 'folder/data.json', 
+      {
+        name: 'data.json',
+        fullPath: 'folder/data.json',
         isFolder: false,
         size: '100',
-        contentType: 'application/json'
-      }
+        contentType: 'application/json',
+      },
     ]
     storageStore.viewMode = 'list'
-    
+
     await wrapper.vm.$nextTick()
 
     // Find the download button (it's the ⇅ button in the list)
@@ -119,24 +119,24 @@ describe('BucketBrowserView Download Fix', () => {
     })
 
     storageStore = useStorageStore()
-    
+
     // Setup object without fullPath
     storageStore.objects = [
-      { 
-        name: 'root-file.json', 
+      {
+        name: 'root-file.json',
         isFolder: false,
         size: '100',
-        contentType: 'application/json'
-      }
+        contentType: 'application/json',
+      },
     ]
     storageStore.viewMode = 'list'
-    
+
     await wrapper.vm.$nextTick()
 
     // Find the download button
     const downloadButton = wrapper.findAll('button').find((b: any) => b.text() === '↓')
     expect(downloadButton?.exists()).toBe(true)
-    
+
     await downloadButton?.trigger('click')
 
     // Verify it called downloadObject with the name
