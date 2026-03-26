@@ -16,7 +16,7 @@ jobs:
 
     steps:
     - name: Download test summary artifact
-      uses: actions/download-artifact@v8.0.0
+      uses: actions/download-artifact@v8.0.1
       with:
         name: test-summary
         github-token: ${{ secrets.GITHUB_TOKEN }}
