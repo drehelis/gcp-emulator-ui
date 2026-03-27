@@ -20,6 +20,8 @@ updates:
         update-types:
         - "minor"
         - "patch"
+    ignore:
+      - dependency-name: "github/gh-aw-actions"
 
   - package-ecosystem: "docker"
     directories:
