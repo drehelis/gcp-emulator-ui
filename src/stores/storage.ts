@@ -154,8 +154,7 @@ export const useStorageStore = defineStore('storage', () => {
       if (featureStore.storageNotifications) {
         buckets.value
           .filter(
-            bucket =>
-              !Object.prototype.hasOwnProperty.call(bucketNotifications.value, bucket.name)
+            bucket => !Object.prototype.hasOwnProperty.call(bucketNotifications.value, bucket.name)
           )
           .forEach(bucket => {
             storageApi
