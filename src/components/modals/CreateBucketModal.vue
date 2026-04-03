@@ -97,18 +97,14 @@
             >
               Pub/Sub Topic (Optional)
             </label>
-              <select
+            <select
               id="pubsub-topic"
               v-model="bucketForm.pubsubTopic"
               class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
               :disabled="isSubmitting || isLoadingTopics"
             >
               <option value="">None</option>
-              <option
-                v-for="topic in availableTopics"
-                :key="topic.name"
-                :value="topic.name"
-              >
+              <option v-for="topic in availableTopics" :key="topic.name" :value="topic.name">
                 {{ topic.name }}
               </option>
             </select>
@@ -116,34 +112,62 @@
               Configure a Pub/Sub topic to receive notifications for this bucket
             </p>
 
-            <div v-if="bucketForm.pubsubTopic" class="space-y-3 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+            <div
+              v-if="bucketForm.pubsubTopic"
+              class="space-y-3 pl-4 border-l-2 border-gray-200 dark:border-gray-700"
+            >
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Event Types
                 </label>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <label class="flex items-center space-x-2">
-                    <input type="checkbox" value="OBJECT_FINALIZE" v-model="bucketForm.pubsubEventTypes" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700">
+                    <input
+                      type="checkbox"
+                      value="OBJECT_FINALIZE"
+                      v-model="bucketForm.pubsubEventTypes"
+                      class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                    />
                     <span class="text-sm text-gray-700 dark:text-gray-300">Object Finalize</span>
                   </label>
                   <label class="flex items-center space-x-2">
-                    <input type="checkbox" value="OBJECT_DELETE" v-model="bucketForm.pubsubEventTypes" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700">
+                    <input
+                      type="checkbox"
+                      value="OBJECT_DELETE"
+                      v-model="bucketForm.pubsubEventTypes"
+                      class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                    />
                     <span class="text-sm text-gray-700 dark:text-gray-300">Object Delete</span>
                   </label>
                   <label class="flex items-center space-x-2">
-                    <input type="checkbox" value="OBJECT_METADATA_UPDATE" v-model="bucketForm.pubsubEventTypes" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700">
+                    <input
+                      type="checkbox"
+                      value="OBJECT_METADATA_UPDATE"
+                      v-model="bucketForm.pubsubEventTypes"
+                      class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                    />
                     <span class="text-sm text-gray-700 dark:text-gray-300">Metadata Update</span>
                   </label>
                   <label class="flex items-center space-x-2">
-                    <input type="checkbox" value="OBJECT_ARCHIVE" v-model="bucketForm.pubsubEventTypes" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700">
+                    <input
+                      type="checkbox"
+                      value="OBJECT_ARCHIVE"
+                      v-model="bucketForm.pubsubEventTypes"
+                      class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                    />
                     <span class="text-sm text-gray-700 dark:text-gray-300">Object Archive</span>
                   </label>
                 </div>
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">If none selected, all events are sent.</p>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  If none selected, all events are sent.
+                </p>
               </div>
 
               <div>
-                <label for="pubsub-prefix" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                <label
+                  for="pubsub-prefix"
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >
                   Object Name Prefix
                 </label>
                 <input
@@ -301,7 +325,10 @@ const handleSubmit = async () => {
         publicAccessPrevention: bucketForm.value.publicAccessPrevention ? 'enforced' : 'inherited',
       },
       pubsubTopic: bucketForm.value.pubsubTopic.trim() || undefined,
-      pubsubEventTypes: bucketForm.value.pubsubEventTypes.length > 0 ? bucketForm.value.pubsubEventTypes : undefined,
+      pubsubEventTypes:
+        bucketForm.value.pubsubEventTypes.length > 0
+          ? bucketForm.value.pubsubEventTypes
+          : undefined,
       pubsubPrefix: bucketForm.value.pubsubPrefix.trim() || undefined,
     }
 
@@ -365,31 +392,32 @@ const handleEnterKey = (event: KeyboardEvent) => {
 }
 
 // Set up keyboard event listeners
-onMounted(async () => {
+onMounted(() => {
   document.addEventListener('keydown', handleEnterKey)
-  
-  const projectId = projectsStore.selectedProjectId
-  if (!projectId) return
-
-  isLoadingTopics.value = true
-  try {
-    availableTopics.value = await topicsApi.getTopics(projectId)
-  } catch {
-    // Error handled by store toast
-  } finally {
-    isLoadingTopics.value = false
-  }
 })
 
 onUnmounted(() => {
   document.removeEventListener('keydown', handleEnterKey)
 })
 
-// Focus input when modal opens
+// Fetch topics and focus input when modal opens
 watch(
   () => props.modelValue,
   async isOpen => {
     if (isOpen) {
+      // Fetch topics lazily — only when modal is first opened
+      const projectId = projectsStore.selectedProjectId
+      if (projectId) {
+        isLoadingTopics.value = true
+        try {
+          availableTopics.value = await topicsApi.getTopics(projectId)
+        } catch {
+          // Error handled by store toast
+        } finally {
+          isLoadingTopics.value = false
+        }
+      }
+
       await nextTick()
       bucketNameInput.value?.focus()
     }

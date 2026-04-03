@@ -280,7 +280,9 @@
           class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"
         >
           <div class="mb-6">
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Pub/Sub Notifications</h3>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+              Pub/Sub Notifications
+            </h3>
             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
               Configure a Pub/Sub topic to receive events for this bucket
             </p>
@@ -301,11 +303,7 @@
                 class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <option value="">None</option>
-                <option
-                  v-for="topic in availableTopics"
-                  :key="topic.name"
-                  :value="topic.name"
-                >
+                <option v-for="topic in availableTopics" :key="topic.name" :value="topic.name">
                   {{ topic.name }}
                 </option>
               </select>
@@ -314,34 +312,64 @@
               Emulator will dispatch JSON_API_V1 notifications to this topic.
             </p>
 
-            <div v-if="form.pubsubTopic" class="space-y-4 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+            <div
+              v-if="form.pubsubTopic"
+              class="space-y-4 pl-4 border-l-2 border-gray-200 dark:border-gray-700"
+            >
               <div>
                 <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Event Types
                 </label>
                 <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <label class="flex items-center space-x-3">
-                    <input type="checkbox" value="OBJECT_FINALIZE" v-model="form.pubsubEventTypes" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700">
+                    <input
+                      type="checkbox"
+                      value="OBJECT_FINALIZE"
+                      v-model="form.pubsubEventTypes"
+                      class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                    />
                     <span class="text-sm text-gray-700 dark:text-gray-300">OBJECT_FINALIZE</span>
                   </label>
                   <label class="flex items-center space-x-3">
-                    <input type="checkbox" value="OBJECT_DELETE" v-model="form.pubsubEventTypes" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700">
+                    <input
+                      type="checkbox"
+                      value="OBJECT_DELETE"
+                      v-model="form.pubsubEventTypes"
+                      class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                    />
                     <span class="text-sm text-gray-700 dark:text-gray-300">OBJECT_DELETE</span>
                   </label>
                   <label class="flex items-center space-x-3">
-                    <input type="checkbox" value="OBJECT_METADATA_UPDATE" v-model="form.pubsubEventTypes" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700">
-                    <span class="text-sm text-gray-700 dark:text-gray-300">OBJECT_METADATA_UPDATE</span>
+                    <input
+                      type="checkbox"
+                      value="OBJECT_METADATA_UPDATE"
+                      v-model="form.pubsubEventTypes"
+                      class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                    />
+                    <span class="text-sm text-gray-700 dark:text-gray-300"
+                      >OBJECT_METADATA_UPDATE</span
+                    >
                   </label>
                   <label class="flex items-center space-x-3">
-                    <input type="checkbox" value="OBJECT_ARCHIVE" v-model="form.pubsubEventTypes" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700">
+                    <input
+                      type="checkbox"
+                      value="OBJECT_ARCHIVE"
+                      v-model="form.pubsubEventTypes"
+                      class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                    />
                     <span class="text-sm text-gray-700 dark:text-gray-300">OBJECT_ARCHIVE</span>
                   </label>
                 </div>
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Leave unselected to receive all event types.</p>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  Leave unselected to receive all event types.
+                </p>
               </div>
 
               <div>
-                <label for="pubsubPrefix" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                <label
+                  for="pubsubPrefix"
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
                   Object Name Prefix
                 </label>
                 <div class="mt-1">
@@ -421,7 +449,7 @@ const form = ref({
   project: '',
   location: 'US',
   storageClass: 'STANDARD',
-  publicAccessPrevention: 'enforced',
+  publicAccessPrevention: '' as '' | 'enforced' | 'inherited',
   pubsubTopic: '',
   pubsubEventTypes: [] as string[],
   pubsubPrefix: '',
@@ -527,11 +555,14 @@ async function handleSubmit(): Promise<void> {
       name: form.value.name,
       location: form.value.location,
       storageClass: form.value.storageClass,
-      iamConfiguration: {
-        publicAccessPrevention: form.value.publicAccessPrevention as 'enforced' | 'inherited',
-      },
+      ...(form.value.publicAccessPrevention && {
+        iamConfiguration: {
+          publicAccessPrevention: form.value.publicAccessPrevention,
+        },
+      }),
       pubsubTopic: form.value.pubsubTopic.trim() || undefined,
-      pubsubEventTypes: form.value.pubsubEventTypes.length > 0 ? form.value.pubsubEventTypes : undefined,
+      pubsubEventTypes:
+        form.value.pubsubEventTypes.length > 0 ? form.value.pubsubEventTypes : undefined,
       pubsubPrefix: form.value.pubsubPrefix.trim() || undefined,
     }
 

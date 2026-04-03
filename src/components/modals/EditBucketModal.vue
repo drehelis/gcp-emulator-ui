@@ -24,7 +24,9 @@
                 <span class="text-sm font-medium text-gray-900 dark:text-white truncate">
                   {{ notification.topic.split('/').pop() }}
                 </span>
-                <span class="px-1.5 py-0.5 text-[10px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded">
+                <span
+                  class="px-1.5 py-0.5 text-[10px] bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded"
+                >
                   ID: {{ notification.id }}
                 </span>
               </div>
@@ -36,12 +38,15 @@
                 >
                   {{ event }}
                 </span>
-                <span v-if="notification.object_name_prefix" class="px-1.5 py-0.5 text-[10px] bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full border border-amber-100 dark:border-amber-900/50">
+                <span
+                  v-if="notification.object_name_prefix"
+                  class="px-1.5 py-0.5 text-[10px] bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full border border-amber-100 dark:border-amber-900/50"
+                >
                   Prefix: {{ notification.object_name_prefix }}
                 </span>
               </div>
             </div>
-            
+
             <button
               @click="handleDelete(notification)"
               class="ml-4 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
@@ -57,7 +62,9 @@
       </div>
 
       <!-- Add New Notification -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5">
+      <div
+        class="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-5"
+      >
         <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-4 flex items-center">
           <PlusIcon class="w-4 h-4 mr-2 text-blue-500" />
           Add New Notification Trigger
@@ -66,7 +73,9 @@
         <div class="space-y-5">
           <!-- Topic Select -->
           <div>
-            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+            <label
+              class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2"
+            >
               Pub/Sub Topic
             </label>
             <select
@@ -74,25 +83,29 @@
               class="w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:text-white text-sm transition-all"
             >
               <option value="" disabled>Select a topic...</option>
-              <option
-                v-for="topic in filteredTopics"
-                :key="topic.name"
-                :value="topic.name"
-              >
+              <option v-for="topic in filteredTopics" :key="topic.name" :value="topic.name">
                 {{ topic.name }}
               </option>
             </select>
-            <p v-if="filteredTopics.length === 0 && availableTopics.length > 0 && !isLoadingTopics" class="mt-1 text-xs text-amber-600 dark:text-amber-400">
+            <p
+              v-if="filteredTopics.length === 0 && availableTopics.length > 0 && !isLoadingTopics"
+              class="mt-1 text-xs text-amber-600 dark:text-amber-400"
+            >
               All available topics are already configured for this bucket.
             </p>
-            <p v-else-if="availableTopics.length === 0 && !isLoadingTopics" class="mt-1 text-xs text-amber-600 dark:text-amber-400">
+            <p
+              v-else-if="availableTopics.length === 0 && !isLoadingTopics"
+              class="mt-1 text-xs text-amber-600 dark:text-amber-400"
+            >
               No topics found. Create a topic first in the Pub/Sub section.
             </p>
           </div>
 
           <!-- Event Types -->
           <div>
-            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+            <label
+              class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2"
+            >
               Event Types (Optional)
             </label>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -100,7 +113,10 @@
                 v-for="option in eventTypeOptions"
                 :key="option.value"
                 class="flex items-center p-2 rounded-md border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors"
-                :class="{'bg-blue-50/50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800': newForm.event_types.includes(option.value)}"
+                :class="{
+                  'bg-blue-50/50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800':
+                    newForm.event_types.includes(option.value),
+                }"
               >
                 <input
                   type="checkbox"
@@ -108,7 +124,9 @@
                   :value="option.value"
                   class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600"
                 />
-                <span class="ml-2 text-xs text-gray-700 dark:text-gray-300">{{ option.label }}</span>
+                <span class="ml-2 text-xs text-gray-700 dark:text-gray-300">{{
+                  option.label
+                }}</span>
               </label>
             </div>
             <p class="mt-1.5 text-[10px] text-gray-500 dark:text-gray-400">
@@ -118,7 +136,9 @@
 
           <!-- Prefix -->
           <div>
-            <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+            <label
+              class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2"
+            >
               Object Name Prefix (Optional)
             </label>
             <input
@@ -137,8 +157,19 @@
             >
               <PlusIcon v-if="!isSubmitting" class="w-4 h-4 mr-2" />
               <svg v-else class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                <circle
+                  class="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                ></circle>
+                <path
+                  class="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
               </svg>
               Add Trigger
             </button>
@@ -150,7 +181,9 @@
       <ExclamationTriangleIcon class="w-12 h-12 text-amber-500" />
       <div class="text-center">
         <p class="text-base font-medium text-gray-900 dark:text-white">Feature Not Supported</p>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">This version of the storage emulator does not support notification configurations.</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          This version of the storage emulator does not support notification configurations.
+        </p>
       </div>
     </div>
 
@@ -168,7 +201,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { TrashIcon, PlusIcon } from '@heroicons/vue/24/outline'
+import { TrashIcon, PlusIcon, ExclamationTriangleIcon } from '@heroicons/vue/24/outline'
 import BaseModal from '@/components/ui/BaseModal.vue'
 import { topicsApi } from '@/api/pubsub'
 import { useStorageStore } from '@/stores/storage'
@@ -206,7 +239,7 @@ const newForm = ref({
   topic: '',
   event_types: [] as string[],
   object_name_prefix: '',
-  payload_format: 'JSON_API_V1'
+  payload_format: 'JSON_API_V1',
 })
 
 const currentNotifications = computed(() => {
@@ -217,7 +250,7 @@ const deleteConfirm = ref({
   show: false,
   notificationId: '',
   topicName: '',
-  isDeleting: false
+  isDeleting: false,
 })
 
 const filteredTopics = computed(() => {
@@ -235,7 +268,7 @@ const modalActions = computed<ModalAction[]>(() => [
     label: 'Done',
     handler: handleClose,
     variant: 'secondary',
-  }
+  },
 ])
 
 const loadTopics = async () => {
@@ -261,17 +294,19 @@ const handleAdd = async () => {
       topic: newForm.value.topic,
       payload_format: 'JSON_API_V1',
       ...(newForm.value.event_types.length ? { event_types: newForm.value.event_types } : {}),
-      ...(newForm.value.object_name_prefix ? { object_name_prefix: newForm.value.object_name_prefix } : {}),
+      ...(newForm.value.object_name_prefix
+        ? { object_name_prefix: newForm.value.object_name_prefix }
+        : {}),
     }
 
     await storageStore.createNotification(props.bucketName, config)
-    
+
     // Reset form
     newForm.value = {
       topic: '',
       event_types: [],
       object_name_prefix: '',
-      payload_format: 'JSON_API_V1'
+      payload_format: 'JSON_API_V1',
     }
   } catch {
     // Error handled by store toast
@@ -285,7 +320,7 @@ const handleDelete = (notification: any) => {
     show: true,
     notificationId: notification.id,
     topicName: notification.topic.split('/').pop() || '',
-    isDeleting: false
+    isDeleting: false,
   }
 }
 
@@ -313,9 +348,12 @@ onMounted(() => {
   }
 })
 
-watch(() => props.modelValue, (isOpen) => {
-  if (isOpen) {
-    loadTopics()
+watch(
+  () => props.modelValue,
+  isOpen => {
+    if (isOpen) {
+      loadTopics()
+    }
   }
-})
+)
 </script>

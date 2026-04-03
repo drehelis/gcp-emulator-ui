@@ -770,8 +770,6 @@ describe('useStorageStore', () => {
     })
   })
 
-  // ===== New notification-related tests covering the patch =====
-
   describe('fetchBuckets - notification fetching (patch lines 152-166)', () => {
     it('fetches notifications for each bucket when feature is enabled', async () => {
       vi.mocked(storageApi.listBuckets).mockResolvedValue({
@@ -791,6 +789,25 @@ describe('useStorageStore', () => {
       expect(storageApi.listNotifications).toHaveBeenCalledWith('b1')
       expect(storageApi.listNotifications).toHaveBeenCalledWith('b2')
       expect(store.bucketNotifications).toEqual({ b1: [], b2: [] })
+    })
+
+    it('skips notification fetch for already-cached buckets (filter branch)', async () => {
+      vi.mocked(storageApi.listBuckets).mockResolvedValue({
+        items: [{ name: 'b1', selfLink: '', timeCreated: '', updated: '' }],
+      })
+      vi.mocked(storageApi.listNotifications).mockResolvedValue([])
+
+      const store = useStorageStore()
+      // Pre-populate cache for b1
+      store.$patch(state => {
+        state.bucketNotifications['b1'] = []
+      })
+
+      await store.fetchBuckets()
+      await new Promise(r => setTimeout(r, 0))
+
+      // Should NOT call listNotifications since b1 is already cached
+      expect(storageApi.listNotifications).not.toHaveBeenCalled()
     })
 
     it('disables feature when notification fetch returns 404 (patch line 161)', async () => {
@@ -865,7 +882,10 @@ describe('useStorageStore', () => {
 
       expect(storageApi.createNotification).toHaveBeenCalledWith(
         'b1',
-        expect.objectContaining({ topic: 'projects/p/topics/my-topic', payload_format: 'JSON_API_V1' })
+        expect.objectContaining({
+          topic: 'projects/p/topics/my-topic',
+          payload_format: 'JSON_API_V1',
+        })
       )
     })
 
@@ -927,6 +947,39 @@ describe('useStorageStore', () => {
       const warningCalls = showToastSpy.mock.calls.filter((c: any[]) => c[0]?.type === 'warning')
       expect(warningCalls).toHaveLength(0)
     })
+
+    it('disables feature flag when notification returns 404 during createBucket', async () => {
+      const mockBucket = { name: 'b1', selfLink: '', timeCreated: '', updated: '' }
+      vi.mocked(storageApi.createBucket).mockResolvedValue(mockBucket)
+      vi.mocked(storageApi.createNotification).mockRejectedValue({ response: { status: 404 } })
+      vi.spyOn(console, 'error').mockImplementation(() => {})
+
+      const { useFeatureStore } = await import('@/stores/features')
+      const featureStore = useFeatureStore()
+
+      const store = useStorageStore()
+      await store.createBucket({ name: 'b1', pubsubTopic: 'projects/p/topics/t' })
+
+      expect(featureStore.storageNotifications).toBe(false)
+      // Bucket is still created despite notification failure
+      expect(store.buckets).toHaveLength(1)
+    })
+
+    it('disables feature flag on 501 during createBucket (right side of ||)', async () => {
+      const mockBucket = { name: 'b1', selfLink: '', timeCreated: '', updated: '' }
+      vi.mocked(storageApi.createBucket).mockResolvedValue(mockBucket)
+      // status 501 means left side (=== 404) is false, forcing right side evaluation
+      vi.mocked(storageApi.createNotification).mockRejectedValue({ response: { status: 501 } })
+      vi.spyOn(console, 'error').mockImplementation(() => {})
+
+      const { useFeatureStore } = await import('@/stores/features')
+      const featureStore = useFeatureStore()
+
+      const store = useStorageStore()
+      await store.createBucket({ name: 'b1', pubsubTopic: 'projects/p/topics/t' })
+
+      expect(featureStore.storageNotifications).toBe(false)
+    })
   })
 
   describe('fetchNotifications (patch lines 270-278)', () => {
@@ -954,6 +1007,33 @@ describe('useStorageStore', () => {
         expect.any(Error)
       )
     })
+
+    it('disables feature flag when listNotifications returns 404', async () => {
+      vi.mocked(storageApi.listNotifications).mockRejectedValue({ response: { status: 404 } })
+      vi.spyOn(console, 'error').mockImplementation(() => {})
+
+      const { useFeatureStore } = await import('@/stores/features')
+      const featureStore = useFeatureStore()
+
+      const store = useStorageStore()
+      await store.fetchNotifications('my-bucket')
+
+      expect(featureStore.storageNotifications).toBe(false)
+    })
+
+    it('disables feature flag on 501 in fetchNotifications (right side of ||)', async () => {
+      // status 501: left side (=== 404) is false, right side must be evaluated
+      vi.mocked(storageApi.listNotifications).mockRejectedValue({ response: { status: 501 } })
+      vi.spyOn(console, 'error').mockImplementation(() => {})
+
+      const { useFeatureStore } = await import('@/stores/features')
+      const featureStore = useFeatureStore()
+
+      const store = useStorageStore()
+      await store.fetchNotifications('my-bucket')
+
+      expect(featureStore.storageNotifications).toBe(false)
+    })
   })
 
   describe('createNotification (patch lines 280-297)', () => {
@@ -967,9 +1047,12 @@ describe('useStorageStore', () => {
         payload_format: 'JSON_API_V1',
       })
 
-      expect(storageApi.createNotification).toHaveBeenCalledWith('my-bucket', expect.objectContaining({
-        topic: 'projects/p/topics/t',
-      }))
+      expect(storageApi.createNotification).toHaveBeenCalledWith(
+        'my-bucket',
+        expect.objectContaining({
+          topic: 'projects/p/topics/t',
+        })
+      )
       // Refreshes notifications after creation
       expect(storageApi.listNotifications).toHaveBeenCalledWith('my-bucket')
     })
@@ -1003,4 +1086,3 @@ describe('useStorageStore', () => {
     })
   })
 })
-

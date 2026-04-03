@@ -186,13 +186,18 @@ export interface CreateBucketRequest {
   pubsubPrefix?: string
 }
 
-export interface NotificationConfig {
-  id?: string
+/** Shape used when creating a new notification (id not yet assigned by server) */
+export interface NotificationConfigRequest {
   topic: string
   payload_format?: 'JSON_API_V1' | 'NONE'
   event_types?: string[]
   object_name_prefix?: string
   custom_attributes?: Record<string, string>
+}
+
+/** Shape returned by the API — id is always present on existing configs */
+export interface NotificationConfig extends NotificationConfigRequest {
+  id: string
 }
 
 export interface UploadObjectRequest {

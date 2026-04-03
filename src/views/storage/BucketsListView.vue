@@ -313,7 +313,11 @@
                       class="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 hidden xl:table-cell whitespace-nowrap"
                     >
                       <template v-if="storageStore.bucketNotifications[bucket.name]?.length > 0">
-                        {{ storageStore.bucketNotifications[bucket.name].map(n => n.topic.split('/').pop()).join(', ') }}
+                        {{
+                          storageStore.bucketNotifications[bucket.name]
+                            .map(n => n.topic.split('/').pop())
+                            .join(', ')
+                        }}
                       </template>
                       <template v-else>-</template>
                     </td>
@@ -409,8 +413,18 @@
                           class="inline-flex items-center text-blue-600 dark:text-blue-400"
                           title="Edit Bucket"
                         >
-                          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                          <svg
+                            class="w-3.5 h-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5"
+                            stroke="currentColor"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
+                            />
                           </svg>
                         </span>
                       </div>
@@ -470,10 +484,26 @@
                       {{ bucket.location }}
                     </span>
                   </div>
-                  <div v-if="storageStore.bucketNotifications[bucket.name]?.length > 0" class="text-xs mt-1">
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 pb-0.5" :title="`Has ${storageStore.bucketNotifications[bucket.name].length} notifications`">
-                      <svg class="w-2.5 h-2.5 mr-1" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
+                  <div
+                    v-if="storageStore.bucketNotifications[bucket.name]?.length > 0"
+                    class="text-xs mt-1"
+                  >
+                    <span
+                      class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 pb-0.5"
+                      :title="`Has ${storageStore.bucketNotifications[bucket.name].length} notifications`"
+                    >
+                      <svg
+                        class="w-2.5 h-2.5 mr-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
+                        />
                       </svg>
                       Active
                     </span>

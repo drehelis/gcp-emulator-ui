@@ -58,8 +58,6 @@ export const useStorageStore = defineStore('storage', () => {
     create: false,
   })
 
-
-
   // UI state
   const selectedObjects = ref<string[]>([])
   const viewMode = ref<'grid' | 'list'>(
@@ -150,22 +148,25 @@ export const useStorageStore = defineStore('storage', () => {
 
       buckets.value = response.items || []
 
-      // Fetch notifications for all buckets asynchronously without blocking
+      // Fetch notifications for new buckets only (skip already-cached ones)
       if (featureStore.storageNotifications) {
-        buckets.value.forEach(bucket => {
-          storageApi.listNotifications(bucket.name)
-            .then(configs => {
-              // Mutate property directly to avoid concurrent promise resolution race conditions
-              bucketNotifications.value[bucket.name] = configs
-            })
-            .catch((err) => {
-              if (err.response?.status === 404 || err.response?.status === 501) {
-                featureStore.disableStorageNotifications()
-              } else {
-                console.error(`Error fetching configs for ${bucket.name}:`, err)
-              }
-            })
-        })
+        buckets.value
+          .filter(bucket => !(bucket.name in bucketNotifications.value))
+          .forEach(bucket => {
+            storageApi
+              .listNotifications(bucket.name)
+              .then(configs => {
+                // Mutate property directly to avoid concurrent promise resolution race conditions
+                bucketNotifications.value[bucket.name] = configs
+              })
+              .catch(err => {
+                if (err.response?.status === 404 || err.response?.status === 501) {
+                  featureStore.disableStorageNotifications()
+                } else {
+                  console.error(`Error fetching configs for ${bucket.name}:`, err)
+                }
+              })
+          })
       }
 
       state.value.state = 'success'
@@ -232,7 +233,9 @@ export const useStorageStore = defineStore('storage', () => {
           })
         } catch (notifErr: any) {
           console.error('Error configuring bucket notification:', notifErr)
-          if (!silent) {
+          if (notifErr.response?.status === 404 || notifErr.response?.status === 501) {
+            featureStore.disableStorageNotifications()
+          } else if (!silent) {
             appStore.showToast({
               type: 'warning',
               title: 'Notification Config Failed',
@@ -276,10 +279,16 @@ export const useStorageStore = defineStore('storage', () => {
       bucketNotifications.value[bucketName] = configs
     } catch (error: any) {
       console.error(`Error fetching configs for ${bucketName}:`, error)
+      if (error.response?.status === 404 || error.response?.status === 501) {
+        featureStore.disableStorageNotifications()
+      }
     }
   }
 
-  async function createNotification(bucketName: string, config: any): Promise<void> {
+  async function createNotification(
+    bucketName: string,
+    config: import('@/types').NotificationConfigRequest
+  ): Promise<void> {
     try {
       await storageApi.createNotification(bucketName, config)
       await fetchNotifications(bucketName)
@@ -547,10 +556,10 @@ export const useStorageStore = defineStore('storage', () => {
 
           const result = await storageApi.uploadObject(file, request, (progress: any) => {
             if (uploadProgress.value[index]) {
-              uploadProgress.value[index] = { 
-                ...uploadProgress.value[index], 
-                ...progress, 
-                status: 'uploading' 
+              uploadProgress.value[index] = {
+                ...uploadProgress.value[index],
+                ...progress,
+                status: 'uploading',
               }
             }
           })

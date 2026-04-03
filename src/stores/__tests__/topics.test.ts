@@ -503,18 +503,20 @@ describe('useTopicsStore', () => {
 
     it('updates existing topic in list when re-fetched', async () => {
       const store = useTopicsStore()
-      store.topics = [{
-        projectId: 'test-project',
-        name: 'existing',
-        fullName: 'projects/test-project/topics/existing',
-        id: 'existing',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        state: 'ACTIVE',
-        messageCount: 0,
-        subscriptionsCount: 0,
-        labels: {},
-      }] as any
+      store.topics = [
+        {
+          projectId: 'test-project',
+          name: 'existing',
+          fullName: 'projects/test-project/topics/existing',
+          id: 'existing',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          state: 'ACTIVE',
+          messageCount: 0,
+          subscriptionsCount: 0,
+          labels: {},
+        },
+      ] as any
 
       const fetchPromise = store.fetchTopic('existing', 'test-project')
       await vi.advanceTimersByTimeAsync(500)
@@ -554,20 +556,26 @@ describe('useTopicsStore', () => {
 
     it('updates topic successfully', async () => {
       const store = useTopicsStore()
-      store.topics = [{
-        projectId: 'test-project',
-        name: 'updatable',
-        fullName: 'projects/test-project/topics/updatable',
-        id: 'upd',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        state: 'ACTIVE',
-        messageCount: 0,
-        subscriptionsCount: 0,
-        labels: {},
-      }] as any
+      store.topics = [
+        {
+          projectId: 'test-project',
+          name: 'updatable',
+          fullName: 'projects/test-project/topics/updatable',
+          id: 'upd',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          state: 'ACTIVE',
+          messageCount: 0,
+          subscriptionsCount: 0,
+          labels: {},
+        },
+      ] as any
 
-      const updatePromise = store.updateTopic('updatable', { labels: { updated: 'yes' } }, 'test-project')
+      const updatePromise = store.updateTopic(
+        'updatable',
+        { labels: { updated: 'yes' } },
+        'test-project'
+      )
       await vi.advanceTimersByTimeAsync(700)
       const updated = await updatePromise
 
@@ -577,20 +585,26 @@ describe('useTopicsStore', () => {
 
     it('handles full name format in updateTopic', async () => {
       const store = useTopicsStore()
-      store.topics = [{
-        projectId: 'test-project',
-        name: 'full',
-        fullName: 'projects/test-project/topics/full',
-        id: 'f',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        state: 'ACTIVE',
-        messageCount: 0,
-        subscriptionsCount: 0,
-        labels: {},
-      }] as any
+      store.topics = [
+        {
+          projectId: 'test-project',
+          name: 'full',
+          fullName: 'projects/test-project/topics/full',
+          id: 'f',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          state: 'ACTIVE',
+          messageCount: 0,
+          subscriptionsCount: 0,
+          labels: {},
+        },
+      ] as any
 
-      const updatePromise = store.updateTopic('projects/test-project/topics/full', { messageCount: 99 }, 'test-project')
+      const updatePromise = store.updateTopic(
+        'projects/test-project/topics/full',
+        { messageCount: 99 },
+        'test-project'
+      )
       await vi.advanceTimersByTimeAsync(700)
       const updated = await updatePromise
       expect(updated.messageCount).toBe(99)
@@ -640,11 +654,13 @@ describe('useTopicsStore', () => {
       vi.mocked(topicsApi.deleteTopic).mockResolvedValue()
 
       const store = useTopicsStore()
-      store.topics = [{
-        projectId: 'test-project',
-        name: 'to-delete',
-        fullName: 'projects/test-project/topics/to-delete',
-      }] as any
+      store.topics = [
+        {
+          projectId: 'test-project',
+          name: 'to-delete',
+          fullName: 'projects/test-project/topics/to-delete',
+        },
+      ] as any
 
       await store.deleteTopic('to-delete')
       expect(subscriptionsApi.deleteSubscription).toHaveBeenCalledWith('test-project', 'orphan')
@@ -658,10 +674,19 @@ describe('useTopicsStore', () => {
 
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
       const store = useTopicsStore()
-      store.topics = [{ projectId: 'test-project', name: 'brave', fullName: 'projects/test-project/topics/brave' }] as any
+      store.topics = [
+        {
+          projectId: 'test-project',
+          name: 'brave',
+          fullName: 'projects/test-project/topics/brave',
+        },
+      ] as any
 
       await store.deleteTopic('brave')
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to delete related subscriptions'), expect.any(Error))
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to delete related subscriptions'),
+        expect.any(Error)
+      )
       expect(topicsApi.deleteTopic).toHaveBeenCalled()
     })
   })
@@ -670,11 +695,13 @@ describe('useTopicsStore', () => {
     it('records error when a topic already exists in batch', async () => {
       const store = useTopicsStore()
       // Pre-populate to cause duplicate error
-      store.topics = [{
-        projectId: 'test-project',
-        name: 'dupe',
-        fullName: 'projects/test-project/topics/dupe',
-      }] as any
+      store.topics = [
+        {
+          projectId: 'test-project',
+          name: 'dupe',
+          fullName: 'projects/test-project/topics/dupe',
+        },
+      ] as any
 
       const batchId = await store.createBatchTopics([{ projectId: 'test-project', name: 'dupe' }])
       expect(store.getBatchOperation(batchId)?.status).toBe('PENDING')
@@ -731,11 +758,13 @@ describe('useTopicsStore', () => {
 
     it('getTopicByName returns topic by short name', () => {
       const store = useTopicsStore()
-      store.topics = [{
-        projectId: 'test-project',
-        name: 'findme',
-        fullName: 'projects/test-project/topics/findme',
-      }] as any
+      store.topics = [
+        {
+          projectId: 'test-project',
+          name: 'findme',
+          fullName: 'projects/test-project/topics/findme',
+        },
+      ] as any
 
       const topic = store.getTopicByName('findme')
       expect(topic?.name).toBe('findme')
@@ -751,15 +780,16 @@ describe('useTopicsStore', () => {
 
     it('getTopicByName handles full name format', () => {
       const store = useTopicsStore()
-      store.topics = [{
-        projectId: 'test-project',
-        name: 'full',
-        fullName: 'projects/test-project/topics/full',
-      }] as any
+      store.topics = [
+        {
+          projectId: 'test-project',
+          name: 'full',
+          fullName: 'projects/test-project/topics/full',
+        },
+      ] as any
 
       const topic = store.getTopicByName('projects/test-project/topics/full')
       expect(topic?.name).toBe('full')
     })
   })
 })
-

@@ -308,7 +308,10 @@ describe('storageApi', () => {
 
       const zip = await storageApi.downloadObjectsAsZip('b1', ['bad-obj', 'good-obj'])
 
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to download'), expect.any(Error))
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to download'),
+        expect.any(Error)
+      )
       expect(mockZip.file).toHaveBeenCalledTimes(1) // only good-obj added
       expect(zip).toBeInstanceOf(Blob)
     })
@@ -331,7 +334,9 @@ describe('storageApi', () => {
 
     it('throws when bucket is empty (line 473)', async () => {
       mockClient.get.mockResolvedValue({ data: { items: [] } })
-      await expect(storageApi.downloadBucketAsZip('empty-bucket')).rejects.toThrow('Bucket is empty')
+      await expect(storageApi.downloadBucketAsZip('empty-bucket')).rejects.toThrow(
+        'Bucket is empty'
+      )
     })
   })
 
@@ -372,9 +377,7 @@ describe('storageApi', () => {
         data: { items: [{ id: 'n1' }, { id: 'n2' }] },
       })
       const items = await storageApi.listNotifications('my-bucket')
-      expect(mockClient.get).toHaveBeenCalledWith(
-        '/storage/v1/b/my-bucket/notificationConfigs'
-      )
+      expect(mockClient.get).toHaveBeenCalledWith('/storage/v1/b/my-bucket/notificationConfigs')
       expect(items).toHaveLength(2)
     })
 
@@ -392,4 +395,3 @@ describe('storageApi', () => {
     })
   })
 })
-

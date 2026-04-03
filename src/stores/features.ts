@@ -5,7 +5,7 @@ export const useFeatureStore = defineStore('features', () => {
   // Flag state
   const flags = ref({
     /**
-     * This is an new feature in fake-gcs-server.
+     * This is a new feature in fake-gcs-server.
      * See: https://github.com/fsouza/fake-gcs-server/pull/2157
      */
     storageNotifications: true,
@@ -24,6 +24,6 @@ export const useFeatureStore = defineStore('features', () => {
 
   return {
     storageNotifications,
-    disableStorageNotifications
+    disableStorageNotifications,
   }
 })

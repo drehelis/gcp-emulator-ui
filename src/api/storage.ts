@@ -116,21 +116,31 @@ export const storageApi = {
     })
   },
 
-  async createNotification(bucketName: string, config: import('@/types').NotificationConfig): Promise<import('@/types').NotificationConfig> {
+  async createNotification(
+    bucketName: string,
+    config: import('@/types').NotificationConfigRequest
+  ): Promise<import('@/types').NotificationConfig> {
     const api = getApi()
-    const response = await api.post(`/storage/v1/b/${encodeURIComponent(bucketName)}/notificationConfigs`, config)
+    const response = await api.post(
+      `/storage/v1/b/${encodeURIComponent(bucketName)}/notificationConfigs`,
+      config
+    )
     return response.data
   },
 
   async listNotifications(bucketName: string): Promise<import('@/types').NotificationConfig[]> {
     const api = getApi()
-    const response = await api.get(`/storage/v1/b/${encodeURIComponent(bucketName)}/notificationConfigs`)
+    const response = await api.get(
+      `/storage/v1/b/${encodeURIComponent(bucketName)}/notificationConfigs`
+    )
     return response.data.items || []
   },
 
   async deleteNotification(bucketName: string, notificationId: string): Promise<void> {
     const api = getApi()
-    await api.delete(`/storage/v1/b/${encodeURIComponent(bucketName)}/notificationConfigs/${encodeURIComponent(notificationId)}`)
+    await api.delete(
+      `/storage/v1/b/${encodeURIComponent(bucketName)}/notificationConfigs/${encodeURIComponent(notificationId)}`
+    )
   },
 
   // Object Management
