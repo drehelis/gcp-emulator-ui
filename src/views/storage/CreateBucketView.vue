@@ -422,7 +422,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   ArrowLeftIcon,
@@ -581,7 +581,6 @@ const availableTopics = ref<any[]>([])
 const isLoadingTopics = ref(false)
 
 // Watchers
-import { watch } from 'vue'
 watch(() => form.value.name, validateBucketName)
 
 // Lifecycle
