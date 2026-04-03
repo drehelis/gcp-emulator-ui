@@ -48,17 +48,41 @@ jobs:
         env:
           NEW_VERSION: ${{ steps.bump.outputs.new_version }}
 
+      - name: "Auto-merge PR"
+        if: steps.cpr.outputs.pull-request-number != ''
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr merge --squash --auto "${{ steps.cpr.outputs.pull-request-number }}"
+
+      - name: "Wait for PR to merge"
+        if: steps.cpr.outputs.pull-request-number != ''
+        timeout-minutes: 5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
+        run: |
+          while true; do
+            STATE=$(gh pr view "$PR_NUMBER" --json state --template '{{.state}}')
+            if [ "$STATE" == "MERGED" ]; then
+              echo "PR merged."
+              break
+            fi
+            if [ "$STATE" == "CLOSED" ]; then
+              echo "PR closed without merging."
+              exit 1
+            fi
+            echo "State: $STATE. Waiting 3s..."
+            sleep 3
+          done
+
       - name: "Release"
+        if: steps.cpr.outputs.pull-request-number != ''
         env:
           # https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow#triggering-a-workflow-from-a-workflow
           GITHUB_TOKEN: ${{ secrets.RELEASE_PAT }}
           NEW_VERSION: ${{ steps.bump.outputs.new_version }}
         run: |
           gh release create $NEW_VERSION \
+            --target main \
             -t $NEW_VERSION
-
-      - name: "Auto-merge PR"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh pr merge --squash --auto "${{ steps.cpr.outputs.pull-request-number }}"
