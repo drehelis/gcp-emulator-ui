@@ -224,7 +224,7 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
-import { topicsApi } from '@/api/pubsub'
+import { usePubSubTopics } from '@/composables/usePubSubTopics'
 import { useProjectsStore } from '@/stores/projects'
 import { useStorageStore } from '@/stores/storage'
 import { useFeatureStore } from '@/stores/features'
@@ -243,10 +243,9 @@ const emit = defineEmits<{
 const projectsStore = useProjectsStore()
 const storageStore = useStorageStore()
 const featureStore = useFeatureStore()
+const { availableTopics, isLoadingTopics, fetchTopics } = usePubSubTopics()
 
 const bucketNameInput = ref<HTMLInputElement>()
-const availableTopics = ref<any[]>([])
-const isLoadingTopics = ref(false)
 const isSubmitting = ref(false)
 
 const bucketForm = ref({
@@ -406,17 +405,7 @@ watch(
   async isOpen => {
     if (isOpen) {
       // Fetch topics lazily — only when modal is first opened
-      const projectId = projectsStore.selectedProjectId
-      if (projectId) {
-        isLoadingTopics.value = true
-        try {
-          availableTopics.value = await topicsApi.getTopics(projectId)
-        } catch {
-          // Error handled by store toast
-        } finally {
-          isLoadingTopics.value = false
-        }
-      }
+      await fetchTopics(projectsStore.selectedProjectId)
 
       await nextTick()
       bucketNameInput.value?.focus()

@@ -203,7 +203,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { TrashIcon, PlusIcon, ExclamationTriangleIcon } from '@heroicons/vue/24/outline'
 import BaseModal from '@/components/ui/BaseModal.vue'
-import { topicsApi } from '@/api/pubsub'
+import { usePubSubTopics } from '@/composables/usePubSubTopics'
 import { useStorageStore } from '@/stores/storage'
 import { useProjectsStore } from '@/stores/projects'
 import { useFeatureStore } from '@/stores/features'
@@ -223,9 +223,8 @@ const emit = defineEmits<{
 const storageStore = useStorageStore()
 const projectsStore = useProjectsStore()
 const featureStore = useFeatureStore()
+const { availableTopics, isLoadingTopics, fetchTopics } = usePubSubTopics()
 
-const availableTopics = ref<any[]>([])
-const isLoadingTopics = ref(false)
 const isSubmitting = ref(false)
 
 const eventTypeOptions = [
@@ -272,17 +271,7 @@ const modalActions = computed<ModalAction[]>(() => [
 ])
 
 const loadTopics = async () => {
-  const projectId = projectsStore.selectedProjectId
-  if (!projectId) return
-
-  isLoadingTopics.value = true
-  try {
-    availableTopics.value = await topicsApi.getTopics(projectId)
-  } catch (error) {
-    console.error('Failed to load topics', error)
-  } finally {
-    isLoadingTopics.value = false
-  }
+  await fetchTopics(projectsStore.selectedProjectId)
 }
 
 const handleAdd = async () => {

@@ -434,7 +434,7 @@ import {
 import { useStorageStore } from '@/stores/storage'
 import { useProjectsStore } from '@/stores/projects'
 import { useFeatureStore } from '@/stores/features'
-import { topicsApi } from '@/api/pubsub'
+import { usePubSubTopics } from '@/composables/usePubSubTopics'
 import type { CreateBucketRequest } from '@/types'
 
 const router = useRouter()
@@ -442,6 +442,7 @@ const route = useRoute()
 const storageStore = useStorageStore()
 const projectsStore = useProjectsStore()
 const featureStore = useFeatureStore()
+const { availableTopics, isLoadingTopics, fetchTopics } = usePubSubTopics()
 
 // Form state
 const form = ref({
@@ -577,22 +578,12 @@ async function handleSubmit(): Promise<void> {
   }
 }
 
-const availableTopics = ref<any[]>([])
-const isLoadingTopics = ref(false)
-
 // Watchers
 watch(() => form.value.name, validateBucketName)
 
 // Lifecycle
 onMounted(async () => {
   form.value.project = currentProjectId.value
-  isLoadingTopics.value = true
-  try {
-    availableTopics.value = await topicsApi.getTopics(currentProjectId.value)
-  } catch (error) {
-    console.error('Failed to load topics', error)
-  } finally {
-    isLoadingTopics.value = false
-  }
+  await fetchTopics(currentProjectId.value)
 })
 </script>
