@@ -195,6 +195,7 @@ declare global {
   const useEventSource: typeof import('@vueuse/core').useEventSource
   const useEyeDropper: typeof import('@vueuse/core').useEyeDropper
   const useFavicon: typeof import('@vueuse/core').useFavicon
+  const useFeatureStore: typeof import('./src/stores/features').useFeatureStore
   const useFetch: typeof import('@vueuse/core').useFetch
   const useFieldNavigation: typeof import('./src/composables/useFieldNavigation').useFieldNavigation
   const useFieldOperations: typeof import('./src/composables/useFieldOperations').useFieldOperations

@@ -181,6 +181,18 @@ export interface CreateBucketRequest {
   predefinedDefaultObjectAcl?: string
   projection?: 'full' | 'noAcl'
   userProject?: string
+  pubsubTopic?: string
+  pubsubEventTypes?: string[]
+  pubsubPrefix?: string
+}
+
+export interface NotificationConfig {
+  id?: string
+  topic: string
+  payload_format?: 'JSON_API_V1' | 'NONE'
+  event_types?: string[]
+  object_name_prefix?: string
+  custom_attributes?: Record<string, string>
 }
 
 export interface UploadObjectRequest {

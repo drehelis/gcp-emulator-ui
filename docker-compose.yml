@@ -46,6 +46,8 @@ services:
     command: -scheme http
     ports:
       - "4443:4443"
+    environment:
+      - PUBSUB_EMULATOR_HOST=host.docker.internal:8085
     restart: unless-stopped
 
   gcp-emulator-ui:

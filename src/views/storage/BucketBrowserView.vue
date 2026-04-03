@@ -1049,6 +1049,8 @@
         </div>
       </Dialog>
     </TransitionRoot>
+
+    <!-- Notifications Modal removed -->
   </div>
 </template>
 
@@ -1103,9 +1105,9 @@ const deleteModal = ref<{
 })
 
 // Drag and drop state
+const showCreateFolderModal = ref(false)
 const showUploadModal = ref(false)
 const showCreateFileModal = ref(false)
-const showCreateFolderModal = ref(false)
 const downloadingZip = ref(false)
 const downloadContext = ref<{ count: number; objects: string[] } | null>(null)
 

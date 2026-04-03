@@ -219,6 +219,7 @@
     "useEventSource": true,
     "useEyeDropper": true,
     "useFavicon": true,
+    "useFeatureStore": true,
     "useFetch": true,
     "useFieldNavigation": true,
     "useFieldOperations": true,

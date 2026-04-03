@@ -465,4 +465,301 @@ describe('useTopicsStore', () => {
       expect(store.topics[0].name).toBe('my-topic')
     })
   })
+
+  describe('fetchTopics - no project selected (line 132)', () => {
+    it('throws when no project is available', async () => {
+      const projectsStore = useProjectsStore()
+      projectsStore.selectedProject = null as any
+
+      const store = useTopicsStore()
+      await expect(store.fetchTopics()).rejects.toThrow('No project selected')
+      expect(store.state.state).toBe('error')
+    })
+
+    it('merges pagination options', async () => {
+      const { topicsApi } = await import('@/api/pubsub')
+      vi.mocked(topicsApi.getTopics).mockResolvedValue([])
+
+      const store = useTopicsStore()
+      await store.fetchTopics('test-project', { pageSize: 25 })
+      expect(store.pagination.pageSize).toBe(25)
+    })
+  })
+
+  describe('fetchTopic - uncached path (lines 200-238)', () => {
+    it('fetches from mock when not cached and stores in cache', async () => {
+      const store = useTopicsStore()
+      // ensure not in cache
+      expect(store.topicCache.has('projects/test-project/topics/fresh')).toBe(false)
+
+      const fetchPromise = store.fetchTopic('fresh', 'test-project')
+      await vi.advanceTimersByTimeAsync(500)
+      const topic = await fetchPromise
+
+      expect(topic).not.toBeNull()
+      expect(topic!.name).toBe('fresh')
+      expect(store.topicCache.has('projects/test-project/topics/fresh')).toBe(true)
+    })
+
+    it('updates existing topic in list when re-fetched', async () => {
+      const store = useTopicsStore()
+      store.topics = [{
+        projectId: 'test-project',
+        name: 'existing',
+        fullName: 'projects/test-project/topics/existing',
+        id: 'existing',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        state: 'ACTIVE',
+        messageCount: 0,
+        subscriptionsCount: 0,
+        labels: {},
+      }] as any
+
+      const fetchPromise = store.fetchTopic('existing', 'test-project')
+      await vi.advanceTimersByTimeAsync(500)
+      await fetchPromise
+
+      // Should update, not duplicate
+      expect(store.topics.filter((t: any) => t.name === 'existing')).toHaveLength(1)
+    })
+
+    it('throws when no project is available (line 188)', async () => {
+      const projectsStore = useProjectsStore()
+      projectsStore.selectedProject = null as any
+
+      const store = useTopicsStore()
+      await expect(store.fetchTopic('any-topic')).rejects.toThrow('No project selected')
+    })
+
+    it('handles full name format in fetchTopic', async () => {
+      const store = useTopicsStore()
+      const fullName = 'projects/test-project/topics/my-full-topic'
+      // not in cache
+      const fetchPromise = store.fetchTopic(fullName, 'test-project')
+      await vi.advanceTimersByTimeAsync(500)
+      const topic = await fetchPromise
+      expect(topic!.fullName).toBe(fullName)
+    })
+  })
+
+  describe('updateTopic - uncovered branches (lines 297, 314-330)', () => {
+    it('throws when no project is available', async () => {
+      const projectsStore = useProjectsStore()
+      projectsStore.selectedProject = null as any
+
+      const store = useTopicsStore()
+      await expect(store.updateTopic('any-topic', {})).rejects.toThrow('No project selected')
+    })
+
+    it('updates topic successfully', async () => {
+      const store = useTopicsStore()
+      store.topics = [{
+        projectId: 'test-project',
+        name: 'updatable',
+        fullName: 'projects/test-project/topics/updatable',
+        id: 'upd',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        state: 'ACTIVE',
+        messageCount: 0,
+        subscriptionsCount: 0,
+        labels: {},
+      }] as any
+
+      const updatePromise = store.updateTopic('updatable', { labels: { updated: 'yes' } }, 'test-project')
+      await vi.advanceTimersByTimeAsync(700)
+      const updated = await updatePromise
+
+      expect(updated.labels).toEqual({ updated: 'yes' })
+      expect(store.topics[0].labels).toEqual({ updated: 'yes' })
+    })
+
+    it('handles full name format in updateTopic', async () => {
+      const store = useTopicsStore()
+      store.topics = [{
+        projectId: 'test-project',
+        name: 'full',
+        fullName: 'projects/test-project/topics/full',
+        id: 'f',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        state: 'ACTIVE',
+        messageCount: 0,
+        subscriptionsCount: 0,
+        labels: {},
+      }] as any
+
+      const updatePromise = store.updateTopic('projects/test-project/topics/full', { messageCount: 99 }, 'test-project')
+      await vi.advanceTimersByTimeAsync(700)
+      const updated = await updatePromise
+      expect(updated.messageCount).toBe(99)
+    })
+  })
+
+  describe('deleteTopic - uncovered branches (lines 342, 394, 411)', () => {
+    it('throws when no project is available (line 342)', async () => {
+      const projectsStore = useProjectsStore()
+      projectsStore.selectedProject = null as any
+
+      const store = useTopicsStore()
+      await expect(store.deleteTopic('any-topic')).rejects.toThrow('No project selected')
+    })
+
+    it('clears selectedTopic when the deleted topic was selected (line 411)', async () => {
+      const { topicsApi, subscriptionsApi } = await import('@/api/pubsub')
+      vi.mocked(subscriptionsApi.getSubscriptions).mockResolvedValue([])
+      vi.mocked(topicsApi.deleteTopic).mockResolvedValue()
+
+      const store = useTopicsStore()
+      const topic = {
+        projectId: 'test-project',
+        name: 'selected-topic',
+        fullName: 'projects/test-project/topics/selected-topic',
+      } as any
+      store.topics = [topic]
+      store.selectedTopic = topic
+
+      await store.deleteTopic('selected-topic')
+      expect(store.selectedTopic).toBeNull()
+    })
+
+    it('handles orphaned subscriptions (_deleted-topic_) on delete (line 374-382)', async () => {
+      const { topicsApi, subscriptionsApi } = await import('@/api/pubsub')
+      vi.mocked(subscriptionsApi.getSubscriptions).mockResolvedValue([
+        {
+          name: 'projects/test-project/subscriptions/orphan',
+          topic: '_deleted-topic_',
+        },
+        {
+          name: 'projects/test-project/subscriptions/related',
+          topic: 'projects/test-project/topics/to-delete',
+        },
+      ] as any)
+      vi.mocked(subscriptionsApi.deleteSubscription).mockResolvedValue()
+      vi.mocked(topicsApi.deleteTopic).mockResolvedValue()
+
+      const store = useTopicsStore()
+      store.topics = [{
+        projectId: 'test-project',
+        name: 'to-delete',
+        fullName: 'projects/test-project/topics/to-delete',
+      }] as any
+
+      await store.deleteTopic('to-delete')
+      expect(subscriptionsApi.deleteSubscription).toHaveBeenCalledWith('test-project', 'orphan')
+      expect(subscriptionsApi.deleteSubscription).toHaveBeenCalledWith('test-project', 'related')
+    })
+
+    it('logs warning when getSubscriptions fails and proceeds (line 394)', async () => {
+      const { topicsApi, subscriptionsApi } = await import('@/api/pubsub')
+      vi.mocked(subscriptionsApi.getSubscriptions).mockRejectedValue(new Error('Network error'))
+      vi.mocked(topicsApi.deleteTopic).mockResolvedValue()
+
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+      const store = useTopicsStore()
+      store.topics = [{ projectId: 'test-project', name: 'brave', fullName: 'projects/test-project/topics/brave' }] as any
+
+      await store.deleteTopic('brave')
+      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Failed to delete related subscriptions'), expect.any(Error))
+      expect(topicsApi.deleteTopic).toHaveBeenCalled()
+    })
+  })
+
+  describe('createBatchTopics - error path (line 447)', () => {
+    it('records error when a topic already exists in batch', async () => {
+      const store = useTopicsStore()
+      // Pre-populate to cause duplicate error
+      store.topics = [{
+        projectId: 'test-project',
+        name: 'dupe',
+        fullName: 'projects/test-project/topics/dupe',
+      }] as any
+
+      const batchId = await store.createBatchTopics([{ projectId: 'test-project', name: 'dupe' }])
+      expect(store.getBatchOperation(batchId)?.status).toBe('PENDING')
+
+      await vi.advanceTimersByTimeAsync(1100) // for setTimeout(1000)
+      await vi.advanceTimersByTimeAsync(1100) // for createTopic delay
+
+      const op = store.getBatchOperation(batchId)
+      expect(op?.status).toBe('FAILED')
+      expect(op?.errors).toHaveLength(1)
+    })
+  })
+
+  describe('deleteBatchTopics - error path (lines 466, 492)', () => {
+    it('throws when no project selected (line 466)', async () => {
+      const projectsStore = useProjectsStore()
+      projectsStore.selectedProject = null as any
+
+      const store = useTopicsStore()
+      await expect(store.deleteBatchTopics(['t1'])).rejects.toThrow('No project selected')
+    })
+
+    it('records error in batch when individual delete fails (line 492)', async () => {
+      const { topicsApi, subscriptionsApi } = await import('@/api/pubsub')
+      vi.mocked(subscriptionsApi.getSubscriptions).mockResolvedValue([])
+      vi.mocked(topicsApi.deleteTopic).mockRejectedValue(new Error('delete boom'))
+
+      const store = useTopicsStore()
+      const batchId = await store.deleteBatchTopics(['nonexistent'])
+
+      await vi.advanceTimersByTimeAsync(1500)
+
+      const op = store.getBatchOperation(batchId)
+      expect(op?.status).toBe('FAILED')
+      expect(op?.errors[0].message).toContain('boom')
+    })
+  })
+
+  describe('utility actions (lines 539-554)', () => {
+    it('clearBatchOperation removes specific operation', () => {
+      const store = useTopicsStore()
+      store.batchOperations.set('op1', { status: 'COMPLETED' } as any)
+      store.clearBatchOperation('op1')
+      expect(store.batchOperations.has('op1')).toBe(false)
+    })
+
+    it('clearAllBatchOperations removes all operations', () => {
+      const store = useTopicsStore()
+      store.batchOperations.set('op1', { status: 'COMPLETED' } as any)
+      store.batchOperations.set('op2', { status: 'PENDING' } as any)
+      store.clearAllBatchOperations()
+      expect(store.batchOperations.size).toBe(0)
+    })
+
+    it('getTopicByName returns topic by short name', () => {
+      const store = useTopicsStore()
+      store.topics = [{
+        projectId: 'test-project',
+        name: 'findme',
+        fullName: 'projects/test-project/topics/findme',
+      }] as any
+
+      const topic = store.getTopicByName('findme')
+      expect(topic?.name).toBe('findme')
+    })
+
+    it('getTopicByName returns undefined when no project', () => {
+      const projectsStore = useProjectsStore()
+      projectsStore.selectedProject = null as any
+
+      const store = useTopicsStore()
+      expect(store.getTopicByName('any')).toBeUndefined()
+    })
+
+    it('getTopicByName handles full name format', () => {
+      const store = useTopicsStore()
+      store.topics = [{
+        projectId: 'test-project',
+        name: 'full',
+        fullName: 'projects/test-project/topics/full',
+      }] as any
+
+      const topic = store.getTopicByName('projects/test-project/topics/full')
+      expect(topic?.name).toBe('full')
+    })
+  })
 })
+

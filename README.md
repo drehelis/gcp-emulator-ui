@@ -76,6 +76,7 @@ docker run \
 docker run \
    --rm \
    --publish 4443:4443 \
+   --env PUBSUB_EMULATOR_HOST="host.docker.internal:8085" \
    fsouza/fake-gcs-server -scheme http
 
 # Now start the UI

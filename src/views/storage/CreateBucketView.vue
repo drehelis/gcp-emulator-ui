@@ -274,6 +274,91 @@
           </div>
         </div>
 
+        <!-- Pub/Sub Notifications -->
+        <div
+          v-if="featureStore.storageNotifications"
+          class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"
+        >
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Pub/Sub Notifications</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              Configure a Pub/Sub topic to receive events for this bucket
+            </p>
+          </div>
+
+          <div>
+            <label
+              for="pubsubTopic"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
+              Topic (Optional)
+            </label>
+            <div class="mt-1">
+              <select
+                id="pubsubTopic"
+                v-model="form.pubsubTopic"
+                :disabled="storageStore.loading.create || isLoadingTopics"
+                class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <option value="">None</option>
+                <option
+                  v-for="topic in availableTopics"
+                  :key="topic.name"
+                  :value="topic.name"
+                >
+                  {{ topic.name }}
+                </option>
+              </select>
+            </div>
+            <p class="mt-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
+              Emulator will dispatch JSON_API_V1 notifications to this topic.
+            </p>
+
+            <div v-if="form.pubsubTopic" class="space-y-4 pl-4 border-l-2 border-gray-200 dark:border-gray-700">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Event Types
+                </label>
+                <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label class="flex items-center space-x-3">
+                    <input type="checkbox" value="OBJECT_FINALIZE" v-model="form.pubsubEventTypes" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700">
+                    <span class="text-sm text-gray-700 dark:text-gray-300">OBJECT_FINALIZE</span>
+                  </label>
+                  <label class="flex items-center space-x-3">
+                    <input type="checkbox" value="OBJECT_DELETE" v-model="form.pubsubEventTypes" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700">
+                    <span class="text-sm text-gray-700 dark:text-gray-300">OBJECT_DELETE</span>
+                  </label>
+                  <label class="flex items-center space-x-3">
+                    <input type="checkbox" value="OBJECT_METADATA_UPDATE" v-model="form.pubsubEventTypes" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700">
+                    <span class="text-sm text-gray-700 dark:text-gray-300">OBJECT_METADATA_UPDATE</span>
+                  </label>
+                  <label class="flex items-center space-x-3">
+                    <input type="checkbox" value="OBJECT_ARCHIVE" v-model="form.pubsubEventTypes" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700">
+                    <span class="text-sm text-gray-700 dark:text-gray-300">OBJECT_ARCHIVE</span>
+                  </label>
+                </div>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Leave unselected to receive all event types.</p>
+              </div>
+
+              <div>
+                <label for="pubsubPrefix" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Object Name Prefix
+                </label>
+                <div class="mt-1">
+                  <input
+                    id="pubsubPrefix"
+                    v-model="form.pubsubPrefix"
+                    type="text"
+                    :disabled="storageStore.loading.create"
+                    class="block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    placeholder="e.g. uploads"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Form Actions -->
         <div
           class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"
@@ -320,12 +405,15 @@ import {
 } from '@heroicons/vue/24/outline'
 import { useStorageStore } from '@/stores/storage'
 import { useProjectsStore } from '@/stores/projects'
+import { useFeatureStore } from '@/stores/features'
+import { topicsApi } from '@/api/pubsub'
 import type { CreateBucketRequest } from '@/types'
 
 const router = useRouter()
 const route = useRoute()
 const storageStore = useStorageStore()
 const projectsStore = useProjectsStore()
+const featureStore = useFeatureStore()
 
 // Form state
 const form = ref({
@@ -333,6 +421,10 @@ const form = ref({
   project: '',
   location: 'US',
   storageClass: 'STANDARD',
+  publicAccessPrevention: 'enforced',
+  pubsubTopic: '',
+  pubsubEventTypes: [] as string[],
+  pubsubPrefix: '',
   enableVersioning: false,
   labels: [] as Array<{ key: string; value: string }>,
 })
@@ -431,10 +523,16 @@ async function handleSubmit(): Promise<void> {
     }
 
     const request: CreateBucketRequest = {
-      name: form.value.name,
       project: form.value.project,
-      predefinedAcl: 'private',
-      projection: 'full',
+      name: form.value.name,
+      location: form.value.location,
+      storageClass: form.value.storageClass,
+      iamConfiguration: {
+        publicAccessPrevention: form.value.publicAccessPrevention as 'enforced' | 'inherited',
+      },
+      pubsubTopic: form.value.pubsubTopic.trim() || undefined,
+      pubsubEventTypes: form.value.pubsubEventTypes.length > 0 ? form.value.pubsubEventTypes : undefined,
+      pubsubPrefix: form.value.pubsubPrefix.trim() || undefined,
     }
 
     await storageStore.createBucket(request)
@@ -448,12 +546,23 @@ async function handleSubmit(): Promise<void> {
   }
 }
 
+const availableTopics = ref<any[]>([])
+const isLoadingTopics = ref(false)
+
 // Watchers
 import { watch } from 'vue'
 watch(() => form.value.name, validateBucketName)
 
 // Lifecycle
-onMounted(() => {
+onMounted(async () => {
   form.value.project = currentProjectId.value
+  isLoadingTopics.value = true
+  try {
+    availableTopics.value = await topicsApi.getTopics(currentProjectId.value)
+  } catch (error) {
+    console.error('Failed to load topics', error)
+  } finally {
+    isLoadingTopics.value = false
+  }
 })
 </script>
