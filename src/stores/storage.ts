@@ -150,23 +150,35 @@ export const useStorageStore = defineStore('storage', () => {
 
       // Fetch notifications for new buckets only (skip already-cached ones)
       if (featureStore.storageNotifications) {
-        buckets.value
-          .filter(bucket => !(bucket.name in bucketNotifications.value))
-          .forEach(bucket => {
-            storageApi
-              .listNotifications(bucket.name)
-              .then(configs => {
-                // Mutate property directly to avoid concurrent promise resolution race conditions
-                bucketNotifications.value[bucket.name] = configs
-              })
-              .catch(err => {
-                if (err.response?.status === 404 || err.response?.status === 501) {
-                  featureStore.disableStorageNotifications()
-                } else {
-                  console.error(`Error fetching configs for ${bucket.name}:`, err)
-                }
-              })
+        if (buckets.value.length === 0) {
+          // Probe check because we have no buckets to check!
+          storageApi.listNotifications('_probe_').catch((err: any) => {
+            if (
+              err.response?.status === 501 ||
+              (err.response?.status === 404 && !err.response?.data?.error)
+            ) {
+              featureStore.disableStorageNotifications()
+            }
           })
+        } else {
+          buckets.value
+            .filter(bucket => !(bucket.name in bucketNotifications.value))
+            .forEach(bucket => {
+              storageApi
+                .listNotifications(bucket.name)
+                .then(configs => {
+                  // Mutate property directly to avoid concurrent promise resolution race conditions
+                  bucketNotifications.value[bucket.name] = configs
+                })
+                .catch(err => {
+                  if (err.response?.status === 404 || err.response?.status === 501) {
+                    featureStore.disableStorageNotifications()
+                  } else {
+                    console.error(`Error fetching configs for ${bucket.name}:`, err)
+                  }
+                })
+            })
+        }
       }
 
       state.value.state = 'success'
