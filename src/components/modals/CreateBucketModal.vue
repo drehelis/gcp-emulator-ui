@@ -89,6 +89,99 @@
             </p>
           </div>
 
+          <!-- Pub/Sub Notifications -->
+          <div v-if="featureStore.storageNotifications">
+            <label
+              for="pubsub-topic"
+              class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+            >
+              Pub/Sub Topic (Optional)
+            </label>
+            <select
+              id="pubsub-topic"
+              v-model="bucketForm.pubsubTopic"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+              :disabled="isSubmitting || isLoadingTopics"
+            >
+              <option value="">None</option>
+              <option v-for="topic in availableTopics" :key="topic.name" :value="topic.name">
+                {{ topic.name }}
+              </option>
+            </select>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 mb-3">
+              Configure a Pub/Sub topic to receive notifications for this bucket
+            </p>
+
+            <div
+              v-if="bucketForm.pubsubTopic"
+              class="space-y-3 pl-4 border-l-2 border-gray-200 dark:border-gray-700"
+            >
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Event Types
+                </label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <label class="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      value="OBJECT_FINALIZE"
+                      v-model="bucketForm.pubsubEventTypes"
+                      class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                    />
+                    <span class="text-sm text-gray-700 dark:text-gray-300">Object Finalize</span>
+                  </label>
+                  <label class="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      value="OBJECT_DELETE"
+                      v-model="bucketForm.pubsubEventTypes"
+                      class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                    />
+                    <span class="text-sm text-gray-700 dark:text-gray-300">Object Delete</span>
+                  </label>
+                  <label class="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      value="OBJECT_METADATA_UPDATE"
+                      v-model="bucketForm.pubsubEventTypes"
+                      class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                    />
+                    <span class="text-sm text-gray-700 dark:text-gray-300">Metadata Update</span>
+                  </label>
+                  <label class="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      value="OBJECT_ARCHIVE"
+                      v-model="bucketForm.pubsubEventTypes"
+                      class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700"
+                    />
+                    <span class="text-sm text-gray-700 dark:text-gray-300">Object Archive</span>
+                  </label>
+                </div>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  If none selected, all events are sent.
+                </p>
+              </div>
+
+              <div>
+                <label
+                  for="pubsub-prefix"
+                  class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1"
+                >
+                  Object Name Prefix
+                </label>
+                <input
+                  id="pubsub-prefix"
+                  v-model="bucketForm.pubsubPrefix"
+                  type="text"
+                  placeholder="e.g. uploads/"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white sm:text-sm"
+                  :disabled="isSubmitting"
+                />
+              </div>
+            </div>
+          </div>
+
           <!-- Public Access Prevention -->
           <div>
             <label class="flex items-center">
@@ -131,9 +224,10 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, watch, onMounted, onUnmounted } from 'vue'
 import BaseModal from '@/components/ui/BaseModal.vue'
-import { storageApi } from '@/api/storage'
-import { useAppStore } from '@/stores/app'
-import { getStorageErrorMessage } from '@/utils/errorMessages'
+import { usePubSubTopics } from '@/composables/usePubSubTopics'
+import { useProjectsStore } from '@/stores/projects'
+import { useStorageStore } from '@/stores/storage'
+import { useFeatureStore } from '@/stores/features'
 import type { ModalAction } from '@/components/ui/BaseModal.vue'
 
 interface Props {
@@ -146,7 +240,10 @@ const emit = defineEmits<{
   'bucket-created': []
 }>()
 
-const appStore = useAppStore()
+const projectsStore = useProjectsStore()
+const storageStore = useStorageStore()
+const featureStore = useFeatureStore()
+const { availableTopics, isLoadingTopics, fetchTopics } = usePubSubTopics()
 
 const bucketNameInput = ref<HTMLInputElement>()
 const isSubmitting = ref(false)
@@ -155,6 +252,9 @@ const bucketForm = ref({
   name: '',
   location: 'US',
   storageClass: 'STANDARD',
+  pubsubTopic: '',
+  pubsubEventTypes: [] as string[],
+  pubsubPrefix: '',
   publicAccessPrevention: true,
   uniformBucketLevelAccess: true,
 })
@@ -213,7 +313,7 @@ const handleSubmit = async () => {
 
   try {
     // Prepare bucket data
-    const bucketRequest = {
+    const bucketRequest: import('@/types').CreateBucketRequest = {
       name: bucketForm.value.name.trim(),
       location: bucketForm.value.location,
       storageClass: bucketForm.value.storageClass,
@@ -223,28 +323,23 @@ const handleSubmit = async () => {
         },
         publicAccessPrevention: bucketForm.value.publicAccessPrevention ? 'enforced' : 'inherited',
       },
+      pubsubTopic: bucketForm.value.pubsubTopic.trim() || undefined,
+      pubsubEventTypes:
+        bucketForm.value.pubsubEventTypes.length > 0
+          ? bucketForm.value.pubsubEventTypes
+          : undefined,
+      pubsubPrefix: bucketForm.value.pubsubPrefix.trim() || undefined,
     }
 
-    // Create bucket
-    await storageApi.createBucket(bucketRequest)
-
-    appStore.showToast({
-      type: 'success',
-      title: 'Bucket Created',
-      message: `Bucket "${bucketForm.value.name}" created successfully`,
-    })
+    // Create bucket via store (which triggers notification configuration automatically)
+    await storageStore.createBucket(bucketRequest)
 
     // Close modal and emit success
     modelValue.value = false
     emit('bucket-created')
     resetForm()
-  } catch (err: any) {
-    console.error('Error creating bucket:', err)
-    appStore.showToast({
-      type: 'error',
-      title: 'Creation Failed',
-      message: getStorageErrorMessage(err, 'create bucket'),
-    })
+  } catch {
+    // Error handled by store toast
   } finally {
     isSubmitting.value = false
   }
@@ -262,6 +357,9 @@ const resetForm = () => {
     name: '',
     location: 'US',
     storageClass: 'STANDARD',
+    pubsubTopic: '',
+    pubsubEventTypes: [] as string[],
+    pubsubPrefix: '',
     publicAccessPrevention: true,
     uniformBucketLevelAccess: true,
   }
@@ -301,11 +399,14 @@ onUnmounted(() => {
   document.removeEventListener('keydown', handleEnterKey)
 })
 
-// Focus input when modal opens
+// Fetch topics and focus input when modal opens
 watch(
   () => props.modelValue,
   async isOpen => {
     if (isOpen) {
+      // Fetch topics lazily — only when modal is first opened
+      await fetchTopics(projectsStore.selectedProjectId)
+
       await nextTick()
       bucketNameInput.value?.focus()
     }

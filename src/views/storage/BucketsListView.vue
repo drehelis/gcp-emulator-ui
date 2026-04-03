@@ -216,6 +216,17 @@
                         Public
                       </span>
                     </th>
+                    <th
+                      v-if="featureStore.storageNotifications"
+                      scope="col"
+                      class="px-3 py-2 text-left w-24 hidden xl:table-cell"
+                    >
+                      <span
+                        class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider whitespace-nowrap"
+                      >
+                        Notifications
+                      </span>
+                    </th>
                     <th scope="col" class="w-16 px-3 py-2"><span class="sr-only">Actions</span></th>
                   </tr>
                 </thead>
@@ -296,6 +307,21 @@
                       Not public
                     </td>
 
+                    <!-- Notifications -->
+                    <td
+                      v-if="featureStore.storageNotifications"
+                      class="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 hidden xl:table-cell whitespace-nowrap"
+                    >
+                      <template v-if="storageStore.bucketNotifications[bucket.name]?.length > 0">
+                        {{
+                          storageStore.bucketNotifications[bucket.name]
+                            .map(n => n.topic.split('/').pop())
+                            .join(', ')
+                        }}
+                      </template>
+                      <template v-else>-</template>
+                    </td>
+
                     <!-- Actions -->
                     <td class="px-3 py-1.5 text-right">
                       <div class="flex items-center justify-end space-x-1">
@@ -311,6 +337,14 @@
                               downloadingBuckets.has(bucket.name) ? 'animate-pulse' : '',
                             ]"
                           />
+                        </button>
+                        <button
+                          v-if="featureStore.storageNotifications"
+                          @click.stop="openNotificationModal(bucket)"
+                          class="p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors"
+                          title="Edit bucket"
+                        >
+                          <PencilSquareIcon class="w-3.5 h-3.5" />
                         </button>
                         <button
                           @click.stop="confirmDeleteBucket(bucket)"
@@ -374,6 +408,25 @@
                         <span v-if="bucket.timeCreated">
                           {{ new Date(bucket.timeCreated).toLocaleDateString() }}
                         </span>
+                        <span
+                          v-if="storageStore.bucketNotifications[bucket.name]?.length > 0"
+                          class="inline-flex items-center text-blue-600 dark:text-blue-400"
+                          title="Edit Bucket"
+                        >
+                          <svg
+                            class="w-3.5 h-3.5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke-width="1.5"
+                            stroke="currentColor"
+                          >
+                            <path
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
+                            />
+                          </svg>
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -429,6 +482,30 @@
                       class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200"
                     >
                       {{ bucket.location }}
+                    </span>
+                  </div>
+                  <div
+                    v-if="storageStore.bucketNotifications[bucket.name]?.length > 0"
+                    class="text-xs mt-1"
+                  >
+                    <span
+                      class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 pb-0.5"
+                      :title="`Has ${storageStore.bucketNotifications[bucket.name].length} notifications`"
+                    >
+                      <svg
+                        class="w-2.5 h-2.5 mr-1"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="2"
+                        stroke="currentColor"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
+                        />
+                      </svg>
+                      Active
                     </span>
                   </div>
                 </div>
@@ -534,9 +611,15 @@
       title="Delete Selected Buckets"
       :message="`Are you sure you want to delete ${selectedBuckets.length} selected bucket(s) and all their contents? This action cannot be undone.`"
       confirm-label="Delete Selected"
-      confirm-color="danger"
       :is-loading="storageStore.loading.delete"
       @confirm="handleDeleteSelectedBuckets"
+    />
+
+    <!-- Edit Bucket Modal -->
+    <EditBucketModal
+      v-if="notificationModal.bucket"
+      v-model="notificationModal.show"
+      :bucket-name="notificationModal.bucket.name"
     />
   </div>
 </template>
@@ -557,14 +640,17 @@ import {
   Squares2X2Icon,
   ChevronUpIcon,
   ChevronDownIcon,
+  PencilSquareIcon,
 } from '@heroicons/vue/24/outline'
 import { useStorageStore } from '@/stores/storage'
 import { useProjectsStore } from '@/stores/projects'
 import { useAppStore } from '@/stores/app'
+import { useFeatureStore } from '@/stores/features'
 import storageApi from '@/api/storage'
 import type { StorageBucket } from '@/types'
 import CreateBucketModal from '@/components/modals/CreateBucketModal.vue'
 import ConfirmationModal from '@/components/modals/ConfirmationModal.vue'
+import EditBucketModal from '@/components/modals/EditBucketModal.vue'
 import { handleFocusTarget } from '@/utils/focusUtils'
 
 const router = useRouter()
@@ -572,6 +658,7 @@ const route = useRoute()
 const storageStore = useStorageStore()
 const projectsStore = useProjectsStore()
 const appStore = useAppStore()
+const featureStore = useFeatureStore()
 
 // Local state
 const showCreateBucketModal = ref(false)
@@ -585,6 +672,13 @@ const deleteModal = ref<{
   bucket: null,
 })
 const downloadingBuckets = ref(new Set<string>())
+const notificationModal = ref<{
+  show: boolean
+  bucket: StorageBucket | null
+}>({
+  show: false,
+  bucket: null,
+})
 
 // Selection state
 const selectedBuckets = ref<string[]>([])
@@ -769,6 +863,13 @@ function cancelDeleteBucket(): void {
 function handleBucketCreated(): void {
   // Refresh the buckets list after successful creation
   refreshBuckets()
+}
+
+function openNotificationModal(bucket: StorageBucket): void {
+  notificationModal.value = {
+    show: true,
+    bucket,
+  }
 }
 
 async function downloadBucketAsZip(bucketName: string): Promise<void> {

@@ -22,10 +22,12 @@ import { useProjectsStore } from './projects'
 import { useAppStore } from './app'
 import storageApi from '@/api/storage'
 import { getStorageErrorMessage } from '@/utils/errorMessages'
+import { useFeatureStore } from './features'
 
 export const useStorageStore = defineStore('storage', () => {
   const projectsStore = useProjectsStore()
   const appStore = useAppStore()
+  const featureStore = useFeatureStore()
 
   // Base state
   const state = ref<BaseStoreState>({
@@ -38,6 +40,9 @@ export const useStorageStore = defineStore('storage', () => {
   const buckets = ref<StorageBucket[]>([])
   const currentBucket = ref<StorageBucket | null>(null)
   const objects = ref<StorageObjectWithPreview[]>([])
+  const bucketNotifications = ref<Record<string, import('@/types').NotificationConfig[]>>(
+    Object.create(null) as Record<string, import('@/types').NotificationConfig[]>
+  )
   const currentPath = ref<string>('')
   const breadcrumbs = ref<ObjectBreadcrumb[]>([])
 
@@ -144,6 +149,30 @@ export const useStorageStore = defineStore('storage', () => {
       })
 
       buckets.value = response.items || []
+
+      // Fetch notifications for new buckets only (skip already-cached ones)
+      if (featureStore.storageNotifications) {
+        buckets.value
+          .filter(
+            bucket => !Object.prototype.hasOwnProperty.call(bucketNotifications.value, bucket.name)
+          )
+          .forEach(bucket => {
+            storageApi
+              .listNotifications(bucket.name)
+              .then(configs => {
+                // Mutate property directly to avoid concurrent promise resolution race conditions
+                bucketNotifications.value[bucket.name] = configs
+              })
+              .catch(err => {
+                if (err.response?.status === 404 || err.response?.status === 501) {
+                  featureStore.disableStorageNotifications()
+                } else {
+                  console.error(`Error fetching configs for ${bucket.name}:`, err)
+                }
+              })
+          })
+      }
+
       state.value.state = 'success'
       state.value.lastUpdated = new Date()
     } catch (error: any) {
@@ -196,6 +225,30 @@ export const useStorageStore = defineStore('storage', () => {
       state.value.error = null
 
       const bucket = await storageApi.createBucket(request)
+
+      // Configure Pub/Sub notification if requested
+      if (request.pubsubTopic) {
+        try {
+          await storageApi.createNotification(bucket.name, {
+            topic: request.pubsubTopic,
+            payload_format: 'JSON_API_V1',
+            ...(request.pubsubEventTypes?.length ? { event_types: request.pubsubEventTypes } : {}),
+            ...(request.pubsubPrefix ? { object_name_prefix: request.pubsubPrefix } : {}),
+          })
+        } catch (notifErr: any) {
+          console.error('Error configuring bucket notification:', notifErr)
+          if (notifErr.response?.status === 404 || notifErr.response?.status === 501) {
+            featureStore.disableStorageNotifications()
+          } else if (!silent) {
+            appStore.showToast({
+              type: 'warning',
+              title: 'Notification Config Failed',
+              message: `Bucket created, but failed to configure Pub/Sub notification: ${notifErr.message || 'Unknown error'}`,
+            })
+          }
+        }
+      }
+
       buckets.value.push(bucket)
       currentBucket.value = bucket
 
@@ -221,6 +274,77 @@ export const useStorageStore = defineStore('storage', () => {
       throw error
     } finally {
       loading.value.create = false
+    }
+  }
+
+  async function fetchNotifications(bucketName: string): Promise<void> {
+    try {
+      const configs = await storageApi.listNotifications(bucketName)
+      bucketNotifications.value[bucketName] = configs
+    } catch (error: any) {
+      console.error(`Error fetching configs for ${bucketName}:`, error)
+      if (error.response?.status === 404 || error.response?.status === 501) {
+        featureStore.disableStorageNotifications()
+      }
+    }
+  }
+
+  async function createNotification(
+    bucketName: string,
+    config: import('@/types').NotificationConfigRequest
+  ): Promise<void> {
+    try {
+      await storageApi.createNotification(bucketName, config)
+      await fetchNotifications(bucketName)
+      appStore.showToast({
+        type: 'success',
+        title: 'Notification Created',
+        message: 'Notification trigger configured successfully',
+      })
+    } catch (error: any) {
+      if (error.response?.status === 404 || error.response?.status === 501) {
+        featureStore.disableStorageNotifications()
+        appStore.showToast({
+          type: 'warning',
+          title: 'Not Supported',
+          message: 'The storage emulator does not support notifications.',
+        })
+      } else {
+        appStore.showToast({
+          type: 'error',
+          title: 'Notification Configuration Failed',
+          message: error.message || 'Unknown error configuring notification',
+        })
+      }
+      throw error
+    }
+  }
+
+  async function deleteNotification(bucketName: string, notificationId: string): Promise<void> {
+    try {
+      await storageApi.deleteNotification(bucketName, notificationId)
+      await fetchNotifications(bucketName)
+      appStore.showToast({
+        type: 'success',
+        title: 'Notification Deleted',
+        message: 'Notification trigger removed successfully',
+      })
+    } catch (error: any) {
+      if (error.response?.status === 404 || error.response?.status === 501) {
+        featureStore.disableStorageNotifications()
+        appStore.showToast({
+          type: 'warning',
+          title: 'Not Supported',
+          message: 'The storage emulator does not support notifications.',
+        })
+      } else {
+        appStore.showToast({
+          type: 'error',
+          title: 'Failed to Remove Notification',
+          message: error.message || 'Unknown error removing notification',
+        })
+      }
+      throw error
     }
   }
 
@@ -454,7 +578,11 @@ export const useStorageStore = defineStore('storage', () => {
 
           const result = await storageApi.uploadObject(file, request, (progress: any) => {
             if (uploadProgress.value[index]) {
-              uploadProgress.value[index] = { ...progress, status: 'uploading' }
+              uploadProgress.value[index] = {
+                ...uploadProgress.value[index],
+                ...progress,
+                status: 'uploading',
+              }
             }
           })
 
@@ -891,5 +1019,11 @@ export const useStorageStore = defineStore('storage', () => {
     clearSelection,
     clearCurrentPath,
     reset,
+    fetchNotifications,
+    createNotification,
+    deleteNotification,
+
+    // Notifications mapping
+    bucketNotifications,
   }
 })

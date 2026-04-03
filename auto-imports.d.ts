@@ -195,6 +195,7 @@ declare global {
   const useEventSource: typeof import('@vueuse/core').useEventSource
   const useEyeDropper: typeof import('@vueuse/core').useEyeDropper
   const useFavicon: typeof import('@vueuse/core').useFavicon
+  const useFeatureStore: typeof import('./src/stores/features').useFeatureStore
   const useFetch: typeof import('@vueuse/core').useFetch
   const useFieldNavigation: typeof import('./src/composables/useFieldNavigation').useFieldNavigation
   const useFieldOperations: typeof import('./src/composables/useFieldOperations').useFieldOperations
@@ -268,6 +269,7 @@ declare global {
   const usePrevious: typeof import('@vueuse/core').usePrevious
   const useProjectsStore: typeof import('./src/stores/projects').useProjectsStore
   const usePubSubImportExport: typeof import('./src/composables/usePubSubImportExport').usePubSubImportExport
+  const usePubSubTopics: typeof import('./src/composables/usePubSubTopics').usePubSubTopics
   const useQuery: typeof import('@tanstack/vue-query').useQuery
   const useQueryClient: typeof import('@tanstack/vue-query').useQueryClient
   const useRafFn: typeof import('@vueuse/core').useRafFn

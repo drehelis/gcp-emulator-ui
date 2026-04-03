@@ -181,6 +181,23 @@ export interface CreateBucketRequest {
   predefinedDefaultObjectAcl?: string
   projection?: 'full' | 'noAcl'
   userProject?: string
+  pubsubTopic?: string
+  pubsubEventTypes?: string[]
+  pubsubPrefix?: string
+}
+
+/** Shape used when creating a new notification (id not yet assigned by server) */
+export interface NotificationConfigRequest {
+  topic: string
+  payload_format?: 'JSON_API_V1' | 'NONE'
+  event_types?: string[]
+  object_name_prefix?: string
+  custom_attributes?: Record<string, string>
+}
+
+/** Shape returned by the API — id is always present on existing configs */
+export interface NotificationConfig extends NotificationConfigRequest {
+  id: string
 }
 
 export interface UploadObjectRequest {
