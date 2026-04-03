@@ -58,8 +58,8 @@ describe('useMessagePublisher', () => {
     )
   })
 
-  describe('validateJson (lines 35-37, 40-42, 49)', () => {
-    it('clears error when formatAsJson is false (line 35-37)', () => {
+  describe('validateJson', () => {
+    it('clears error when formatAsJson is false', () => {
       const publisher = useMessagePublisher()
       publisher.formatAsJson.value = false
       publisher.messageData.value = 'invalid json'
@@ -67,7 +67,7 @@ describe('useMessagePublisher', () => {
       expect(publisher.jsonValidationError.value).toBe('')
     })
 
-    it('clears error when messageData is blank (line 40-42)', () => {
+    it('clears error when messageData is blank', () => {
       const publisher = useMessagePublisher()
       publisher.formatAsJson.value = true
       publisher.messageData.value = '   '
@@ -75,7 +75,7 @@ describe('useMessagePublisher', () => {
       expect(publisher.jsonValidationError.value).toBe('')
     })
 
-    it('sets error for invalid JSON (line 49)', () => {
+    it('sets error for invalid JSON', () => {
       const publisher = useMessagePublisher()
       publisher.formatAsJson.value = true
       publisher.messageData.value = 'not-json'
@@ -92,7 +92,7 @@ describe('useMessagePublisher', () => {
     })
   })
 
-  describe('canPublish computed (lines 28, 29)', () => {
+  describe('canPublish computed', () => {
     it('is false when messageData is empty', () => {
       const publisher = useMessagePublisher()
       publisher.messageData.value = ''
@@ -116,7 +116,7 @@ describe('useMessagePublisher', () => {
     })
   })
 
-  describe('publishMessage - skips when canPublish is false (line 72)', () => {
+  describe('publishMessage - skips when canPublish is false', () => {
     it('returns early without calling API when messageData is empty', async () => {
       const publisher = useMessagePublisher()
       publisher.messageData.value = ''
@@ -125,7 +125,7 @@ describe('useMessagePublisher', () => {
     })
   })
 
-  describe('publishMessage - attributes (line 79-81)', () => {
+  describe('publishMessage - attributes', () => {
     it('includes non-empty attributes in publish call', async () => {
       mocks.mockPublishMessage.mockResolvedValue({ messageIds: ['msg-2'] })
       const publisher = useMessagePublisher()
@@ -142,7 +142,7 @@ describe('useMessagePublisher', () => {
     })
   })
 
-  describe('publishMessage - messageIds fallback (line 105)', () => {
+  describe('publishMessage - messageIds fallback', () => {
     it('returns "unknown" when messageIds is missing', async () => {
       mocks.mockPublishMessage.mockResolvedValue({})
       const publisher = useMessagePublisher()
@@ -153,7 +153,7 @@ describe('useMessagePublisher', () => {
     })
   })
 
-  describe('publishMessage - non-JSON with formatAsJson (line 86-93)', () => {
+  describe('publishMessage - non-JSON with formatAsJson', () => {
     it('keeps original data when JSON parsing fails mid-pipeline', async () => {
       mocks.mockPublishMessage.mockResolvedValue({ messageIds: ['x'] })
       const publisher = useMessagePublisher()
@@ -169,8 +169,8 @@ describe('useMessagePublisher', () => {
     })
   })
 
-  describe('processTemplate (lines 58-60)', () => {
-    it('replaces template variables in message (line 59-60)', async () => {
+  describe('processTemplate', () => {
+    it('replaces template variables in message', async () => {
       mocks.mockPublishMessage.mockResolvedValue({ messageIds: ['t1'] })
       const publisher = useMessagePublisher()
       publisher.formatAsJson.value = false
@@ -182,7 +182,7 @@ describe('useMessagePublisher', () => {
       expect(atob(call.data)).toBe('Hello World!')
     })
 
-    it('skips variables with blank name or value (line 58)', async () => {
+    it('skips variables with blank name or value', async () => {
       mocks.mockPublishMessage.mockResolvedValue({ messageIds: ['t2'] })
       const publisher = useMessagePublisher()
       publisher.formatAsJson.value = false
@@ -195,8 +195,8 @@ describe('useMessagePublisher', () => {
     })
   })
 
-  describe('loadFromTemplate (lines 124-144)', () => {
-    it('loads data, sets formatAsJson=true for valid JSON (line 124-131)', () => {
+  describe('loadFromTemplate', () => {
+    it('loads data, sets formatAsJson=true for valid JSON', () => {
       const publisher = useMessagePublisher()
       publisher.loadFromTemplate({
         data: '{"key":"val"}',
@@ -209,7 +209,7 @@ describe('useMessagePublisher', () => {
       expect(publisher.messageAttributes.value).toEqual([{ key: 'env', value: 'dev' }])
     })
 
-    it('sets formatAsJson=false for non-JSON data (line 130)', () => {
+    it('sets formatAsJson=false for non-JSON data', () => {
       const publisher = useMessagePublisher()
       publisher.loadFromTemplate({
         data: 'plain text',
@@ -219,7 +219,7 @@ describe('useMessagePublisher', () => {
       expect(publisher.formatAsJson.value).toBe(false)
     })
 
-    it('resets templateVariables to default when variables is empty (line 137)', () => {
+    it('resets templateVariables to default when variables is empty', () => {
       const publisher = useMessagePublisher()
       publisher.loadFromTemplate({
         data: 'hello',
@@ -229,7 +229,7 @@ describe('useMessagePublisher', () => {
       expect(publisher.templateVariables.value).toEqual([{ name: '', value: '' }])
     })
 
-    it('resets messageAttributes to default when attributes is empty (line 144)', () => {
+    it('resets messageAttributes to default when attributes is empty', () => {
       const publisher = useMessagePublisher()
       publisher.loadFromTemplate({
         data: 'hello',
@@ -240,7 +240,7 @@ describe('useMessagePublisher', () => {
     })
   })
 
-  describe('resetForm (lines 150-154)', () => {
+  describe('resetForm', () => {
     it('resets all form fields to defaults', () => {
       const publisher = useMessagePublisher()
       publisher.messageData.value = 'some data'

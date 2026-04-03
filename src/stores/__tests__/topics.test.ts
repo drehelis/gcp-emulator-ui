@@ -466,7 +466,7 @@ describe('useTopicsStore', () => {
     })
   })
 
-  describe('fetchTopics - no project selected (line 132)', () => {
+  describe('fetchTopics - no project selected', () => {
     it('throws when no project is available', async () => {
       const projectsStore = useProjectsStore()
       projectsStore.selectedProject = null as any
@@ -486,7 +486,7 @@ describe('useTopicsStore', () => {
     })
   })
 
-  describe('fetchTopic - uncached path (lines 200-238)', () => {
+  describe('fetchTopic - uncached path', () => {
     it('fetches from mock when not cached and stores in cache', async () => {
       const store = useTopicsStore()
       // ensure not in cache
@@ -526,7 +526,7 @@ describe('useTopicsStore', () => {
       expect(store.topics.filter((t: any) => t.name === 'existing')).toHaveLength(1)
     })
 
-    it('throws when no project is available (line 188)', async () => {
+    it('throws when no project is available', async () => {
       const projectsStore = useProjectsStore()
       projectsStore.selectedProject = null as any
 
@@ -545,7 +545,7 @@ describe('useTopicsStore', () => {
     })
   })
 
-  describe('updateTopic - uncovered branches (lines 297, 314-330)', () => {
+  describe('updateTopic - uncovered branches', () => {
     it('throws when no project is available', async () => {
       const projectsStore = useProjectsStore()
       projectsStore.selectedProject = null as any
@@ -611,8 +611,8 @@ describe('useTopicsStore', () => {
     })
   })
 
-  describe('deleteTopic - uncovered branches (lines 342, 394, 411)', () => {
-    it('throws when no project is available (line 342)', async () => {
+  describe('deleteTopic - uncovered branches', () => {
+    it('throws when no project is available', async () => {
       const projectsStore = useProjectsStore()
       projectsStore.selectedProject = null as any
 
@@ -620,7 +620,7 @@ describe('useTopicsStore', () => {
       await expect(store.deleteTopic('any-topic')).rejects.toThrow('No project selected')
     })
 
-    it('clears selectedTopic when the deleted topic was selected (line 411)', async () => {
+    it('clears selectedTopic when the deleted topic was selected', async () => {
       const { topicsApi, subscriptionsApi } = await import('@/api/pubsub')
       vi.mocked(subscriptionsApi.getSubscriptions).mockResolvedValue([])
       vi.mocked(topicsApi.deleteTopic).mockResolvedValue()
@@ -638,7 +638,7 @@ describe('useTopicsStore', () => {
       expect(store.selectedTopic).toBeNull()
     })
 
-    it('handles orphaned subscriptions (_deleted-topic_) on delete (line 374-382)', async () => {
+    it('handles orphaned subscriptions (_deleted-topic_) on delete', async () => {
       const { topicsApi, subscriptionsApi } = await import('@/api/pubsub')
       vi.mocked(subscriptionsApi.getSubscriptions).mockResolvedValue([
         {
@@ -667,7 +667,7 @@ describe('useTopicsStore', () => {
       expect(subscriptionsApi.deleteSubscription).toHaveBeenCalledWith('test-project', 'related')
     })
 
-    it('logs warning when getSubscriptions fails and proceeds (line 394)', async () => {
+    it('logs warning when getSubscriptions fails and proceeds', async () => {
       const { topicsApi, subscriptionsApi } = await import('@/api/pubsub')
       vi.mocked(subscriptionsApi.getSubscriptions).mockRejectedValue(new Error('Network error'))
       vi.mocked(topicsApi.deleteTopic).mockResolvedValue()
@@ -691,7 +691,7 @@ describe('useTopicsStore', () => {
     })
   })
 
-  describe('createBatchTopics - error path (line 447)', () => {
+  describe('createBatchTopics - error path', () => {
     it('records error when a topic already exists in batch', async () => {
       const store = useTopicsStore()
       // Pre-populate to cause duplicate error
@@ -715,8 +715,8 @@ describe('useTopicsStore', () => {
     })
   })
 
-  describe('deleteBatchTopics - error path (lines 466, 492)', () => {
-    it('throws when no project selected (line 466)', async () => {
+  describe('deleteBatchTopics - error path', () => {
+    it('throws when no project selected', async () => {
       const projectsStore = useProjectsStore()
       projectsStore.selectedProject = null as any
 
@@ -724,7 +724,7 @@ describe('useTopicsStore', () => {
       await expect(store.deleteBatchTopics(['t1'])).rejects.toThrow('No project selected')
     })
 
-    it('records error in batch when individual delete fails (line 492)', async () => {
+    it('records error in batch when individual delete fails', async () => {
       const { topicsApi, subscriptionsApi } = await import('@/api/pubsub')
       vi.mocked(subscriptionsApi.getSubscriptions).mockResolvedValue([])
       vi.mocked(topicsApi.deleteTopic).mockRejectedValue(new Error('delete boom'))
@@ -740,7 +740,7 @@ describe('useTopicsStore', () => {
     })
   })
 
-  describe('utility actions (lines 539-554)', () => {
+  describe('utility actions', () => {
     it('clearBatchOperation removes specific operation', () => {
       const store = useTopicsStore()
       store.batchOperations.set('op1', { status: 'COMPLETED' } as any)

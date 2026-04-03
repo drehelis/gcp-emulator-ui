@@ -148,7 +148,7 @@ describe('storageApi', () => {
       )
     })
 
-    it('invokes onProgress callback during direct upload (lines 219-223)', async () => {
+    it('invokes onProgress callback during direct upload', async () => {
       const file = new File(['content'], 'test.txt', { type: 'text/plain' })
       const onProgress = vi.fn()
 
@@ -163,7 +163,7 @@ describe('storageApi', () => {
       expect(onProgress).toHaveBeenCalledWith({ loaded: 50, total: 100, percentage: 50 })
     })
 
-    it('skips onProgress when total is missing (guard in line 219)', async () => {
+    it('skips onProgress when total is missing', async () => {
       const file = new File(['content'], 'test.txt', { type: 'text/plain' })
       const onProgress = vi.fn()
 
@@ -176,7 +176,7 @@ describe('storageApi', () => {
       expect(onProgress).not.toHaveBeenCalled()
     })
 
-    it('invokes onProgress during multipart fallback (lines 265-269)', async () => {
+    it('invokes onProgress during multipart fallback', async () => {
       const file = new File(['content'], 'test.txt', { type: 'text/plain' })
       const onProgress = vi.fn()
 
@@ -221,7 +221,7 @@ describe('storageApi', () => {
       )
     })
 
-    it('includes metadata in request body when provided (line 342)', async () => {
+    it('includes metadata in request body when provided', async () => {
       mockClient.post.mockResolvedValue({ data: {} })
       await storageApi.copyObject('b1', 'o1', 'b2', 'o2', { metadata: { key: 'val' } })
       const body = mockClient.post.mock.calls[0][1]
@@ -229,7 +229,7 @@ describe('storageApi', () => {
     })
   })
 
-  describe('getObjectDownloadUrl (lines 370-372)', () => {
+  describe('getObjectDownloadUrl', () => {
     it('returns correct URL', () => {
       const url = storageApi.getObjectDownloadUrl('my-bucket', 'path/to/file.txt')
       expect(url).toContain('/storage/v1/b/my-bucket/o/')
@@ -237,7 +237,7 @@ describe('storageApi', () => {
     })
   })
 
-  describe('getObjectPreviewUrl (lines 374-377)', () => {
+  describe('getObjectPreviewUrl', () => {
     it('returns correct preview URL', () => {
       const url = storageApi.getObjectPreviewUrl('my-bucket', 'img.png')
       expect(url).toContain('/storage/v1/b/my-bucket/o/')
@@ -260,7 +260,7 @@ describe('storageApi', () => {
       expect(mockClient.post).toHaveBeenCalledTimes(2)
     })
 
-    it('calls onProgress callback for each file (lines 403-404)', async () => {
+    it('calls onProgress callback for each file', async () => {
       const file = new File([''], 'f1')
       const onProgress = vi.fn()
 
@@ -288,7 +288,7 @@ describe('storageApi', () => {
       await expect(storageApi.downloadObjectsAsZip('b1', [])).rejects.toThrow()
     })
 
-    it('calls onProgress for each object (line 433)', async () => {
+    it('calls onProgress for each object', async () => {
       mockClient.get.mockResolvedValue({ data: new Blob(['x']) })
       const onProgress = vi.fn()
 
@@ -299,7 +299,7 @@ describe('storageApi', () => {
       expect(onProgress).toHaveBeenCalledWith({ current: 2, total: 2, currentFile: 'o2' })
     })
 
-    it('continues downloading remaining files when one download fails (line 452)', async () => {
+    it('continues downloading remaining files when one download fails', async () => {
       mockClient.get
         .mockRejectedValueOnce(new Error('download fail'))
         .mockResolvedValueOnce({ data: new Blob(['ok']) })
@@ -332,7 +332,7 @@ describe('storageApi', () => {
       expect(mockZip.file).toHaveBeenCalledTimes(1)
     })
 
-    it('throws when bucket is empty (line 473)', async () => {
+    it('throws when bucket is empty', async () => {
       mockClient.get.mockResolvedValue({ data: { items: [] } })
       await expect(storageApi.downloadBucketAsZip('empty-bucket')).rejects.toThrow(
         'Bucket is empty'
@@ -358,7 +358,7 @@ describe('storageApi', () => {
     })
   })
 
-  describe('notification methods (lines 120-133)', () => {
+  describe('notification methods', () => {
     it('createNotification posts to notificationConfigs endpoint', async () => {
       mockClient.post.mockResolvedValue({ data: { id: 'n1', topic: 'projects/p/topics/t' } })
       const result = await storageApi.createNotification('my-bucket', {

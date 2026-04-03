@@ -770,7 +770,7 @@ describe('useStorageStore', () => {
     })
   })
 
-  describe('fetchBuckets - notification fetching (patch lines 152-166)', () => {
+  describe('fetchBuckets - notification fetching', () => {
     it('fetches notifications for each bucket when feature is enabled', async () => {
       vi.mocked(storageApi.listBuckets).mockResolvedValue({
         items: [
@@ -810,7 +810,7 @@ describe('useStorageStore', () => {
       expect(storageApi.listNotifications).not.toHaveBeenCalled()
     })
 
-    it('disables feature when notification fetch returns 404 (patch line 161)', async () => {
+    it('disables feature when notification fetch returns 404', async () => {
       const { useFeatureStore } = await import('@/stores/features')
       const featureStore = useFeatureStore()
 
@@ -828,7 +828,7 @@ describe('useStorageStore', () => {
       expect(featureStore.storageNotifications).toBe(false)
     })
 
-    it('disables feature when notification fetch returns 501 (patch line 161)', async () => {
+    it('disables feature when notification fetch returns 501', async () => {
       const { useFeatureStore } = await import('@/stores/features')
       const featureStore = useFeatureStore()
 
@@ -846,7 +846,7 @@ describe('useStorageStore', () => {
       expect(featureStore.storageNotifications).toBe(false)
     })
 
-    it('logs error for non-404/501 notification failure (patch line 163)', async () => {
+    it('logs error for non-404/501 notification failure', async () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
       vi.mocked(storageApi.listBuckets).mockResolvedValue({
@@ -868,7 +868,7 @@ describe('useStorageStore', () => {
     })
   })
 
-  describe('createBucket - pubsubTopic (patch lines 223-243)', () => {
+  describe('createBucket - pubsubTopic', () => {
     it('creates notification when pubsubTopic is provided', async () => {
       const mockBucket = { name: 'b1', selfLink: '', timeCreated: '', updated: '' }
       vi.mocked(storageApi.createBucket).mockResolvedValue(mockBucket)
@@ -911,7 +911,7 @@ describe('useStorageStore', () => {
       )
     })
 
-    it('shows warning toast when notification creation fails (patch line 233-240)', async () => {
+    it('shows warning toast when notification creation fails', async () => {
       const mockBucket = { name: 'b1', selfLink: '', timeCreated: '', updated: '' }
       vi.mocked(storageApi.createBucket).mockResolvedValue(mockBucket)
       vi.mocked(storageApi.createNotification).mockRejectedValue(new Error('Notification failed'))
@@ -982,7 +982,7 @@ describe('useStorageStore', () => {
     })
   })
 
-  describe('fetchNotifications (patch lines 270-278)', () => {
+  describe('fetchNotifications', () => {
     it('fetches and stores notifications for a bucket', async () => {
       vi.mocked(storageApi.listNotifications).mockResolvedValue([
         { id: 'n1', topic: 'projects/p/topics/t', payload_format: 'JSON_API_V1' } as any,
@@ -995,7 +995,7 @@ describe('useStorageStore', () => {
       expect(store.bucketNotifications['my-bucket'][0].id).toBe('n1')
     })
 
-    it('logs error on failure (patch line 276)', async () => {
+    it('logs error on failure', async () => {
       vi.mocked(storageApi.listNotifications).mockRejectedValue(new Error('fetch fail'))
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
 
@@ -1036,7 +1036,7 @@ describe('useStorageStore', () => {
     })
   })
 
-  describe('createNotification (patch lines 280-297)', () => {
+  describe('createNotification', () => {
     it('creates notification and shows success toast', async () => {
       vi.mocked(storageApi.createNotification).mockResolvedValue({} as any)
       vi.mocked(storageApi.listNotifications).mockResolvedValue([])
@@ -1057,7 +1057,7 @@ describe('useStorageStore', () => {
       expect(storageApi.listNotifications).toHaveBeenCalledWith('my-bucket')
     })
 
-    it('shows error toast and rethrows on failure (patch lines 290-296)', async () => {
+    it('shows error toast and rethrows on failure', async () => {
       vi.mocked(storageApi.createNotification).mockRejectedValue(new Error('create fail'))
 
       const store = useStorageStore()
@@ -1089,7 +1089,7 @@ describe('useStorageStore', () => {
     })
   })
 
-  describe('deleteNotification (patch lines 299-316)', () => {
+  describe('deleteNotification', () => {
     it('deletes notification and shows success toast', async () => {
       vi.mocked(storageApi.deleteNotification).mockResolvedValue()
       vi.mocked(storageApi.listNotifications).mockResolvedValue([])
@@ -1102,7 +1102,7 @@ describe('useStorageStore', () => {
       expect(storageApi.listNotifications).toHaveBeenCalledWith('my-bucket')
     })
 
-    it('shows error toast and rethrows on failure (patch lines 308-314)', async () => {
+    it('shows error toast and rethrows on failure', async () => {
       vi.mocked(storageApi.deleteNotification).mockRejectedValue(new Error('delete fail'))
 
       const store = useStorageStore()
