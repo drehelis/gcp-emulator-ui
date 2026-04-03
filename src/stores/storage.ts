@@ -298,11 +298,20 @@ export const useStorageStore = defineStore('storage', () => {
         message: 'Notification trigger configured successfully',
       })
     } catch (error: any) {
-      appStore.showToast({
-        type: 'error',
-        title: 'Notification Configuration Failed',
-        message: error.message || 'Unknown error configuring notification',
-      })
+      if (error.response?.status === 404 || error.response?.status === 501) {
+        featureStore.disableStorageNotifications()
+        appStore.showToast({
+          type: 'warning',
+          title: 'Not Supported',
+          message: 'The storage emulator does not support notifications.',
+        })
+      } else {
+        appStore.showToast({
+          type: 'error',
+          title: 'Notification Configuration Failed',
+          message: error.message || 'Unknown error configuring notification',
+        })
+      }
       throw error
     }
   }
@@ -317,11 +326,20 @@ export const useStorageStore = defineStore('storage', () => {
         message: 'Notification trigger removed successfully',
       })
     } catch (error: any) {
-      appStore.showToast({
-        type: 'error',
-        title: 'Failed to Remove Notification',
-        message: error.message || 'Unknown error removing notification',
-      })
+      if (error.response?.status === 404 || error.response?.status === 501) {
+        featureStore.disableStorageNotifications()
+        appStore.showToast({
+          type: 'warning',
+          title: 'Not Supported',
+          message: 'The storage emulator does not support notifications.',
+        })
+      } else {
+        appStore.showToast({
+          type: 'error',
+          title: 'Failed to Remove Notification',
+          message: error.message || 'Unknown error removing notification',
+        })
+      }
       throw error
     }
   }

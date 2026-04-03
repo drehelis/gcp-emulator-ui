@@ -1063,6 +1063,30 @@ describe('useStorageStore', () => {
       const store = useStorageStore()
       await expect(store.createNotification('my-bucket', {} as any)).rejects.toThrow('create fail')
     })
+
+    it('disables feature flag when createNotification returns 404', async () => {
+      vi.mocked(storageApi.createNotification).mockRejectedValue({ response: { status: 404 } })
+
+      const { useFeatureStore } = await import('@/stores/features')
+      const featureStore = useFeatureStore()
+
+      const store = useStorageStore()
+      await expect(store.createNotification('my-bucket', {} as any)).rejects.toThrow()
+
+      expect(featureStore.storageNotifications).toBe(false)
+    })
+
+    it('disables feature flag when createNotification returns 501 (right side of ||)', async () => {
+      vi.mocked(storageApi.createNotification).mockRejectedValue({ response: { status: 501 } })
+
+      const { useFeatureStore } = await import('@/stores/features')
+      const featureStore = useFeatureStore()
+
+      const store = useStorageStore()
+      await expect(store.createNotification('my-bucket', {} as any)).rejects.toThrow()
+
+      expect(featureStore.storageNotifications).toBe(false)
+    })
   })
 
   describe('deleteNotification (patch lines 299-316)', () => {
@@ -1083,6 +1107,30 @@ describe('useStorageStore', () => {
 
       const store = useStorageStore()
       await expect(store.deleteNotification('my-bucket', 'n1')).rejects.toThrow('delete fail')
+    })
+
+    it('disables feature flag when deleteNotification returns 404', async () => {
+      vi.mocked(storageApi.deleteNotification).mockRejectedValue({ response: { status: 404 } })
+
+      const { useFeatureStore } = await import('@/stores/features')
+      const featureStore = useFeatureStore()
+
+      const store = useStorageStore()
+      await expect(store.deleteNotification('my-bucket', 'n1')).rejects.toThrow()
+
+      expect(featureStore.storageNotifications).toBe(false)
+    })
+
+    it('disables feature flag when deleteNotification returns 501 (right side of ||)', async () => {
+      vi.mocked(storageApi.deleteNotification).mockRejectedValue({ response: { status: 501 } })
+
+      const { useFeatureStore } = await import('@/stores/features')
+      const featureStore = useFeatureStore()
+
+      const store = useStorageStore()
+      await expect(store.deleteNotification('my-bucket', 'n1')).rejects.toThrow()
+
+      expect(featureStore.storageNotifications).toBe(false)
     })
   })
 })
