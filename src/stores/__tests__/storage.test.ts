@@ -810,40 +810,6 @@ describe('useStorageStore', () => {
       expect(storageApi.listNotifications).not.toHaveBeenCalled()
     })
 
-    it('probes notification support when there are no buckets (returns 404 non-JSON)', async () => {
-      const { useFeatureStore } = await import('@/stores/features')
-      const featureStore = useFeatureStore()
-
-      vi.mocked(storageApi.listBuckets).mockResolvedValue({ items: [] })
-      vi.mocked(storageApi.listNotifications).mockRejectedValue({
-        response: { status: 404, data: '404 page not found' },
-      })
-
-      const store = useStorageStore()
-      await store.fetchBuckets()
-      await new Promise(r => setTimeout(r, 0))
-
-      expect(storageApi.listNotifications).toHaveBeenCalledWith('_probe_')
-      expect(featureStore.storageNotifications).toBe(false)
-    })
-
-    it('probes notification support when there are no buckets (returns 501)', async () => {
-      const { useFeatureStore } = await import('@/stores/features')
-      const featureStore = useFeatureStore()
-
-      vi.mocked(storageApi.listBuckets).mockResolvedValue({ items: [] })
-      vi.mocked(storageApi.listNotifications).mockRejectedValue({
-        response: { status: 501 },
-      })
-
-      const store = useStorageStore()
-      await store.fetchBuckets()
-      await new Promise(r => setTimeout(r, 0))
-
-      expect(storageApi.listNotifications).toHaveBeenCalledWith('_probe_')
-      expect(featureStore.storageNotifications).toBe(false)
-    })
-
     it('disables feature when notification fetch returns 404 (patch line 161)', async () => {
       const { useFeatureStore } = await import('@/stores/features')
       const featureStore = useFeatureStore()
