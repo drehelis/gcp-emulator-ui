@@ -40,7 +40,9 @@ export const useStorageStore = defineStore('storage', () => {
   const buckets = ref<StorageBucket[]>([])
   const currentBucket = ref<StorageBucket | null>(null)
   const objects = ref<StorageObjectWithPreview[]>([])
-  const bucketNotifications = ref<Record<string, import('@/types').NotificationConfig[]>>({})
+  const bucketNotifications = ref<Record<string, import('@/types').NotificationConfig[]>>(
+    Object.create(null) as Record<string, import('@/types').NotificationConfig[]>
+  )
   const currentPath = ref<string>('')
   const breadcrumbs = ref<ObjectBreadcrumb[]>([])
 
@@ -151,7 +153,10 @@ export const useStorageStore = defineStore('storage', () => {
       // Fetch notifications for new buckets only (skip already-cached ones)
       if (featureStore.storageNotifications) {
         buckets.value
-          .filter(bucket => !(bucket.name in bucketNotifications.value))
+          .filter(
+            bucket =>
+              !Object.prototype.hasOwnProperty.call(bucketNotifications.value, bucket.name)
+          )
           .forEach(bucket => {
             storageApi
               .listNotifications(bucket.name)

@@ -269,6 +269,7 @@ declare global {
   const usePrevious: typeof import('@vueuse/core').usePrevious
   const useProjectsStore: typeof import('./src/stores/projects').useProjectsStore
   const usePubSubImportExport: typeof import('./src/composables/usePubSubImportExport').usePubSubImportExport
+  const usePubSubTopics: typeof import('./src/composables/usePubSubTopics').usePubSubTopics
   const useQuery: typeof import('@tanstack/vue-query').useQuery
   const useQueryClient: typeof import('@tanstack/vue-query').useQueryClient
   const useRafFn: typeof import('@vueuse/core').useRafFn
