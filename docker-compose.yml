@@ -48,6 +48,8 @@ services:
       - "4443:4443"
     environment:
       - PUBSUB_EMULATOR_HOST=host.docker.internal:8085
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
 
   gcp-emulator-ui:
@@ -68,4 +70,6 @@ services:
       - firestore-emulator
       - firestore-datastore-emulator
       - storage-emulator
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped

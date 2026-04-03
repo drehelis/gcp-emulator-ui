@@ -1049,8 +1049,6 @@
         </div>
       </Dialog>
     </TransitionRoot>
-
-    <!-- Notifications Modal removed -->
   </div>
 </template>
 
