@@ -49,6 +49,7 @@ jobs:
           NEW_VERSION: ${{ steps.bump.outputs.new_version }}
 
       - name: "Auto-merge PR"
+        if: steps.cpr.outputs.pull-request-number != ''
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -56,7 +57,7 @@ jobs:
 
       - name: "Wait for PR to merge"
         if: steps.cpr.outputs.pull-request-number != ''
-        timeout-minutes: 3
+        timeout-minutes: 5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.cpr.outputs.pull-request-number }}
