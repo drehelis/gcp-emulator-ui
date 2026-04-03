@@ -3,7 +3,7 @@ import { topicsApi } from '@/api/pubsub'
 import { useFeatureStore } from '@/stores/features'
 
 export function usePubSubTopics() {
-  const availableTopics = ref<any[]>([])
+  const availableTopics = ref<Awaited<ReturnType<typeof topicsApi.getTopics>>>([])
   const isLoadingTopics = ref(false)
   const featureStore = useFeatureStore()
 
