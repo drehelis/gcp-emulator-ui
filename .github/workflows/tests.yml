@@ -1,6 +1,12 @@
 name: Tests
 
 on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '.github/**'
+      - README.md
+      - LICENSE
   pull_request:
     branches: [ main ]
     paths-ignore:
@@ -29,6 +35,7 @@ jobs:
       run: bun run test:coverage
 
     - name: Generate test summary
+      if: github.event_name == 'pull_request'
       run: |
         printf "# Vitest Test Summary\n" > vitest-summary.md
         printf "| Total Suites | Passed Suites | Failed Suites | Pending Suites | Total Tests | Passed Tests | Failed Tests | Pending Tests | Success |\n" >> vitest-summary.md
@@ -44,9 +51,11 @@ jobs:
         fi
 
     - name: Save PR number
+      if: github.event_name == 'pull_request'
       run: echo "${{ github.event.pull_request.number }}" > pr-number.txt
 
     - name: Upload test summary artifact
+      if: github.event_name == 'pull_request'
       uses: actions/upload-artifact@v7
       with:
         name: test-summary
@@ -63,14 +72,8 @@ jobs:
         verbose: true
         token: ${{ secrets.CODECOV_TOKEN }}
 
-    - name: Upload coverage artifact
-      uses: actions/upload-artifact@v7
-      with:
-        name: coverage-report
-        path: coverage/
-        retention-days: 7
-
     - name: Fail if tests failed
+      if: github.event_name == 'pull_request'
       run: |
         if [ $(jq '.numFailedTests' tests-report.json) -gt 0 ]; then
           echo "Tests failed. Failing job."
