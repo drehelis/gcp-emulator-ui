@@ -324,8 +324,8 @@ export interface NotificationSettings {
   enableToasts: boolean
   toastDuration: number
   enableSound: boolean
-  enableDesktopNotifications: boolean
 }
+
 
 // Error handling types
 export interface ApiError {
