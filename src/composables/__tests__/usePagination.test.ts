@@ -1,169 +1,102 @@
-/**
- * Tests for usePagination composable
- * Pagination state management and data slicing
- */
-
 import { describe, it, expect } from 'vitest'
 import { ref } from 'vue'
 import { usePagination, usePaginatedData } from '../usePagination'
 
 describe('usePagination', () => {
-  describe('initialization', () => {
-    it('uses default options', () => {
-      const pagination = usePagination()
-
-      expect(pagination.limit.value).toBe(25)
-      expect(pagination.currentPage.value).toBe(1)
-      expect(pagination.defaultLimits).toEqual([10, 25, 50, 100])
-    })
-
-    it('accepts custom initial limit', () => {
-      const pagination = usePagination({ initialLimit: 50 })
-
-      expect(pagination.limit.value).toBe(50)
-    })
-
-    it('accepts custom default limits', () => {
-      const customLimits = [5, 10, 20]
-      const pagination = usePagination({ defaultLimits: customLimits })
-
-      expect(pagination.defaultLimits).toEqual(customLimits)
-    })
+  it('should initialize with default values', () => {
+    const { limit, currentPage, defaultLimits } = usePagination()
+    expect(limit.value).toBe(25)
+    expect(currentPage.value).toBe(1)
+    expect(defaultLimits).toEqual([10, 25, 50, 100])
   })
 
-  describe('computed pagination bounds', () => {
-    it('calculates paginationStart correctly', () => {
-      const pagination = usePagination({ initialLimit: 10 })
-
-      expect(pagination.paginationStart.value).toBe(1) // Page 1: 1
-
-      pagination.currentPage.value = 2
-      expect(pagination.paginationStart.value).toBe(11) // Page 2: 11
-
-      pagination.currentPage.value = 3
-      expect(pagination.paginationStart.value).toBe(21) // Page 3: 21
+  it('paginationStart and paginationEnd should compute correctly', () => {
+    const { paginationStart, paginationEnd, currentPage } = usePagination({
+      initialLimit: 10,
     })
 
-    it('calculates paginationEnd correctly', () => {
-      const pagination = usePagination({ initialLimit: 10 })
+    expect(paginationStart.value).toBe(1)
+    expect(paginationEnd.value).toBe(10)
 
-      expect(pagination.paginationEnd.value).toBe(10) // Page 1: 10
-
-      pagination.currentPage.value = 2
-      expect(pagination.paginationEnd.value).toBe(20) // Page 2: 20
-    })
+    currentPage.value = 2
+    expect(paginationStart.value).toBe(11)
+    expect(paginationEnd.value).toBe(20)
   })
 
-  describe('page navigation', () => {
-    it('nextPage increments current page', () => {
-      const pagination = usePagination()
-
-      expect(pagination.currentPage.value).toBe(1)
-      pagination.nextPage()
-      expect(pagination.currentPage.value).toBe(2)
-      pagination.nextPage()
-      expect(pagination.currentPage.value).toBe(3)
-    })
-
-    it('previousPage decrements current page', () => {
-      const pagination = usePagination()
-      pagination.currentPage.value = 3
-
-      pagination.previousPage()
-      expect(pagination.currentPage.value).toBe(2)
-      pagination.previousPage()
-      expect(pagination.currentPage.value).toBe(1)
-    })
-
-    it('previousPage does not go below 1', () => {
-      const pagination = usePagination()
-
-      expect(pagination.currentPage.value).toBe(1)
-      pagination.previousPage()
-      expect(pagination.currentPage.value).toBe(1)
-    })
-
-    it('resetPage sets current page to 1', () => {
-      const pagination = usePagination()
-      pagination.currentPage.value = 5
-
-      pagination.resetPage()
-      expect(pagination.currentPage.value).toBe(1)
-    })
+  it('handleLimitChange should reset page to 1', () => {
+    const { limit, currentPage, handleLimitChange } = usePagination()
+    currentPage.value = 5
+    limit.value = 50
+    handleLimitChange()
+    expect(currentPage.value).toBe(1)
   })
 
-  describe('limit change handling', () => {
-    it('handleLimitChange resets page to 1', () => {
-      const pagination = usePagination()
-      pagination.currentPage.value = 5
+  it('nextPage and previousPage should work', () => {
+    const { currentPage, nextPage, previousPage } = usePagination()
+    nextPage()
+    expect(currentPage.value).toBe(2)
+    previousPage()
+    expect(currentPage.value).toBe(1)
+    previousPage()
+    expect(currentPage.value).toBe(1) // should not go below 1
+  })
 
-      pagination.limit.value = 50
-      pagination.handleLimitChange()
-
-      expect(pagination.currentPage.value).toBe(1)
-    })
+  it('resetPage should work', () => {
+    const { currentPage, resetPage } = usePagination()
+    currentPage.value = 10
+    resetPage()
+    expect(currentPage.value).toBe(1)
   })
 })
 
 describe('usePaginatedData', () => {
-  const createMockData = (count: number) => ({
-    items: ref(Array.from({ length: count }, (_, i) => ({ id: i + 1 }))),
-    totalCount: ref(count),
+  const items = ref(Array.from({ length: 100 }, (_, i) => i))
+  const totalCount = ref(100)
+
+  it('paginatedItems should return correct slice', () => {
+    const pagination = usePagination({ initialLimit: 10 })
+    const { paginatedItems } = usePaginatedData({ items, totalCount }, pagination)
+
+    expect(paginatedItems.value).toHaveLength(10)
+    expect(paginatedItems.value[0]).toBe(0)
+    expect(paginatedItems.value[9]).toBe(9)
+
+    pagination.nextPage()
+    expect(paginatedItems.value[0]).toBe(10)
   })
 
-  it('slices items based on current page and limit', () => {
-    const data = createMockData(50)
-    const pagination = usePagination({ initialLimit: 10 })
-    const paginated = usePaginatedData(data, pagination)
+  it('hasMore should reflect if more data exists', () => {
+    const pagination = usePagination({ initialLimit: 50 })
+    const { hasMore } = usePaginatedData({ items, totalCount }, pagination)
 
-    expect(paginated.paginatedItems.value).toHaveLength(10)
-    expect(paginated.paginatedItems.value[0]).toEqual({ id: 1 })
-    expect(paginated.paginatedItems.value[9]).toEqual({ id: 10 })
+    expect(hasMore.value).toBe(true)
+
+    pagination.nextPage()
+    expect(hasMore.value).toBe(false) // 2 * 50 = 100, which is totalCount
   })
 
-  it('returns correct items for page 2', () => {
-    const data = createMockData(50)
-    const pagination = usePagination({ initialLimit: 10 })
-    pagination.currentPage.value = 2
-    const paginated = usePaginatedData(data, pagination)
+  it('actualPaginationStart and actualPaginationEnd handle boundary checks', () => {
+    const pagination = usePagination({ initialLimit: 30 })
+    const { paginationStart, paginationEnd } = usePaginatedData({ items, totalCount }, pagination)
 
-    expect(paginated.paginatedItems.value[0]).toEqual({ id: 11 })
-    expect(paginated.paginatedItems.value[9]).toEqual({ id: 20 })
+    expect(paginationStart.value).toBe(1)
+    expect(paginationEnd.value).toBe(30)
+
+    pagination.currentPage.value = 4 // 91 to 120
+    expect(paginationStart.value).toBe(91)
+    expect(paginationEnd.value).toBe(100) // capped at totalCount
   })
 
-  it('hasMore is true when more items exist', () => {
-    const data = createMockData(50)
-    const pagination = usePagination({ initialLimit: 10 })
-    const paginated = usePaginatedData(data, pagination)
+  it('actualPaginationStart and actualPaginationEnd return 0 for empty data', () => {
+    const emptyItems = ref([])
+    const emptyTotal = ref(0)
+    const pagination = usePagination()
+    const { paginationStart, paginationEnd } = usePaginatedData(
+      { items: emptyItems, totalCount: emptyTotal },
+      pagination
+    )
 
-    expect(paginated.hasMore.value).toBe(true)
-  })
-
-  it('hasMore is false on last page', () => {
-    const data = createMockData(25)
-    const pagination = usePagination({ initialLimit: 10 })
-    pagination.currentPage.value = 3 // Items 21-30, but only 25 total
-    const paginated = usePaginatedData(data, pagination)
-
-    expect(paginated.hasMore.value).toBe(false)
-  })
-
-  it('actualPaginationEnd is clamped to total count', () => {
-    const data = createMockData(25)
-    const pagination = usePagination({ initialLimit: 10 })
-    pagination.currentPage.value = 3
-    const paginated = usePaginatedData(data, pagination)
-
-    expect(paginated.paginationEnd.value).toBe(25)
-  })
-
-  it('returns 0 for empty data', () => {
-    const data = createMockData(0)
-    const pagination = usePagination({ initialLimit: 10 })
-    const paginated = usePaginatedData(data, pagination)
-
-    expect(paginated.paginationStart.value).toBe(0)
-    expect(paginated.paginationEnd.value).toBe(0)
-    expect(paginated.paginatedItems.value).toHaveLength(0)
+    expect(paginationStart.value).toBe(0)
+    expect(paginationEnd.value).toBe(0)
   })
 })

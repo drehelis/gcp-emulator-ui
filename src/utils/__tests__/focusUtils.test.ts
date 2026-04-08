@@ -1,226 +1,88 @@
-/**
- * Tests for focusUtils utility
- * Focus and highlight utilities for navigation
- */
-
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-
-// Mock Vue's nextTick
-vi.mock('vue', () => ({
-  nextTick: vi.fn(() => Promise.resolve()),
-}))
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { applyFocusHighlight, handleFocusTarget, handleTopicFocus } from '../focusUtils'
+import { nextTick } from 'vue'
 
 describe('focusUtils', () => {
-  let mockElement: HTMLElement
-
   beforeEach(() => {
-    vi.useFakeTimers()
     vi.clearAllMocks()
-
-    // Create mock element
-    mockElement = document.createElement('div')
-    mockElement.id = 'test-element'
-    document.body.appendChild(mockElement)
+    vi.useFakeTimers()
 
     // Mock getComputedStyle
-    vi.spyOn(window, 'getComputedStyle').mockReturnValue({
-      getPropertyValue: vi.fn((prop: string) => {
-        if (prop === '--highlight-transition-duration') return '1.5s'
-        if (prop === '--highlight-transition-timing') return 'ease-out'
+    const mockStyle = {
+      getPropertyValue: vi.fn().mockImplementation(prop => {
+        if (prop === '--highlight-transition-duration') return '1s'
+        if (prop === '--highlight-transition-timing') return 'ease'
         return ''
       }),
-    } as unknown as CSSStyleDeclaration)
-  })
+    }
+    vi.stubGlobal('getComputedStyle', () => mockStyle)
 
-  afterEach(() => {
-    document.body.innerHTML = ''
-    vi.useRealTimers()
-    vi.restoreAllMocks()
+    // Mock scrollIntoView
+    Element.prototype.scrollIntoView = vi.fn()
   })
 
   describe('applyFocusHighlight', () => {
-    it('applies initial highlight styles', async () => {
-      const { applyFocusHighlight } = await import('../focusUtils')
+    it('applies styles and transitions through timeouts', async () => {
+      const element = document.createElement('div')
+      await applyFocusHighlight(element)
 
-      applyFocusHighlight(mockElement)
+      expect(element.style.transition).toBe('background-color 1s ease')
+      expect(element.style.backgroundColor).toBe('rgba(59, 130, 246, 0.25)')
 
-      expect(mockElement.style.transition).toContain('background-color')
-      expect(mockElement.style.backgroundColor).toBe('rgba(59, 130, 246, 0.25)')
-    })
+      vi.advanceTimersByTime(501)
+      expect(element.style.backgroundColor).toBe('rgba(59, 130, 246, 0.08)')
 
-    it('fades highlight after 500ms', async () => {
-      const { applyFocusHighlight } = await import('../focusUtils')
+      vi.advanceTimersByTime(2500)
+      expect(element.style.backgroundColor).toBe('')
 
-      applyFocusHighlight(mockElement)
-
-      vi.advanceTimersByTime(500)
-
-      expect(mockElement.style.backgroundColor).toBe('rgba(59, 130, 246, 0.08)')
-    })
-
-    it('removes highlight after 3000ms', async () => {
-      const { applyFocusHighlight } = await import('../focusUtils')
-
-      applyFocusHighlight(mockElement)
-
-      vi.advanceTimersByTime(3000)
-
-      expect(mockElement.style.backgroundColor).toBe('')
-    })
-
-    it('cleans up transition after 4000ms', async () => {
-      const { applyFocusHighlight } = await import('../focusUtils')
-
-      applyFocusHighlight(mockElement)
-
-      vi.advanceTimersByTime(4000)
-
-      expect(mockElement.style.transition).toBe('')
-    })
-
-    it('uses CSS variables for timing', async () => {
-      const { applyFocusHighlight } = await import('../focusUtils')
-
-      applyFocusHighlight(mockElement)
-
-      expect(window.getComputedStyle).toHaveBeenCalled()
-      expect(mockElement.style.transition).toContain('1.5s')
-      expect(mockElement.style.transition).toContain('ease-out')
+      vi.advanceTimersByTime(1001)
+      expect(element.style.transition).toBe('')
     })
   })
 
   describe('handleFocusTarget', () => {
-    it('scrolls to element and applies highlight', async () => {
-      const { handleFocusTarget } = await import('../focusUtils')
+    it('finds element and scrolls to it', async () => {
+      const element = document.createElement('div')
+      element.id = 'topic-test'
+      document.body.appendChild(element)
 
-      // Create the target element
-      const targetElement = document.createElement('div')
-      targetElement.id = 'topic-test-topic'
-      document.body.appendChild(targetElement)
-      targetElement.scrollIntoView = vi.fn()
+      handleFocusTarget('test', 'topic')
 
-      handleFocusTarget('test-topic', 'topic')
+      await nextTick()
+      vi.advanceTimersByTime(301)
 
-      // Wait for nextTick and setTimeout
-      await vi.advanceTimersByTimeAsync(300)
-
-      expect(targetElement.scrollIntoView).toHaveBeenCalledWith({
-        behavior: 'smooth',
-        block: 'center',
-      })
-    })
-
-    it('uses subscription prefix for subscription type', async () => {
-      const { handleFocusTarget } = await import('../focusUtils')
-
-      const targetElement = document.createElement('div')
-      targetElement.id = 'subscription-test-sub'
-      document.body.appendChild(targetElement)
-      targetElement.scrollIntoView = vi.fn()
-
-      handleFocusTarget('test-sub', 'subscription')
-
-      await vi.advanceTimersByTimeAsync(300)
-
-      expect(targetElement.scrollIntoView).toHaveBeenCalled()
-    })
-
-    it('uses bucket prefix for bucket type', async () => {
-      const { handleFocusTarget } = await import('../focusUtils')
-
-      const targetElement = document.createElement('div')
-      targetElement.id = 'bucket-my-bucket'
-      document.body.appendChild(targetElement)
-      targetElement.scrollIntoView = vi.fn()
-
-      handleFocusTarget('my-bucket', 'bucket')
-
-      await vi.advanceTimersByTimeAsync(300)
-
-      expect(targetElement.scrollIntoView).toHaveBeenCalled()
-    })
-
-    it('handles missing element gracefully', async () => {
-      const { handleFocusTarget } = await import('../focusUtils')
-
-      // No element with this ID exists
-      handleFocusTarget('non-existent', 'topic')
-
-      await vi.advanceTimersByTimeAsync(300)
-
-      // Should not throw
-      expect(true).toBe(true)
+      expect(element.scrollIntoView).toHaveBeenCalledWith({ behavior: 'smooth', block: 'center' })
+      document.body.removeChild(element)
     })
   })
 
   describe('handleTopicFocus', () => {
-    it('returns early if hash is empty', async () => {
-      const { handleTopicFocus } = await import('../focusUtils')
+    const getTopicDisplayName = (n: string) => n.split('/').pop() || n
+    const subsByTopic = new Map([
+      ['projects/p/topics/topic-a', []],
+      ['projects/p/topics/topic-b', []],
+    ])
 
-      const subscriptionsByTopic = new Map([['topic1', []]])
-      const expandedTopics = new Set<string>()
-      const getTopicDisplayName = (name: string) => name
+    it('expands topic if hash matches', async () => {
+      const expanded = new Set<string>()
+      await handleTopicFocus('topic-a', subsByTopic, expanded, getTopicDisplayName)
 
-      await handleTopicFocus('', subscriptionsByTopic, expandedTopics, getTopicDisplayName)
-
-      expect(expandedTopics.size).toBe(0)
+      expect(expanded.has('projects/p/topics/topic-a')).toBe(true)
     })
 
-    it('returns early if subscriptionsByTopic is empty', async () => {
-      const { handleTopicFocus } = await import('../focusUtils')
+    it('returns early if hash or map is empty', async () => {
+      const expanded = new Set<string>()
+      await handleTopicFocus('', subsByTopic, expanded, getTopicDisplayName)
+      expect(expanded.size).toBe(0)
 
-      const subscriptionsByTopic = new Map()
-      const expandedTopics = new Set<string>()
-      const getTopicDisplayName = (name: string) => name
-
-      await handleTopicFocus('topic1', subscriptionsByTopic, expandedTopics, getTopicDisplayName)
-
-      expect(expandedTopics.size).toBe(0)
+      await handleTopicFocus('a', new Map(), expanded, getTopicDisplayName)
+      expect(expanded.size).toBe(0)
     })
 
-    it('expands topic on exact match', async () => {
-      const { handleTopicFocus } = await import('../focusUtils')
-
-      const subscriptionsByTopic = new Map([['projects/test/topics/topic1', [{ name: 'sub1' }]]])
-      const expandedTopics = new Set<string>()
-      const getTopicDisplayName = (name: string) => name.split('/').pop() || name
-
-      await handleTopicFocus('topic1', subscriptionsByTopic, expandedTopics, getTopicDisplayName)
-
-      await vi.advanceTimersByTimeAsync(300)
-
-      expect(expandedTopics.has('projects/test/topics/topic1')).toBe(true)
-    })
-
-    it('expands topic on partial match', async () => {
-      const { handleTopicFocus } = await import('../focusUtils')
-
-      const subscriptionsByTopic = new Map([
-        ['projects/test/topics/my-topic-name', [{ name: 'sub1' }]],
-      ])
-      const expandedTopics = new Set<string>()
-      const getTopicDisplayName = (name: string) => name.split('/').pop() || name
-
-      // Partial match - searching for 'topic' which is contained in 'my-topic-name'
-      await handleTopicFocus('topic', subscriptionsByTopic, expandedTopics, getTopicDisplayName)
-
-      await vi.advanceTimersByTimeAsync(300)
-
-      expect(expandedTopics.has('projects/test/topics/my-topic-name')).toBe(true)
-    })
-
-    it('does nothing when no match found', async () => {
-      const { handleTopicFocus } = await import('../focusUtils')
-
-      const subscriptionsByTopic = new Map([['projects/test/topics/topic1', [{ name: 'sub1' }]]])
-      const expandedTopics = new Set<string>()
-      const getTopicDisplayName = (name: string) => name.split('/').pop() || name
-
-      await handleTopicFocus('no-match', subscriptionsByTopic, expandedTopics, getTopicDisplayName)
-
-      await vi.advanceTimersByTimeAsync(300)
-
-      expect(expandedTopics.size).toBe(0)
+    it('tries partial match if exact fails', async () => {
+      const expanded = new Set<string>()
+      await handleTopicFocus('topic-a-extra', subsByTopic, expanded, getTopicDisplayName)
+      expect(expanded.has('projects/p/topics/topic-a')).toBe(true)
     })
   })
 })

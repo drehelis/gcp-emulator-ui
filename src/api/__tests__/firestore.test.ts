@@ -96,7 +96,7 @@ describe('firestoreApi', () => {
       const res = await firestoreApi.listSubcollections(docPath)
 
       expect(mockClient.get).toHaveBeenCalledWith(`/v1/${docPath}/`)
-      const ids = res.collections.map(c => c.id).sort()
+      const ids = res.collections.map((c: any) => c.id).sort()
       expect(ids).toEqual(['comments', 'posts'])
     })
   })
@@ -125,6 +125,94 @@ describe('firestoreApi', () => {
     it('returns false on failure', async () => {
       mockClient.get.mockRejectedValue(new Error())
       expect(await firestoreApi.healthCheck('p1')).toBe(false)
+    })
+  })
+  describe('createSubcollection', () => {
+    it('creates subcollection document', async () => {
+      mockClient.post.mockResolvedValue({ data: { name: 'new-sub-doc' } })
+
+      const res = await firestoreApi.createSubcollection(
+        'parent/doc',
+        'posts',
+        { fields: {} },
+        'p1'
+      )
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        '/v1/parent/doc/posts',
+        { fields: {} },
+        { params: { documentId: 'p1' } }
+      )
+      expect(res).toEqual({ name: 'new-sub-doc' })
+    })
+
+    it('creates subcollection document with auto ID', async () => {
+      mockClient.post.mockResolvedValue({ data: { name: 'auto-sub-doc' } })
+
+      const res = await firestoreApi.createSubcollection('parent/doc', 'posts', { fields: {} })
+
+      expect(mockClient.post).toHaveBeenCalledWith('/v1/parent/doc/posts', { fields: {} })
+      expect(res).toEqual({ name: 'auto-sub-doc' })
+    })
+  })
+
+  describe('listDocuments', () => {
+    it('lists documents with pagination', async () => {
+      mockClient.get.mockResolvedValue({
+        data: { documents: [{ name: 'd1' }], nextPageToken: 'tk1' },
+      })
+
+      const res = await firestoreApi.listDocuments('parent', 'col', 10, 'tk0')
+
+      expect(mockClient.get).toHaveBeenCalledWith('/v1/parent/documents/col', {
+        params: { pageSize: 10, pageToken: 'tk0' },
+      })
+      expect(res.documents).toHaveLength(1)
+      expect(res.nextPageToken).toBe('tk1')
+    })
+  })
+
+  describe('updateDocument', () => {
+    it('patches document', async () => {
+      mockClient.patch.mockResolvedValue({ data: { name: 'updated' } })
+
+      const res = await firestoreApi.updateDocument('path/to/doc', { fields: {} })
+
+      expect(mockClient.patch).toHaveBeenCalledWith('/v1/path/to/doc', { fields: {} })
+      expect(res).toEqual({ name: 'updated' })
+    })
+  })
+
+  describe('deleteDocument', () => {
+    it('deletes document', async () => {
+      mockClient.delete.mockResolvedValue({})
+
+      const res = await firestoreApi.deleteDocument('path/to/doc')
+
+      expect(mockClient.delete).toHaveBeenCalledWith('/v1/path/to/doc')
+      expect(res).toBe(true)
+    })
+  })
+
+  describe('testDatabase', () => {
+    it('returns true on 200', async () => {
+      mockClient.get.mockResolvedValue({ status: 200 })
+      expect(await firestoreApi.testDatabase('p1', 'd1')).toBe(true)
+    })
+
+    it('returns false on error', async () => {
+      mockClient.get.mockRejectedValue(new Error())
+      expect(await firestoreApi.testDatabase('p1', 'd1')).toBe(false)
+    })
+  })
+
+  describe('helpers', () => {
+    it('getDefaultDatabasePath returns correct path', () => {
+      expect(firestoreApi.getDefaultDatabasePath('p1')).toBe('projects/p1/databases/(default)')
+    })
+
+    it('getDatabasePath returns correct path', () => {
+      expect(firestoreApi.getDatabasePath('p1', 'd1')).toBe('projects/p1/databases/d1')
     })
   })
 })
