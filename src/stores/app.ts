@@ -48,7 +48,6 @@ export const useAppStore = defineStore(
       enableToasts: true,
       toastDuration: 5000,
       enableSound: false,
-      enableDesktopNotifications: true,
     })
 
     const toasts = ref<ToastNotification[]>([])
@@ -172,7 +171,7 @@ export const useAppStore = defineStore(
 
       const toast = useToast()
       const message = notification.message || notification.title
-      const options = {
+      const options: any = {
         timeout: notification.persistent
           ? false
           : notification.duration || notifications.value.toastDuration,
@@ -198,18 +197,6 @@ export const useAppStore = defineStore(
       // Play sound if enabled
       if (notifications.value.enableSound && notification.type === 'error') {
         playNotificationSound('error')
-      }
-
-      // Show desktop notification if enabled and permission granted
-      if (
-        notifications.value.enableDesktopNotifications &&
-        'Notification' in window &&
-        Notification.permission === 'granted'
-      ) {
-        new Notification(notification.title, {
-          body: notification.message,
-          icon: '/favicon.ico',
-        })
       }
 
       const toastId = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
@@ -371,11 +358,6 @@ export const useAppStore = defineStore(
         }
       }
 
-      // Request notification permission
-      if ('Notification' in window && Notification.permission === 'default') {
-        Notification.requestPermission()
-      }
-
       // Listen for theme changes
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
       mediaQuery.addListener(() => {
@@ -439,10 +421,8 @@ export const useAppStore = defineStore(
     persist: {
       key: 'emulator-ui-app',
       storage: localStorage,
-      beforeRestore: () => {
-        // App store restoring
-      },
-      afterRestore: context => {
+
+      afterRestore: (context: any) => {
         // Don't call initializeApp() here - it's called from main.ts
         // Just apply the restored theme immediately
         if (context.store.theme && typeof document !== 'undefined') {
