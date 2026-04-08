@@ -1,34 +1,31 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import axios from 'axios'
 import { datastoreApi } from '../datastore'
 
+const mockInstance = vi.hoisted(() => ({
+  post: vi.fn(),
+  get: vi.fn(),
+  put: vi.fn(),
+  delete: vi.fn(),
+  patch: vi.fn(),
+  interceptors: {
+    request: { use: vi.fn() },
+    response: { use: vi.fn() },
+  },
+}))
+
 vi.mock('axios', () => {
-  const instance = {
-    post: vi.fn(),
-    get: vi.fn(),
-    put: vi.fn(),
-    delete: vi.fn(),
-    patch: vi.fn(),
-    interceptors: {
-      request: { use: vi.fn() },
-      response: { use: vi.fn() },
-    },
-  }
   return {
     default: {
-      create: vi.fn(() => instance),
-      post: instance.post,
-      get: instance.get,
+      create: vi.fn(() => mockInstance),
+      post: mockInstance.post,
+      get: mockInstance.get,
     },
   }
 })
 
 describe('datastoreApi', () => {
-  let mockInstance: any
-
   beforeEach(() => {
     vi.clearAllMocks()
-    mockInstance = (axios.create as any).mock.results[0].value
   })
 
   it('lookup calls the correct endpoint', async () => {
@@ -91,7 +88,8 @@ describe('datastoreApi', () => {
       await datastoreApi.deleteEntity('p', key)
 
       const lastCall = mockInstance.post.mock.calls.find((call: any) => call[0].endsWith(':commit'))
-      const request = lastCall[1] as any
+      expect(lastCall).toBeDefined()
+      const request = lastCall![1] as any
       expect(request.mutations[0].delete.partitionId.databaseId).toBeUndefined()
     })
   })
