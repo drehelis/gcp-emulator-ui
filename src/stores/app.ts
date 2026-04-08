@@ -199,8 +199,6 @@ export const useAppStore = defineStore(
         playNotificationSound('error')
       }
 
-
-
       const toastId = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
       return toastId
     }
@@ -359,8 +357,6 @@ export const useAppStore = defineStore(
           console.warn('Failed to parse saved preferences:', error)
         }
       }
-
-
 
       // Listen for theme changes
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')

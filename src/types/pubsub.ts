@@ -326,7 +326,6 @@ export interface NotificationSettings {
   enableSound: boolean
 }
 
-
 // Error handling types
 export interface ApiError {
   code: number
