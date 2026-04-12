@@ -24,6 +24,9 @@ tools:
 network:
   allowed:
     - r.jina.ai
+    - github.com
+    - chatgpt.com
+    - api.github.com
 
 safe-outputs:
   report-failure-as-issue: false
