@@ -241,10 +241,8 @@ export const datastoreApi = {
       const probeResults = await Promise.all(probePromises)
       probeResults.flat().forEach(db => databases.add(db))
 
-      // Always ensure we have at least the default database
-      if (databases.size === 0) {
-        databases.add('')
-      }
+      // Always include the default database
+      databases.add('')
 
       const result = Array.from(databases).sort()
       console.log('[Datastore API] Discovered databases:', result)

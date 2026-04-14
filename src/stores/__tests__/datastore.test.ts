@@ -38,6 +38,7 @@ describe('useDatastoreStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     vi.clearAllMocks()
+    localStorage.clear()
     vi.mocked(useProjectsStore).mockReturnValue({ selectedProjectId: projectId } as any)
   })
 
@@ -70,6 +71,14 @@ describe('useDatastoreStore', () => {
 
       expect(store.namespaces).toEqual(['', 'ns1'])
       expect(store.selectedNamespace).toBe('')
+    })
+
+    it('keeps existing namespace if still in list', async () => {
+      vi.mocked(datastoreApi.listNamespaces).mockResolvedValue(['ns1', 'ns2'])
+      const store = useDatastoreStore()
+      store.setSelectedNamespace('ns2')
+      await store.loadNamespaces(projectId)
+      expect(store.selectedNamespace).toBe('ns2')
     })
   })
 
@@ -171,6 +180,31 @@ describe('useDatastoreStore', () => {
     })
   })
 
+  describe('selection and helpers', () => {
+    it('getCurrentDatabase returns empty string if undefined', () => {
+      const store = useDatastoreStore()
+      store.setSelectedDatabase(undefined)
+      expect(store.getCurrentDatabase()).toBe('')
+    })
+
+    it('getCurrentNamespace returns empty string if undefined', () => {
+      const store = useDatastoreStore()
+      store.setSelectedNamespace(undefined)
+      expect(store.getCurrentNamespace()).toBe('')
+    })
+
+    it('addDatabase updates custom list and persistence', () => {
+      const store = useDatastoreStore()
+      const spy = vi.spyOn(Storage.prototype, 'setItem')
+      store.addDatabase('custom-db')
+      expect(store.databases).toContain('custom-db')
+      expect(spy).toHaveBeenCalledWith(
+        'datastore_enter_manually_databases',
+        expect.stringContaining('custom-db')
+      )
+    })
+  })
+
   describe('import/export/health', () => {
     it('healthCheck returns true on success', async () => {
       vi.mocked(apiMock.healthCheck).mockResolvedValue(true as any)
@@ -196,7 +230,7 @@ describe('useDatastoreStore', () => {
       await store.importEntities('p1', '/tmp/meta')
 
       expect(apiMock.importEntities).toHaveBeenCalledWith('p1', '/tmp/meta')
-      expect(apiMock.listKinds).toHaveBeenCalledWith('p1', undefined, undefined) // loadKinds calls listKinds
+      expect(apiMock.listKinds).toHaveBeenCalledWith('p1', undefined, undefined)
     })
 
     it('clearData resets state', () => {

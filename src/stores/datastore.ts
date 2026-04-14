@@ -66,7 +66,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
   }
 
   // Set selected namespace
-  const setSelectedNamespace = (namespaceId: string) => {
+  const setSelectedNamespace = (namespaceId: string | undefined) => {
     selectedNamespace.value = namespaceId
   }
 
