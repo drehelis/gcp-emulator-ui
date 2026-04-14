@@ -47,10 +47,20 @@
 
           <!-- Database Selector - SECONDARY FILTER -->
           <div class="flex-1">
-            <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-              Database
-            </label>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block text-xs font-medium text-gray-600 dark:text-gray-400">
+                Database
+              </label>
+              <button
+                @click="useManualDatabase = !useManualDatabase"
+                class="text-[10px] text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                title="Toggle manual database entry"
+              >
+                {{ useManualDatabase ? 'Select' : 'Enter' }}
+              </button>
+            </div>
             <CustomSelect
+              v-if="!useManualDatabase"
               v-model="selectedDatabase"
               :options="databaseOptions"
               :icon="CircleStackIcon"
@@ -63,6 +73,16 @@
               "
               :empty-icon="InboxIcon"
               @update:model-value="handleDatabaseChange"
+            />
+            <input
+              v-else
+              ref="manualDbInput"
+              v-model="selectedDatabase"
+              type="text"
+              placeholder="Enter database ID..."
+              class="w-full h-[38px] px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              @blur="handleDatabaseChange"
+              @keyup.enter="($event.target as HTMLInputElement).blur()"
             />
           </div>
 
@@ -988,7 +1008,7 @@ import {
 } from '@heroicons/vue/24/outline'
 import { useDatastoreStore } from '@/stores/datastore'
 import { useAppStore } from '@/stores/app'
-import type { DatastoreEntity } from '@/types'
+import type { DatastoreEntity, RunQueryRequest, RunAggregationQueryRequest } from '@/types'
 import type { SelectOption } from '@/components/ui/CustomSelect.vue'
 import datastoreApi from '@/api/datastore'
 import CustomSelect from '@/components/ui/CustomSelect.vue'
@@ -1010,6 +1030,7 @@ const selectedEntities = ref<string[]>([])
 const columns = ref<{ key: string; label: string; visible: boolean; fixed?: boolean }[]>([])
 const showParentColumn = ref(true)
 const currentPage = ref<number>(1)
+const useManualDatabase = ref(false)
 const hasNextPage = ref<boolean>(false)
 const pageCursors = ref<string[]>([]) // Stack of cursors for each page
 const currentCursor = ref<string | undefined>(undefined)
@@ -1266,6 +1287,16 @@ const handleNamespaceChange = async () => {
 }
 
 const handleDatabaseChange = async () => {
+  // Switch back to dropdown mode after manual entry
+  if (useManualDatabase.value) {
+    useManualDatabase.value = false
+  }
+
+  // Ensure database exists in the store list for future dropdown selections
+  if (selectedDatabase.value) {
+    datastoreStore.addDatabase(selectedDatabase.value)
+  }
+
   // Reset downstream selections
   selectedKind.value = ''
   entities.value = []
@@ -1286,9 +1317,13 @@ const handleDatabaseChange = async () => {
   if (selectedDatabase.value !== undefined) {
     loading.value = true
     try {
-      await datastoreStore.loadKinds(currentProjectId.value)
+      // Reload both namespaces and kinds for the new database
+      await Promise.all([
+        datastoreStore.loadNamespaces(currentProjectId.value),
+        datastoreStore.loadKinds(currentProjectId.value),
+      ])
     } catch (error) {
-      console.error('Failed to load kinds:', error)
+      console.error('Failed to reload data for database:', error)
     } finally {
       loading.value = false
     }
@@ -1318,11 +1353,8 @@ const loadEntities = async () => {
 
   loading.value = true
   try {
-    // Use offset-based pagination when database is selected (emulator limitation)
-    // Otherwise use cursor-based pagination
-    const paginationParam = selectedDatabase.value
-      ? (currentPage.value - 1) * queryLimit.value // offset
-      : currentCursor.value // cursor
+    // Use cursor-based pagination
+    const paginationParam = currentCursor.value // cursor
 
     const result = await datastoreApi.getEntitiesByKind(
       currentProjectId.value,
@@ -1338,8 +1370,8 @@ const loadEntities = async () => {
     // Update pagination info
     hasNextPage.value = result.hasMore
 
-    // Store the end cursor for next page navigation (only for cursor-based pagination)
-    if (result.endCursor && !selectedDatabase.value) {
+    // Store the end cursor for next page navigation
+    if (result.endCursor) {
       // Only update cursor stack if we're moving forward
       if (currentPage.value > pageCursors.value.length) {
         pageCursors.value.push(result.endCursor)
@@ -1578,8 +1610,9 @@ const runQuery = async () => {
         return agg
       })
 
-      const aggregationRequest = {
+      const aggregationRequest: RunAggregationQueryRequest = {
         partitionId,
+        databaseId: selectedDatabase.value || '',
         aggregationQuery: {
           nestedQuery: query,
           aggregations,
@@ -1629,8 +1662,9 @@ const runQuery = async () => {
     }
 
     // Regular query (non-aggregation)
-    const request = {
+    const request: RunQueryRequest = {
       partitionId,
+      databaseId: selectedDatabase.value || '',
       query,
     }
 
@@ -1645,14 +1679,6 @@ const runQuery = async () => {
 
       // Clear aggregation results for regular queries
       aggregationResults.value = []
-
-      // Filter by database if needed
-      if (selectedDatabase.value) {
-        entities.value = entities.value.filter((entity: DatastoreEntity) => {
-          const entityDb = entity.key?.partitionId?.databaseId || ''
-          return entityDb === selectedDatabase.value
-        })
-      }
 
       // Update pagination
       currentPage.value = 1
@@ -1696,16 +1722,22 @@ const handleEntityCreated = async (entity: DatastoreEntity) => {
   const entityNamespace = entity.key?.partitionId?.namespaceId || ''
   const entityDatabase = entity.key?.partitionId?.databaseId || ''
 
-  // Update selections
-  if (entityNamespace !== selectedNamespace.value) {
-    datastoreStore.setSelectedNamespace(entityNamespace)
-  }
-  if (entityDatabase !== selectedDatabase.value) {
-    datastoreStore.setSelectedDatabase(entityDatabase)
-  }
-  if (entityKind !== selectedKind.value) {
-    selectedKind.value = entityKind
-  }
+  // Update selections and ensure they are added to known lists
+  datastoreStore.addDatabase(entityDatabase)
+
+  datastoreStore.setSelectedNamespace(entityNamespace)
+  datastoreStore.setSelectedDatabase(entityDatabase)
+  selectedKind.value = entityKind
+
+  // Reload metadata for the new database/namespace context
+  await Promise.all([
+    datastoreStore.loadNamespaces(currentProjectId.value),
+    datastoreStore.loadDatabases(currentProjectId.value),
+    datastoreStore.loadKinds(currentProjectId.value),
+  ])
+
+  // Reload entities for the newly selected kind
+  await loadEntities()
 
   // Update URL
   router.push({

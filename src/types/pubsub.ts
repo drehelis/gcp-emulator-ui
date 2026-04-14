@@ -463,6 +463,7 @@ export interface CreateSubscriptionRequest {
     minimumBackoff?: string
     maximumBackoff?: string
   }
+  enableExactlyOnceDelivery?: boolean
 }
 
 export interface CreateSubscriptionForm {

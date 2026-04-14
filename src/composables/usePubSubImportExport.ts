@@ -397,8 +397,13 @@ export function usePubSubImportExport() {
           const projectTemplates = templatesStore.templates.filter(t => t.projectId === projectId)
           const existingTemplate = projectTemplates.find(t => t.name === template.name)
 
-          // Skip if template exists and we're not overwriting
-          if (existingTemplate && !options.overwriteTemplates) {
+          // Only skip if the template exists and we explicitly don't want to overwrite or rename (skipping by default if no logic provided)
+          // Actually, let's enable the renaming logic to take over if we're not overwriting
+          if (
+            existingTemplate &&
+            options.overwriteTemplates === false &&
+            options.renameTemplates === false
+          ) {
             skippedCount++
             continue
           }

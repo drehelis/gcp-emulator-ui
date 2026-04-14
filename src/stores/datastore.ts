@@ -11,11 +11,27 @@ import { useProjectsStore } from './projects'
 export const useDatastoreStore = defineStore('datastore', () => {
   const loading = ref(false)
   const databases = ref<string[]>([])
+  const customDatabases = ref<string[]>(
+    JSON.parse(localStorage.getItem('datastore_enter_manually_databases') || '[]')
+  )
   const kinds = ref<DatastoreKindWithMetadata[]>([])
   const namespaces = ref<string[]>([])
   const entities = ref<Map<string, DatastoreEntity[]>>(new Map())
   const selectedDatabase = ref<string>('')
   const selectedNamespace = ref<string>('')
+
+  // Combined lists for UI
+  const allDatabases = computed(() => {
+    const list = [...databases.value, ...customDatabases.value]
+    if (list.length === 0) return ['']
+    return Array.from(new Set(list)).sort()
+  })
+
+  const allNamespaces = computed(() => {
+    const list = [...namespaces.value]
+    if (list.length === 0) return ['']
+    return Array.from(new Set(list)).sort()
+  })
 
   // Computed
   const getEntitiesByKind = computed(() => {
@@ -30,6 +46,18 @@ export const useDatastoreStore = defineStore('datastore', () => {
   // Set selected database
   const setSelectedDatabase = (databaseId: string) => {
     selectedDatabase.value = databaseId
+  }
+
+  // Manually add a database ID to the known list
+  const addDatabase = (databaseId: string) => {
+    if (databaseId && !customDatabases.value.includes(databaseId)) {
+      customDatabases.value.push(databaseId)
+      customDatabases.value.sort()
+      localStorage.setItem(
+        'datastore_enter_manually_databases',
+        JSON.stringify(customDatabases.value)
+      )
+    }
   }
 
   // Get current namespace for operations
@@ -55,7 +83,13 @@ export const useDatastoreStore = defineStore('datastore', () => {
         (selectedDatabase.value === undefined || selectedDatabase.value === '') &&
         databaseList.length > 0
       ) {
-        selectedDatabase.value = databaseList[0]
+        // Favor the first named database if one exists, otherwise fallback to index 0
+        const namedDbs = databaseList.filter((db: string) => db !== '')
+        if (namedDbs.length > 0) {
+          selectedDatabase.value = namedDbs[0]
+        } else {
+          selectedDatabase.value = databaseList[0]
+        }
       }
     } catch (error) {
       console.error('Failed to load databases:', error)
@@ -70,7 +104,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
     try {
       loading.value = true
       // Don't pass database filter - we want all namespaces across all databases
-      const namespaceList = await datastoreApi.listNamespaces(projectId)
+      const namespaceList = await datastoreApi.listNamespaces(projectId, selectedDatabase.value)
       namespaces.value = namespaceList
 
       // Set default namespace if not selected
@@ -316,7 +350,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
   const healthCheck = async () => {
     try {
       const projectsStore = useProjectsStore()
-      const projectId = projectsStore.selectedProjectId
+      const projectId = projectsStore.selectedProjectId || undefined
       return await datastoreApi.healthCheck(projectId)
     } catch {
       return false
@@ -375,9 +409,9 @@ export const useDatastoreStore = defineStore('datastore', () => {
 
   return {
     loading,
-    databases,
+    databases: allDatabases,
     kinds,
-    namespaces,
+    namespaces: allNamespaces,
     entities,
     selectedDatabase,
     selectedNamespace,
@@ -385,6 +419,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
     // Database operations
     getCurrentDatabase,
     setSelectedDatabase,
+    addDatabase,
     loadDatabases,
     // Namespace operations
     getCurrentNamespace,

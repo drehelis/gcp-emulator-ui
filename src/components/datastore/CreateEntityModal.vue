@@ -312,9 +312,17 @@ const useManualNamespace = ref(false)
 const useManualDatabase = ref(false)
 const useManualKind = ref(false)
 
-// Available options - use store for namespaces, local state for databases/kinds
-const availableNamespaces = computed(() => datastoreStore.namespaces || [])
-const availableDatabases = computed(() => localDatabases.value)
+// Available options - use store and local results
+const availableNamespaces = computed(() => {
+  const all = [...(datastoreStore.namespaces || [])]
+  return Array.from(new Set(all)).sort()
+})
+
+const availableDatabases = computed(() => {
+  const all = [...localDatabases.value, ...(datastoreStore.databases || [])]
+  return Array.from(new Set(all)).sort()
+})
+
 const availableKinds = computed(() => localKinds.value)
 
 // Options for CustomSelect
@@ -465,6 +473,11 @@ watch(
 )
 
 // Methods
+const normalizeId = (id?: string): string => {
+  if (!id || id === '(default)') return ''
+  return id.trim()
+}
+
 const resetForm = () => {
   form.value = {
     namespace: props.namespace || '',
@@ -527,8 +540,12 @@ const buildDatastoreEntity = (): DatastoreEntity => {
       ],
       partitionId: {
         projectId: props.projectId,
-        ...(form.value.namespace.trim() ? { namespaceId: form.value.namespace.trim() } : {}),
-        ...(form.value.database.trim() ? { databaseId: form.value.database.trim() } : {}),
+        ...(normalizeId(form.value.namespace)
+          ? { namespaceId: normalizeId(form.value.namespace) }
+          : {}),
+        ...(normalizeId(form.value.database)
+          ? { databaseId: normalizeId(form.value.database) }
+          : {}),
       },
     },
     properties,
@@ -540,17 +557,6 @@ const buildDatastoreEntity = (): DatastoreEntity => {
 const handleCreate = async () => {
   hasValidationError.value = true
   if (!isFormValid.value) return
-
-  // Check for named database limitation
-  const databaseId = form.value.database
-  if (databaseId && databaseId !== '' && databaseId !== '(default)') {
-    appStore.showToast({
-      type: 'error',
-      title: 'Named Database Limitation',
-      message: `Cannot create entities in named database "${databaseId}". This is a known limitation of the Datastore emulator. Please use the default database instead.`,
-    })
-    return
-  }
 
   try {
     isLoading.value = true
@@ -569,17 +575,12 @@ const handleCreate = async () => {
     emit('created', createdEntity)
     handleClose()
   } catch (error: any) {
-    // Check if it's a named database error
     const errorMsg = error.response?.data?.error?.message || error.message || ''
-    const isNamedDatabaseError =
-      errorMsg.includes('mismatched databases') || errorMsg.includes('database')
 
     appStore.showToast({
       type: 'error',
       title: 'Creation Failed',
-      message: isNamedDatabaseError
-        ? 'Cannot create entities in named databases. This is a Datastore emulator limitation. Use the default database instead.'
-        : 'Failed to create entity. Please check your inputs and try again.',
+      message: `Failed to create entity: ${errorMsg}`,
     })
   } finally {
     isLoading.value = false

@@ -99,6 +99,7 @@ export interface PropertyReference {
 export interface LookupRequest {
   keys: DatastoreKey[]
   readOptions?: ReadOptions
+  databaseId?: string
 }
 
 export interface LookupResponse {
@@ -118,6 +119,7 @@ export interface RunQueryRequest {
   query?: DatastoreQuery
   gqlQuery?: GqlQuery
   readOptions?: ReadOptions
+  databaseId?: string
 }
 
 export interface RunQueryResponse {
@@ -142,6 +144,7 @@ export interface RunAggregationQueryRequest {
   aggregationQuery?: AggregationQuery
   gqlQuery?: GqlQuery
   readOptions?: ReadOptions
+  databaseId?: string
 }
 
 export interface RunAggregationQueryResponse {
@@ -210,6 +213,7 @@ export interface CommitRequest {
   mode: 'NON_TRANSACTIONAL' | 'TRANSACTIONAL'
   mutations: Mutation[]
   transaction?: string
+  databaseId?: string
 }
 
 export interface CommitResponse {
@@ -256,6 +260,7 @@ export interface RollbackRequest {
 // Allocation Types
 export interface AllocateIdsRequest {
   keys: DatastoreKey[]
+  databaseId?: string
 }
 
 export interface AllocateIdsResponse {
