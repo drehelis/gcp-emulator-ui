@@ -196,7 +196,7 @@ describe('useDatastoreStore', () => {
       await store.importEntities('p1', '/tmp/meta')
 
       expect(apiMock.importEntities).toHaveBeenCalledWith('p1', '/tmp/meta')
-      expect(apiMock.listKinds).toHaveBeenCalledWith('p1', '', '') // loadKinds calls listKinds
+      expect(apiMock.listKinds).toHaveBeenCalledWith('p1', undefined, undefined) // loadKinds calls listKinds
     })
 
     it('clearData resets state', () => {

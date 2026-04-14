@@ -17,8 +17,8 @@ export const useDatastoreStore = defineStore('datastore', () => {
   const kinds = ref<DatastoreKindWithMetadata[]>([])
   const namespaces = ref<string[]>([])
   const entities = ref<Map<string, DatastoreEntity[]>>(new Map())
-  const selectedDatabase = ref<string>('')
-  const selectedNamespace = ref<string>('')
+  const selectedDatabase = ref<string | undefined>(undefined)
+  const selectedNamespace = ref<string | undefined>(undefined)
 
   // Combined lists for UI
   const allDatabases = computed(() => {
@@ -40,11 +40,11 @@ export const useDatastoreStore = defineStore('datastore', () => {
 
   // Get current database for operations
   const getCurrentDatabase = (): string => {
-    return selectedDatabase.value
+    return selectedDatabase.value ?? ''
   }
 
   // Set selected database
-  const setSelectedDatabase = (databaseId: string) => {
+  const setSelectedDatabase = (databaseId: string | undefined) => {
     selectedDatabase.value = databaseId
   }
 
@@ -62,7 +62,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
 
   // Get current namespace for operations
   const getCurrentNamespace = (): string => {
-    return selectedNamespace.value
+    return selectedNamespace.value ?? ''
   }
 
   // Set selected namespace

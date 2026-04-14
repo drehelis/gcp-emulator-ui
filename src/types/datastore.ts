@@ -340,19 +340,19 @@ export interface NamespaceStatistics {
 export interface DatastoreEntityWithMetadata extends DatastoreEntity {
   id: string
   kind: string
-  namespace?: string
+  namespace?: string | undefined
   path: string
-  size?: number
-  isExpanded?: boolean
+  size?: number | undefined
+  isExpanded?: boolean | undefined
 }
 
 export interface DatastoreKindWithMetadata {
   name: string
   entityCount: number
   bytes: number
-  namespace?: string
-  statistics?: KindStatistics
-  isExpanded?: boolean
+  namespace?: string | undefined
+  statistics?: KindStatistics | undefined
+  isExpanded?: boolean | undefined
 }
 
 export interface DatastoreNamespace {
