@@ -1010,7 +1010,7 @@ import { useDatastoreStore } from '@/stores/datastore'
 import { useAppStore } from '@/stores/app'
 import type { DatastoreEntity, RunQueryRequest, RunAggregationQueryRequest } from '@/types'
 import type { SelectOption } from '@/components/ui/CustomSelect.vue'
-import datastoreApi from '@/api/datastore'
+import datastoreApi, { normalizeId } from '@/api/datastore'
 import CustomSelect from '@/components/ui/CustomSelect.vue'
 import EntityDetailsModal from '@/components/datastore/EntityDetailsModal.vue'
 import CreateEntityModal from '@/components/datastore/CreateEntityModal.vue'
@@ -1231,7 +1231,7 @@ const handleNamespaceChange = async () => {
   const previousDatabase = selectedDatabase.value
 
   // Reset downstream selections
-  // Set to undefined (not empty string) to prevent auto-selection in loadDatabases
+  // Set to undefined (not empty string) to trigger auto-selection in loadDatabases
   datastoreStore.setSelectedDatabase(undefined as any)
   selectedKind.value = ''
   entities.value = []
@@ -1585,6 +1585,12 @@ const runQuery = async () => {
     const partitionId: any = {
       projectId: currentProjectId.value,
       namespaceId: selectedNamespace.value || '',
+      databaseId: normalizeId(selectedDatabase.value),
+    }
+
+    // Ensure databaseId is not an empty string in the partitionId if it's default
+    if (!partitionId.databaseId) {
+      delete partitionId.databaseId
     }
 
     // Check for aggregation clauses

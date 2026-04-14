@@ -79,10 +79,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
 
       // Set default database if not selected (only auto-select if value is exactly undefined)
       // Empty string '' is a valid database selection (default database)
-      if (
-        (selectedDatabase.value === undefined || selectedDatabase.value === '') &&
-        databaseList.length > 0
-      ) {
+      if (selectedDatabase.value === undefined && databaseList.length > 0) {
         // Favor the first named database if one exists, otherwise fallback to index 0
         const namedDbs = databaseList.filter((db: string) => db !== '')
         if (namedDbs.length > 0) {
@@ -99,11 +96,11 @@ export const useDatastoreStore = defineStore('datastore', () => {
     }
   }
 
-  // Load all namespaces (without database filter to get all namespaces)
+  // Load all namespaces for the selected database
   const loadNamespaces = async (projectId: string) => {
     try {
       loading.value = true
-      // Don't pass database filter - we want all namespaces across all databases
+      // Use the selected database to filter namespaces
       const namespaceList = await datastoreApi.listNamespaces(projectId, selectedDatabase.value)
       namespaces.value = namespaceList
 
@@ -361,7 +358,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
   const exportEntities = async (projectId: string, exportDirectory: string) => {
     try {
       loading.value = true
-      return await datastoreApi.exportEntities(projectId, exportDirectory)
+      return await datastoreApi.exportEntities(projectId, exportDirectory, selectedDatabase.value)
     } catch (error) {
       console.error('Failed to export entities:', error)
       throw error
@@ -374,7 +371,11 @@ export const useDatastoreStore = defineStore('datastore', () => {
   const importEntities = async (projectId: string, metadataFilePath: string) => {
     try {
       loading.value = true
-      const result = await datastoreApi.importEntities(projectId, metadataFilePath)
+      const result = await datastoreApi.importEntities(
+        projectId,
+        metadataFilePath,
+        selectedDatabase.value
+      )
 
       // Refresh kinds and entities after import
       await loadKinds(projectId)
@@ -392,7 +393,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
   const exportEntitiesAsJson = async (projectId: string, namespaceId?: string) => {
     try {
       loading.value = true
-      return await datastoreApi.exportEntitiesAsJson(projectId, namespaceId)
+      return await datastoreApi.exportEntitiesAsJson(projectId, namespaceId, selectedDatabase.value)
     } catch (error) {
       console.error('Failed to export entities as JSON:', error)
       throw error

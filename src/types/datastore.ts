@@ -238,6 +238,7 @@ export interface MutationResult {
 // Transaction Types
 export interface BeginTransactionRequest {
   transactionOptions?: TransactionOptions
+  databaseId?: string
 }
 
 export interface BeginTransactionResponse {
@@ -255,6 +256,7 @@ export interface TransactionOptions {
 
 export interface RollbackRequest {
   transaction: string
+  databaseId?: string
 }
 
 // Allocation Types

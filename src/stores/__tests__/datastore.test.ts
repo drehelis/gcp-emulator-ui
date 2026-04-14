@@ -60,6 +60,22 @@ describe('useDatastoreStore', () => {
       expect(store.databases).toEqual(['(default)', 'db2'])
       expect(store.selectedDatabase).toBe('(default)')
     })
+
+    it('does not auto-select if database already selected', async () => {
+      vi.mocked(datastoreApi.listDatabases).mockResolvedValue(['db1', 'db2'])
+      const store = useDatastoreStore()
+      store.setSelectedDatabase('db2')
+      await store.loadDatabases(projectId)
+      expect(store.selectedDatabase).toBe('db2')
+    })
+
+    it('does not auto-select if selected database is empty string', async () => {
+      vi.mocked(datastoreApi.listDatabases).mockResolvedValue(['db1', 'db2'])
+      const store = useDatastoreStore()
+      store.setSelectedDatabase('')
+      await store.loadDatabases(projectId)
+      expect(store.selectedDatabase).toBe('')
+    })
   })
 
   describe('loadNamespaces', () => {
@@ -97,6 +113,19 @@ describe('useDatastoreStore', () => {
       expect(store.kinds[0].name).toBe('KindA')
       expect(datastoreApi.getEntitiesByKind).toHaveBeenCalled() // called for counting
     })
+
+    it('handles 100+ entities in kind count', async () => {
+      vi.mocked(datastoreApi.listKinds).mockResolvedValue(['KindA'])
+      vi.mocked(datastoreApi.getEntitiesByKind).mockResolvedValue({
+        entities: Array(100).fill({}),
+        hasMore: true,
+      } as any)
+
+      const store = useDatastoreStore()
+      await store.loadKinds(projectId)
+
+      expect(store.kinds[0].entityCount).toBe(100)
+    })
   })
 
   describe('loadEntities', () => {
@@ -115,6 +144,21 @@ describe('useDatastoreStore', () => {
 
       expect(store.entities.get('KindA')).toEqual(entities)
       expect(store.kinds[0].entityCount).toBe(1)
+    })
+
+    it('discovers databases from entity keys', async () => {
+      const entities = [
+        { key: { partitionId: { databaseId: 'found-db' }, path: [{ kind: 'KindA' }] } },
+      ]
+      vi.mocked(datastoreApi.getEntitiesByKind).mockResolvedValue({
+        entities,
+        hasMore: false,
+      } as any)
+
+      const store = useDatastoreStore()
+      await store.loadEntities(projectId, 'KindA')
+
+      expect(store.databases).toContain('found-db')
     })
   })
 
@@ -195,13 +239,11 @@ describe('useDatastoreStore', () => {
 
     it('addDatabase updates custom list and persistence', () => {
       const store = useDatastoreStore()
-      const spy = vi.spyOn(Storage.prototype, 'setItem')
       store.addDatabase('custom-db')
       expect(store.databases).toContain('custom-db')
-      expect(spy).toHaveBeenCalledWith(
-        'datastore_enter_manually_databases',
-        expect.stringContaining('custom-db')
-      )
+
+      const stored = localStorage.getItem('datastore_enter_manually_databases')
+      expect(stored).toContain('custom-db')
     })
   })
 
@@ -221,7 +263,7 @@ describe('useDatastoreStore', () => {
     it('exportEntities calls api', async () => {
       const store = useDatastoreStore()
       await store.exportEntities('p1', '/tmp')
-      expect(apiMock.exportEntities).toHaveBeenCalledWith('p1', '/tmp')
+      expect(apiMock.exportEntities).toHaveBeenCalledWith('p1', '/tmp', undefined)
     })
 
     it('importEntities calls api and reloads kinds', async () => {
@@ -229,8 +271,14 @@ describe('useDatastoreStore', () => {
 
       await store.importEntities('p1', '/tmp/meta')
 
-      expect(apiMock.importEntities).toHaveBeenCalledWith('p1', '/tmp/meta')
+      expect(apiMock.importEntities).toHaveBeenCalledWith('p1', '/tmp/meta', undefined)
       expect(apiMock.listKinds).toHaveBeenCalledWith('p1', undefined, undefined)
+    })
+
+    it('exportEntitiesAsJson calls api', async () => {
+      const store = useDatastoreStore()
+      await store.exportEntitiesAsJson('p1', 'ns1')
+      expect(apiMock.exportEntitiesAsJson).toHaveBeenCalledWith('p1', 'ns1', undefined)
     })
 
     it('clearData resets state', () => {
