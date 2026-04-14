@@ -15,11 +15,11 @@ import type {
   CommitRequest,
   CommitResponse,
   BeginTransactionRequest,
-  BeginTransactionResponse,
+  TransactionOptions,
   RollbackRequest,
   AllocateIdsRequest,
   AllocateIdsResponse,
-} from '@/types'
+} from '@/types/datastore'
 
 const datastoreClient = axios.create({
   baseURL: import.meta.env.VITE_DATASTORE_BASE_URL || '/datastore',
@@ -60,6 +60,11 @@ function setCache<T>(key: string, data: T): void {
   cache.set(key, { data, timestamp: Date.now() })
 }
 
+export function normalizeId(id?: string): string {
+  if (!id || id === '(default)') return ''
+  return id
+}
+
 function clearCache(pattern?: string): void {
   if (!pattern) {
     cache.clear()
@@ -74,12 +79,36 @@ function clearCache(pattern?: string): void {
 export const datastoreApi = {
   // Lookup entities by keys
   async lookup(projectId: string, request: LookupRequest): Promise<LookupResponse> {
+    const dbId = normalizeId(request.databaseId || request.keys[0]?.partitionId?.databaseId)
+    if (dbId) {
+      request.databaseId = dbId
+      request.keys.forEach(key => {
+        if (key.partitionId) key.partitionId.databaseId = dbId
+      })
+    } else {
+      delete request.databaseId
+      request.keys.forEach(key => {
+        if (key.partitionId) delete key.partitionId.databaseId
+      })
+    }
     const response = await datastoreClient.post(`/v1/projects/${projectId}:lookup`, request)
     return response.data
   },
 
   // Run a query
   async runQuery(projectId: string, request: RunQueryRequest): Promise<RunQueryResponse> {
+    const dbId = normalizeId(request.databaseId || request.partitionId?.databaseId)
+    if (dbId) {
+      request.databaseId = dbId
+      if (request.partitionId) {
+        request.partitionId.databaseId = dbId
+      }
+    } else {
+      delete request.databaseId
+      if (request.partitionId) {
+        delete request.partitionId.databaseId
+      }
+    }
     const response = await datastoreClient.post(`/v1/projects/${projectId}:runQuery`, request)
     return response.data
   },
@@ -89,6 +118,18 @@ export const datastoreApi = {
     projectId: string,
     request: RunAggregationQueryRequest
   ): Promise<RunAggregationQueryResponse> {
+    const dbId = normalizeId(request.databaseId || request.partitionId?.databaseId)
+    if (dbId) {
+      request.databaseId = dbId
+      if (request.partitionId) {
+        request.partitionId.databaseId = dbId
+      }
+    } else {
+      delete request.databaseId
+      if (request.partitionId) {
+        delete request.partitionId.databaseId
+      }
+    }
     const response = await datastoreClient.post(
       `/v1/projects/${projectId}:runAggregationQuery`,
       request
@@ -105,22 +146,46 @@ export const datastoreApi = {
   // Begin a transaction
   async beginTransaction(
     projectId: string,
-    request: BeginTransactionRequest
-  ): Promise<BeginTransactionResponse> {
+    options?: TransactionOptions,
+    databaseId?: string
+  ): Promise<string> {
+    const dbId = normalizeId(databaseId)
+    const request: BeginTransactionRequest = {
+      ...(options ? { transactionOptions: options } : {}),
+      ...(dbId ? { databaseId: dbId } : {}),
+    }
+
     const response = await datastoreClient.post(
       `/v1/projects/${projectId}:beginTransaction`,
       request
     )
-    return response.data
+    return response.data.transaction
   },
 
   // Rollback a transaction
-  async rollback(projectId: string, request: RollbackRequest): Promise<void> {
+  async rollback(projectId: string, transaction: string, databaseId?: string): Promise<void> {
+    const dbId = normalizeId(databaseId)
+    const request: RollbackRequest = {
+      transaction,
+      ...(dbId ? { databaseId: dbId } : {}),
+    }
     await datastoreClient.post(`/v1/projects/${projectId}:rollback`, request)
   },
 
   // Allocate IDs
   async allocateIds(projectId: string, request: AllocateIdsRequest): Promise<AllocateIdsResponse> {
+    const dbId = normalizeId(request.databaseId)
+    if (dbId) {
+      request.databaseId = dbId
+      request.keys.forEach(key => {
+        if (key.partitionId) key.partitionId.databaseId = dbId
+      })
+    } else {
+      delete request.databaseId
+      request.keys.forEach(key => {
+        if (key.partitionId) delete key.partitionId.databaseId
+      })
+    }
     const response = await datastoreClient.post(`/v1/projects/${projectId}:allocateIds`, request)
     return response.data
   },
@@ -128,29 +193,29 @@ export const datastoreApi = {
   // List all kinds (entity types) in a project
   async listKinds(projectId: string, namespaceId?: string, databaseId?: string): Promise<string[]> {
     try {
+      const normalizedNamespace = normalizeId(namespaceId)
+      const normalizedDatabase = normalizeId(databaseId)
+
       // Check cache first
-      const cacheKey = `kinds:${projectId}:${namespaceId || ''}:${databaseId || ''}`
+      const cacheKey = `kinds:${projectId}:${normalizedNamespace}:${normalizedDatabase}`
       const cached = getCached<string[]>(cacheKey)
       if (cached) {
         console.log('[Datastore API] Returning cached kinds')
         return cached
       }
 
-      console.log('[Datastore API] Listing kinds for:', {
+      console.log(`[Datastore API] Listing kinds for:`, {
         projectId,
-        namespaceId: namespaceId || '(default)',
-        databaseId: databaseId || '(default)',
+        namespaceId: normalizedNamespace,
+        databaseId: normalizedDatabase,
       })
-
-      const kinds = new Set<string>()
 
       // NOTE: The __kind__ meta-entities don't contain databaseId in their partition,
       // so we need to query actual entity kinds to discover which kinds exist in a database.
       // First, get all kind names from __kind__
-      const partitionId: any = {
-        projectId,
-        namespaceId: namespaceId || '',
-      }
+      const partitionId: any = { projectId }
+      if (normalizedNamespace) partitionId.namespaceId = normalizedNamespace
+      if (normalizedDatabase) partitionId.databaseId = normalizedDatabase
 
       const request: RunQueryRequest = {
         partitionId,
@@ -158,6 +223,7 @@ export const datastoreApi = {
           kind: [{ name: '__kind__' }],
         },
       }
+      if (normalizedDatabase) request.databaseId = normalizedDatabase
 
       console.log('[Datastore API] Querying __kind__ to get all kind names...')
       const kindResponse = await datastoreClient.post(`/v1/projects/${projectId}:runQuery`, request)
@@ -174,56 +240,7 @@ export const datastoreApi = {
 
       console.log(`[Datastore API] Found ${allKindNames.length} total kinds:`, allKindNames)
 
-      // If no database filter, return all kinds
-      if (databaseId === undefined) {
-        return allKindNames.sort()
-      }
-
-      // If database filter is specified, query each kind to check which database it belongs to
-      // OPTIMIZATION: Parallelize queries instead of serial loop
-      console.log(`[Datastore API] Filtering kinds by database: ${databaseId}`)
-
-      const kindCheckPromises = allKindNames.map(async kindName => {
-        try {
-          // Query just 1 entity from this kind to check its database
-          const entityRequest: RunQueryRequest = {
-            partitionId,
-            query: {
-              kind: [{ name: kindName }],
-              limit: 1,
-            },
-          }
-
-          const entityResponse = await datastoreClient.post(
-            `/v1/projects/${projectId}:runQuery`,
-            entityRequest
-          )
-
-          if (entityResponse.data.batch?.entityResults?.[0]) {
-            const entity = entityResponse.data.batch.entityResults[0].entity
-            const entityDb = entity?.key?.partitionId?.databaseId || ''
-
-            console.log(`[Datastore API] Kind ${kindName} has database: "${entityDb}"`)
-
-            if (entityDb === databaseId) {
-              return kindName
-            }
-          }
-          return null
-        } catch (err) {
-          console.warn(`[Datastore API] Failed to query kind ${kindName}:`, err)
-          return null
-        }
-      })
-
-      // Wait for all queries to complete in parallel
-      const results = await Promise.all(kindCheckPromises)
-      results.forEach(kindName => {
-        if (kindName) kinds.add(kindName)
-      })
-
-      const result = Array.from(kinds).sort()
-      console.log('[Datastore API] Discovered kinds in database:', result)
+      const result = allKindNames.sort()
 
       // Cache the result
       setCache(cacheKey, result)
@@ -238,89 +255,54 @@ export const datastoreApi = {
   // List all databases in a project for a specific namespace
   async listDatabases(projectId: string, namespaceId?: string): Promise<string[]> {
     try {
+      const normalizedNamespace = normalizeId(namespaceId)
       // Check cache first
-      const cacheKey = `databases:${projectId}:${namespaceId || ''}`
+      const cacheKey = `databases:${projectId}:${normalizedNamespace}`
       const cached = getCached<string[]>(cacheKey)
       if (cached) {
-        console.log('[Datastore API] Returning cached databases')
         return cached
       }
 
-      console.log('[Datastore API] Listing databases for namespace:', namespaceId || '(default)')
+      console.log(
+        '[Datastore API] Listing databases for namespace:',
+        normalizedNamespace || '(default)'
+      )
 
       // Query multiple kinds to discover databases from partition IDs
       const databases = new Set<string>()
 
-      // OPTIMIZATION: Get actual kind names first (not special meta-kinds)
-      // Meta-kinds (__kind__, __namespace__, __property__) don't contain databaseId
-      // Call listKinds WITHOUT databaseId filter to get all kinds in namespace
+      // 1. Discovery via "Leakage": Get kind names and query default DB
       const allKindNames = await this.listKinds(projectId, namespaceId, undefined)
-      console.log('[Datastore API] Found kinds for database discovery:', allKindNames)
 
-      if (allKindNames.length === 0) {
-        console.log('[Datastore API] No kinds found, returning default database')
-        return ['']
-      }
+      // Query actual kinds to discover database IDs from their result keys
+      const kindsToProbe = allKindNames.slice(0, 3)
 
-      // Query a sample of actual kinds to discover databases (limit to first 3 for performance)
-      const kindsToQuery = allKindNames.slice(0, 3)
-
-      const partitionId: any = { projectId }
-      if (namespaceId !== undefined) {
-        partitionId.namespaceId = namespaceId
-      }
-
-      // OPTIMIZATION: Parallelize queries instead of serial loop
-      const queryPromises = kindsToQuery.map(async kindName => {
+      const probePromises = kindsToProbe.map(async kindName => {
         try {
           const request: RunQueryRequest = {
-            partitionId,
-            query: {
-              kind: [{ name: kindName }],
-              limit: 10, // Only need a few entities to discover database
-            },
+            partitionId: { projectId, namespaceId: normalizedNamespace, databaseId: '' },
+            query: { kind: [{ name: kindName }], limit: 10 },
           }
-
-          console.log(`[Datastore API] Querying ${kindName} for databases...`)
           const response = await datastoreClient.post(`/v1/projects/${projectId}:runQuery`, request)
 
-          const foundDatabases: string[] = []
-          // Extract database IDs from entity partition IDs
+          const results: string[] = []
           if (response.data.batch?.entityResults) {
-            console.log(
-              `[Datastore API] Found ${response.data.batch.entityResults.length} results for ${kindName}`
-            )
-            response.data.batch.entityResults.forEach((result: any) => {
-              const resultNamespace = result.entity?.key?.partitionId?.namespaceId || ''
-              const databaseId = result.entity?.key?.partitionId?.databaseId
-
-              console.log(`[Datastore API] Entity in ${kindName}:`, {
-                namespace: resultNamespace,
-                databaseId,
-              })
-
-              // Only include if namespace matches (or if no namespace filter)
-              if (namespaceId === undefined || resultNamespace === namespaceId) {
-                // Add database (including empty string for default database)
-                foundDatabases.push(databaseId !== undefined ? databaseId : '')
-              }
+            response.data.batch.entityResults.forEach((res: any) => {
+              const dbId = res.entity?.key?.partitionId?.databaseId || ''
+              results.push(dbId)
             })
           }
-          return foundDatabases
-        } catch (err) {
-          console.warn(`[Datastore API] Failed to query ${kindName}:`, err)
+          return results
+        } catch {
           return []
         }
       })
 
-      // Wait for all queries in parallel
-      const allResults = await Promise.all(queryPromises)
-      allResults.flat().forEach(db => databases.add(db))
+      const probeResults = await Promise.all(probePromises)
+      probeResults.flat().forEach(db => databases.add(db))
 
-      // Always ensure we have at least the default database
-      if (databases.size === 0) {
-        databases.add('')
-      }
+      // Always include the default database
+      databases.add('')
 
       const result = Array.from(databases).sort()
       console.log('[Datastore API] Discovered databases:', result)
@@ -338,19 +320,24 @@ export const datastoreApi = {
   // List all namespaces in a project
   async listNamespaces(projectId: string, databaseId?: string): Promise<string[]> {
     try {
+      const normalizedDatabase = normalizeId(databaseId)
+
       // Check cache first
-      const cacheKey = `namespaces:${projectId}:${databaseId || ''}`
+      const cacheKey = `namespaces:${projectId}:${normalizedDatabase}`
       const cached = getCached<string[]>(cacheKey)
       if (cached) {
         console.log('[Datastore API] Returning cached namespaces')
         return cached
       }
       // Query for __namespace__ entities which contain all namespaces
-      // NOTE: Datastore emulator doesn't support databaseId in query partitionId
-      const partitionId: any = { projectId }
+      const partitionId: any = {
+        projectId,
+        databaseId: normalizedDatabase,
+      }
 
       const request: RunQueryRequest = {
         partitionId,
+        databaseId: normalizedDatabase,
         query: {
           kind: [{ name: '__namespace__' }],
         },
@@ -404,37 +391,34 @@ export const datastoreApi = {
     databaseId?: string
   ): Promise<{ entities: DatastoreEntity[]; endCursor?: string; hasMore: boolean }> {
     try {
+      const normalizedNamespace = normalizeId(namespaceId)
+      const normalizedDatabase = normalizeId(databaseId)
+
       const partitionId: any = {
         projectId,
-        namespaceId: namespaceId || '',
+        namespaceId: normalizedNamespace,
+        databaseId: normalizedDatabase,
       }
-
-      // NOTE: Datastore emulator doesn't support databaseId in partitionId
-      // We must filter results client-side when database is specified
-      const needsFiltering = databaseId !== undefined
 
       // Determine if we're using cursor (string) or offset (number) pagination
       const cursor = typeof cursorOrOffset === 'string' ? cursorOrOffset : undefined
       const offset = typeof cursorOrOffset === 'number' ? cursorOrOffset : undefined
 
-      // When filtering by database, use offset-based pagination and fetch more to compensate
-      const queryLimit = needsFiltering && limit ? Math.min(limit * 3, 5000) : limit
-
       const query: any = {
         kind: [{ name: kind }],
-        limit: queryLimit,
+        limit,
       }
 
-      // Use cursor for normal queries, offset when filtering by database
-      if (needsFiltering && offset !== undefined) {
+      if (offset !== undefined) {
         query.offset = offset
-      } else if (!needsFiltering && cursor) {
+      } else if (cursor) {
         query.startCursor = cursor
       }
 
       const request: RunQueryRequest = {
         partitionId,
         query,
+        databaseId: normalizedDatabase,
       }
 
       const response = await datastoreClient.post(`/v1/projects/${projectId}:runQuery`, request)
@@ -449,24 +433,6 @@ export const datastoreApi = {
           moreResults === 'MORE_RESULTS_AFTER_LIMIT' ||
           moreResults === 'MORE_RESULTS_AFTER_CURSOR' ||
           moreResults === 'NOT_FINISHED'
-
-        // Filter by database if needed
-        if (needsFiltering) {
-          const filtered = entities.filter((entity: DatastoreEntity) => {
-            const entityDb = entity.key?.partitionId?.databaseId || ''
-            return entityDb === databaseId
-          })
-          // Apply limit after filtering
-          const limitedEntities = limit ? filtered.slice(0, limit) : filtered
-
-          // Don't return cursor when filtering (can't use it anyway)
-          // Estimate if there are more results based on whether we got enough filtered results
-          return {
-            entities: limitedEntities,
-            endCursor: undefined,
-            hasMore: hasMore && limitedEntities.length >= (limit || 0),
-          }
-        }
 
         return {
           entities,
@@ -487,6 +453,7 @@ export const datastoreApi = {
     try {
       const request: LookupRequest = {
         keys: [key],
+        databaseId: key.partitionId?.databaseId || '',
       }
 
       const response = await datastoreClient.post(`/v1/projects/${projectId}:lookup`, request)
@@ -504,6 +471,15 @@ export const datastoreApi = {
 
   // Create an entity
   async createEntity(projectId: string, entity: DatastoreEntity): Promise<DatastoreEntity> {
+    if (entity.key.partitionId) {
+      const db = normalizeId(entity.key.partitionId.databaseId)
+      if (db) {
+        entity.key.partitionId.databaseId = db
+      } else {
+        delete entity.key.partitionId.databaseId
+      }
+    }
+    const dbId = normalizeId(entity.key.partitionId?.databaseId)
     const request: CommitRequest = {
       mode: 'NON_TRANSACTIONAL',
       mutations: [
@@ -511,6 +487,7 @@ export const datastoreApi = {
           insert: entity,
         },
       ],
+      ...(dbId ? { databaseId: dbId } : {}),
     }
 
     const response = await datastoreClient.post(`/v1/projects/${projectId}:commit`, request)
@@ -531,6 +508,15 @@ export const datastoreApi = {
 
   // Update an entity
   async updateEntity(projectId: string, entity: DatastoreEntity): Promise<DatastoreEntity> {
+    if (entity.key.partitionId) {
+      const db = normalizeId(entity.key.partitionId.databaseId)
+      if (db) {
+        entity.key.partitionId.databaseId = db
+      } else {
+        delete entity.key.partitionId.databaseId
+      }
+    }
+    const dbId = normalizeId(entity.key.partitionId?.databaseId)
     const request: CommitRequest = {
       mode: 'NON_TRANSACTIONAL',
       mutations: [
@@ -538,6 +524,7 @@ export const datastoreApi = {
           update: entity,
         },
       ],
+      ...(dbId ? { databaseId: dbId } : {}),
     }
 
     await datastoreClient.post(`/v1/projects/${projectId}:commit`, request)
@@ -546,6 +533,15 @@ export const datastoreApi = {
 
   // Upsert an entity (insert or update)
   async upsertEntity(projectId: string, entity: DatastoreEntity): Promise<DatastoreEntity> {
+    if (entity.key.partitionId) {
+      const db = normalizeId(entity.key.partitionId.databaseId)
+      if (db) {
+        entity.key.partitionId.databaseId = db
+      } else {
+        delete entity.key.partitionId.databaseId
+      }
+    }
+    const dbId = normalizeId(entity.key.partitionId?.databaseId)
     const request: CommitRequest = {
       mode: 'NON_TRANSACTIONAL',
       mutations: [
@@ -553,6 +549,7 @@ export const datastoreApi = {
           upsert: entity,
         },
       ],
+      ...(dbId ? { databaseId: dbId } : {}),
     }
 
     await datastoreClient.post(`/v1/projects/${projectId}:commit`, request)
@@ -561,33 +558,24 @@ export const datastoreApi = {
 
   // Delete an entity
   async deleteEntity(projectId: string, key: DatastoreKey): Promise<void> {
-    const databaseId = key.partitionId.databaseId
-
-    // Block delete operations on named databases with a clear error message
-    if (databaseId && databaseId !== '' && databaseId !== '(default)') {
-      throw new Error(
-        `Delete operations are not supported for entities in named database "${databaseId}". ` +
-          `This is a known limitation of the Datastore emulator. `
-      )
-    }
-
-    // For default database entities, strip databaseId from key
-    const cleanKey: DatastoreKey = {
-      partitionId: {
-        projectId: key.partitionId.projectId,
-        namespaceId: key.partitionId.namespaceId,
-      },
-      path: key.path,
-    }
-
     try {
+      if (key.partitionId) {
+        const db = normalizeId(key.partitionId.databaseId)
+        if (db) {
+          key.partitionId.databaseId = db
+        } else {
+          delete key.partitionId.databaseId
+        }
+      }
+      const dbId = normalizeId(key.partitionId?.databaseId)
       const request: CommitRequest = {
         mode: 'NON_TRANSACTIONAL',
         mutations: [
           {
-            delete: cleanKey,
+            delete: key,
           },
         ],
+        ...(dbId ? { databaseId: dbId } : {}),
       }
 
       const response = await datastoreClient.post(`/v1/projects/${projectId}:commit`, request)
@@ -619,16 +607,19 @@ export const datastoreApi = {
         databaseId
       )
 
-      if (entities.length === 0) {
+      const entitiesList = entities.entities
+
+      if (entitiesList.length === 0) {
         return
       }
 
       // Delete all entities in batches
       const batchSize = 500 // Datastore limit
-      for (let i = 0; i < entities.length; i += batchSize) {
-        const batch = entities.slice(i, i + batchSize)
+      for (let i = 0; i < entitiesList.length; i += batchSize) {
+        const batch = entitiesList.slice(i, i + batchSize)
         const request: CommitRequest = {
           mode: 'NON_TRANSACTIONAL',
+          databaseId: databaseId || '',
           mutations: batch.map(entity => ({
             delete: entity.key,
           })),
@@ -659,9 +650,14 @@ export const datastoreApi = {
   },
 
   // Export entities (Datastore emulator API)
-  async exportEntities(projectId: string, exportDirectory: string): Promise<any> {
-    // Build full database path with trailing slash
-    const databasePath = `projects/${projectId}/databases/`
+  async exportEntities(
+    projectId: string,
+    exportDirectory: string,
+    databaseId?: string
+  ): Promise<any> {
+    // Build full database path
+    const dbId = normalizeId(databaseId) || '(default)'
+    const databasePath = `projects/${projectId}/databases/${dbId}`
 
     const request = {
       database: databasePath,
@@ -676,9 +672,14 @@ export const datastoreApi = {
   },
 
   // Import entities (Datastore emulator API)
-  async importEntities(projectId: string, metadataFilePath: string): Promise<any> {
-    // Build full database path with trailing slash
-    const databasePath = `projects/${projectId}/databases/`
+  async importEntities(
+    projectId: string,
+    metadataFilePath: string,
+    databaseId?: string
+  ): Promise<any> {
+    // Build full database path
+    const dbId = normalizeId(databaseId) || '(default)'
+    const databasePath = `projects/${projectId}/databases/${dbId}`
 
     const request = {
       database: databasePath,
@@ -697,7 +698,12 @@ export const datastoreApi = {
   },
 
   // Export entities as JSON (query all entities and return as JSON)
-  async exportEntitiesAsJson(projectId: string, namespaceId?: string): Promise<any> {
+  async exportEntitiesAsJson(
+    projectId: string,
+    namespaceId?: string,
+    databaseId?: string
+  ): Promise<any> {
+    const normalizedDatabase = normalizeId(databaseId)
     try {
       // Step 1: Get all namespaces (or use the specified one)
       const namespacesToExport: string[] = []
@@ -706,7 +712,7 @@ export const datastoreApi = {
         namespacesToExport.push(namespaceId)
       } else {
         // Export ALL namespaces
-        const allNamespaces = await this.listNamespaces(projectId)
+        const allNamespaces = await this.listNamespaces(projectId, normalizedDatabase)
         namespacesToExport.push(...allNamespaces)
       }
 
@@ -724,17 +730,20 @@ export const datastoreApi = {
         }
 
         // Get all kinds in this namespace
-        const kinds = await this.listKinds(projectId, namespace)
+        const kinds = await this.listKinds(projectId, namespace, normalizedDatabase)
 
         // For each kind, get all entities
         for (const kind of kinds) {
           const partitionId: any = {
             projectId,
             namespaceId: namespace || '',
+            databaseId: normalizedDatabase,
           }
+          if (!partitionId.databaseId) delete partitionId.databaseId
 
           const request: RunQueryRequest = {
             partitionId,
+            databaseId: normalizedDatabase,
             query: {
               kind: [{ name: kind }],
               limit: 10000, // Large limit to get all entities
@@ -772,17 +781,23 @@ export const datastoreApi = {
     projectId: string,
     kind: string,
     id?: string | number,
-    namespaceId?: string
+    namespaceId?: string,
+    databaseId?: string
   ): DatastoreKey {
     return {
       partitionId: {
         projectId,
         namespaceId: namespaceId || '',
+        databaseId: normalizeId(databaseId),
       },
       path: [
         {
           kind,
-          ...(typeof id === 'string' ? { name: id } : { id: id?.toString() }),
+          ...(typeof id === 'string'
+            ? { name: id }
+            : id !== undefined
+              ? { id: id.toString() }
+              : {}),
         },
       ],
     }

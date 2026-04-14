@@ -128,7 +128,7 @@ export interface SelectOption {
 }
 
 interface Props {
-  modelValue: string
+  modelValue: string | undefined
   options: SelectOption[]
   placeholder?: string
   disabled?: boolean
@@ -147,7 +147,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (_e: 'update:modelValue', _value: string): void
+  (_e: 'update:modelValue', _value: string | undefined): void
 }>()
 
 const searchQuery = ref('')

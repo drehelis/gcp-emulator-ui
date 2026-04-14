@@ -26,6 +26,7 @@ vi.mock('axios', () => {
 describe('datastoreApi', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    datastoreApi.clearCache()
   })
 
   it('lookup calls the correct endpoint', async () => {
@@ -63,34 +64,213 @@ describe('datastoreApi', () => {
 
       const kinds = await datastoreApi.listKinds('proj1')
       expect(kinds).toEqual(['KindA', 'KindB'])
+      expect(mockInstance.post).toHaveBeenCalledWith(
+        '/v1/projects/proj1:runQuery',
+        expect.objectContaining({
+          query: { kind: [{ name: '__kind__' }] },
+        })
+      )
+    })
+
+    it('uses databaseId in partitionId when provided', async () => {
+      mockInstance.post.mockResolvedValue({ data: { batch: { entityResults: [] } } })
+
+      await datastoreApi.listKinds('proj1', 'ns1', 'db1')
+      expect(mockInstance.post).toHaveBeenCalledWith(
+        '/v1/projects/proj1:runQuery',
+        expect.objectContaining({
+          partitionId: expect.objectContaining({ databaseId: 'db1' }),
+          databaseId: 'db1',
+        })
+      )
+    })
+
+    it('returns cached results on second call', async () => {
+      mockInstance.post.mockResolvedValueOnce({
+        data: {
+          batch: {
+            entityResults: [{ entity: { key: { path: [{ name: 'KindA' }] } } }],
+          },
+        },
+      })
+
+      const kinds1 = await datastoreApi.listKinds('proj1')
+      const kinds2 = await datastoreApi.listKinds('proj1')
+
+      expect(kinds1).toEqual(['KindA'])
+      expect(kinds2).toEqual(['KindA'])
+      expect(mockInstance.post).toHaveBeenCalledTimes(1)
     })
   })
 
-  describe('entity operations', () => {
-    it('getEntity returns entity or null', async () => {
+  describe('listDatabases', () => {
+    it('discovers databases by probing kinds', async () => {
+      // First call to listKinds (metadata discovery)
       mockInstance.post.mockResolvedValueOnce({
-        data: { found: [{ entity: { name: 'e1' } }] },
+        data: {
+          batch: {
+            entityResults: [{ entity: { key: { path: [{ name: 'KindA' }] } } }],
+          },
+        },
       })
 
-      const key = { path: [], partitionId: { projectId: 'p' } } as any
-      const entity = await datastoreApi.getEntity('p', key)
-      expect(entity).toEqual({ name: 'e1' })
+      // Probe call for KindA
+      mockInstance.post.mockResolvedValueOnce({
+        data: {
+          batch: {
+            entityResults: [{ entity: { key: { partitionId: { databaseId: 'db1' } } } }],
+          },
+        },
+      })
+
+      const databases = await datastoreApi.listDatabases('proj1')
+      expect(databases).toContain('db1')
+      expect(databases).toContain('') // always includes default
     })
 
-    it('deleteEntity strips databaseId for default database', async () => {
-      mockInstance.post.mockResolvedValue({ data: {} })
+    it('handles query failures during probing gracefully', async () => {
+      // listKinds succeeds
+      mockInstance.post.mockResolvedValueOnce({
+        data: { batch: { entityResults: [{ entity: { key: { path: [{ name: 'K' }] } } }] } },
+      })
+      // Probing fails
+      mockInstance.post.mockRejectedValueOnce(new Error('API Error'))
 
-      const key = {
-        partitionId: { projectId: 'p', namespaceId: 'ns', databaseId: '(default)' },
-        path: [{ kind: 'K', name: 'N' }],
+      const databases = await datastoreApi.listDatabases('proj1')
+      expect(databases).toEqual([''])
+    })
+  })
+
+  describe('listNamespaces', () => {
+    it('filters namespaces by databaseId if provided', async () => {
+      mockInstance.post.mockResolvedValue({
+        data: {
+          batch: {
+            entityResults: [
+              {
+                entity: {
+                  key: { path: [{ name: 'ns1' }], partitionId: { databaseId: 'db1' } },
+                },
+              },
+              {
+                entity: {
+                  key: { path: [{ name: 'ns2' }], partitionId: { databaseId: 'db2' } },
+                },
+              },
+            ],
+          },
+        },
+      })
+
+      const namespaces = await datastoreApi.listNamespaces('proj1', 'db1')
+      expect(namespaces).toEqual(['', 'ns1'])
+    })
+  })
+
+  describe('getEntitiesByKind', () => {
+    it('handles offset pagination', async () => {
+      mockInstance.post.mockResolvedValue({ data: { batch: { entityResults: [] } } })
+
+      await datastoreApi.getEntitiesByKind('p1', 'K1', 'ns1', 10, 20)
+      expect(mockInstance.post).toHaveBeenCalledWith(
+        '/v1/projects/p1:runQuery',
+        expect.objectContaining({
+          query: expect.objectContaining({ offset: 20 }),
+        })
+      )
+    })
+
+    it('handles cursor pagination', async () => {
+      mockInstance.post.mockResolvedValue({ data: { batch: { entityResults: [] } } })
+
+      await datastoreApi.getEntitiesByKind('p1', 'K1', 'ns1', 10, 'cursor123')
+      expect(mockInstance.post).toHaveBeenCalledWith(
+        '/v1/projects/p1:runQuery',
+        expect.objectContaining({
+          query: expect.objectContaining({ startCursor: 'cursor123' }),
+        })
+      )
+    })
+  })
+
+  describe('mutations', () => {
+    it('createEntity normalizes partitionId and includes databaseId', async () => {
+      mockInstance.post.mockResolvedValue({ data: {} })
+      const entity = {
+        key: { path: [{ kind: 'K' }], partitionId: { projectId: 'p', databaseId: 'db1' } },
+        properties: {},
       } as any
 
-      await datastoreApi.deleteEntity('p', key)
+      await datastoreApi.createEntity('p', entity)
 
-      const lastCall = mockInstance.post.mock.calls.find((call: any) => call[0].endsWith(':commit'))
-      expect(lastCall).toBeDefined()
-      const request = lastCall![1] as any
-      expect(request.mutations[0].delete.partitionId.databaseId).toBeUndefined()
+      const request = mockInstance.post.mock.calls[0][1] as any
+      expect(request.databaseId).toBe('db1')
+      expect(request.mutations[0].insert.key.partitionId.databaseId).toBe('db1')
+    })
+
+    it('updateEntity handles default database normalization', async () => {
+      mockInstance.post.mockResolvedValue({ data: {} })
+      const entity = {
+        key: {
+          path: [{ kind: 'K' }],
+          partitionId: { projectId: 'p', databaseId: '(default)' },
+        },
+        properties: {},
+      } as any
+
+      await datastoreApi.updateEntity('p', entity)
+
+      const request = mockInstance.post.mock.calls[0][1] as any
+      expect(request.databaseId).toBeUndefined()
+      expect(request.mutations[0].update.key.partitionId.databaseId).toBeUndefined()
+    })
+
+    it('deleteKind handles batch deletion', async () => {
+      mockInstance.post
+        // listKinds
+        .mockResolvedValueOnce({
+          data: { batch: { entityResults: [{ entity: { key: { path: [{ name: 'K' }] } } }] } },
+        })
+        // getEntitiesByKind
+        .mockResolvedValueOnce({
+          data: {
+            batch: {
+              entityResults: Array(10)
+                .fill(0)
+                .map((_, i) => ({ entity: { key: { path: [{ kind: 'K', id: i.toString() }] } } })),
+            },
+          },
+        })
+        // commit
+        .mockResolvedValue({ data: {} })
+
+      await datastoreApi.deleteKind('p', 'K')
+      expect(mockInstance.post).toHaveBeenCalledWith(
+        '/v1/projects/p:commit',
+        expect.objectContaining({
+          mutations: expect.arrayContaining([
+            expect.objectContaining({ delete: expect.any(Object) }),
+          ]),
+        })
+      )
+    })
+  })
+
+  describe('cache management', () => {
+    it('clearCache with pattern only removes matches', async () => {
+      // Seed cache via API calls
+      mockInstance.post.mockResolvedValue({ data: { batch: { entityResults: [] } } })
+
+      await datastoreApi.listKinds('p1') // key: kinds:p1::
+      await datastoreApi.listKinds('p2') // key: kinds:p2::
+
+      datastoreApi.clearCache('p1')
+
+      // Should call API for p1 again but not p2
+      await datastoreApi.listKinds('p1')
+      await datastoreApi.listKinds('p2')
+
+      expect(mockInstance.post).toHaveBeenCalledTimes(3) // p1(seed), p2(seed), p1(after clear)
     })
   })
 })

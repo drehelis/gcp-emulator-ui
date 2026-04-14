@@ -99,6 +99,7 @@ export interface PropertyReference {
 export interface LookupRequest {
   keys: DatastoreKey[]
   readOptions?: ReadOptions
+  databaseId?: string
 }
 
 export interface LookupResponse {
@@ -118,6 +119,7 @@ export interface RunQueryRequest {
   query?: DatastoreQuery
   gqlQuery?: GqlQuery
   readOptions?: ReadOptions
+  databaseId?: string
 }
 
 export interface RunQueryResponse {
@@ -142,6 +144,7 @@ export interface RunAggregationQueryRequest {
   aggregationQuery?: AggregationQuery
   gqlQuery?: GqlQuery
   readOptions?: ReadOptions
+  databaseId?: string
 }
 
 export interface RunAggregationQueryResponse {
@@ -210,6 +213,7 @@ export interface CommitRequest {
   mode: 'NON_TRANSACTIONAL' | 'TRANSACTIONAL'
   mutations: Mutation[]
   transaction?: string
+  databaseId?: string
 }
 
 export interface CommitResponse {
@@ -234,6 +238,7 @@ export interface MutationResult {
 // Transaction Types
 export interface BeginTransactionRequest {
   transactionOptions?: TransactionOptions
+  databaseId?: string
 }
 
 export interface BeginTransactionResponse {
@@ -251,11 +256,13 @@ export interface TransactionOptions {
 
 export interface RollbackRequest {
   transaction: string
+  databaseId?: string
 }
 
 // Allocation Types
 export interface AllocateIdsRequest {
   keys: DatastoreKey[]
+  databaseId?: string
 }
 
 export interface AllocateIdsResponse {
@@ -335,19 +342,19 @@ export interface NamespaceStatistics {
 export interface DatastoreEntityWithMetadata extends DatastoreEntity {
   id: string
   kind: string
-  namespace?: string
+  namespace?: string | undefined
   path: string
-  size?: number
-  isExpanded?: boolean
+  size?: number | undefined
+  isExpanded?: boolean | undefined
 }
 
 export interface DatastoreKindWithMetadata {
   name: string
   entityCount: number
   bytes: number
-  namespace?: string
-  statistics?: KindStatistics
-  isExpanded?: boolean
+  namespace?: string | undefined
+  statistics?: KindStatistics | undefined
+  isExpanded?: boolean | undefined
 }
 
 export interface DatastoreNamespace {

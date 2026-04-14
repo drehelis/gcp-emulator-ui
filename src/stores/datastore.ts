@@ -11,11 +11,27 @@ import { useProjectsStore } from './projects'
 export const useDatastoreStore = defineStore('datastore', () => {
   const loading = ref(false)
   const databases = ref<string[]>([])
+  const customDatabases = ref<string[]>(
+    JSON.parse(localStorage.getItem('datastore_enter_manually_databases') || '[]')
+  )
   const kinds = ref<DatastoreKindWithMetadata[]>([])
   const namespaces = ref<string[]>([])
   const entities = ref<Map<string, DatastoreEntity[]>>(new Map())
-  const selectedDatabase = ref<string>('')
-  const selectedNamespace = ref<string>('')
+  const selectedDatabase = ref<string | undefined>(undefined)
+  const selectedNamespace = ref<string | undefined>(undefined)
+
+  // Combined lists for UI
+  const allDatabases = computed(() => {
+    const list = [...databases.value, ...customDatabases.value]
+    if (list.length === 0) return ['']
+    return Array.from(new Set(list)).sort()
+  })
+
+  const allNamespaces = computed(() => {
+    const list = [...namespaces.value]
+    if (list.length === 0) return ['']
+    return Array.from(new Set(list)).sort()
+  })
 
   // Computed
   const getEntitiesByKind = computed(() => {
@@ -24,21 +40,33 @@ export const useDatastoreStore = defineStore('datastore', () => {
 
   // Get current database for operations
   const getCurrentDatabase = (): string => {
-    return selectedDatabase.value
+    return selectedDatabase.value ?? ''
   }
 
   // Set selected database
-  const setSelectedDatabase = (databaseId: string) => {
+  const setSelectedDatabase = (databaseId: string | undefined) => {
     selectedDatabase.value = databaseId
+  }
+
+  // Manually add a database ID to the known list
+  const addDatabase = (databaseId: string) => {
+    if (databaseId && !customDatabases.value.includes(databaseId)) {
+      customDatabases.value.push(databaseId)
+      customDatabases.value.sort()
+      localStorage.setItem(
+        'datastore_enter_manually_databases',
+        JSON.stringify(customDatabases.value)
+      )
+    }
   }
 
   // Get current namespace for operations
   const getCurrentNamespace = (): string => {
-    return selectedNamespace.value
+    return selectedNamespace.value ?? ''
   }
 
   // Set selected namespace
-  const setSelectedNamespace = (namespaceId: string) => {
+  const setSelectedNamespace = (namespaceId: string | undefined) => {
     selectedNamespace.value = namespaceId
   }
 
@@ -51,11 +79,14 @@ export const useDatastoreStore = defineStore('datastore', () => {
 
       // Set default database if not selected (only auto-select if value is exactly undefined)
       // Empty string '' is a valid database selection (default database)
-      if (
-        (selectedDatabase.value === undefined || selectedDatabase.value === '') &&
-        databaseList.length > 0
-      ) {
-        selectedDatabase.value = databaseList[0]
+      if (selectedDatabase.value === undefined && databaseList.length > 0) {
+        // Favor the first named database if one exists, otherwise fallback to index 0
+        const namedDbs = databaseList.filter((db: string) => db !== '')
+        if (namedDbs.length > 0) {
+          selectedDatabase.value = namedDbs[0]
+        } else {
+          selectedDatabase.value = databaseList[0]
+        }
       }
     } catch (error) {
       console.error('Failed to load databases:', error)
@@ -65,12 +96,12 @@ export const useDatastoreStore = defineStore('datastore', () => {
     }
   }
 
-  // Load all namespaces (without database filter to get all namespaces)
+  // Load all namespaces for the selected database
   const loadNamespaces = async (projectId: string) => {
     try {
       loading.value = true
-      // Don't pass database filter - we want all namespaces across all databases
-      const namespaceList = await datastoreApi.listNamespaces(projectId)
+      // Use the selected database to filter namespaces
+      const namespaceList = await datastoreApi.listNamespaces(projectId, selectedDatabase.value)
       namespaces.value = namespaceList
 
       // Set default namespace if not selected
@@ -316,7 +347,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
   const healthCheck = async () => {
     try {
       const projectsStore = useProjectsStore()
-      const projectId = projectsStore.selectedProjectId
+      const projectId = projectsStore.selectedProjectId || undefined
       return await datastoreApi.healthCheck(projectId)
     } catch {
       return false
@@ -327,7 +358,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
   const exportEntities = async (projectId: string, exportDirectory: string) => {
     try {
       loading.value = true
-      return await datastoreApi.exportEntities(projectId, exportDirectory)
+      return await datastoreApi.exportEntities(projectId, exportDirectory, selectedDatabase.value)
     } catch (error) {
       console.error('Failed to export entities:', error)
       throw error
@@ -340,7 +371,11 @@ export const useDatastoreStore = defineStore('datastore', () => {
   const importEntities = async (projectId: string, metadataFilePath: string) => {
     try {
       loading.value = true
-      const result = await datastoreApi.importEntities(projectId, metadataFilePath)
+      const result = await datastoreApi.importEntities(
+        projectId,
+        metadataFilePath,
+        selectedDatabase.value
+      )
 
       // Refresh kinds and entities after import
       await loadKinds(projectId)
@@ -358,7 +393,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
   const exportEntitiesAsJson = async (projectId: string, namespaceId?: string) => {
     try {
       loading.value = true
-      return await datastoreApi.exportEntitiesAsJson(projectId, namespaceId)
+      return await datastoreApi.exportEntitiesAsJson(projectId, namespaceId, selectedDatabase.value)
     } catch (error) {
       console.error('Failed to export entities as JSON:', error)
       throw error
@@ -375,9 +410,9 @@ export const useDatastoreStore = defineStore('datastore', () => {
 
   return {
     loading,
-    databases,
+    databases: allDatabases,
     kinds,
-    namespaces,
+    namespaces: allNamespaces,
     entities,
     selectedDatabase,
     selectedNamespace,
@@ -385,6 +420,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
     // Database operations
     getCurrentDatabase,
     setSelectedDatabase,
+    addDatabase,
     loadDatabases,
     // Namespace operations
     getCurrentNamespace,

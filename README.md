@@ -37,8 +37,7 @@ This is an unofficial third-party application and is not affiliated with, endors
    * Import/export collections and documents
 
 - **Google Firestore (datastore-mode) ([gcloud](https://cloud.google.com/datastore/docs/tools/datastore-emulator))**
-   > Named database mutation operations not supported by Datastore emulator
-   * Create, view, and manage namespaces on `(default)` database.
+   * Create, view, and manage entities across namespaces and databases
    * Query/Read operations on named databases
    * Import/export functionality
 
