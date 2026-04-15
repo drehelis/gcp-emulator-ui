@@ -356,5 +356,13 @@ describe('useDatastoreStore', () => {
       const store = useDatastoreStore()
       await expect(store.deleteEntity('p1', {} as any)).rejects.toThrow('fail')
     })
+
+    it('deleteAllContent handles error', async () => {
+      vi.mocked(apiMock.reset).mockRejectedValue(new Error('reset fail'))
+      const store = useDatastoreStore()
+      await expect(store.deleteAllContent()).rejects.toThrow('reset fail')
+      expect(store.loading).toBe(false)
+    })
   })
 })
+
