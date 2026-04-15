@@ -255,7 +255,7 @@ export interface Schema extends BaseEntity {
 }
 
 export interface CreateSchemaRequest {
-  id: string
+  name: string
   type: SchemaType
   definition: string
 }

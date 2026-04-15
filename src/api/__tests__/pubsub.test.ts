@@ -383,7 +383,7 @@ describe('Pub/Sub API', () => {
     })
 
     it('creates schema', async () => {
-      mockPost.mockResolvedValue({ data: { name: 'new-schema' } })
+      mockPost.mockResolvedValue({ data: { name: 'projects/my-project/schemas/my-schema' } })
 
       const { schemasApi } = await import('@/api/pubsub')
       const schema = await schemasApi.createSchema('my-project', {
@@ -392,7 +392,14 @@ describe('Pub/Sub API', () => {
         definition: '{}',
       })
 
-      expect(schema.name).toBe('new-schema')
+      expect(mockPost).toHaveBeenCalledWith(
+        '/v1/projects/my-project/schemas?schemaId=my-schema',
+        {
+          type: 'AVRO',
+          definition: '{}',
+        }
+      )
+      expect(schema.name).toBe('projects/my-project/schemas/my-schema')
     })
 
     it('deletes schema', async () => {
@@ -402,6 +409,16 @@ describe('Pub/Sub API', () => {
       await schemasApi.deleteSchema('my-project', 'my-schema')
 
       expect(mockDelete).toHaveBeenCalledWith('/v1/projects/my-project/schemas/my-schema')
+    })
+
+    it('gets a single schema', async () => {
+      mockGet.mockResolvedValue({ data: { name: 'schema1' } })
+
+      const { schemasApi } = await import('@/api/pubsub')
+      const result = await schemasApi.getSchema('my-project', 'schema1')
+
+      expect(mockGet).toHaveBeenCalledWith('/v1/projects/my-project/schemas/schema1')
+      expect(result.name).toBe('schema1')
     })
 
     it('validates message against schema', async () => {

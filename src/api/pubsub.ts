@@ -323,7 +323,11 @@ export const schemasApi = {
 
   async createSchema(projectId: string, request: CreateSchemaRequest): Promise<Schema> {
     const api = getApiClient()
-    const response = await api.post(`/v1/projects/${projectId}/schemas`, request)
+    const { name, ...schemaData } = request
+    const response = await api.post(
+      `/v1/projects/${projectId}/schemas?schemaId=${name}`,
+      schemaData
+    )
     return response.data
   },
 

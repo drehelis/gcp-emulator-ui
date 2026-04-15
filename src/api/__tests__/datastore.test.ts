@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { datastoreApi } from '../datastore'
 
 const mockInstance = vi.hoisted(() => ({
@@ -29,6 +29,10 @@ describe('datastoreApi', () => {
     datastoreApi.clearCache()
   })
 
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   it('lookup calls the correct endpoint', async () => {
     mockInstance.post.mockResolvedValue({ data: { found: [] } })
 
@@ -47,6 +51,46 @@ describe('datastoreApi', () => {
 
     expect(mockInstance.post).toHaveBeenCalledWith('/v1/projects/proj1:runQuery', request)
     expect(result).toEqual({ batch: {} })
+  })
+
+  it('runAggregationQuery calls the correct endpoint', async () => {
+    mockInstance.post.mockResolvedValue({ data: { batch: {} } })
+    const request = { aggregationQuery: {} } as any
+    const result = await datastoreApi.runAggregationQuery('proj1', request)
+    expect(mockInstance.post).toHaveBeenCalledWith(
+      '/v1/projects/proj1:runAggregationQuery',
+      request
+    )
+    expect(result).toEqual({ batch: {} })
+  })
+
+  it('beginTransaction returns transaction ID', async () => {
+    mockInstance.post.mockResolvedValue({ data: { transaction: 'tx1' } })
+    const tx = await datastoreApi.beginTransaction('proj1', { readWrite: {} }, 'db1')
+    expect(tx).toBe('tx1')
+    expect(mockInstance.post).toHaveBeenCalledWith(
+      '/v1/projects/proj1:beginTransaction',
+      expect.objectContaining({ databaseId: 'db1' })
+    )
+  })
+
+  it('rollback calls correct endpoint', async () => {
+    mockInstance.post.mockResolvedValue({})
+    await datastoreApi.rollback('proj1', 'tx1', 'db1')
+    expect(mockInstance.post).toHaveBeenCalledWith(
+      '/v1/projects/proj1:rollback',
+      expect.objectContaining({ transaction: 'tx1', databaseId: 'db1' })
+    )
+  })
+
+  it('allocateIds returns keys', async () => {
+    mockInstance.post.mockResolvedValue({ data: { keys: [{ path: [] }] } })
+    const res = await datastoreApi.allocateIds('proj1', { keys: [{ path: [] }], databaseId: 'db1' })
+    expect(res.keys).toHaveLength(1)
+    expect(mockInstance.post).toHaveBeenCalledWith(
+      '/v1/projects/proj1:allocateIds',
+      expect.objectContaining({ databaseId: 'db1' })
+    )
   })
 
   describe('listKinds', () => {
@@ -244,15 +288,23 @@ describe('datastoreApi', () => {
         // commit
         .mockResolvedValue({ data: {} })
 
-      await datastoreApi.deleteKind('p', 'K')
+      await datastoreApi.deleteKind('p', 'K', 'ns1', 'db1')
       expect(mockInstance.post).toHaveBeenCalledWith(
         '/v1/projects/p:commit',
         expect.objectContaining({
+          databaseId: 'db1',
           mutations: expect.arrayContaining([
             expect.objectContaining({ delete: expect.any(Object) }),
           ]),
         })
       )
+    })
+
+    it('handles deleteKind error gracefully', async () => {
+      vi.spyOn(console, 'error').mockImplementation(() => {})
+      vi.spyOn(datastoreApi, 'getEntitiesByKind').mockRejectedValue(new Error('fail'))
+      await datastoreApi.deleteKind('p', 'K')
+      expect(console.error).toHaveBeenCalled()
     })
   })
 
@@ -271,6 +323,142 @@ describe('datastoreApi', () => {
       await datastoreApi.listKinds('p2')
 
       expect(mockInstance.post).toHaveBeenCalledTimes(3) // p1(seed), p2(seed), p1(after clear)
+    })
+
+    it('handles cache TTL expiration', async () => {
+      vi.useFakeTimers()
+      mockInstance.post.mockResolvedValue({ data: { batch: { entityResults: [] } } })
+
+      await datastoreApi.listKinds('p1')
+      expect(mockInstance.post).toHaveBeenCalledTimes(1)
+
+      // Advance time by 31 seconds (TTL is 30s)
+      vi.advanceTimersByTime(31000)
+
+      await datastoreApi.listKinds('p1')
+      expect(mockInstance.post).toHaveBeenCalledTimes(2)
+
+      vi.useRealTimers()
+    })
+  })
+
+  describe('utility operations', () => {
+    it('healthCheck returns true on success', async () => {
+      mockInstance.post.mockResolvedValue({ data: { batch: {} } })
+      const healthy = await datastoreApi.healthCheck('p1')
+      expect(healthy).toBe(true)
+    })
+
+    it('healthCheck returns false on error', async () => {
+      vi.spyOn(datastoreApi, 'listKinds').mockRejectedValue(new Error())
+      const healthy = await datastoreApi.healthCheck('p1')
+      expect(healthy).toBe(false)
+    })
+
+    it('exportEntities calls emulator endpoint', async () => {
+      mockInstance.post.mockResolvedValue({ data: {} })
+      await datastoreApi.exportEntities('p1', '/tmp/export')
+      expect(mockInstance.post).toHaveBeenCalledWith(
+        '/emulator/v1/projects/p1:export',
+        expect.objectContaining({ export_directory: '/tmp/export' })
+      )
+    })
+
+    it('importEntities calls emulator endpoint', async () => {
+      mockInstance.post.mockResolvedValue({ data: {} })
+      await datastoreApi.importEntities('p1', '/tmp/import')
+      expect(mockInstance.post).toHaveBeenCalledWith(
+        '/emulator/v1/projects/p1:import',
+        expect.objectContaining({ export_directory: '/tmp/import' })
+      )
+    })
+  })
+
+  describe('exportEntitiesAsJson', () => {
+    it('traverses namespaces and kinds', async () => {
+      mockInstance.post
+        // listNamespaces
+        .mockResolvedValueOnce({
+          data: {
+            batch: {
+              entityResults: [{ entity: { key: { path: [{ name: 'ns1' }] } } }],
+            },
+          },
+        })
+        // listKinds for ns1
+        .mockResolvedValueOnce({
+          data: {
+            batch: {
+              entityResults: [{ entity: { key: { path: [{ name: 'Kind1' }] } } }],
+            },
+          },
+        })
+        // runQuery for Kind1 in ns1
+        .mockResolvedValueOnce({
+          data: {
+            batch: {
+              entityResults: [{ entity: { key: { path: [{ kind: 'Kind1', name: 'e1' }] } } }],
+            },
+          },
+        })
+
+      const data = await datastoreApi.exportEntitiesAsJson('p1')
+      expect(data.namespaces).toHaveLength(2) // ns1 + default
+    })
+  })
+
+  describe('file server operations', () => {
+    it('createDirectory calls upload with mkdir', async () => {
+      mockInstance.post.mockResolvedValue({})
+      await datastoreApi.createDirectory('path/to/dir')
+      expect(mockInstance.post).toHaveBeenCalledWith(
+        expect.stringContaining('/upload?path=path%2Fto'),
+        expect.any(FormData)
+      )
+    })
+
+    it('uploadFile calls upload with file content', async () => {
+      mockInstance.post.mockResolvedValue({})
+      const file = new File(['content'], 'test.txt', { type: 'text/plain' })
+      await datastoreApi.uploadFile(file, 'path/to/test.txt')
+      expect(mockInstance.post).toHaveBeenCalled()
+    })
+
+    it('downloadFile returns blob', async () => {
+      const blob = new Blob(['content'])
+      mockInstance.get.mockResolvedValue({ data: blob })
+      const result = await datastoreApi.downloadFile('test.txt')
+      expect(result).toBe(blob)
+    })
+
+    it('uploadFiles creates directories and uploads files', async () => {
+      mockInstance.post.mockResolvedValue({})
+      const file1 = new File(['c1'], 'dir1/f1.txt', { type: 'text/plain' })
+      // @ts-ignore - webkitRelativePath is read-only in browser but we can mock it
+      Object.defineProperty(file1, 'webkitRelativePath', { value: 'dir1/f1.txt' })
+
+      await datastoreApi.uploadFiles([file1], '/base')
+
+      // Should create directory dir1
+      expect(mockInstance.post).toHaveBeenCalledWith(
+        expect.stringContaining('mkdir=dir1'),
+        expect.any(FormData)
+      )
+      // Should upload file
+      expect(mockInstance.post).toHaveBeenCalledWith(
+        expect.stringContaining('path=%2Fbase%2Fdir1'),
+        expect.any(FormData)
+      )
+    })
+
+    it('uploadFile handles targetPath without slash', async () => {
+      mockInstance.post.mockResolvedValue({})
+      const file = new File(['c'], 'f.txt')
+      await datastoreApi.uploadFile(file, 'no-slash-path')
+      expect(mockInstance.post).toHaveBeenCalledWith(
+        expect.stringContaining('path=%2F'),
+        expect.any(FormData)
+      )
     })
   })
 })

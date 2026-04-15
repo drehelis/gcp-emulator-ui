@@ -713,7 +713,6 @@ export const datastoreApi = {
   },
 
   async createDirectory(path: string): Promise<void> {
-    const formData = new FormData()
     const lastSlashIndex = path.lastIndexOf('/')
     let parentPath = '/'
     let dirName = path
@@ -723,8 +722,11 @@ export const datastoreApi = {
       dirName = path.substring(lastSlashIndex + 1)
     }
 
-    formData.append('mkdir', dirName)
-    await fileServerClient.post(`/upload?path=${encodeURIComponent(parentPath)}`, formData)
+    const formData = new FormData()
+    await fileServerClient.post(
+      `/upload?path=${encodeURIComponent(parentPath)}&mkdir=${encodeURIComponent(dirName)}`,
+      formData
+    )
   },
 
   async uploadFile(file: File, targetPath?: string): Promise<void> {
