@@ -392,13 +392,10 @@ describe('Pub/Sub API', () => {
         definition: '{}',
       })
 
-      expect(mockPost).toHaveBeenCalledWith(
-        '/v1/projects/my-project/schemas?schemaId=my-schema',
-        {
-          type: 'AVRO',
-          definition: '{}',
-        }
-      )
+      expect(mockPost).toHaveBeenCalledWith('/v1/projects/my-project/schemas?schemaId=my-schema', {
+        type: 'AVRO',
+        definition: '{}',
+      })
       expect(schema.name).toBe('projects/my-project/schemas/my-schema')
     })
 
