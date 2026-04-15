@@ -460,5 +460,11 @@ describe('datastoreApi', () => {
         expect.any(FormData)
       )
     })
+
+    it('reset calls correct endpoint', async () => {
+      mockInstance.post.mockResolvedValue({})
+      await datastoreApi.reset()
+      expect(mockInstance.post).toHaveBeenCalledWith('/reset')
+    })
   })
 })

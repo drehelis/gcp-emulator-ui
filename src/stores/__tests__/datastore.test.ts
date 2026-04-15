@@ -21,6 +21,7 @@ const apiMock = vi.hoisted(() => ({
   getKeyId: vi.fn(
     (key: any) => key.path[key.path.length - 1].name || key.path[key.path.length - 1].id
   ),
+  reset: vi.fn(),
 }))
 
 vi.mock('@/api/datastore', () => ({
@@ -290,6 +291,26 @@ describe('useDatastoreStore', () => {
 
       expect(store.kinds).toHaveLength(0)
       expect(store.entities.size).toBe(0)
+    })
+
+    it('deleteAllContent calls api and clears state', async () => {
+      vi.mocked(apiMock.reset).mockResolvedValue(undefined as any)
+      const store = useDatastoreStore()
+      store.kinds = [{ name: 'KindA', entityCount: 1, bytes: 0, isExpanded: false }]
+      store.entities.set('KindA', [{} as any])
+      store.selectedDatabase = 'db1'
+      store.selectedNamespace = 'ns1'
+
+      await store.deleteAllContent()
+
+      expect(apiMock.reset).toHaveBeenCalled()
+      expect(store.kinds).toHaveLength(0)
+      expect(store.entities.size).toBe(0)
+      expect(store.selectedDatabase).toBeUndefined()
+      expect(store.selectedNamespace).toBeUndefined()
+      // Computed properties should fall back to default empty state
+      expect(store.databases).toEqual([''])
+      expect(store.namespaces).toEqual([''])
     })
   })
 
