@@ -208,8 +208,11 @@ export interface PubSubMessage {
 }
 
 export interface PublishRequest {
-  topic: string
-  messages: PubSubMessage[]
+  messages: {
+    data: string | Uint8Array
+    attributes?: Record<string, string>
+    orderingKey?: string
+  }[]
 }
 
 export interface PublishResponse {
@@ -249,6 +252,12 @@ export interface Schema extends BaseEntity {
   definition: string
   revisionId?: string
   revisionCreateTime?: Date
+}
+
+export interface CreateSchemaRequest {
+  name: string
+  type: SchemaType
+  definition: string
 }
 
 export type SchemaType = 'TYPE_UNSPECIFIED' | 'PROTOCOL_BUFFER' | 'AVRO'

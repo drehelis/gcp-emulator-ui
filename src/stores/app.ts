@@ -1,8 +1,3 @@
-/**
- * Main application store
- * Manages global app state, theme, navigation, and UI preferences
- */
-
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { useToast } from 'vue-toastification'
@@ -353,8 +348,8 @@ export const useAppStore = defineStore(
         try {
           const parsed = JSON.parse(savedPreferences)
           updatePreferences(parsed)
-        } catch (error) {
-          console.warn('Failed to parse saved preferences:', error)
+        } catch {
+          // Ignore parse errors
         }
       }
 
@@ -421,24 +416,6 @@ export const useAppStore = defineStore(
     persist: {
       key: 'emulator-ui-app',
       storage: localStorage,
-
-      afterRestore: (context: any) => {
-        // Don't call initializeApp() here - it's called from main.ts
-        // Just apply the restored theme immediately
-        if (context.store.theme && typeof document !== 'undefined') {
-          const root = document.documentElement
-          const shouldBeDark =
-            context.store.theme === 'dark' ||
-            (context.store.theme === 'auto' &&
-              window.matchMedia('(prefers-color-scheme: dark)').matches)
-
-          if (shouldBeDark) {
-            root.classList.add('dark')
-          } else {
-            root.classList.remove('dark')
-          }
-        }
-      },
     },
   }
 )

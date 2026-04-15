@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-screen bg-gray-50 dark:bg-gray-900 flex theme-transition-bg">
-    <!-- Sidebar -->
     <Transition
       enter-active-class="transition-transform"
       leave-active-class="transition-transform"
@@ -16,7 +15,6 @@
           'flex flex-col overflow-hidden transition-all',
         ]"
       >
-        <!-- Sidebar Header -->
         <div
           class="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700 theme-transition-colors"
           :class="{ 'justify-center': appStore.layout.sidebar.collapsed && !isMobile }"
@@ -61,7 +59,6 @@
             <QueueListIcon class="w-5 h-5 text-white" />
           </div>
 
-          <!-- Collapse/Expand button (desktop only) -->
           <button
             v-if="!isMobile"
             @click="appStore.toggleSidebar"
@@ -75,21 +72,18 @@
           </button>
         </div>
 
-        <!-- Project Selector -->
         <div
           class="px-4 border-b border-gray-200 dark:border-gray-700 overflow-x-hidden relative z-50 theme-transition-colors flex items-center h-[71px]"
         >
           <ProjectSelector :collapsed="appStore.layout.sidebar.collapsed && !isMobile" />
         </div>
 
-        <!-- Dynamic Navigation -->
         <div
           class="flex-1 py-4 space-y-2 overflow-y-auto overflow-x-hidden scrollbar-thin"
           :class="[appStore.layout.sidebar.collapsed && !isMobile ? 'px-2' : 'px-4']"
           v-if="navigationItems.length > 0"
         >
           <template v-for="item in navigationItems" :key="item.id">
-            <!-- Services Header -->
             <div
               v-if="item.label === 'Services' && !appStore.layout.sidebar.collapsed"
               class="mb-3"
@@ -225,7 +219,6 @@
               @click="handleMobileNavClick"
             />
 
-            <!-- Collapsed Separator -->
             <div
               v-else-if="item.isSeparator && appStore.layout.sidebar.collapsed"
               class="my-3 mx-auto w-8 border-t border-gray-200 dark:border-gray-700 theme-transition-colors"
@@ -254,7 +247,6 @@
           </template>
         </div>
 
-        <!-- Sidebar Footer -->
         <div
           class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 theme-transition-colors"
         >
@@ -268,7 +260,6 @@
       </aside>
     </Transition>
 
-    <!-- Mobile sidebar overlay -->
     <Transition
       enter-active-class="transition-opacity"
       leave-active-class="transition-opacity"
@@ -282,16 +273,12 @@
       />
     </Transition>
 
-    <!-- Main Content -->
     <div class="flex-1 flex flex-col min-w-0">
-      <!-- Top Header -->
       <header
         class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 h-16 flex items-center justify-between px-4 lg:px-6 theme-transition-colors"
         :class="{ 'lg:pl-4': appStore.layout.sidebar.collapsed }"
       >
-        <!-- Left side -->
         <div class="flex items-center space-x-4">
-          <!-- Mobile menu button -->
           <button
             v-if="isMobile"
             @click="appStore.setSidebarCollapsed(false)"
@@ -300,7 +287,6 @@
             <Bars3Icon class="w-6 h-6" />
           </button>
 
-          <!-- Breadcrumbs -->
           <nav class="hidden md:flex" aria-label="Breadcrumb">
             <ol class="flex items-center space-x-2">
               <li
@@ -331,14 +317,11 @@
           </nav>
         </div>
 
-        <!-- Right side -->
         <div class="flex items-center space-x-4">
-          <!-- Search -->
           <div class="hidden lg:block">
             <GlobalSearch />
           </div>
 
-          <!-- Toast notifications toggle -->
           <button
             @click="toggleToasts"
             class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 theme-transition-colors"
@@ -351,7 +334,6 @@
             <component :is="toastsEnabled ? BellIcon : BellSlashIcon" class="w-5 h-5" />
           </button>
 
-          <!-- Theme toggle -->
           <button
             @click="toggleTheme"
             class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 theme-transition-colors"
@@ -360,7 +342,6 @@
             <component :is="themeIcon" class="w-5 h-5" />
           </button>
 
-          <!-- Fullscreen toggle -->
           <button
             @click="toggleFullscreen"
             class="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 theme-transition-colors"
@@ -371,7 +352,6 @@
         </div>
       </header>
 
-      <!-- Page Content -->
       <main class="flex-1 overflow-auto">
         <router-view />
       </main>

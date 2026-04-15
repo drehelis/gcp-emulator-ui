@@ -1,6 +1,5 @@
 <template>
   <div class="space-y-6">
-    <!-- Loading State -->
     <div v-if="isLoading" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
       <div class="animate-pulse">
         <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
@@ -12,7 +11,6 @@
       </div>
     </div>
 
-    <!-- Error State -->
     <div v-else-if="error" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
       <div class="text-center">
         <ExclamationCircleIcon class="mx-auto h-12 w-12 text-red-400" />
@@ -30,7 +28,6 @@
       </div>
     </div>
 
-    <!-- Topics List -->
     <div v-else-if="topics.length > 0" class="space-y-6">
       <!-- Header -->
       <div class="bg-white dark:bg-gray-800 rounded-lg">
@@ -248,7 +245,6 @@
       </div>
     </div>
 
-    <!-- Empty State -->
     <div v-else class="space-y-6">
       <!-- Header -->
       <div class="bg-white dark:bg-gray-800 rounded-lg">

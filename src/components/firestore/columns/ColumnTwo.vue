@@ -16,7 +16,6 @@
             >
               <EllipsisVerticalIcon class="w-3 h-3" />
             </button>
-            <!-- Dropdown Menu -->
             <div
               v-if="showCollectionMenuDropdown"
               class="absolute right-0 top-8 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl min-w-[160px]"
@@ -34,7 +33,6 @@
         <div class="border-b border-gray-200 dark:border-gray-600"></div>
       </div>
 
-      <!-- Add Button -->
       <div v-if="showAddButton" class="mb-4">
         <button
           @click="$emit('add-item')"
@@ -45,7 +43,6 @@
         </button>
       </div>
 
-      <!-- Items List -->
       <div v-if="items.length > 0" class="space-y-1">
         <div
           v-for="item in items"

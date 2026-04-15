@@ -9,7 +9,6 @@
         </p>
       </div>
 
-      <!-- Services Section -->
       <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
           <h2 class="text-lg font-medium text-gray-900 dark:text-white">Services</h2>
@@ -161,7 +160,6 @@
                       : 'bg-gray-100 dark:bg-gray-700',
                   ]"
                 >
-                  <!-- Storage Icon -->
                   <svg
                     class="w-6 h-6"
                     :class="[
@@ -236,7 +234,6 @@
             </div>
           </div>
 
-          <!-- Firestore Service -->
           <div
             class="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
             :class="{ 'opacity-75': !firestoreConnected }"
@@ -252,7 +249,6 @@
                       : 'bg-gray-100 dark:bg-gray-700',
                   ]"
                 >
-                  <!-- Firestore Icon -->
                   <svg
                     class="w-6 h-6"
                     :class="[
@@ -330,7 +326,6 @@
             </div>
           </div>
 
-          <!-- Datastore Service -->
           <div
             class="px-6 py-4 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer"
             :class="{ 'opacity-75': !datastoreConnected }"
@@ -346,7 +341,6 @@
                       : 'bg-gray-100 dark:bg-gray-700',
                   ]"
                 >
-                  <!-- Datastore Icon -->
                   <svg
                     class="w-6 h-6"
                     :class="[

@@ -3,7 +3,6 @@
     class="w-1/3 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 overflow-y-auto theme-transition-colors"
   >
     <div class="p-4">
-      <!-- Database Name -->
       <div class="mb-3">
         <div class="flex items-center text-xs text-gray-600 dark:text-gray-400 font-mono">
           <span>(default)</span>
@@ -21,7 +20,6 @@
         </button>
       </div>
 
-      <!-- Collections List -->
       <div v-if="collections.length > 0" class="space-y-1">
         <div v-for="collection in collections" :key="collection.id" class="group">
           <div

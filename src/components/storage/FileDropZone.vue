@@ -9,7 +9,6 @@
     @dragleave.prevent="handleDragLeave"
     @drop.prevent="handleDrop"
   >
-    <!-- Upload Icon -->
     <div
       class="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-4 mx-auto"
     >
@@ -17,7 +16,6 @@
       <ArrowPathIcon v-else class="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
     </div>
 
-    <!-- Upload Text -->
     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2 text-center">
       <span v-if="!loading">{{ title }}</span>
       <span v-else>Uploading Files...</span>
@@ -34,7 +32,6 @@
       </span>
     </p>
 
-    <!-- Upload Progress -->
     <div v-if="loading && uploadProgress.length > 0" class="mb-6">
       <div class="space-y-2">
         <div
@@ -60,7 +57,6 @@
       </div>
     </div>
 
-    <!-- Upload Buttons -->
     <div v-if="!loading" class="flex flex-col items-center justify-center">
       <div class="flex flex-col sm:flex-row gap-3 items-center justify-center mb-3">
         <button

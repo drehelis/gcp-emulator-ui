@@ -77,7 +77,6 @@
             />
           </div>
 
-          <!-- Entity Kind -->
           <div>
             <div class="flex items-center justify-between mb-1.5">
               <label class="block text-xs font-medium text-gray-600 dark:text-gray-400">
@@ -178,7 +177,6 @@
         </div>
       </div>
 
-      <!-- Properties Section -->
       <div
         class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700"
       >

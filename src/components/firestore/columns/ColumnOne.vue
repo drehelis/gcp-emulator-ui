@@ -16,7 +16,6 @@
         <div class="border-b border-gray-200 dark:border-gray-600"></div>
       </div>
 
-      <!-- Add Button -->
       <div v-if="showAddButton" class="mb-4">
         <button
           @click="$emit('add-item')"
@@ -27,7 +26,6 @@
         </button>
       </div>
 
-      <!-- Items List -->
       <div v-if="items.length > 0" class="space-y-1">
         <div
           v-for="item in items"

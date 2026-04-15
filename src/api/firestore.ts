@@ -1,7 +1,3 @@
-/**
- * Minimal Firestore API client for Firestore emulator integration
- */
-
 import axios from 'axios'
 import type {
   FirestoreDocument,
@@ -28,7 +24,6 @@ firestoreClient.interceptors.request.use(config => {
 })
 
 export const firestoreApi = {
-  // Create document
   async createDocument(request: CreateDocumentRequest): Promise<FirestoreDocument> {
     const { parent, collectionId, documentId, document } = request
 
@@ -55,11 +50,10 @@ export const firestoreApi = {
     }
   },
 
-  // Create subcollection (document inside a subcollection path)
   async createSubcollection(
     parentDocumentPath: string,
     collectionId: string,
-    document: any,
+    document: FirestoreDocument,
     documentId?: string
   ): Promise<FirestoreDocument> {
     if (documentId) {
@@ -85,13 +79,12 @@ export const firestoreApi = {
     }
   },
 
-  // Helper to fetch documents
   async fetchDocuments(
     path: string,
     pageSize: number,
     pageToken?: string
   ): Promise<ListDocumentsResponse> {
-    const params: any = { pageSize }
+    const params: Record<string, any> = { pageSize }
     if (pageToken) {
       params.pageToken = pageToken
     }
@@ -107,7 +100,6 @@ export const firestoreApi = {
     return result
   },
 
-  // List documents in a collection
   async listDocuments(
     parent: string,
     collectionId: string,
@@ -117,7 +109,6 @@ export const firestoreApi = {
     return this.fetchDocuments(`/v1/${parent}/documents/${collectionId}`, pageSize, pageToken)
   },
 
-  // List documents in a subcollection
   async listSubcollectionDocuments(
     parentDocumentPath: string,
     collectionId: string,
@@ -127,7 +118,6 @@ export const firestoreApi = {
     return this.fetchDocuments(`/v1/${parentDocumentPath}/${collectionId}`, pageSize, pageToken)
   },
 
-  // Discover collections by listing collection IDs
   async listCollections(
     parent: string,
     pageSize?: number,
@@ -161,14 +151,11 @@ export const firestoreApi = {
         collections,
         nextPageToken: response.data.nextPageToken,
       }
-    } catch (error) {
-      console.warn('Failed to list collections:', error)
+    } catch {
       return { collections: [] }
     }
   },
 
-  // List subcollections for a specific document
-  // Uses document listing endpoint to discover subcollections
   async listSubcollections(documentPath: string): Promise<ListCollectionsResponse> {
     try {
       // List all documents under the document path to discover subcollections
@@ -196,13 +183,11 @@ export const firestoreApi = {
       }))
 
       return { collections }
-    } catch (error) {
-      console.warn('Failed to list subcollections for document:', documentPath, error)
+    } catch {
       return { collections: [] }
     }
   },
 
-  // Health check
   async healthCheck(projectId?: string): Promise<boolean> {
     try {
       const project = projectId || import.meta.env.VITE_GOOGLE_CLOUD_PROJECT_ID || 'test-project'
@@ -214,46 +199,32 @@ export const firestoreApi = {
     }
   },
 
-  // Update document
-  async updateDocument(documentPath: string, document: any): Promise<FirestoreDocument> {
+  async updateDocument(
+    documentPath: string,
+    document: FirestoreDocument
+  ): Promise<FirestoreDocument> {
     const response = await firestoreClient.patch(`/v1/${documentPath}`, document)
     return response.data
   },
 
-  // Delete document
   async deleteDocument(documentPath: string): Promise<boolean> {
-    try {
-      await firestoreClient.delete(`/v1/${documentPath}`)
-      return true
-    } catch (error) {
-      console.error('Failed to delete document:', error)
-      throw error
-    }
+    await firestoreClient.delete(`/v1/${documentPath}`)
+    return true
   },
 
-  // Delete collection (by deleting all documents)
   async deleteCollection(parent: string, collectionId: string): Promise<boolean> {
-    try {
-      // First, get all documents in the collection
-      const response = await firestoreClient.get(`/v1/${parent}/documents/${collectionId}`)
-      const documents = response.data.documents || []
+    const response = await firestoreClient.get(`/v1/${parent}/documents/${collectionId}`)
+    const documents = response.data.documents || []
 
-      // Delete each document individually
-      const deletePromises = documents.map((doc: any) => {
-        return firestoreClient.delete(`/v1/${doc.name}`)
-      })
+    const deletePromises = documents.map((doc: { name: string }) => {
+      return firestoreClient.delete(`/v1/${doc.name}`)
+    })
 
-      // Wait for all deletions to complete
-      await Promise.all(deletePromises)
+    await Promise.all(deletePromises)
 
-      return true
-    } catch (error) {
-      console.error('Failed to delete collection:', error)
-      throw error
-    }
+    return true
   },
 
-  // Test if a specific database exists
   async testDatabase(projectId: string, databaseId: string): Promise<boolean> {
     try {
       const databasePath = `projects/${projectId}/databases/${databaseId}`

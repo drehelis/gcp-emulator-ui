@@ -1,8 +1,3 @@
-/**
- * Configuration Store
- * Manages both build-time and runtime configuration
- */
-
 import { defineStore } from 'pinia'
 import { ref, computed, readonly } from 'vue'
 
@@ -58,11 +53,8 @@ export const useConfigStore = defineStore('config', () => {
         if (response.ok) {
           const config = await response.json()
           runtimeConfig.value = config
-        } else if (response.status !== 404) {
-          console.warn('Failed to load runtime config:', response.status, response.statusText)
         }
       } catch (err) {
-        console.warn('Runtime config loading failed:', err)
         error.value = err instanceof Error ? err.message : 'Unknown error'
       } finally {
         isLoaded.value = true

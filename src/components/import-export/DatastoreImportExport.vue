@@ -1,6 +1,5 @@
 <template>
   <div class="space-y-6">
-    <!-- Export Section -->
     <div class="bg-white dark:bg-gray-800 shadow rounded-lg theme-transition-colors">
       <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 theme-transition-colors">
         <h2 class="text-base sm:text-lg font-medium text-gray-900 dark:text-white">
@@ -12,7 +11,6 @@
       </div>
       <div class="p-6">
         <div class="space-y-4">
-          <!-- Export Buttons -->
           <div class="flex flex-col sm:flex-row gap-3">
             <button
               @click="handleExportEntities"
@@ -37,7 +35,6 @@
       </div>
     </div>
 
-    <!-- Import Section -->
     <div class="bg-white dark:bg-gray-800 shadow rounded-lg theme-transition-colors">
       <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 theme-transition-colors">
         <h2 class="text-base sm:text-lg font-medium text-gray-900 dark:text-white">
@@ -122,7 +119,6 @@
                 <p v-if="metadataFile"><strong>Metadata:</strong> {{ metadataFile.name }}</p>
               </div>
 
-              <!-- Info Message -->
               <div
                 class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-md p-3"
               >
@@ -146,7 +142,6 @@
             </div>
           </div>
 
-          <!-- Import Button -->
           <div class="pt-4">
             <button
               @click="handleImportEntities"

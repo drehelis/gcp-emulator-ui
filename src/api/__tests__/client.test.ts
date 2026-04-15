@@ -49,6 +49,8 @@ describe('api client', () => {
     expect(mockAxiosInstance.interceptors.response.use).toHaveBeenCalled()
   })
 
+  // Skip initialization error tests as apiClient is not easily resettable
+
   describe('request interceptor', () => {
     it('adds auth token and requestId', () => {
       const interceptor = mockAxiosInstance.interceptors.request.use.mock.calls[0][0]
@@ -59,6 +61,12 @@ describe('api client', () => {
 
       expect(result.headers.Authorization).toBe('Bearer test-token')
       expect(result.headers['X-Request-ID']).toMatch(/^req_/)
+    })
+
+    it('rejects on request error', async () => {
+      const errorInterceptor = mockAxiosInstance.interceptors.request.use.mock.calls[0][1]
+      const error = new Error('request failed')
+      await expect(errorInterceptor(error)).rejects.toThrow('request failed')
     })
   })
 
@@ -108,6 +116,16 @@ describe('api client', () => {
         message: 'Network error - please check your connection',
       })
     })
+
+    it('handles unknown error', async () => {
+      const errorInterceptor = mockAxiosInstance.interceptors.response.use.mock.calls[0][1]
+      const error = new Error('Random failure')
+
+      await expect(errorInterceptor(error)).rejects.toMatchObject({
+        code: -1,
+        message: 'Random failure',
+      })
+    })
   })
 
   describe('createLongRunningRequest', () => {
@@ -117,6 +135,33 @@ describe('api client', () => {
       longReq.get('/test')
       expect(mockAxiosInstance.get).toHaveBeenCalledWith(
         '/test',
+        expect.objectContaining({ timeout: 10000 })
+      )
+
+      longReq.post('/test', { data: 1 })
+      expect(mockAxiosInstance.post).toHaveBeenCalledWith(
+        '/test',
+        { data: 1 },
+        expect.objectContaining({ timeout: 10000 })
+      )
+
+      longReq.put('/test', { data: 2 })
+      expect(mockAxiosInstance.put).toHaveBeenCalledWith(
+        '/test',
+        { data: 2 },
+        expect.objectContaining({ timeout: 10000 })
+      )
+
+      longReq.delete('/test')
+      expect(mockAxiosInstance.delete).toHaveBeenCalledWith(
+        '/test',
+        expect.objectContaining({ timeout: 10000 })
+      )
+
+      longReq.patch('/test', { data: 3 })
+      expect(mockAxiosInstance.patch).toHaveBeenCalledWith(
+        '/test',
+        { data: 3 },
         expect.objectContaining({ timeout: 10000 })
       )
     })

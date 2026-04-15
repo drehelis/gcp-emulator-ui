@@ -119,7 +119,6 @@
       </div>
     </div>
 
-    <!-- Import Preview -->
     <div v-if="importPreview" class="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center">
@@ -167,7 +166,6 @@
         </div>
       </div>
 
-      <!-- Import Options -->
       <div class="mt-4 space-y-3">
         <div
           v-if="
@@ -261,7 +259,6 @@
       </div>
     </div>
 
-    <!-- Import Button -->
     <div v-if="importPreview" class="pt-4">
       <button
         @click="handleImport"

@@ -10,7 +10,6 @@
       </div>
 
       <div class="space-y-6">
-        <!-- Export Section -->
         <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
           <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h2 class="text-base sm:text-lg font-medium text-gray-900 dark:text-white">
@@ -22,7 +21,6 @@
           </div>
           <div class="p-6">
             <div class="space-y-4">
-              <!-- Export Buttons -->
               <div class="flex flex-col sm:flex-row gap-3">
                 <button
                   @click="exportBuckets"
@@ -35,7 +33,6 @@
                 </button>
               </div>
 
-              <!-- Export Status -->
               <div
                 v-if="exportStatus"
                 class="p-3 rounded-md"
@@ -69,7 +66,6 @@
           </div>
         </div>
 
-        <!-- Import Section -->
         <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
           <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <h2 class="text-base sm:text-lg font-medium text-gray-900 dark:text-white">
@@ -106,7 +102,6 @@
                 </div>
               </div>
 
-              <!-- File Upload -->
               <div v-if="importMethod === 'file'" class="space-y-3">
                 <div
                   @drop="handleDrop"
@@ -152,7 +147,6 @@
                 ></textarea>
               </div>
 
-              <!-- Import Preview -->
               <div v-if="importData && importData.length > 0" class="space-y-4">
                 <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
                   <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
@@ -181,7 +175,6 @@
                   </div>
                 </div>
 
-                <!-- Import Options -->
                 <div class="space-y-3">
                   <h4 class="text-sm font-medium text-gray-900 dark:text-white">Import Options</h4>
                   <div class="space-y-2">
@@ -208,7 +201,6 @@
                   </div>
                 </div>
 
-                <!-- Import Button -->
                 <button
                   @click="importConfiguration"
                   :disabled="isImporting"
@@ -220,7 +212,6 @@
                 </button>
               </div>
 
-              <!-- Import Error -->
               <div v-if="importError" class="p-3 rounded-md bg-red-50 dark:bg-red-900/20">
                 <div class="flex">
                   <XCircleIcon class="h-5 w-5 text-red-400" />
@@ -233,7 +224,6 @@
                 </div>
               </div>
 
-              <!-- Import Status -->
               <div
                 v-if="importStatus"
                 class="p-3 rounded-md"

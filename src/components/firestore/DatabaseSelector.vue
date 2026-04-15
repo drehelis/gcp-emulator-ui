@@ -12,7 +12,6 @@
       <ChevronDownIcon class="w-4 h-4 ml-2 flex-shrink-0" />
     </button>
 
-    <!-- Dropdown Menu -->
     <div
       v-if="showDropdown"
       class="absolute right-0 top-full mt-1 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl min-w-[200px] max-w-[300px]"
@@ -23,7 +22,6 @@
         <h3 class="text-sm font-medium text-gray-900 dark:text-white">Select Database</h3>
       </div>
 
-      <!-- Database List -->
       <div class="py-1 max-h-60 overflow-y-auto">
         <button
           v-for="database in availableDatabases"

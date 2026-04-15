@@ -25,7 +25,6 @@
         <div
           class="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3 sm:p-4 border border-gray-200 dark:border-gray-700"
         >
-          <!-- Searchable Dropdown -->
           <SearchableDropdown
             :model-value="selectedTopic"
             @update:model-value="selectTopic"
@@ -170,7 +169,6 @@
           </div>
         </div>
 
-        <!-- Message Editor -->
         <div class="space-y-3">
           <div class="relative">
             <textarea

@@ -11,7 +11,6 @@
         </button>
       </div>
 
-      <!-- Help Popup -->
       <div
         v-if="showDocumentHelp"
         class="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md"
@@ -43,15 +42,12 @@
           </p>
         </div>
 
-        <!-- Document Fields -->
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
             Document Fields
           </label>
 
-          <!-- Fields Table -->
           <div class="border border-gray-200 dark:border-gray-600 rounded-lg overflow-hidden">
-            <!-- Table Header -->
             <div
               class="bg-gray-50 dark:bg-gray-700/50 px-4 py-3 border-b border-gray-200 dark:border-gray-600"
             >
@@ -65,7 +61,6 @@
               </div>
             </div>
 
-            <!-- Fields List -->
             <div class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
               <DocumentField
                 v-for="field in fields"

@@ -24,7 +24,6 @@
       </div>
     </Transition>
 
-    <!-- Page Header -->
     <PageHeader
       :collections-count="collections.length"
       :loading="firestoreStore.loading"
@@ -58,7 +57,6 @@
     >
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-2">
-          <!-- Back Button -->
           <button
             v-if="mobileNavigationStack.length > 1"
             @click="handleMobileBack()"
@@ -274,7 +272,6 @@
       @close="modalManager.closeAddDocumentModal"
     />
 
-    <!-- Confirmation Modals -->
     <ConfirmationModal
       v-model="modalManager.showDeleteCollectionModal.value"
       title="Delete Collection"

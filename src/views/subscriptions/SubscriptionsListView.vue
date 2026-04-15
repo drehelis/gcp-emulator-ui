@@ -1,6 +1,5 @@
 <template>
   <div class="space-y-6">
-    <!-- Loading State -->
     <div v-if="loading" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
       <div class="animate-pulse">
         <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
@@ -12,7 +11,6 @@
       </div>
     </div>
 
-    <!-- Error State -->
     <div v-else-if="error" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
       <div class="text-center">
         <ExclamationCircleIcon class="mx-auto h-12 w-12 text-red-400" />
@@ -32,7 +30,6 @@
       </div>
     </div>
 
-    <!-- Subscriptions List -->
     <div v-else-if="subscriptionsByTopic.size > 0" class="space-y-6">
       <!-- Header -->
       <div class="bg-white dark:bg-gray-800 rounded-lg">
@@ -78,7 +75,6 @@
           :class="index > 0 ? 'border-t border-gray-200 dark:border-gray-700' : ''"
           :id="`topic-${getTopicDisplayName(topicName)}`"
         >
-          <!-- Topic Header -->
           <div
             @click="toggleTopicExpansion(topicName)"
             :class="[
@@ -176,7 +172,6 @@
                   ]"
                 ></div>
 
-                <!-- Subscription Card -->
                 <div
                   :class="[
                     'w-full bg-white dark:bg-gray-800 border rounded-lg p-2.5 sm:p-3 shadow-sm transition-all duration-200 cursor-pointer hover:shadow-md',
@@ -229,7 +224,6 @@
 
                         <!-- Subscription Properties Grid -->
                         <div class="flex flex-wrap gap-1.5 text-[11px] shrink-0 cursor-pointer">
-                          <!-- Ack Deadline -->
                           <div
                             class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer"
                           >
@@ -331,7 +325,6 @@
                             </svg>
                           </div>
 
-                          <!-- Retry Policy -->
                           <div
                             v-if="subscription.retryPolicy"
                             class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600 cursor-pointer"
@@ -378,7 +371,6 @@
                             <span class="cursor-pointer">Filter</span>
                           </div>
 
-                          <!-- Detached Status -->
                           <div
                             v-if="subscription.detached"
                             class="inline-flex items-center text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/20 px-1.5 py-0.5 rounded border border-yellow-200 dark:border-yellow-900/50 cursor-pointer"
@@ -403,7 +395,6 @@
                       </div>
                     </div>
 
-                    <!-- Subscription Actions -->
                     <div
                       class="flex items-center space-x-1 ml-2 transition-opacity focus-within:opacity-100 shrink-0"
                     >
@@ -433,7 +424,6 @@
       </div>
     </div>
 
-    <!-- Empty State -->
     <div v-else class="space-y-6">
       <!-- Header -->
       <div class="bg-white dark:bg-gray-800 rounded-lg">

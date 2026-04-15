@@ -58,7 +58,6 @@
             </div>
           </div>
 
-          <!-- Empty State -->
           <div
             v-if="filteredOptions.length === 0"
             class="px-3 py-8 text-center text-sm text-gray-500 dark:text-gray-400"

@@ -11,7 +11,6 @@
           <span :class="indicatorClass">├─</span>
         </div>
 
-        <!-- Field Name -->
         <div class="col-span-3">
           <input
             :value="nestedKey.startsWith('_temp_') ? '' : nestedKey"
@@ -23,7 +22,6 @@
           />
         </div>
 
-        <!-- Field Type -->
         <div class="col-span-2">
           <select
             :value="getValueType(nestedValue)"
@@ -39,7 +37,6 @@
           </select>
         </div>
 
-        <!-- Field Value -->
         <div class="col-span-5">
           <input
             v-if="getValueType(nestedValue) === 'string'"

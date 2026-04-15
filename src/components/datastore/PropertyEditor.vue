@@ -26,7 +26,6 @@
       v-if="expanded"
       class="p-4 space-y-3 border-t border-gray-200 dark:border-gray-700 animate-fadeIn"
     >
-      <!-- Property Name -->
       <div>
         <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
           Name <span class="text-red-500">*</span>
@@ -40,7 +39,6 @@
         />
       </div>
 
-      <!-- Property Type -->
       <div>
         <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
           Type
@@ -64,7 +62,6 @@
         </select>
       </div>
 
-      <!-- Property Value -->
       <div>
         <label class="block text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">
           Value
@@ -102,7 +99,6 @@
         </div>
       </div>
 
-      <!-- Index Setting -->
       <div class="flex items-center pt-2">
         <input
           :id="`index-${propertyId}`"

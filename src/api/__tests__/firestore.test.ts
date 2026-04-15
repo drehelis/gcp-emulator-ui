@@ -77,6 +77,21 @@ describe('firestoreApi', () => {
       expect(res.collections).toHaveLength(1)
       expect(res.collections[0].id).toBe('users')
     })
+
+    it('returns empty collections on error', async () => {
+      mockClient.post.mockRejectedValue(new Error('failed'))
+      const res = await firestoreApi.listCollections('parent')
+      expect(res.collections).toEqual([])
+    })
+
+    it('handles explicit pageSize and pageToken', async () => {
+      mockClient.post.mockResolvedValue({ data: { collectionIds: [] } })
+      await firestoreApi.listCollections('parent', 50, 'token1')
+      expect(mockClient.post).toHaveBeenCalledWith(
+        expect.any(String),
+        expect.objectContaining({ pageSize: 50, pageToken: 'token1' })
+      )
+    })
   })
 
   describe('listSubcollections', () => {
@@ -98,6 +113,12 @@ describe('firestoreApi', () => {
       expect(mockClient.get).toHaveBeenCalledWith(`/v1/${docPath}/`)
       const ids = res.collections.map((c: any) => c.id).sort()
       expect(ids).toEqual(['comments', 'posts'])
+    })
+
+    it('returns empty collections on catch', async () => {
+      mockClient.get.mockRejectedValue(new Error('failed'))
+      const res = await firestoreApi.listSubcollections('any')
+      expect(res.collections).toEqual([])
     })
   })
 
@@ -203,6 +224,15 @@ describe('firestoreApi', () => {
     it('returns false on error', async () => {
       mockClient.get.mockRejectedValue(new Error())
       expect(await firestoreApi.testDatabase('p1', 'd1')).toBe(false)
+    })
+
+    it('validates 404 status as true', async () => {
+      mockClient.get.mockResolvedValue({ status: 200 })
+      await firestoreApi.testDatabase('p1', 'd1')
+      const validateStatus = vi.mocked(mockClient.get).mock.calls[0][1].validateStatus
+      expect(validateStatus(200)).toBe(true)
+      expect(validateStatus(404)).toBe(true)
+      expect(validateStatus(500)).toBe(false)
     })
   })
 

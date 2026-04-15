@@ -145,7 +145,6 @@
                     </div>
                   </td>
 
-                  <!-- Data Preview -->
                   <td class="px-3 py-2 max-w-xs">
                     <div class="text-xs font-mono text-gray-900 dark:text-gray-200 truncate">
                       <span v-if="receivedMessage.message.data"
@@ -178,14 +177,12 @@
                     <span v-else class="text-xs text-gray-400">-</span>
                   </td>
 
-                  <!-- Published Time -->
                   <td class="px-3 py-2 whitespace-nowrap">
                     <span class="text-xs text-gray-500 dark:text-gray-400">
                       {{ formatRelativeTime(new Date(receivedMessage.message.publishTime)) }}
                     </span>
                   </td>
 
-                  <!-- Delivery Attempt -->
                   <td class="px-3 py-2 whitespace-nowrap">
                     <span
                       v-if="receivedMessage.deliveryAttempt > 1"
@@ -274,7 +271,6 @@
                         </div>
                       </div>
 
-                      <!-- Detailed Metadata -->
                       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                         <div>
                           <label

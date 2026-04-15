@@ -22,7 +22,6 @@
               <EllipsisVerticalIcon class="w-3 h-3" />
             </button>
 
-            <!-- Dropdown Menu -->
             <div
               v-if="showCollectionMenu"
               class="absolute right-0 top-8 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl min-w-[160px]"

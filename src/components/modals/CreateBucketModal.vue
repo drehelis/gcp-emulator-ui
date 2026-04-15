@@ -7,14 +7,12 @@
     @close="handleClose"
   >
     <div class="space-y-4 sm:space-y-6">
-      <!-- Bucket Configuration -->
       <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 sm:p-4">
         <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-3 sm:mb-4">
           Bucket Configuration
         </h3>
 
         <div class="space-y-3 sm:space-y-4">
-          <!-- Bucket Name -->
           <div>
             <label
               for="bucket-name"
@@ -66,7 +64,6 @@
             </select>
           </div>
 
-          <!-- Storage Class -->
           <div>
             <label
               for="storage-class"

@@ -12,7 +12,6 @@
     </div>
 
     <div v-else-if="topic" class="space-y-6">
-      <!-- Topic Configuration -->
       <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
         <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-4">Topic Configuration</h3>
 
@@ -29,7 +28,6 @@
             </div>
           </div>
 
-          <!-- Message Retention -->
           <div>
             <label
               for="retention"
@@ -50,7 +48,6 @@
             </p>
           </div>
 
-          <!-- Schema Settings -->
           <div>
             <label class="flex items-center mb-2">
               <input
@@ -77,7 +74,6 @@
         </div>
       </div>
 
-      <!-- Subscriptions Management -->
       <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-sm font-medium text-gray-900 dark:text-white">Subscriptions</h3>
@@ -156,7 +152,6 @@
 
                   <!-- Badges -->
                   <div class="flex flex-wrap gap-1.5 text-[11px] shrink-0">
-                    <!-- Ack Deadline -->
                     <div
                       class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600"
                     >
@@ -260,7 +255,6 @@
                       </svg>
                     </div>
 
-                    <!-- Retry Policy -->
                     <div
                       v-if="subscription.retryPolicy"
                       class="inline-flex items-center text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-1.5 py-0.5 rounded border border-gray-100 dark:border-gray-600"

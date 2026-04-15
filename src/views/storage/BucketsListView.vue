@@ -1,6 +1,5 @@
 <template>
   <div class="space-y-6">
-    <!-- Loading State -->
     <div
       v-if="storageStore.loading.buckets && !storageStore.buckets.length"
       class="bg-white dark:bg-gray-800 shadow rounded-lg p-6"
@@ -15,7 +14,6 @@
       </div>
     </div>
 
-    <!-- Error State -->
     <div v-else-if="storageStore.hasError" class="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
       <div class="text-center">
         <ExclamationTriangleIcon class="mx-auto h-12 w-12 text-red-400" />
@@ -117,7 +115,6 @@
         </div>
       </div>
 
-      <!-- Content Area -->
       <div v-if="storageStore.buckets.length > 0" class="space-y-6">
         <!-- Buckets Table View -->
         <div class="px-4 sm:px-6 lg:px-8">
@@ -128,7 +125,6 @@
             <!-- Desktop Table View -->
             <div class="hidden md:block overflow-x-auto">
               <table class="min-w-full">
-                <!-- Table Header -->
                 <thead
                   class="bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700"
                 >
@@ -231,7 +227,6 @@
                   </tr>
                 </thead>
 
-                <!-- Table Body -->
                 <tbody class="bg-white dark:bg-gray-800">
                   <tr
                     v-for="(bucket, index) in sortedBuckets"
@@ -291,7 +286,6 @@
                       </span>
                     </td>
 
-                    <!-- Storage Class -->
                     <td
                       class="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 hidden lg:table-cell whitespace-nowrap"
                     >
@@ -300,7 +294,6 @@
                       </span>
                     </td>
 
-                    <!-- Public Access -->
                     <td
                       class="px-3 py-1.5 text-xs text-gray-500 dark:text-gray-400 hidden xl:table-cell whitespace-nowrap"
                     >
@@ -459,20 +452,17 @@
                   ]"
                 />
               </div>
-              <!-- Bucket Icon -->
               <div class="flex flex-col items-center text-center">
                 <div class="w-12 h-12 mb-3 flex items-center justify-center">
                   <ArchiveBoxIcon class="w-10 h-10 text-blue-500" />
                 </div>
 
-                <!-- Bucket Name -->
                 <div class="w-full mb-2">
                   <h3 class="text-sm font-medium text-gray-900 dark:text-white truncate">
                     {{ bucket.name }}
                   </h3>
                 </div>
 
-                <!-- Bucket Details -->
                 <div class="w-full text-center space-y-1">
                   <div class="text-xs text-gray-500 dark:text-gray-400">
                     {{ bucket.storageClass || 'STANDARD' }}

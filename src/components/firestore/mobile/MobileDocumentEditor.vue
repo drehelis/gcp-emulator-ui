@@ -55,7 +55,6 @@
 
     <!-- Content -->
     <div class="flex-1 overflow-y-auto">
-      <!-- Subcollections Section -->
       <div
         v-if="subcollections.length > 0"
         class="p-4 border-b border-gray-200 dark:border-gray-700"
@@ -97,7 +96,6 @@
         </button>
       </div>
 
-      <!-- Fields Section -->
       <div class="p-4">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-sm font-medium text-gray-900 dark:text-white">Fields</h2>
@@ -110,7 +108,6 @@
           </button>
         </div>
 
-        <!-- Fields List -->
         <FieldList
           v-if="selectedDocument.fields && Object.keys(selectedDocument.fields).length > 0"
           :fields="selectedDocument.fields"
