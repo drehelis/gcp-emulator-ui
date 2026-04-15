@@ -14,7 +14,6 @@
           </div>
 
           <div class="flex items-center gap-2 flex-shrink-0">
-            <!-- Database Selector -->
             <DatabaseSelector
               :available-databases="availableDatabases"
               :selected-database="selectedDatabase"

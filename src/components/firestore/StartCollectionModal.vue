@@ -7,14 +7,12 @@
     @close="handleClose"
   >
     <div class="space-y-6">
-      <!-- Collection Configuration -->
       <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
         <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-4">
           Collection Configuration
         </h3>
 
         <div class="space-y-4">
-          <!-- Parent Path -->
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Parent Path
@@ -67,7 +65,6 @@
         </div>
       </div>
 
-      <!-- Success Notification -->
       <SuccessNotification
         :show="!!saveAndAddAnother.lastSavedId.value"
         :message="

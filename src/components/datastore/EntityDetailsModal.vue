@@ -8,7 +8,6 @@
     @close="handleClose"
   >
     <div v-if="entity" class="space-y-6">
-      <!-- Key Information -->
       <div
         class="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700"
       >
@@ -48,7 +47,6 @@
             >
           </div>
 
-          <!-- Entity Kind -->
           <div
             class="flex items-baseline hover:bg-gray-100 dark:hover:bg-gray-700/50 rounded px-2 py-1 transition-colors"
           >
@@ -352,7 +350,6 @@
             </tbody>
           </table>
 
-          <!-- Table Footer -->
           <PaginationFooter
             v-model:limit="propertiesPagination.limit.value"
             :current-page="propertiesPagination.currentPage.value"

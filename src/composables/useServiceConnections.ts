@@ -1,5 +1,3 @@
-/// <reference types="vite/client" />
-
 import { ref, computed, type Ref } from 'vue'
 import { useAppStore } from '@/stores/app'
 
@@ -71,9 +69,6 @@ const connectionState = ref<ConnectionState>({
 
 let checkInterval: number | null = null
 
-/**
- * Composable for managing GCP emulator service connections
- */
 export function useServiceConnections() {
   const appStore = useAppStore()
 
@@ -108,8 +103,7 @@ export function useServiceConnections() {
       serviceConnected[service].value = response.ok
       skipPeriodicCheck.value[service] = !response.ok
       return response.ok
-    } catch (error) {
-      console.debug(`${config.label} emulator connection check failed:`, error)
+    } catch {
       serviceConnected[service].value = false
       skipPeriodicCheck.value[service] = true
       return false

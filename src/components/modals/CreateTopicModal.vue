@@ -7,14 +7,12 @@
     @close="handleClose"
   >
     <div class="space-y-4 sm:space-y-6">
-      <!-- Topic Configuration -->
       <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 sm:p-4">
         <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-3 sm:mb-4">
           Topic Configuration
         </h3>
 
         <div class="space-y-3 sm:space-y-4">
-          <!-- Topic Name -->
           <div>
             <label
               for="topic-name"
@@ -39,7 +37,6 @@
             </p>
           </div>
 
-          <!-- Message Retention -->
           <div>
             <label
               for="retention"
@@ -59,7 +56,6 @@
             </p>
           </div>
 
-          <!-- Schema Settings -->
           <div>
             <label class="flex items-center">
               <input
@@ -124,7 +120,6 @@
         </div>
       </div>
 
-      <!-- Subscription Configuration -->
       <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 sm:p-4">
         <div
           class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 space-y-2 sm:space-y-0"

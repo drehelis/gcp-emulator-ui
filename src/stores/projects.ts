@@ -1,8 +1,3 @@
-/**
- * Projects store
- * Manages GCP project state, selection, and operations
- */
-
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { pubsubApi } from '@/api/pubsub'
@@ -27,12 +22,10 @@ export const useProjectsStore = defineStore(
     const filters = ref<SearchFilters>({
       namePattern: '',
       states: [],
-      dateRange: undefined,
     })
 
     const pagination = ref<PaginationOptions>({
       pageSize: 50,
-      pageToken: undefined,
       orderBy: 'name',
       filter: '',
     })
@@ -48,7 +41,7 @@ export const useProjectsStore = defineStore(
     )
 
     const recentProjectsList = computed(() => {
-      const recentIds = recentProjects.value.slice(0, 10) // Last 10
+      const recentIds = recentProjects.value.slice(0, 10)
       return recentIds
         .map(id => projects.value.find(p => p.projectId === id))
         .filter(Boolean) as GCPProject[]
@@ -57,7 +50,6 @@ export const useProjectsStore = defineStore(
     const filteredProjects = computed(() => {
       let filtered = [...projects.value]
 
-      // Apply name filter
       if (filters.value.namePattern) {
         const pattern = filters.value.namePattern.toLowerCase()
         filtered = filtered.filter(
@@ -68,12 +60,10 @@ export const useProjectsStore = defineStore(
         )
       }
 
-      // Apply state filter
       if (filters.value.states && filters.value.states.length > 0) {
         filtered = filtered.filter(p => filters.value.states!.includes(p.state))
       }
 
-      // Apply date range filter
       if (filters.value.dateRange) {
         filtered = filtered.filter(p => {
           const createdAt = new Date(p.createdAt)
@@ -97,17 +87,14 @@ export const useProjectsStore = defineStore(
     const isLoading = computed(() => state.value.state === 'loading')
     const hasError = computed(() => state.value.state === 'error')
 
-    // New simplified state for project names
     const projectList = ref<string[]>([])
     const selectedProjectId = ref<string | null>(null)
 
-    // Actions
     async function fetchProjects() {
       try {
         state.value.state = 'loading'
         state.value.error = null
 
-        // Call the real API
         const projectNames = await pubsubApi.projects.getProjects()
         projectList.value = projectNames
 
@@ -138,7 +125,6 @@ export const useProjectsStore = defineStore(
           projectList.value.push(projectId)
         }
 
-        // Automatically select the newly added project
         selectProject(projectId)
 
         const appStore = useAppStore()
@@ -163,7 +149,6 @@ export const useProjectsStore = defineStore(
 
     async function fetchProject(projectId: string): Promise<GCPProject | null> {
       try {
-        // Check cache first
         if (projectCache.value.has(projectId)) {
           return projectCache.value.get(projectId)!
         }
@@ -171,7 +156,6 @@ export const useProjectsStore = defineStore(
         state.value.state = 'loading'
         state.value.error = null
 
-        // TODO: Replace with actual API call
         const mockProject: GCPProject = {
           id: projectId,
           projectId,
@@ -187,13 +171,10 @@ export const useProjectsStore = defineStore(
           labels: {},
         }
 
-        // Simulate API delay
         await new Promise(resolve => setTimeout(resolve, 300))
 
-        // Update cache
         projectCache.value.set(projectId, mockProject)
 
-        // Add to projects list if not exists
         const existingIndex = projects.value.findIndex(p => p.projectId === projectId)
         if (existingIndex === -1) {
           projects.value.push(mockProject)
@@ -222,7 +203,6 @@ export const useProjectsStore = defineStore(
         selectedProject.value = projectIdOrProject
       }
 
-      // Add to project list if not already there (URL-based project discovery)
       if (!projectList.value.includes(projectId)) {
         projectList.value.push(projectId)
 
@@ -234,22 +214,18 @@ export const useProjectsStore = defineStore(
         })
       }
 
-      // Add to recent projects
       const currentIndex = recentProjects.value.indexOf(projectId)
 
       if (currentIndex > -1) {
-        // Move to front
         recentProjects.value.splice(currentIndex, 1)
       }
 
       recentProjects.value.unshift(projectId)
 
-      // Keep only last 20
       if (recentProjects.value.length > 20) {
         recentProjects.value = recentProjects.value.slice(0, 20)
       }
 
-      // Save to localStorage
       localStorage.setItem('emulator-ui-selected-project-id', projectId)
       localStorage.setItem('emulator-ui-recent-projects', JSON.stringify(recentProjects.value))
       localStorage.setItem('emulator-ui-project-list', JSON.stringify(projectList.value))
@@ -311,7 +287,6 @@ export const useProjectsStore = defineStore(
     }
 
     function refreshProject(projectId: string) {
-      // Remove from cache to force refresh
       projectCache.value.delete(projectId)
       return fetchProject(projectId)
     }
@@ -331,64 +306,49 @@ export const useProjectsStore = defineStore(
     }
 
     function deleteProject(projectId: string) {
-      // Remove from project list
       projectList.value = projectList.value.filter(id => id !== projectId)
-
-      // Remove from projects array
       projects.value = projects.value.filter(p => p.projectId !== projectId)
-
-      // Remove from cache
       projectCache.value.delete(projectId)
-
-      // Remove from recent projects
       recentProjects.value = recentProjects.value.filter(id => id !== projectId)
-
-      // Remove from favorites
       favoriteProjects.value = favoriteProjects.value.filter(id => id !== projectId)
 
-      // Clear selection if this was the selected project
       if (selectedProjectId.value === projectId) {
         clearSelectedProject()
       }
 
-      // Update localStorage
       try {
         localStorage.setItem('emulator-ui-project-list', JSON.stringify(projectList.value))
-      } catch (error) {
-        console.warn('Failed to save project list to localStorage:', error)
+      } catch {
+        // Ignore
       }
     }
 
-    // Initialize store
     function initialize() {
-      // Load selected project ID from localStorage
       try {
         const saved = localStorage.getItem('emulator-ui-selected-project-id')
         if (saved) {
           selectedProjectId.value = saved
         }
-      } catch (error) {
-        console.warn('Failed to load selected project ID from localStorage:', error)
+      } catch {
+        // Ignore
       }
 
-      // Load project list from localStorage
       try {
         const saved = localStorage.getItem('emulator-ui-project-list')
         if (saved) {
           projectList.value = JSON.parse(saved)
         }
-      } catch (error) {
-        console.warn('Failed to load project list from localStorage:', error)
+      } catch {
+        // Ignore
       }
 
-      // Load recent projects
       try {
         const saved = localStorage.getItem('emulator-ui-recent-projects')
         if (saved) {
           recentProjects.value = JSON.parse(saved)
         }
-      } catch (error) {
-        console.warn('Failed to load recent projects from localStorage:', error)
+      } catch {
+        // Ignore
       }
 
       // Load favorite projects
@@ -397,8 +357,8 @@ export const useProjectsStore = defineStore(
         if (saved) {
           favoriteProjects.value = JSON.parse(saved)
         }
-      } catch (error) {
-        console.warn('Failed to load favorite projects from localStorage:', error)
+      } catch {
+        // Ignore
       }
     }
 
@@ -414,7 +374,6 @@ export const useProjectsStore = defineStore(
       }
       pagination.value = {
         pageSize: 50,
-        pageToken: undefined,
         orderBy: 'name',
         filter: '',
       }
@@ -427,7 +386,6 @@ export const useProjectsStore = defineStore(
     }
 
     return {
-      // State
       state,
       projects,
       selectedProject,
@@ -475,12 +433,6 @@ export const useProjectsStore = defineStore(
     persist: {
       key: 'emulator-ui-projects',
       storage: localStorage,
-      beforeRestore: () => {
-        // Projects store restoring
-      },
-      afterRestore: context => {
-        context.store.initialize()
-      },
     },
   }
 )

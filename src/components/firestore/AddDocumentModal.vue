@@ -8,14 +8,12 @@
     @keydown.enter="handleEnterKey"
   >
     <div class="space-y-6">
-      <!-- Collection Information -->
       <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
         <h3 class="text-sm font-medium text-gray-900 dark:text-white mb-4">
           Collection Information
         </h3>
 
         <div class="space-y-4">
-          <!-- Collection Path -->
           <div>
             <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Collection Path
@@ -29,14 +27,12 @@
         </div>
       </div>
 
-      <!-- Error Notification -->
       <ErrorNotification
         :show="!!errorMessage"
         :message="errorMessage"
         @clear="errorMessage = ''"
       />
 
-      <!-- Success Notification -->
       <SuccessNotification
         :show="!!saveAndAddAnother.lastSavedId.value"
         :message="
@@ -47,7 +43,6 @@
         @clear="handleClearFields"
       />
 
-      <!-- Document Editor -->
       <DocumentEditor
         title="New Document"
         help-text="Create a new document to add to this collection. Documents are Firestore's unit of storage and contain your data as fields."

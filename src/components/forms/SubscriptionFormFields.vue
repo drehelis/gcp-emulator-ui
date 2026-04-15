@@ -1,6 +1,5 @@
 <template>
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-4" :class="containerClass">
-    <!-- Subscription Name -->
     <div>
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         Name *
@@ -32,7 +31,6 @@
       </template>
     </div>
 
-    <!-- Delivery Type -->
     <div>
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         Delivery Type
@@ -129,7 +127,6 @@
       </p>
     </div>
 
-    <!-- Ack Deadline -->
     <div class="lg:col-span-2">
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         Ack Deadline (seconds)
@@ -154,7 +151,6 @@
       </p>
     </div>
 
-    <!-- Message Ordering -->
     <div class="lg:col-span-2 flex items-center">
       <label class="flex items-center mb-2">
         <input
@@ -169,7 +165,6 @@
       </label>
     </div>
 
-    <!-- Filter Expression -->
     <div class="lg:col-span-2">
       <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         Filter Expression (Optional)
@@ -281,7 +276,6 @@
       </div>
     </div>
 
-    <!-- Retry Policy -->
     <div class="lg:col-span-2">
       <label class="flex items-center mb-2">
         <input

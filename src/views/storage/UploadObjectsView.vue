@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-full bg-gray-50 dark:bg-gray-900 transition-colors">
-    <!-- Page Header -->
     <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="py-6">
@@ -28,9 +27,7 @@
       </div>
     </div>
 
-    <!-- Main Content -->
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <!-- Upload Area -->
       <div
         class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8"
       >
@@ -83,7 +80,6 @@
         </div>
       </div>
 
-      <!-- Selected Files -->
       <div
         v-if="selectedFiles.length > 0"
         class="mt-8 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"
@@ -128,7 +124,6 @@
           </div>
         </div>
 
-        <!-- Upload Button -->
         <div class="flex items-center justify-between">
           <p class="text-sm text-gray-500 dark:text-gray-400">
             Ready to upload {{ selectedFiles.length }} file{{
@@ -149,7 +144,6 @@
         </div>
       </div>
 
-      <!-- Upload Progress -->
       <div
         v-if="storageStore.uploadProgress.length > 0"
         class="mt-8 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"

@@ -104,7 +104,6 @@
           null
         </div>
 
-        <!-- GeoPoint -->
         <div v-else-if="localFieldType === 'geopoint'" class="space-y-2">
           <div class="grid grid-cols-2 gap-2">
             <input

@@ -4,7 +4,6 @@
     class="w-full lg:w-1/3 h-full bg-white dark:bg-gray-800 overflow-y-auto"
   >
     <div class="p-3 sm:p-4">
-      <!-- Document Header -->
       <div class="mb-3">
         <div
           class="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 font-mono mb-3"
@@ -19,7 +18,6 @@
             >
               <EllipsisVerticalIcon class="w-5 h-5 sm:w-3 sm:h-3" />
             </button>
-            <!-- Dropdown Menu -->
             <div
               v-if="showDocumentMenu"
               class="absolute right-0 top-8 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-xl min-w-[160px]"
@@ -91,7 +89,6 @@
         </button>
       </div>
 
-      <!-- Document Fields -->
       <FieldList
         v-if="selectedDocument.fields"
         :fields="selectedDocument.fields"

@@ -1,10 +1,8 @@
 <template>
   <div class="min-h-full bg-gray-50 dark:bg-gray-900 transition-colors">
-    <!-- Page Header -->
     <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
       <div class="px-4 sm:px-6 lg:px-8">
         <div class="py-4">
-          <!-- Navigation and Title -->
           <div class="flex items-center justify-between gap-2">
             <div class="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
               <router-link
@@ -26,7 +24,6 @@
               </div>
             </div>
 
-            <!-- Action buttons -->
             <div class="flex items-center gap-2 flex-shrink-0">
               <button
                 @click="refreshObjects"
@@ -64,9 +61,7 @@
       </div>
     </div>
 
-    <!-- Main Content -->
     <div class="px-4 sm:px-6 lg:px-8 py-6">
-      <!-- Breadcrumbs -->
       <nav class="mb-6 flex items-center justify-between" aria-label="Breadcrumb">
         <ol class="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm">
           <!-- Always show Home icon -->
@@ -102,7 +97,6 @@
           </template>
         </ol>
 
-        <!-- Selection actions -->
         <div
           v-if="storageStore.selectedObjects.length > 0 || downloadingZip"
           class="flex items-center space-x-2"
@@ -151,7 +145,6 @@
         </div>
       </nav>
 
-      <!-- Loading State -->
       <div
         v-if="storageStore.loading.objects && !storageStore.objects.length"
         class="text-center py-12"
@@ -164,7 +157,6 @@
         </div>
       </div>
 
-      <!-- Error State -->
       <div v-else-if="storageStore.hasError" class="text-center py-12">
         <div
           class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 max-w-md mx-auto"
@@ -186,7 +178,6 @@
         </div>
       </div>
 
-      <!-- Empty State with Drag & Drop -->
       <div v-else-if="!storageStore.objects.length" class="text-center py-12">
         <FileDropZone
           :bucket-name="bucketName"
@@ -198,12 +189,10 @@
         />
       </div>
 
-      <!-- Objects List View -->
       <div
         v-else-if="storageStore.viewMode === 'list'"
         class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden"
       >
-        <!-- Desktop Table View -->
         <div class="hidden md:block overflow-x-auto">
           <table class="min-w-full">
             <thead
@@ -370,9 +359,7 @@
           </table>
         </div>
 
-        <!-- Mobile Card View -->
         <div class="md:hidden">
-          <!-- Mobile Header with Sort -->
           <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between">
               <div class="flex items-center space-x-3" @click.stop>
@@ -400,7 +387,6 @@
             </div>
           </div>
 
-          <!-- Mobile Objects List -->
           <div class="divide-y divide-gray-200 dark:divide-gray-700">
             <div
               v-for="object in storageStore.objects"
@@ -587,7 +573,6 @@
       @cancel="cancelDelete"
     />
 
-    <!-- Upload Modal -->
     <TransitionRoot as="template" :show="showUploadModal">
       <Dialog as="div" class="relative z-50" @close="handleUploadModalClose">
         <TransitionChild
@@ -624,7 +609,6 @@
                   <!-- Header removed as requested -->
                 </div>
 
-                <!-- Upload Area -->
                 <div class="mt-2">
                   <FileDropZone
                     :bucket-name="bucketName"
@@ -638,7 +622,6 @@
                   />
                 </div>
 
-                <!-- Selected Files -->
                 <div v-if="selectedFiles.length > 0" class="mt-4">
                   <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">
                     Selected Files ({{ selectedFiles.length }})
@@ -670,7 +653,6 @@
                   </div>
                 </div>
 
-                <!-- Modal Actions -->
                 <div class="mt-6 sm:flex sm:flex-row-reverse gap-3">
                   <button
                     @click="handleUpload"
@@ -757,7 +739,6 @@
                 <!-- File Details Form -->
                 <div class="mt-6">
                   <div class="bg-gray-50 dark:bg-gray-900/30 rounded-lg p-6 space-y-6">
-                    <!-- Filename Input -->
                     <div class="space-y-2">
                       <label
                         for="fileName"
@@ -812,7 +793,6 @@
                       </div>
                     </div>
 
-                    <!-- Validation Error -->
                     <div
                       v-if="createFileValidationError"
                       class="flex items-center justify-center bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3"
@@ -827,7 +807,6 @@
                   </div>
                 </div>
 
-                <!-- Content Editor -->
                 <div class="mt-6">
                   <label
                     for="fileContent"
@@ -839,7 +818,6 @@
                     class="relative border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
                   >
                     <div class="flex">
-                      <!-- Line Numbers -->
                       <div
                         class="bg-gray-100 dark:bg-gray-800 px-3 py-4 border-r border-gray-200 dark:border-gray-700 select-none"
                       >
@@ -853,7 +831,6 @@
                           </div>
                         </div>
                       </div>
-                      <!-- Editor Area -->
                       <div class="flex-1">
                         <textarea
                           v-model="fileContent"
@@ -867,7 +844,6 @@
                       </div>
                     </div>
 
-                    <!-- Status Bar -->
                     <div
                       class="bg-gray-100 dark:bg-gray-800 px-4 py-2 border-t border-gray-200 dark:border-gray-700"
                     >
@@ -899,7 +875,6 @@
                   </div>
                 </div>
 
-                <!-- Modal Actions -->
                 <div class="mt-6 sm:flex sm:flex-row-reverse gap-3">
                   <button
                     @click="handleCreateFile"

@@ -1,15 +1,9 @@
-/**
- * API Client setup and configuration
- * Centralized HTTP client with interceptors and error handling
- */
-
 import axios, { type AxiosInstance, type AxiosResponse } from 'axios'
 import type { ApiResponse, ApiError } from '@/types'
 
 let apiClient: AxiosInstance
 
 export function setupApiClient() {
-  // Create axios instance
   apiClient = axios.create({
     baseURL: import.meta.env.VITE_PUBSUB_BASE_URL || '/pubsub',
     timeout: 30000,
@@ -18,7 +12,6 @@ export function setupApiClient() {
     },
   })
 
-  // Request interceptor
   apiClient.interceptors.request.use(
     config => {
       const token = localStorage.getItem('auth-token')
@@ -26,22 +19,15 @@ export function setupApiClient() {
         config.headers.Authorization = `Bearer ${token}`
       }
 
-      // Add request ID for tracking
       config.headers['X-Request-ID'] = generateRequestId()
 
       return config
     },
-    error => {
-      console.error('Request interceptor error:', error)
-      return Promise.reject(error)
-    }
+    error => Promise.reject(error)
   )
 
-  // Response interceptor
   apiClient.interceptors.response.use(
-    (response: AxiosResponse<ApiResponse>) => {
-      return response
-    },
+    (response: AxiosResponse<ApiResponse>) => response,
     error => {
       // Handle different error types
       if (error.response) {
@@ -55,8 +41,6 @@ export function setupApiClient() {
           requestId: error.config?.headers?.['X-Request-ID'],
         }
 
-        console.error('API Error:', apiError)
-
         // Handle specific status codes
         switch (error.response.status) {
           case 401:
@@ -66,15 +50,12 @@ export function setupApiClient() {
             break
           case 403:
             // Forbidden
-            console.warn('Access denied')
             break
           case 429:
             // Rate limited
-            console.warn('Rate limit exceeded')
             break
           case 500:
             // Server error
-            console.error('Server error')
             break
         }
 
@@ -88,7 +69,6 @@ export function setupApiClient() {
           timestamp: new Date(),
         }
 
-        console.debug('Network error:', networkError)
         return Promise.reject(networkError)
       } else {
         // Other error
@@ -99,7 +79,6 @@ export function setupApiClient() {
           timestamp: new Date(),
         }
 
-        console.debug('Unknown error:', unknownError)
         return Promise.reject(unknownError)
       }
     }
@@ -107,7 +86,7 @@ export function setupApiClient() {
 }
 
 function generateRequestId(): string {
-  return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+  return `req_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
 }
 
 export function getApiClient(): AxiosInstance {
@@ -117,11 +96,7 @@ export function getApiClient(): AxiosInstance {
   return apiClient
 }
 
-/**
- * Create a request with custom timeout for long-running operations
- */
 export function createLongRunningRequest(timeoutMs: number = 300000) {
-  // 5 minute default
   if (!apiClient) {
     throw new Error('API client not initialized. Call setupApiClient() first.')
   }

@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-full bg-gray-50 dark:bg-gray-900 transition-colors">
-    <!-- Page Header -->
     <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
       <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="py-6">
@@ -26,10 +25,8 @@
       </div>
     </div>
 
-    <!-- Main Content -->
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <form @submit.prevent="handleSubmit" class="space-y-8">
-        <!-- Basic Information -->
         <div
           class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"
         >
@@ -41,7 +38,6 @@
           </div>
 
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
-            <!-- Bucket Name -->
             <div class="sm:col-span-2">
               <label
                 for="bucketName"
@@ -123,7 +119,6 @@
           </div>
         </div>
 
-        <!-- Storage Class -->
         <div
           class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"
         >
@@ -170,7 +165,6 @@
           </div>
         </div>
 
-        <!-- Advanced Settings -->
         <div
           class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"
         >
@@ -387,7 +381,6 @@
           </div>
         </div>
 
-        <!-- Form Actions -->
         <div
           class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"
         >

@@ -1,8 +1,3 @@
-/**
- * Cloud Storage API client for fake-gcs-server integration
- * Provides comprehensive storage management functionality
- */
-
 import axios from 'axios'
 import type {
   StorageBucket,
@@ -24,9 +19,6 @@ const storageClient = axios.create({
   },
 })
 
-const getApi = () => storageClient
-
-// Bucket Management
 export const storageApi = {
   async listBuckets(
     options: {
@@ -35,8 +27,7 @@ export const storageApi = {
       project?: string
     } = {}
   ): Promise<ListBucketsResponse> {
-    const api = getApi()
-    const response = await api.get('/storage/v1/b', {
+    const response = await storageClient.get('/storage/v1/b', {
       params: {
         maxResults: options.maxResults || 1000,
         pageToken: options.pageToken,
@@ -61,8 +52,7 @@ export const storageApi = {
       userProject?: string
     } = {}
   ): Promise<StorageBucket> {
-    const api = getApi()
-    const response = await api.get(`/storage/v1/b/${encodeURIComponent(bucketName)}`, {
+    const response = await storageClient.get(`/storage/v1/b/${encodeURIComponent(bucketName)}`, {
       params: {
         projection: options.projection || 'full',
         ifMetagenerationMatch: options.ifMetagenerationMatch,
@@ -75,7 +65,6 @@ export const storageApi = {
   },
 
   async createBucket(request: CreateBucketRequest): Promise<StorageBucket> {
-    const api = getApi()
     const { name, location, storageClass, iamConfiguration, ...options } = request
 
     const bucketData: Partial<StorageBucket> = {
@@ -85,7 +74,7 @@ export const storageApi = {
       ...(iamConfiguration && { iamConfiguration }),
     }
 
-    const response = await api.post('/storage/v1/b', bucketData, {
+    const response = await storageClient.post('/storage/v1/b', bucketData, {
       params: {
         project: options.project || import.meta.env.VITE_GOOGLE_CLOUD_PROJECT_ID || 'test-project',
         predefinedAcl: options.predefinedAcl,
@@ -106,8 +95,7 @@ export const storageApi = {
       userProject?: string
     } = {}
   ): Promise<void> {
-    const api = getApi()
-    await api.delete(`/storage/v1/b/${encodeURIComponent(bucketName)}`, {
+    await storageClient.delete(`/storage/v1/b/${encodeURIComponent(bucketName)}`, {
       params: {
         ifMetagenerationMatch: options.ifMetagenerationMatch,
         ifMetagenerationNotMatch: options.ifMetagenerationNotMatch,
@@ -120,8 +108,7 @@ export const storageApi = {
     bucketName: string,
     config: import('@/types').NotificationConfigRequest
   ): Promise<import('@/types').NotificationConfig> {
-    const api = getApi()
-    const response = await api.post(
+    const response = await storageClient.post(
       `/storage/v1/b/${encodeURIComponent(bucketName)}/notificationConfigs`,
       config
     )
@@ -129,34 +116,33 @@ export const storageApi = {
   },
 
   async listNotifications(bucketName: string): Promise<import('@/types').NotificationConfig[]> {
-    const api = getApi()
-    const response = await api.get(
+    const response = await storageClient.get(
       `/storage/v1/b/${encodeURIComponent(bucketName)}/notificationConfigs`
     )
     return response.data.items || []
   },
 
   async deleteNotification(bucketName: string, notificationId: string): Promise<void> {
-    const api = getApi()
-    await api.delete(
+    await storageClient.delete(
       `/storage/v1/b/${encodeURIComponent(bucketName)}/notificationConfigs/${encodeURIComponent(notificationId)}`
     )
   },
 
-  // Object Management
   async listObjects(request: ListObjectsRequest): Promise<ListObjectsResponse> {
-    const api = getApi()
-    const response = await api.get(`/storage/v1/b/${encodeURIComponent(request.bucket)}/o`, {
-      params: {
-        delimiter: request.delimiter,
-        prefix: request.prefix,
-        maxResults: request.maxResults || 1000,
-        pageToken: request.pageToken,
-        projection: request.projection || 'full',
-        versions: request.versions,
-        userProject: request.userProject,
-      },
-    })
+    const response = await storageClient.get(
+      `/storage/v1/b/${encodeURIComponent(request.bucket)}/o`,
+      {
+        params: {
+          delimiter: request.delimiter,
+          prefix: request.prefix,
+          maxResults: request.maxResults || 1000,
+          pageToken: request.pageToken,
+          projection: request.projection || 'full',
+          versions: request.versions,
+          userProject: request.userProject,
+        },
+      }
+    )
 
     return {
       kind: response.data.kind || 'storage#objects',
@@ -179,8 +165,7 @@ export const storageApi = {
       userProject?: string
     } = {}
   ): Promise<StorageObject> {
-    const api = getApi()
-    const response = await api.get(
+    const response = await storageClient.get(
       `/storage/v1/b/${encodeURIComponent(bucket)}/o/${encodeURIComponent(objectName)}`,
       {
         params: {
@@ -203,11 +188,8 @@ export const storageApi = {
     request: UploadObjectRequest,
     onProgress?: (_progress: { loaded: number; total: number; percentage: number }) => void
   ): Promise<StorageObject> {
-    const api = getApi()
-
-    // Try direct binary upload first, which is more commonly supported by fake-gcs-server
     try {
-      const response = await api.post(
+      const response = await storageClient.post(
         `/upload/storage/v1/b/${encodeURIComponent(request.bucket)}/o`,
         file,
         {
@@ -237,13 +219,9 @@ export const storageApi = {
       )
 
       return response.data
-    } catch (error) {
-      console.warn('Direct upload failed, trying multipart upload:', error)
-
-      // Fallback to multipart upload if direct upload fails
+    } catch {
       const formData = new FormData()
 
-      // Add metadata
       const metadata: Partial<StorageObject> = {
         name: request.name,
         contentType: request.contentType || file.type,
@@ -254,7 +232,7 @@ export const storageApi = {
       formData.append('file', file)
       formData.append('metadata', JSON.stringify(metadata))
 
-      const response = await api.post(
+      const response = await storageClient.post(
         `/upload/storage/v1/b/${encodeURIComponent(request.bucket)}/o`,
         formData,
         {
@@ -287,8 +265,7 @@ export const storageApi = {
   },
 
   async downloadObject(request: DownloadObjectRequest): Promise<Blob> {
-    const api = getApi()
-    const response = await api.get(
+    const response = await storageClient.get(
       `/storage/v1/b/${encodeURIComponent(request.bucket)}/o/${encodeURIComponent(request.object)}`,
       {
         params: {
@@ -309,8 +286,7 @@ export const storageApi = {
   },
 
   async deleteObject(request: DeleteObjectRequest): Promise<void> {
-    const api = getApi()
-    await api.delete(
+    await storageClient.delete(
       `/storage/v1/b/${encodeURIComponent(request.bucket)}/o/${encodeURIComponent(request.object)}`,
       {
         params: {
@@ -345,14 +321,13 @@ export const storageApi = {
       metadata?: Record<string, string>
     } = {}
   ): Promise<StorageObject> {
-    const api = getApi()
-    const requestBody: any = {}
+    const requestBody: Record<string, any> = {}
 
     if (options.metadata) {
       requestBody.metadata = options.metadata
     }
 
-    const response = await api.post(
+    const response = await storageClient.post(
       `/storage/v1/b/${encodeURIComponent(sourceBucket)}/o/${encodeURIComponent(sourceObject)}/copyTo/b/${encodeURIComponent(destinationBucket)}/o/${encodeURIComponent(destinationObject)}`,
       requestBody,
       {
@@ -375,7 +350,6 @@ export const storageApi = {
     return response.data
   },
 
-  // Utility methods
   getObjectDownloadUrl(bucket: string, objectName: string): string {
     const baseUrl = import.meta.env.VITE_STORAGE_BASE_URL || '/storage'
     return `${baseUrl}/storage/v1/b/${encodeURIComponent(bucket)}/o/${encodeURIComponent(objectName)}?alt=media`
@@ -386,7 +360,6 @@ export const storageApi = {
     return `${baseUrl}/storage/v1/b/${encodeURIComponent(bucket)}/o/${encodeURIComponent(objectName)}?alt=media`
   },
 
-  // Batch operations
   async deleteMultipleObjects(bucket: string, objectNames: string[]): Promise<void> {
     const deletePromises = objectNames.map(objectName =>
       this.deleteObject({ bucket, object: objectName })
@@ -419,14 +392,11 @@ export const storageApi = {
     return Promise.all(uploadPromises)
   },
 
-  // Download multiple objects as ZIP
   async downloadObjectsAsZip(
     bucketName: string,
     objectNames: string[],
-    // eslint-disable-next-line no-unused-vars
-    onProgress?: (progress: { current: number; total: number; currentFile: string }) => void
+    onProgress?: (_progress: { current: number; total: number; currentFile: string }) => void
   ): Promise<Blob> {
-    // Dynamic import to avoid bundling JSZip in main chunk
     const JSZip = (await import('jszip')).default
 
     if (objectNames.length === 0) {
@@ -435,7 +405,6 @@ export const storageApi = {
 
     const zip = new JSZip()
 
-    // Download each object and add to ZIP
     for (let i = 0; i < objectNames.length; i++) {
       const objectName = objectNames[i]
 
@@ -448,34 +417,26 @@ export const storageApi = {
       }
 
       try {
-        // Download the object as blob
         const blob = await this.downloadObject({
           bucket: bucketName,
           object: objectName || '',
         })
 
-        // Add to ZIP with proper folder structure
         if (objectName) {
           zip.file(objectName, blob)
         }
       } catch (error) {
         console.warn(`Failed to download object ${objectName}:`, error)
-        // Continue with other files, don't fail the entire operation
       }
     }
 
-    // Generate ZIP file
     return await zip.generateAsync({ type: 'blob' })
   },
 
-  // Download entire bucket as ZIP
   async downloadBucketAsZip(
     bucketName: string,
-    // eslint-disable-next-line no-unused-vars
-    onProgress?: (progress: { current: number; total: number; currentFile: string }) => void
+    onProgress?: (_progress: { current: number; total: number; currentFile: string }) => void
   ): Promise<Blob> {
-    // Get all objects in the bucket, maxResults is 0 for no limit untill fake-gcs support nextPageToken
-    // https://github.com/fsouza/fake-gcs-server/issues/1912
     const objectsResponse = await this.listObjects({ bucket: bucketName, maxResults: 0 })
     const objects = objectsResponse.items || []
 
@@ -483,7 +444,6 @@ export const storageApi = {
       throw new Error('Bucket is empty or no objects found')
     }
 
-    // Use the downloadObjectsAsZip method
     return await this.downloadObjectsAsZip(
       bucketName,
       objects.map(obj => obj.name),
@@ -491,22 +451,17 @@ export const storageApi = {
     )
   },
 
-  // Health check for fake-gcs-server
   async healthCheck(): Promise<boolean> {
     try {
-      const api = getApi()
-      await api.get('/storage/v1/b', { timeout: 5000 })
+      await storageClient.get('/storage/v1/b', { timeout: 5000 })
       return true
-    } catch (error) {
-      console.warn('Storage emulator health check failed:', error)
+    } catch {
       return false
     }
   },
 
-  // Internal emulator operations
   async deleteAll(): Promise<void> {
-    const api = getApi()
-    await api.post('/_internal/delete_all')
+    await storageClient.post('/_internal/delete_all')
   },
 }
 

@@ -1,6 +1,5 @@
 <template>
   <div class="h-full bg-gray-50 dark:bg-gray-900 flex flex-col space-y-6 pb-6">
-    <!-- Page Header -->
     <div class="bg-white dark:bg-gray-800 rounded-lg">
       <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
         <div class="flex items-center justify-between">
@@ -19,7 +18,6 @@
       </div>
     </div>
 
-    <!-- Filters Section -->
     <div class="bg-white dark:bg-gray-800 shadow rounded-lg">
       <div class="px-6 py-4">
         <div class="flex flex-col md:flex-row items-stretch md:items-center gap-3">
@@ -39,7 +37,6 @@
             />
           </div>
 
-          <!-- Arrow Separator -->
           <div class="flex md:items-center justify-center md:pt-5">
             <ChevronDownIcon class="w-5 h-5 text-gray-400 dark:text-gray-600 md:hidden" />
             <ChevronRightIcon class="w-5 h-5 text-gray-400 dark:text-gray-600 hidden md:block" />
@@ -86,7 +83,6 @@
             />
           </div>
 
-          <!-- Arrow Separator -->
           <div class="flex md:items-center justify-center md:pt-5">
             <ChevronDownIcon class="w-5 h-5 text-gray-400 dark:text-gray-600 md:hidden" />
             <ChevronRightIcon class="w-5 h-5 text-gray-400 dark:text-gray-600 hidden md:block" />
@@ -156,7 +152,6 @@
                   class="absolute left-0 z-10 mt-1.5 w-72 origin-top-left rounded-lg bg-white dark:bg-gray-800 shadow-xl focus:!outline-none border !border-gray-200 dark:!border-gray-700"
                 >
                   <div class="p-1.5">
-                    <!-- Selection Section -->
                     <div class="px-2 py-1.5">
                       <h3
                         class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide"
@@ -246,7 +241,6 @@
                     <!-- Divider -->
                     <div class="my-1.5 border-t border-gray-200 dark:border-gray-700"></div>
 
-                    <!-- Aggregation Section -->
                     <div class="px-2 py-1.5">
                       <h3
                         class="text-[10px] font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide"
@@ -601,7 +595,6 @@
         </div>
       </div>
 
-      <!-- Entities Table -->
       <div v-else class="h-full flex flex-col bg-white dark:bg-gray-800 shadow rounded-lg">
         <!-- Table Header with Actions -->
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
@@ -721,7 +714,6 @@
           </div>
         </div>
 
-        <!-- Table Content -->
         <div class="flex-1 overflow-auto">
           <div v-if="loading" class="flex items-center justify-center h-64">
             <div class="text-center">
@@ -787,7 +779,6 @@
             </div>
           </div>
 
-          <!-- Entities Table -->
           <table v-else class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
             <thead class="bg-gray-50 dark:bg-gray-900 sticky top-0">
               <tr>
@@ -888,7 +879,6 @@
           </table>
         </div>
 
-        <!-- Table Footer -->
         <div class="bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
           <table class="min-w-full">
             <tfoot>

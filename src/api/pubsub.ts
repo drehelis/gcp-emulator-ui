@@ -1,8 +1,3 @@
-/**
- * PubSub API Service
- * Handles all PubSub-related API calls to the backend service
- */
-
 import { getApiClient, createLongRunningRequest } from './client'
 import type {
   PubSubTopic as Topic,
@@ -17,9 +12,6 @@ import type {
   CreateSchemaRequest,
 } from '@/types/pubsub'
 
-const getApi = () => getApiClient()
-
-// Projects API
 export const projectsApi = {
   async getProjects(): Promise<string[]> {
     // For Pub/Sub emulator, we manage projects client-side
@@ -27,7 +19,7 @@ export const projectsApi = {
 
     // Validate that projects still exist in the emulator
     const validProjects: string[] = []
-    const api = getApi()
+    const api = getApiClient()
 
     for (const projectId of existingProjects) {
       try {
@@ -80,7 +72,7 @@ export const projectsApi = {
     ]
 
     const discoveredProjects: string[] = []
-    const api = getApi()
+    const api = getApiClient()
 
     for (const projectId of commonPatterns) {
       try {
@@ -95,22 +87,21 @@ export const projectsApi = {
   },
 }
 
-// Topics API
 export const topicsApi = {
   async getTopics(projectId: string): Promise<Topic[]> {
-    const api = getApi()
+    const api = getApiClient()
     const response = await api.get(`/v1/projects/${projectId}/topics`)
     return response.data.topics || []
   },
 
   async getTopic(projectId: string, topicName: string): Promise<Topic> {
-    const api = getApi()
+    const api = getApiClient()
     const response = await api.get(`/v1/projects/${projectId}/topics/${topicName}`)
     return response.data
   },
 
   async createTopic(projectId: string, request: CreateTopicRequest): Promise<Topic> {
-    const api = getApi()
+    const api = getApiClient()
     // Use PUT with topic name in path, as per Google Cloud Pub/Sub API spec
     const topicName = request.name
     const topicPath = `projects/${projectId}/topics/${topicName}`
@@ -161,7 +152,7 @@ export const topicsApi = {
   },
 
   async deleteTopic(projectId: string, topicName: string): Promise<void> {
-    const api = getApi()
+    const api = getApiClient()
     await api.delete(`/v1/projects/${projectId}/topics/${topicName}`)
   },
 
@@ -170,7 +161,7 @@ export const topicsApi = {
     topicName: string,
     request: PublishRequest
   ): Promise<PublishResponse> {
-    const api = getApi()
+    const api = getApiClient()
     const response = await api.post(
       `/v1/projects/${projectId}/topics/${topicName}:publish`,
       request
@@ -183,7 +174,7 @@ export const topicsApi = {
     topicName: string,
     message: { data: string; attributes?: Record<string, string> }
   ): Promise<PublishResponse> {
-    const api = getApi()
+    const api = getApiClient()
     const request: PublishRequest = {
       messages: [message],
     }
@@ -195,10 +186,9 @@ export const topicsApi = {
   },
 }
 
-// Subscriptions API
 export const subscriptionsApi = {
   async getSubscriptions(projectId: string): Promise<Subscription[]> {
-    const api = getApi()
+    const api = getApiClient()
     const response = await api.get(`/v1/projects/${projectId}/subscriptions`)
 
     // Ensure we always return an array
@@ -213,13 +203,13 @@ export const subscriptionsApi = {
   },
 
   async getSubscriptionsByTopic(projectId: string, topicName: string): Promise<Subscription[]> {
-    const api = getApi()
+    const api = getApiClient()
     const response = await api.get(`/v1/projects/${projectId}/topics/${topicName}/subscriptions`)
     return response.data.subscriptions || []
   },
 
   async getSubscription(projectId: string, subscriptionName: string): Promise<Subscription> {
-    const api = getApi()
+    const api = getApiClient()
     const response = await api.get(`/v1/projects/${projectId}/subscriptions/${subscriptionName}`)
     return response.data
   },
@@ -228,14 +218,9 @@ export const subscriptionsApi = {
     projectId: string,
     request: CreateSubscriptionRequest
   ): Promise<Subscription> {
-    const api = getApi()
-    // Use PUT with subscription name in path, as per Google Cloud Pub/Sub API spec
-    const subscriptionName = request.name
+    const api = getApiClient()
+    const { name: subscriptionName, ...subscriptionData } = request
     const subscriptionPath = `projects/${projectId}/subscriptions/${subscriptionName}`
-
-    // Remove name from request body as it's in the URL
-    const subscriptionData = { ...request }
-    delete subscriptionData.name
 
     // Ensure topic name is in full path format
     if (subscriptionData.topic && !subscriptionData.topic.startsWith('projects/')) {
@@ -275,12 +260,11 @@ export const subscriptionsApi = {
   async updateSubscription(
     projectId: string,
     subscriptionName: string,
-    updateData: any
+    updateData: Partial<Subscription>
   ): Promise<Subscription> {
-    const api = getApi()
+    const api = getApiClient()
     const subscriptionPath = `projects/${projectId}/subscriptions/${subscriptionName}`
 
-    // Try PUT first as emulator might not support PATCH
     try {
       const response = await api.put(`/v1/${subscriptionPath}`, updateData)
       return response.data
@@ -294,7 +278,7 @@ export const subscriptionsApi = {
     }
   },
   async deleteSubscription(projectId: string, subscriptionName: string): Promise<void> {
-    const api = getApi()
+    const api = getApiClient()
     await api.delete(`/v1/projects/${projectId}/subscriptions/${subscriptionName}`)
   },
 
@@ -317,44 +301,43 @@ export const subscriptionsApi = {
     subscriptionName: string,
     ackIds: string[]
   ): Promise<void> {
-    const api = getApi()
+    const api = getApiClient()
     await api.post(`/v1/projects/${projectId}/subscriptions/${subscriptionName}:acknowledge`, {
       ackIds,
     })
   },
 }
 
-// Schemas API
 export const schemasApi = {
   async getSchemas(projectId: string): Promise<Schema[]> {
-    const api = getApi()
+    const api = getApiClient()
     const response = await api.get(`/v1/projects/${projectId}/schemas`)
     return response.data.schemas || []
   },
 
   async getSchema(projectId: string, schemaName: string): Promise<Schema> {
-    const api = getApi()
+    const api = getApiClient()
     const response = await api.get(`/v1/projects/${projectId}/schemas/${schemaName}`)
     return response.data
   },
 
   async createSchema(projectId: string, request: CreateSchemaRequest): Promise<Schema> {
-    const api = getApi()
+    const api = getApiClient()
     const response = await api.post(`/v1/projects/${projectId}/schemas`, request)
     return response.data
   },
 
   async deleteSchema(projectId: string, schemaName: string): Promise<void> {
-    const api = getApi()
+    const api = getApiClient()
     await api.delete(`/v1/projects/${projectId}/schemas/${schemaName}`)
   },
 
   async validateMessage(
     projectId: string,
     schemaName: string,
-    message: any
+    message: Record<string, any>
   ): Promise<{ valid: boolean; errors?: string[] }> {
-    const api = getApi()
+    const api = getApiClient()
     const response = await api.post(`/v1/projects/${projectId}/schemas/${schemaName}:validate`, {
       message,
     })
@@ -362,42 +345,39 @@ export const schemasApi = {
   },
 }
 
-// Health & Status API
 export const healthApi = {
   async getHealthStatus(): Promise<{ status: string; uptime: number }> {
-    const api = getApi()
+    const api = getApiClient()
     await api.get('/')
     return { status: 'healthy', uptime: Date.now() }
   },
 
-  async getSystemInfo(): Promise<any> {
-    const api = getApi()
+  async getSystemInfo(): Promise<Record<string, any>> {
+    const api = getApiClient()
     const response = await api.get('/v1/system/info')
     return response.data
   },
 }
 
-// Configuration API
 export const configApi = {
   async setCurrentHost(host: string): Promise<void> {
-    const api = getApi()
+    const api = getApiClient()
     await api.post('/v1/config/host', { host })
   },
 
   async getCurrentHost(): Promise<{ host: string }> {
-    const api = getApi()
+    const api = getApiClient()
     const response = await api.get('/v1/config/host')
     return response.data
   },
 }
 
-// Bulk operations API
 export const bulkApi = {
   async bulkCreateTopics(
     projectId: string,
     topics: CreateTopicRequest[]
   ): Promise<{ results: Topic[]; errors: any[] }> {
-    const api = getApi()
+    const api = getApiClient()
     const response = await api.post(`/v1/projects/${projectId}/topics:batchCreate`, { topics })
     return response.data
   },
@@ -405,8 +385,8 @@ export const bulkApi = {
   async bulkDeleteTopics(
     projectId: string,
     topicNames: string[]
-  ): Promise<{ success: string[]; errors: any[] }> {
-    const api = getApi()
+  ): Promise<{ success: string[]; errors: Record<string, any>[] }> {
+    const api = getApiClient()
     const response = await api.post(`/v1/projects/${projectId}/topics:batchDelete`, { topicNames })
     return response.data
   },
@@ -414,8 +394,8 @@ export const bulkApi = {
   async bulkCreateSubscriptions(
     projectId: string,
     subscriptions: CreateSubscriptionRequest[]
-  ): Promise<{ results: Subscription[]; errors: any[] }> {
-    const api = getApi()
+  ): Promise<{ results: Subscription[]; errors: Record<string, any>[] }> {
+    const api = getApiClient()
     const response = await api.post(`/v1/projects/${projectId}/subscriptions:batchCreate`, {
       subscriptions,
     })
@@ -425,8 +405,8 @@ export const bulkApi = {
   async bulkDeleteSubscriptions(
     projectId: string,
     subscriptionNames: string[]
-  ): Promise<{ success: string[]; errors: any[] }> {
-    const api = getApi()
+  ): Promise<{ success: string[]; errors: Record<string, any>[] }> {
+    const api = getApiClient()
     const response = await api.post(`/v1/projects/${projectId}/subscriptions:batchDelete`, {
       subscriptionNames,
     })
@@ -434,7 +414,6 @@ export const bulkApi = {
   },
 }
 
-// Export all API modules
 export const pubsubApi = {
   projects: projectsApi,
   topics: topicsApi,

@@ -1,7 +1,6 @@
 <template>
   <div class="p-4" :class="{ 'bg-gray-50 dark:bg-gray-700/30': level > 0 }">
     <div class="flex items-start gap-3">
-      <!-- Field Name -->
       <div class="flex-1 min-w-0">
         <div v-if="!hideFieldName" class="flex items-center gap-2 mb-2">
           <span v-if="level > 0" class="text-xs text-gray-400 font-mono">{{ path.join('.') }}</span>
@@ -20,7 +19,6 @@
 
         <!-- Field Value Editor -->
         <div class="space-y-3">
-          <!-- Type Selector -->
           <div v-if="!hideTypeSelector" class="flex items-center gap-2">
             <label class="text-xs text-gray-500 dark:text-gray-400">Type:</label>
             <select
@@ -91,7 +89,6 @@
               null
             </div>
 
-            <!-- GeoPoint -->
             <div v-else-if="fieldType === 'geopoint'" class="grid grid-cols-2 gap-2">
               <input
                 v-model.number="geoPoint.latitude"

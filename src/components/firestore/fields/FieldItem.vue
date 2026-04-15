@@ -44,7 +44,6 @@
         </span>
       </div>
 
-      <!-- Hover Actions -->
       <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
         <span class="text-xs text-gray-500 dark:text-gray-400 font-mono">{{
           getFieldType(fieldValue)

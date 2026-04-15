@@ -1,7 +1,6 @@
 <template>
   <div class="px-4 py-3 firestore-row-hover">
     <div class="grid grid-cols-12 gap-3 items-start">
-      <!-- Field Name -->
       <div class="col-span-4">
         <input
           v-model="localField.name"
@@ -15,7 +14,6 @@
         </p>
       </div>
 
-      <!-- Field Type -->
       <div class="col-span-2">
         <select v-model="localField.type" @change="handleTypeChange" class="firestore-select">
           <option value="string">String</option>
@@ -30,7 +28,6 @@
         </select>
       </div>
 
-      <!-- Field Value -->
       <div class="col-span-5">
         <!-- String -->
         <textarea
@@ -87,7 +84,6 @@
           class="firestore-input"
         />
 
-        <!-- GeoPoint -->
         <div v-else-if="localField.type === 'geopoint'" class="grid grid-cols-2 gap-2">
           <input
             v-model.number="geoPoint.latitude"

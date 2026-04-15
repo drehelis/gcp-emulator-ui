@@ -1,6 +1,5 @@
 <template>
   <div class="min-h-full bg-gray-50 dark:bg-gray-900 transition-colors">
-    <!-- Page Header -->
     <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
       <div class="px-4 sm:px-6 lg:px-8">
         <div class="py-4">
@@ -39,7 +38,6 @@
       </div>
     </div>
 
-    <!-- Main Content -->
     <div class="px-4 sm:px-6 lg:px-8 py-6">
       <!-- Breadcrumbs -->
       <nav v-if="objectBreadcrumbs.length > 0" class="mb-6" aria-label="Breadcrumb">
@@ -72,7 +70,6 @@
           </li>
         </ol>
       </nav>
-      <!-- Loading State -->
       <div v-if="loading" class="text-center py-12">
         <div
           class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm text-blue-600 dark:text-blue-400"
@@ -82,14 +79,12 @@
         </div>
       </div>
 
-      <!-- Object Details -->
       <div v-else-if="objectData" class="space-y-6">
         <!-- Object Summary Card -->
         <div
           class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"
         >
           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-            <!-- Key Information -->
             <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 flex-1">
               <!-- Mobile: Stack all elements vertically -->
               <div class="flex flex-col sm:hidden gap-1">
@@ -135,7 +130,6 @@
               </div>
             </div>
 
-            <!-- Quick Actions -->
             <div class="flex items-center gap-2 mt-2 sm:mt-0">
               <button
                 v-if="isTextFile && !isEditing"
@@ -150,7 +144,6 @@
           </div>
         </div>
 
-        <!-- Preview Card -->
         <div
           v-if="canPreview"
           class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6"
@@ -158,7 +151,6 @@
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Content Preview</h2>
 
           <div class="flex items-center justify-center p-8 bg-gray-50 dark:bg-gray-900 rounded-lg">
-            <!-- Image Preview -->
             <img
               v-if="objectData.contentType?.startsWith('image/')"
               :src="previewUrl"
@@ -166,7 +158,6 @@
               class="max-w-full max-h-[70vh] object-contain rounded-lg"
               @error="previewError = true"
             />
-            <!-- Video Preview -->
             <video
               v-else-if="objectData.contentType?.startsWith('video/')"
               :src="previewUrl"
@@ -275,7 +266,6 @@
                   class="relative border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden"
                 >
                   <div class="flex h-[60vh]">
-                    <!-- Line Numbers -->
                     <div
                       ref="lineNumbersRef"
                       class="bg-gray-100 dark:bg-gray-800 px-3 py-4 border-r border-gray-200 dark:border-gray-700 select-none overflow-hidden"
@@ -289,7 +279,6 @@
                         </div>
                       </div>
                     </div>
-                    <!-- Editor Area -->
                     <div class="flex-1 relative">
                       <textarea
                         ref="textareaRef"
@@ -305,7 +294,6 @@
                     </div>
                   </div>
 
-                  <!-- Status Bar -->
                   <div
                     class="bg-gray-100 dark:bg-gray-800 px-4 py-2 border-t border-gray-200 dark:border-gray-700"
                   >
@@ -335,7 +323,6 @@
                 </div>
               </div>
             </div>
-            <!-- Error State -->
             <div v-else-if="previewError" class="text-center text-gray-500 dark:text-gray-400">
               <DocumentIcon class="w-12 h-12 mx-auto mb-2" />
               <p>Preview not available</p>
@@ -344,7 +331,6 @@
         </div>
       </div>
 
-      <!-- Error State -->
       <div v-else class="text-center py-12">
         <div
           class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6 max-w-md mx-auto"

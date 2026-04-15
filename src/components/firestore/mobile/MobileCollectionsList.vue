@@ -21,7 +21,6 @@
       </button>
     </div>
 
-    <!-- Collections List -->
     <div class="flex-1 overflow-y-auto">
       <div v-if="loading" class="p-4">
         <div class="space-y-3">
