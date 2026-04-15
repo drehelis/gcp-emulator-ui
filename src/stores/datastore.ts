@@ -408,6 +408,29 @@ export const useDatastoreStore = defineStore('datastore', () => {
     entities.value.clear()
   }
 
+  // Delete all content (reset emulator)
+  const deleteAllContent = async () => {
+    try {
+      loading.value = true
+      await datastoreApi.reset()
+
+      // Clear local state
+      kinds.value = []
+      entities.value.clear()
+      namespaces.value = []
+      databases.value = []
+      selectedDatabase.value = undefined
+      selectedNamespace.value = undefined
+
+      return true
+    } catch (error) {
+      console.error('Failed to reset datastore:', error)
+      throw error
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading,
     databases: allDatabases,
@@ -442,5 +465,6 @@ export const useDatastoreStore = defineStore('datastore', () => {
     // Utility
     healthCheck,
     clearData,
+    deleteAllContent,
   }
 })

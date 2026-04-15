@@ -6,14 +6,25 @@
           <h2 class="text-lg font-medium text-gray-900 dark:text-white">
             Datastore ({{ namespaces.length }})
           </h2>
-          <button
-            @click="refreshData"
-            :disabled="loading"
-            class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            <ArrowPathIcon :class="['w-4 h-4 mr-2', loading ? 'animate-spin' : '']" />
-            Refresh
-          </button>
+          <div class="flex items-center space-x-3">
+            <button
+              @click="showDeleteAllModal = true"
+              :disabled="loading"
+              class="inline-flex items-center px-4 py-2 text-sm font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/50 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/20 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
+              title="Delete all Datastore entities"
+            >
+              <TrashIcon class="w-4 h-4 mr-2" />
+              Delete All
+            </button>
+            <button
+              @click="refreshData"
+              :disabled="loading"
+              class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <ArrowPathIcon :class="['w-4 h-4 mr-2', loading ? 'animate-spin' : '']" />
+              Refresh
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -969,6 +980,16 @@
       @confirm="confirmDelete"
       @cancel="cancelDelete"
     />
+
+    <!-- Delete All Confirmation Modal -->
+    <ConfirmationModal
+      v-model="showDeleteAllModal"
+      title="Delete All Datastore Content"
+      message="Are you sure you want to delete all entities across all databases and namespaces? This will completely clear the Datastore emulator's data."
+      confirm-label="Delete Everything"
+      :is-loading="isDeletingAll"
+      @confirm="handleDeleteAll"
+    />
   </div>
 </template>
 
@@ -1028,7 +1049,9 @@ const showEntityDetailsModal = ref(false)
 const selectedEntity = ref<DatastoreEntity | null>(null)
 const showCreateEntityModal = ref(false)
 const showDeleteModal = ref(false)
+const showDeleteAllModal = ref(false)
 const isDeleting = ref(false)
+const isDeletingAll = ref(false)
 const entitiesToDelete = ref<string[]>([])
 const deleteMode = ref<'single' | 'multiple'>('multiple')
 
@@ -1167,6 +1190,13 @@ const initializeData = async () => {
 
   loading.value = true
   try {
+    selectedKind.value = ''
+    entities.value = []
+    columns.value = []
+    currentPage.value = 1
+    currentCursor.value = undefined
+    pageCursors.value = []
+
     // Step 1: Load namespaces first (primary filter)
     await datastoreStore.loadNamespaces(currentProjectId.value)
 
@@ -1185,7 +1215,26 @@ const initializeData = async () => {
       // Restore database from query param or use first available
       const dbParam = route.query.db as string | undefined
       if (dbParam !== undefined) {
-        datastoreStore.setSelectedDatabase(dbParam)
+        if (databases.value.includes(dbParam)) {
+          datastoreStore.setSelectedDatabase(dbParam)
+        } else {
+          if (databases.value.length > 0) {
+            datastoreStore.setSelectedDatabase(databases.value[0])
+          } else {
+            datastoreStore.setSelectedDatabase(undefined as any)
+          }
+
+          router.replace({
+            query: {
+              ...route.query,
+              db:
+                datastoreStore.selectedDatabase !== undefined
+                  ? datastoreStore.selectedDatabase
+                  : undefined,
+              kind: undefined,
+            },
+          })
+        }
       } else if (databases.value.length > 0 && !selectedDatabase.value) {
         datastoreStore.setSelectedDatabase(databases.value[0])
       }
@@ -1221,8 +1270,6 @@ const handleNamespaceChange = async () => {
   const previousDatabase = selectedDatabase.value
 
   // Reset downstream selections
-  // Set to undefined (not empty string) to trigger auto-selection in loadDatabases
-  datastoreStore.setSelectedDatabase(undefined as any)
   selectedKind.value = ''
   entities.value = []
   columns.value = []
@@ -1230,10 +1277,11 @@ const handleNamespaceChange = async () => {
   currentCursor.value = undefined
   pageCursors.value = []
 
-  // Update URL to remove database and kind when namespace changes
   router.push({
     query: {
+      ...route.query,
       ns: selectedNamespace.value || undefined,
+      kind: undefined,
     },
   })
 
@@ -1298,8 +1346,10 @@ const handleDatabaseChange = async () => {
   // Update URL with namespace and database, clear kind
   router.push({
     query: {
+      ...route.query,
       ns: selectedNamespace.value || undefined,
       db: selectedDatabase.value || undefined,
+      kind: undefined,
     },
   })
 
@@ -1324,6 +1374,7 @@ const handleKindChange = async () => {
   // Update URL with all three filters
   router.push({
     query: {
+      ...route.query,
       ns: selectedNamespace.value || undefined,
       db: selectedDatabase.value || undefined,
       kind: selectedKind.value || undefined,
@@ -1738,6 +1789,7 @@ const handleEntityCreated = async (entity: DatastoreEntity) => {
   // Update URL
   router.push({
     query: {
+      ...route.query,
       ns: entityNamespace || undefined,
       db: entityDatabase || undefined,
       kind: entityKind || undefined,
@@ -1835,6 +1887,39 @@ const confirmDelete = async () => {
     })
   } finally {
     isDeleting.value = false
+  }
+}
+
+const handleDeleteAll = async () => {
+  try {
+    isDeletingAll.value = true
+    await datastoreStore.deleteAllContent()
+    showDeleteAllModal.value = false
+
+    // Reset local state
+    selectedKind.value = ''
+    entities.value = []
+    columns.value = []
+    currentPage.value = 1
+    pageCursors.value = []
+    currentCursor.value = undefined
+
+    appStore.showToast({
+      type: 'success',
+      title: 'Datastore Reset',
+      message: 'All Datastore content has been cleared.',
+    })
+
+    // Update URL to root datastore view
+    router.push(`/projects/${currentProjectId.value}/datastore/namespaces`)
+  } catch {
+    appStore.showToast({
+      type: 'error',
+      title: 'Reset Failed',
+      message: 'Failed to reset Datastore emulator content.',
+    })
+  } finally {
+    isDeletingAll.value = false
   }
 }
 

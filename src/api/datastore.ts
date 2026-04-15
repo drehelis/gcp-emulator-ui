@@ -790,6 +790,10 @@ export const datastoreApi = {
     })
     return response.data
   },
+
+  async reset(): Promise<void> {
+    await datastoreClient.post('/reset')
+  },
 }
 
 export default datastoreApi
