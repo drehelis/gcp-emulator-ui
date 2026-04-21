@@ -333,7 +333,7 @@ describe('useProjectsStore', () => {
   })
 
   describe('initialize with config default', () => {
-    it('selects the default project from config on startup', () => {
+    it('selects the ENV-configured default project on initialization', () => {
       mockConfigStore.pubsubDefaultProjectId = 'config-default-project'
 
       const store = useProjectsStore()
