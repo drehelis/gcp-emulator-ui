@@ -29,5 +29,14 @@ else
     echo "No PUBSUB_PRE_CONFIGURED_MSG_ATTR environment variable found"
 fi
 
+if [ -n "$PUBSUB_DEFAULT_PROJECT_ID" ]; then
+    echo "Processing PUBSUB_DEFAULT_PROJECT_ID..."
+    CONFIG_JSON=$(echo "$CONFIG_JSON" | jq --arg id "$PUBSUB_DEFAULT_PROJECT_ID" \
+        '.pubsub.defaultProjectId = $id')
+    echo "  [✓] Default project ID set to: $PUBSUB_DEFAULT_PROJECT_ID"
+else
+    echo "No PUBSUB_DEFAULT_PROJECT_ID environment variable found"
+fi
+
 # Write the final configuration using jq for pretty formatting
 echo "$CONFIG_JSON" | jq '.' > "$CONFIG_FILE"

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { pubsubApi } from '@/api/pubsub'
 import { useAppStore } from './app'
+import { useConfigStore } from './config'
 import type { GCPProject, SearchFilters, PaginationOptions, BaseStoreState } from '@/types'
 
 export const useProjectsStore = defineStore(
@@ -359,6 +360,17 @@ export const useProjectsStore = defineStore(
         }
       } catch {
         // Ignore
+      }
+
+      // Apply ENV-configured default project if set
+      try {
+        const configStore = useConfigStore()
+        const defaultId = configStore.pubsubDefaultProjectId
+        if (defaultId) {
+          selectProject(defaultId)
+        }
+      } catch {
+        // Ignore — config store unavailable
       }
     }
 
