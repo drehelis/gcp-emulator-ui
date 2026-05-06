@@ -4,6 +4,10 @@ import type {
   CreateDocumentRequest,
   ListDocumentsResponse,
   ListCollectionsResponse,
+  FirestoreQuery,
+  RunQueryResponse,
+  FirestoreRunAggregationQueryRequest,
+  FirestoreRunAggregationQueryResponse,
 } from '@/types'
 
 const firestoreClient = axios.create({
@@ -247,6 +251,32 @@ export const firestoreApi = {
   // Helper to get custom database path
   getDatabasePath(projectId: string, databaseId: string): string {
     return `projects/${projectId}/databases/${databaseId}`
+  },
+
+  // Run a structured query against the Firestore emulator
+  async runQuery(parent: string, structuredQuery: FirestoreQuery): Promise<RunQueryResponse[]> {
+    const response = await firestoreClient.post(`/v1/${parent}:runQuery`, {
+      structuredQuery,
+    })
+
+    // The API returns an array of results, each with an optional document
+    const results: RunQueryResponse[] = Array.isArray(response.data)
+      ? response.data
+      : [response.data]
+
+    return results.filter((r: RunQueryResponse) => r.document)
+  },
+
+  // Run an aggregation query against the Firestore emulator
+  async runAggregationQuery(
+    parent: string,
+    request: FirestoreRunAggregationQueryRequest
+  ): Promise<FirestoreRunAggregationQueryResponse> {
+    const response = await firestoreClient.post(`/v1/${parent}:runAggregationQuery`, request)
+
+    // The API may return an array; take the first result
+    const data = Array.isArray(response.data) ? response.data[0] : response.data
+    return data
   },
 }
 

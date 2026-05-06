@@ -32,6 +32,7 @@ This is an unofficial third-party application and is not affiliated with, endors
 
 - **Google Firestore ([gcloud](https://cloud.google.com/firestore/native/docs/emulator))**
    * Create, view, and manage Collections
+   * Advanced Query Builder
    * Document CRUD operations with field editing
    * Multiple databases support
    * Import/export collections and documents

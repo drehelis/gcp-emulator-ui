@@ -413,6 +413,30 @@ const routes: RouteRecordRaw[] = [
               },
             ],
           },
+          {
+            path: 'firestore/query',
+            children: [
+              {
+                path: '',
+                name: 'project-firestore-query',
+                component: () => import('@/views/firestore/QueryView.vue'),
+                props: true,
+                meta: {
+                  title: 'Query Builder',
+                  description: 'Build and run Firestore queries',
+                  icon: 'MagnifyingGlassIcon',
+                  requiresAuth: true,
+                  requiresProject: true,
+                  breadcrumbs: [
+                    { label: 'Home', route: '/' },
+                    { label: ':projectId', route: '/projects/:projectId' },
+                    { label: 'Firestore' },
+                    { label: 'Query Builder' },
+                  ],
+                },
+              },
+            ],
+          },
           // Datastore routes
           {
             path: 'datastore/namespaces',
