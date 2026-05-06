@@ -250,6 +250,22 @@ describe('firestoreApi', () => {
       expect(res).toHaveLength(1)
       expect(res[0].document?.name).toBe('doc1')
     })
+
+    it('handles non-array responses', async () => {
+      mockClient.post.mockResolvedValue({ data: { document: { name: 'doc2' } } })
+      const res = await firestoreApi.runQuery('parent', {})
+      expect(res).toHaveLength(1)
+      expect(res[0].document?.name).toBe('doc2')
+    })
+
+    it('filters out results without a document', async () => {
+      mockClient.post.mockResolvedValue({
+        data: [{ document: { name: 'doc3' } }, { readTime: 'now' }]
+      })
+      const res = await firestoreApi.runQuery('parent', {})
+      expect(res).toHaveLength(1)
+      expect(res[0].document?.name).toBe('doc3')
+    })
   })
 
   describe('runAggregationQuery', () => {
