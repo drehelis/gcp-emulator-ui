@@ -254,10 +254,7 @@ export const firestoreApi = {
   },
 
   // Run a structured query against the Firestore emulator
-  async runQuery(
-    parent: string,
-    structuredQuery: FirestoreQuery
-  ): Promise<RunQueryResponse[]> {
+  async runQuery(parent: string, structuredQuery: FirestoreQuery): Promise<RunQueryResponse[]> {
     const response = await firestoreClient.post(`/v1/${parent}:runQuery`, {
       structuredQuery,
     })
@@ -275,10 +272,7 @@ export const firestoreApi = {
     parent: string,
     request: FirestoreRunAggregationQueryRequest
   ): Promise<FirestoreRunAggregationQueryResponse> {
-    const response = await firestoreClient.post(
-      `/v1/${parent}:runAggregationQuery`,
-      request
-    )
+    const response = await firestoreClient.post(`/v1/${parent}:runAggregationQuery`, request)
 
     // The API may return an array; take the first result
     const data = Array.isArray(response.data) ? response.data[0] : response.data

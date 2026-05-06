@@ -260,7 +260,7 @@ describe('firestoreApi', () => {
 
     it('filters out results without a document', async () => {
       mockClient.post.mockResolvedValue({
-        data: [{ document: { name: 'doc3' } }, { readTime: 'now' }]
+        data: [{ document: { name: 'doc3' } }, { readTime: 'now' }],
       })
       const res = await firestoreApi.runQuery('parent', {})
       expect(res).toHaveLength(1)
@@ -284,7 +284,9 @@ describe('firestoreApi', () => {
       )
 
       expect(mockClient.post).toHaveBeenCalledWith(
-        expect.stringContaining('/v1/projects/p1/databases/(default)/documents:runAggregationQuery'),
+        expect.stringContaining(
+          '/v1/projects/p1/databases/(default)/documents:runAggregationQuery'
+        ),
         request
       )
       expect(res.result).toBeDefined()

@@ -41,14 +41,18 @@
 
     <!-- Main Content -->
     <div class="flex-1 overflow-hidden">
-      <div class="grid grid-cols-1 lg:grid-cols-4 h-full divide-x divide-gray-200 dark:divide-gray-700">
+      <div
+        class="grid grid-cols-1 lg:grid-cols-4 h-full divide-x divide-gray-200 dark:divide-gray-700"
+      >
         <!-- Left: Query Configuration -->
         <div class="lg:col-span-1 bg-white dark:bg-gray-800 overflow-auto">
           <div class="divide-y divide-gray-100 dark:divide-gray-800">
             <!-- Collection Selection -->
             <div class="p-5 hover:bg-gray-50/30 dark:hover:bg-gray-900/10 transition-colors">
               <div class="mb-4">
-                <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+                <h3
+                  class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest"
+                >
                   Collection
                 </h3>
               </div>
@@ -65,7 +69,9 @@
                   id="all-descendants"
                   class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                 />
-                <label for="all-descendants" class="text-sm text-gray-600 dark:text-gray-400 cursor-pointer"
+                <label
+                  for="all-descendants"
+                  class="text-sm text-gray-600 dark:text-gray-400 cursor-pointer"
                   >Include all descendants (Collection Group)</label
                 >
               </div>
@@ -74,7 +80,9 @@
             <!-- Standard Clauses -->
             <div class="p-5">
               <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+                <h3
+                  class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest"
+                >
                   Filters & Sorting
                 </h3>
                 <div class="flex gap-2">
@@ -174,7 +182,9 @@
             <!-- Pipeline Stages (Advanced) -->
             <div class="p-5">
               <div class="flex items-center justify-between mb-4">
-                <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+                <h3
+                  class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest"
+                >
                   Aggregation Pipeline
                 </h3>
                 <button
@@ -244,7 +254,9 @@
             class="px-5 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-gray-50/50 dark:bg-gray-900/20"
           >
             <div class="flex items-center gap-3">
-              <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+              <h3
+                class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest"
+              >
                 Query Results
               </h3>
               <span
@@ -297,7 +309,9 @@
                     </th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800">
+                <tbody
+                  class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-800"
+                >
                   <tr
                     v-for="doc in results"
                     :key="doc.name"
@@ -313,7 +327,11 @@
                       :key="col"
                       class="px-4 py-3 text-xs text-gray-900 dark:text-gray-200"
                     >
-                      <div v-if="doc.fields[col]" class="truncate max-w-[250px]" :title="JSON.stringify(formatValue(doc.fields[col]))">
+                      <div
+                        v-if="doc.fields[col]"
+                        class="truncate max-w-[250px]"
+                        :title="JSON.stringify(formatValue(doc.fields[col]))"
+                      >
                         <span
                           v-if="typeof formatValue(doc.fields[col]) === 'string'"
                           class="text-gray-900 dark:text-gray-100"
@@ -329,7 +347,11 @@
                         <span
                           v-else-if="typeof formatValue(doc.fields[col]) === 'boolean'"
                           class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase"
-                          :class="formatValue(doc.fields[col]) ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'"
+                          :class="
+                            formatValue(doc.fields[col])
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                              : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
+                          "
                         >
                           {{ formatValue(doc.fields[col]) }}
                         </span>
@@ -353,7 +375,9 @@
               >
                 <DocumentIcon class="w-10 h-10 text-gray-300 dark:text-gray-600" />
               </div>
-              <h3 class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">
+              <h3
+                class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest"
+              >
                 No documents found
               </h3>
             </div>
@@ -377,11 +401,7 @@ import {
 import { useFirestoreStore } from '@/stores/firestore'
 import firestoreApi from '@/api/firestore'
 import CustomSelect from '@/components/ui/CustomSelect.vue'
-import type {
-  FirestoreDocument,
-  FirestoreQuery,
-  FirestoreAggregation,
-} from '@/types'
+import type { FirestoreDocument, FirestoreQuery, FirestoreAggregation } from '@/types'
 
 const route = useRoute()
 const firestoreStore = useFirestoreStore()
@@ -402,7 +422,7 @@ const orderByClauses = ref<{ field: string; direction: 'ASCENDING' | 'DESCENDING
 const pipelineStages = ref<{ type: string; alias: string; field?: string }[]>([])
 
 const collectionOptions = computed(() => {
-  return firestoreStore.collections.map((c) => ({
+  return firestoreStore.collections.map(c => ({
     label: c.id,
     value: c.id,
   }))
@@ -411,8 +431,8 @@ const collectionOptions = computed(() => {
 const columns = computed(() => {
   if (results.value.length === 0) return []
   const cols = new Set<string>()
-  results.value.forEach((doc) => {
-    Object.keys(doc.fields).forEach((k) => cols.add(k))
+  results.value.forEach(doc => {
+    Object.keys(doc.fields).forEach(k => cols.add(k))
   })
   return Array.from(cols).sort()
 })
@@ -471,8 +491,7 @@ async function runQuery() {
   aggregationResult.value = null
 
   try {
-    const parent =
-      `${firestoreStore.getCurrentDatabasePath(currentProjectId.value)  }/documents`
+    const parent = `${firestoreStore.getCurrentDatabasePath(currentProjectId.value)}/documents`
 
     // Build StructuredQuery
     const query: FirestoreQuery = {
@@ -487,8 +506,8 @@ async function runQuery() {
 
     if (whereClauses.value.length > 0) {
       const filters = whereClauses.value
-        .filter((w) => w.field)
-        .map((w) => ({
+        .filter(w => w.field)
+        .map(w => ({
           fieldFilter: {
             field: { fieldPath: w.field },
             op: w.op as any,
@@ -510,8 +529,8 @@ async function runQuery() {
 
     if (orderByClauses.value.length > 0) {
       query.orderBy = orderByClauses.value
-        .filter((o) => o.field)
-        .map((o) => ({
+        .filter(o => o.field)
+        .map(o => ({
           field: { fieldPath: o.field },
           direction: o.direction,
         }))
@@ -519,7 +538,7 @@ async function runQuery() {
 
     // Check if we have aggregation stages
     if (pipelineStages.value.length > 0) {
-      const aggregations: FirestoreAggregation[] = pipelineStages.value.map((s) => {
+      const aggregations: FirestoreAggregation[] = pipelineStages.value.map(s => {
         const agg: FirestoreAggregation = { alias: s.alias }
         if (s.type === 'count') agg.count = {}
         else if (s.type === 'sum') agg.sum = { field: { fieldPath: s.field || '' } }
@@ -543,9 +562,7 @@ async function runQuery() {
       }
     } else {
       const res = await firestoreApi.runQuery(parent, query)
-      results.value = res
-        .map((r) => r.document)
-        .filter(Boolean) as FirestoreDocument[]
+      results.value = res.map(r => r.document).filter(Boolean) as FirestoreDocument[]
     }
   } catch (error) {
     console.error('Query failed:', error)
