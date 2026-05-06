@@ -381,6 +381,7 @@ import {
   TableCellsIcon,
   BellIcon,
   BellSlashIcon,
+  MagnifyingGlassIcon,
 } from '@heroicons/vue/24/outline'
 
 import { useAppStore } from '@/stores/app'
@@ -546,6 +547,15 @@ const navigationItems = computed<NavigationItem[]>(() => {
           disabled: false,
           isSubItem: true,
         })
+
+        firestoreChildren.push({
+          id: 'firestore-query',
+          label: 'Query Builder',
+          route: `/projects/${currentProject.value}/firestore/query`,
+          icon: MagnifyingGlassIcon,
+          disabled: false,
+          isSubItem: true,
+        })
       }
 
       items.push({
@@ -676,6 +686,15 @@ const navigationItems = computed<NavigationItem[]>(() => {
         label: 'Collections',
         route: `/projects/${currentProject.value}/firestore/collections`,
         icon: CircleStackIcon,
+        disabled: false,
+        customClasses: !firestoreConnected.value ? 'opacity-50' : '',
+      })
+
+      items.push({
+        id: 'collapsed-firestore-query',
+        label: 'Query Builder',
+        route: `/projects/${currentProject.value}/firestore/query`,
+        icon: MagnifyingGlassIcon,
         disabled: false,
         customClasses: !firestoreConnected.value ? 'opacity-50' : '',
       })

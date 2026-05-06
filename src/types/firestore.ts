@@ -192,6 +192,29 @@ export interface RunQueryResponse {
   transaction?: string
 }
 
+// Aggregation Query Types
+export interface FirestoreAggregation {
+  alias: string
+  count?: Record<string, never>
+  sum?: { field: { fieldPath: string } }
+  avg?: { field: { fieldPath: string } }
+}
+
+export interface FirestoreRunAggregationQueryRequest {
+  structuredAggregationQuery: {
+    structuredQuery: FirestoreQuery
+    aggregations: FirestoreAggregation[]
+  }
+}
+
+export interface FirestoreRunAggregationQueryResponse {
+  result?: {
+    aggregateFields: Record<string, FirestoreValue>
+  }
+  readTime?: string
+  transaction?: string
+}
+
 // Transaction Types
 export interface Transaction {
   id: string

@@ -236,6 +236,45 @@ describe('firestoreApi', () => {
     })
   })
 
+  describe('runQuery', () => {
+    it('calls :runQuery endpoint with correct body', async () => {
+      mockClient.post.mockResolvedValue({ data: [{ document: { name: 'doc1' } }] })
+
+      const query = { from: [{ collectionId: 'users' }] }
+      const res = await firestoreApi.runQuery('projects/p1/databases/(default)/documents', query)
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        expect.stringContaining('/v1/projects/p1/databases/(default)/documents:runQuery'),
+        { structuredQuery: query }
+      )
+      expect(res).toHaveLength(1)
+      expect(res[0].document?.name).toBe('doc1')
+    })
+  })
+
+  describe('runAggregationQuery', () => {
+    it('calls :runAggregationQuery endpoint with correct body', async () => {
+      mockClient.post.mockResolvedValue({ data: { result: { aggregateFields: {} } } })
+
+      const request = {
+        structuredAggregationQuery: {
+          structuredQuery: { from: [{ collectionId: 'users' }] },
+          aggregations: [{ alias: 'total', count: {} }],
+        },
+      }
+      const res = await firestoreApi.runAggregationQuery(
+        'projects/p1/databases/(default)/documents',
+        request
+      )
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        expect.stringContaining('/v1/projects/p1/databases/(default)/documents:runAggregationQuery'),
+        request
+      )
+      expect(res.result).toBeDefined()
+    })
+  })
+
   describe('helpers', () => {
     it('getDefaultDatabasePath returns correct path', () => {
       expect(firestoreApi.getDefaultDatabasePath('p1')).toBe('projects/p1/databases/(default)')
