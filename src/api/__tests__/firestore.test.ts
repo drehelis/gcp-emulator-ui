@@ -291,6 +291,13 @@ describe('firestoreApi', () => {
       )
       expect(res.result).toBeDefined()
     })
+
+    it('handles array response from :runAggregationQuery', async () => {
+      mockClient.post.mockResolvedValue({ data: [{ result: { aggregateFields: { count: 10 } } }] })
+
+      const res = await firestoreApi.runAggregationQuery('parent', {} as any)
+      expect(res.result.aggregateFields.count).toBe(10)
+    })
   })
 
   describe('helpers', () => {
