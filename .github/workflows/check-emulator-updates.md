@@ -7,7 +7,7 @@ on:
 
 engine:
   id: codex
-  model: gpt-5.1-codex-mini
+  model: gpt-4o-mini
 
 permissions:
   contents: read
