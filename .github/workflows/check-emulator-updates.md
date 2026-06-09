@@ -24,9 +24,10 @@ tools:
 network:
   allowed:
     - r.jina.ai
-    - github.com
+    - github
     - chatgpt.com
-    - api.github.com
+    - threat-detection
+    - chrome
 
 safe-outputs:
   report-failure-as-issue: false
