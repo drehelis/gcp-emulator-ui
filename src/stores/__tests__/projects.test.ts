@@ -28,11 +28,20 @@ vi.mock('@/api/pubsub', () => ({
   },
 }))
 
+// Mock config store — default: no defaultProjectId set
+const mockConfigStore = {
+  pubsubDefaultProjectId: null as string | null,
+}
+vi.mock('../config', () => ({
+  useConfigStore: () => mockConfigStore,
+}))
+
 describe('useProjectsStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     localStorage.clear()
     vi.clearAllMocks()
+    mockConfigStore.pubsubDefaultProjectId = null
   })
 
   describe('initial state', () => {
@@ -319,6 +328,37 @@ describe('useProjectsStore', () => {
       const store = useProjectsStore()
       // Should not throw
       store.initialize()
+      expect(store.projectList).toEqual([])
+    })
+  })
+
+  describe('initialize with config default', () => {
+    it('selects the ENV-configured default project on initialization', () => {
+      mockConfigStore.pubsubDefaultProjectId = 'config-default-project'
+
+      const store = useProjectsStore()
+      store.initialize()
+
+      expect(store.selectedProjectId).toBe('config-default-project')
+      expect(store.projectList).toContain('config-default-project')
+    })
+
+    it('persists config default to localStorage', () => {
+      mockConfigStore.pubsubDefaultProjectId = 'config-default-project'
+
+      const store = useProjectsStore()
+      store.initialize()
+
+      expect(localStorage.getItem('emulator-ui-selected-project-id')).toBe('config-default-project')
+    })
+
+    it('does nothing when config has no default project ID', () => {
+      mockConfigStore.pubsubDefaultProjectId = null
+
+      const store = useProjectsStore()
+      store.initialize()
+
+      expect(store.selectedProjectId).toBeNull()
       expect(store.projectList).toEqual([])
     })
   })
