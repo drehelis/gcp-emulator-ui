@@ -7,7 +7,7 @@ on:
 
 engine:
   id: codex
-  model: gpt-5.4-mini
+  model: gpt-4o-mini
 
 permissions:
   contents: read
@@ -42,6 +42,8 @@ safe-outputs:
 You are an AI agent that checks the Google Cloud SDK announcements group for any new emulator updates.
 
 ## Your Task
+
+**CRITICAL: A goal is already active for this execution. DO NOT attempt to call 'create_goal', initialize a new goal context, or use any goal-management tools. Focus solely on checking for updates and reporting them.**
 
 1. Use your bash tool to run `curl -sL "https://r.jina.ai/https://groups.google.com/g/google-cloud-sdk-announce" | grep -E "Google Cloud CLI [0-9.]+ is now available for download" | head -1` to fetch the group's contents as markdown.
 2. Extract the URL for the latest announcement that looks like `https://groups.google.com/g/g/google-cloud-sdk-announce/c/[ID]`.
