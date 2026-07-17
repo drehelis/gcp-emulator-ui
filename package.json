@@ -54,7 +54,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.0",
-    "@pinia/testing": "^1.0.3",
+    "@pinia/testing": "^2.0.1",
     "@rushstack/eslint-patch": "^1.16.0",
     "@tsconfig/node20": "^20.1.9",
     "@types/lodash-es": "^4.17.12",
