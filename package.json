@@ -35,7 +35,7 @@
     "idb": "^8.0.0",
     "jszip": "^3.10.1",
     "lodash-es": "^4.17.23",
-    "pinia": "^3.0.4",
+    "pinia": "^4.0.2",
     "pinia-plugin-persistedstate": "^4.7.1",
     "reconnecting-websocket": "^4.4.0",
     "socket.io-client": "^4.8.3",
