@@ -4,6 +4,7 @@ import { ref, computed, readonly } from 'vue'
 interface RuntimeConfig {
   pubsub?: {
     pubsubPreConfiguredMsgAttr?: Record<string, string>
+    defaultProjectId?: string
     // Add other pubsub configuration properties here
     [key: string]: any
   }
@@ -28,6 +29,10 @@ export const useConfigStore = defineStore('config', () => {
     }
 
     return {}
+  })
+
+  const pubsubDefaultProjectId = computed((): string | null => {
+    return runtimeConfig.value.pubsub?.defaultProjectId ?? null
   })
 
   // Actions
@@ -87,6 +92,7 @@ export const useConfigStore = defineStore('config', () => {
 
     // Getters
     pubsubPreConfiguredAttributes,
+    pubsubDefaultProjectId,
 
     // Actions
     loadRuntimeConfig,
