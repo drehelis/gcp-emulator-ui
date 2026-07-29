@@ -72,7 +72,7 @@
     "eslint": "^10.0.3",
     "esbuild": "^0.28.0",
     "eslint-plugin-vue": "^10.8.0",
-    "jsdom": "^29.0.1",
+    "jsdom": "^30.0.1",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "stylelint": "^17.5.0",
