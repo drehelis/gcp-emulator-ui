@@ -5,19 +5,16 @@ on:
     daily
   workflow_dispatch:
 
+model: gpt-4o-mini
 engine:
   id: codex
-  model: gpt-4o-mini
-
 permissions:
   contents: read
   issues: read
   pull-requests: read
 
 tools:
-  bash:
-    - "curl -s *"
-    - "grep -i *"
+  bash: ["*"]
   github:
     toolsets: [issues, repos]
 
@@ -37,6 +34,7 @@ safe-outputs:
   noop:
 
 ---
+
 # Check Google Cloud SDK Emulator Updates
 
 You are an AI agent that checks the Google Cloud SDK announcements group for any new emulator updates.
