@@ -27,7 +27,7 @@ interface Props {
 defineProps<Props>()
 
 defineEmits<{
-  'toggle-field': [fieldName: string]
+  'toggle-field': [fieldPath: string]
   'edit-field': [data: any]
   'delete-field': [data: any]
   'add-to-map': [fieldPath: string]
