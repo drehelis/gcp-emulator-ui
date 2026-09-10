@@ -73,7 +73,9 @@
             <input
               v-else-if="getValueType(nestedValue) === 'number'"
               :value="nestedValue"
-              @input="updateFieldValue(nestedKey, Number(($event.target as HTMLInputElement).value))"
+              @input="
+                updateFieldValue(nestedKey, Number(($event.target as HTMLInputElement).value))
+              "
               type="number"
               step="any"
               placeholder="0"
@@ -158,11 +160,7 @@
   </div>
 
   <div v-else-if="isArray && (value || []).length > 0" :class="containerClass">
-    <div
-      v-for="(item, index) in value"
-      :key="`array-${path.join('-')}-${index}`"
-      class="relative"
-    >
+    <div v-for="(item, index) in value" :key="`array-${path.join('-')}-${index}`" class="relative">
       <!-- Tree Guide Lines -->
       <div
         v-if="!isLastItem(Number(index))"
@@ -236,7 +234,9 @@
             <select
               v-else-if="getValueType(item) === 'boolean'"
               :value="item"
-              @change="updateArrayItem(index, ($event.target as HTMLSelectElement).value === 'true')"
+              @change="
+                updateArrayItem(index, ($event.target as HTMLSelectElement).value === 'true')
+              "
               :class="selectClass"
             >
               <option :value="true">true</option>
