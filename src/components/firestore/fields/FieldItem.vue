@@ -8,7 +8,7 @@
         <!-- Toggle button for map and array fields -->
         <button
           v-if="getFieldType(fieldValue) === 'map' || getFieldType(fieldValue) === 'array'"
-          @click="$emit('toggle-field', fieldName)"
+          @click="$emit('toggle-field', fieldPath)"
           class="p-0.5 mr-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
         >
           <ChevronRightIcon
@@ -134,7 +134,7 @@ interface Props {
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  'toggle-field': [fieldName: string]
+  'toggle-field': [fieldPath: string]
   'edit-field': [data: any]
   'delete-field': [data: any]
   'add-to-map': [fieldPath: string]

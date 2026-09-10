@@ -133,7 +133,7 @@ const emit = defineEmits<{
   'start-subcollection': []
   'navigate-to-subcollection': [subcollection: FirestoreCollectionWithMetadata]
   'add-field': []
-  'toggle-field': [fieldName: string]
+  'toggle-field': [fieldPath: string]
   'edit-field': [data: any]
   'delete-field': [data: any]
   'add-to-map': [fieldPath: string]
