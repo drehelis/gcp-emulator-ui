@@ -1,113 +1,141 @@
 <template>
   <div v-if="isMap && Object.keys(value || {}).length > 0" :class="containerClass">
     <div
-      v-for="(nestedValue, nestedKey) in value"
+      v-for="(nestedValue, nestedKey, index) in value"
       :key="`nested-${path.join('-')}-${nestedKey}`"
-      class="px-4 py-2"
+      class="relative"
     >
-      <div class="grid grid-cols-12 gap-3 items-center text-sm">
-        <!-- Tree indicator -->
-        <div class="col-span-1 flex items-center">
-          <span :class="indicatorClass">├─</span>
-        </div>
+      <!-- Tree Guide Lines -->
+      <!-- Non-last item: vertical line from top (or branch for root first item) to bottom of row & children -->
+      <div
+        v-if="!isLastItem(Number(index))"
+        class="absolute left-2.5 bottom-0 w-0.5 pointer-events-none"
+        :class="[depth === 0 && Number(index) === 0 ? 'top-5' : 'top-0', treeColors.line]"
+      />
+      <!-- Non-last item: horizontal branch to field -->
+      <div
+        v-if="!isLastItem(Number(index))"
+        class="absolute left-2.5 top-5 w-4 h-0.5 pointer-events-none"
+        :class="treeColors.line"
+      />
 
-        <div class="col-span-3">
-          <input
-            :value="nestedKey.startsWith('_temp_') ? '' : nestedKey"
-            @blur="renameField(nestedKey, ($event.target as HTMLInputElement).value)"
-            @keydown.enter="($event.target as HTMLInputElement).blur()"
-            type="text"
-            placeholder="field name"
-            :class="inputClass"
-          />
-        </div>
+      <!-- Last item: clean rounded elbow terminating at branch (nothing below) -->
+      <div
+        v-if="isLastItem(Number(index)) && (depth > 0 || itemCount > 1)"
+        class="absolute left-2.5 top-0 h-5 w-4 border-b-2 border-l-2 rounded-bl-sm pointer-events-none"
+        :class="treeColors.border"
+      />
+      <!-- Single item at depth 0: just horizontal branch -->
+      <div
+        v-if="isLastItem(Number(index)) && depth === 0 && itemCount === 1"
+        class="absolute left-2.5 top-5 w-4 h-0.5 pointer-events-none"
+        :class="treeColors.line"
+      />
 
-        <div class="col-span-2">
-          <select
-            :value="getValueType(nestedValue)"
-            @change="updateFieldType(nestedKey, ($event.target as HTMLSelectElement).value)"
-            :class="selectClass"
-          >
-            <option value="string">String</option>
-            <option value="number">Number</option>
-            <option value="boolean">Boolean</option>
-            <option value="null">Null</option>
-            <option value="map">Map</option>
-            <option value="array">Array</option>
-          </select>
-        </div>
-
-        <div class="col-span-5">
-          <input
-            v-if="getValueType(nestedValue) === 'string'"
-            :value="nestedValue"
-            @input="updateFieldValue(nestedKey, ($event.target as HTMLInputElement).value)"
-            type="text"
-            placeholder="Value"
-            :class="inputClass"
-          />
-          <input
-            v-else-if="getValueType(nestedValue) === 'number'"
-            :value="nestedValue"
-            @input="updateFieldValue(nestedKey, Number(($event.target as HTMLInputElement).value))"
-            type="number"
-            step="any"
-            placeholder="0"
-            :class="inputClass"
-          />
-          <select
-            v-else-if="getValueType(nestedValue) === 'boolean'"
-            :value="nestedValue"
-            @change="
-              updateFieldValue(nestedKey, ($event.target as HTMLSelectElement).value === 'true')
-            "
-            :class="selectClass"
-          >
-            <option :value="true">true</option>
-            <option :value="false">false</option>
-          </select>
-          <div
-            v-else-if="getValueType(nestedValue) === 'null'"
-            class="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 italic"
-          >
-            null
+      <!-- Row Grid -->
+      <div class="py-1.5 pl-7">
+        <div class="grid grid-cols-12 gap-3 items-center text-sm pr-4">
+          <div class="col-span-4">
+            <input
+              :value="nestedKey.startsWith('_temp_') ? '' : nestedKey"
+              @blur="renameField(nestedKey, ($event.target as HTMLInputElement).value)"
+              @keydown.enter="($event.target as HTMLInputElement).blur()"
+              type="text"
+              placeholder="field name"
+              :class="inputClass"
+            />
           </div>
-          <div v-else-if="getValueType(nestedValue) === 'map'" class="flex items-center gap-2">
-            <span
-              class="text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded"
+
+          <div class="col-span-2">
+            <select
+              :value="getValueType(nestedValue)"
+              @change="updateFieldType(nestedKey, ($event.target as HTMLSelectElement).value)"
+              :class="selectClass"
             >
-              {{ Object.keys(nestedValue || {}).length }} field(s)
-            </span>
+              <option value="string">String</option>
+              <option value="number">Number</option>
+              <option value="boolean">Boolean</option>
+              <option value="null">Null</option>
+              <option value="map">Map</option>
+              <option value="array">Array</option>
+            </select>
+          </div>
+
+          <div class="col-span-5">
+            <input
+              v-if="getValueType(nestedValue) === 'string'"
+              :value="nestedValue"
+              @input="updateFieldValue(nestedKey, ($event.target as HTMLInputElement).value)"
+              type="text"
+              placeholder="Value"
+              :class="inputClass"
+            />
+            <input
+              v-else-if="getValueType(nestedValue) === 'number'"
+              :value="nestedValue"
+              @input="updateFieldValue(nestedKey, Number(($event.target as HTMLInputElement).value))"
+              type="number"
+              step="any"
+              placeholder="0"
+              :class="inputClass"
+            />
+            <select
+              v-else-if="getValueType(nestedValue) === 'boolean'"
+              :value="nestedValue"
+              @change="
+                updateFieldValue(nestedKey, ($event.target as HTMLSelectElement).value === 'true')
+              "
+              :class="selectClass"
+            >
+              <option :value="true">true</option>
+              <option :value="false">false</option>
+            </select>
+            <div
+              v-else-if="getValueType(nestedValue) === 'null'"
+              class="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 italic"
+            >
+              null
+            </div>
+            <div v-else-if="getValueType(nestedValue) === 'map'" class="flex items-center gap-2">
+              <span
+                class="text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded font-medium"
+              >
+                {{ Object.keys(nestedValue || {}).length }} field(s)
+              </span>
+              <button
+                @click="addNestedField(nestedKey, 'map')"
+                class="text-xs px-1 py-0.5 bg-blue-600 text-white rounded hover:bg-blue-700"
+                title="Add field to nested map"
+              >
+                <PlusIcon class="w-3 h-3" />
+              </button>
+            </div>
+            <div v-else-if="getValueType(nestedValue) === 'array'" class="flex items-center gap-2">
+              <span
+                class="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded font-medium"
+              >
+                {{ (nestedValue || []).length }} item(s)
+              </span>
+              <button
+                @click="addNestedField(nestedKey, 'array')"
+                class="text-xs px-1 py-0.5 bg-green-600 text-white rounded hover:bg-green-700"
+                title="Add item to nested array"
+              >
+                <PlusIcon class="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+
+          <!-- Delete -->
+          <div class="col-span-1 flex justify-end">
             <button
-              @click="addNestedField(nestedKey, 'map')"
-              class="text-xs px-1 py-0.5 bg-blue-600 text-white rounded hover:bg-blue-700"
+              @click="deleteField(nestedKey)"
+              class="p-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+              title="Delete field"
             >
-              <PlusIcon class="w-3 h-3" />
+              <TrashIcon class="w-3.5 h-3.5" />
             </button>
           </div>
-          <div v-else-if="getValueType(nestedValue) === 'array'" class="flex items-center gap-2">
-            <span
-              class="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded"
-            >
-              {{ (nestedValue || []).length }} item(s)
-            </span>
-            <button
-              @click="addNestedField(nestedKey, 'array')"
-              class="text-xs px-1 py-0.5 bg-green-600 text-white rounded hover:bg-green-700"
-            >
-              <PlusIcon class="w-3 h-3" />
-            </button>
-          </div>
-        </div>
-
-        <!-- Delete -->
-        <div class="col-span-1 flex justify-center">
-          <button
-            @click="deleteField(nestedKey)"
-            class="p-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
-          >
-            <TrashIcon class="w-3 h-3" />
-          </button>
         </div>
       </div>
 
@@ -130,99 +158,136 @@
   </div>
 
   <div v-else-if="isArray && (value || []).length > 0" :class="containerClass">
-    <div v-for="(item, index) in value" :key="`array-${path.join('-')}-${index}`" class="px-4 py-2">
-      <div class="grid grid-cols-12 gap-3 items-center text-sm">
-        <!-- Tree indicator -->
-        <div class="col-span-1 flex items-center">
-          <span :class="indicatorClass">├─[{{ index }}]</span>
-        </div>
+    <div
+      v-for="(item, index) in value"
+      :key="`array-${path.join('-')}-${index}`"
+      class="relative"
+    >
+      <!-- Tree Guide Lines -->
+      <div
+        v-if="!isLastItem(Number(index))"
+        class="absolute left-2.5 bottom-0 w-0.5 pointer-events-none"
+        :class="[depth === 0 && Number(index) === 0 ? 'top-5' : 'top-0', treeColors.line]"
+      />
+      <div
+        v-if="!isLastItem(Number(index))"
+        class="absolute left-2.5 top-5 w-4 h-0.5 pointer-events-none"
+        :class="treeColors.line"
+      />
 
-        <!-- Array Item Type -->
-        <div class="col-span-2">
-          <select
-            :value="getValueType(item)"
-            @change="updateArrayItemType(index, ($event.target as HTMLSelectElement).value)"
-            :class="selectClass"
-          >
-            <option value="string">String</option>
-            <option value="number">Number</option>
-            <option value="boolean">Boolean</option>
-            <option value="null">Null</option>
-            <option value="map">Map</option>
-            <option value="array">Array</option>
-          </select>
-        </div>
+      <div
+        v-if="isLastItem(Number(index)) && (depth > 0 || itemCount > 1)"
+        class="absolute left-2.5 top-0 h-5 w-4 border-b-2 border-l-2 rounded-bl-sm pointer-events-none"
+        :class="treeColors.border"
+      />
+      <div
+        v-if="isLastItem(Number(index)) && depth === 0 && itemCount === 1"
+        class="absolute left-2.5 top-5 w-4 h-0.5 pointer-events-none"
+        :class="treeColors.line"
+      />
 
-        <!-- Array Item Value -->
-        <div class="col-span-8">
-          <input
-            v-if="getValueType(item) === 'string'"
-            :value="item"
-            @input="updateArrayItem(index, ($event.target as HTMLInputElement).value)"
-            type="text"
-            placeholder="Value"
-            :class="inputClass"
-          />
-          <input
-            v-else-if="getValueType(item) === 'number'"
-            :value="item"
-            @input="updateArrayItem(index, Number(($event.target as HTMLInputElement).value))"
-            type="number"
-            step="any"
-            placeholder="0"
-            :class="inputClass"
-          />
-          <select
-            v-else-if="getValueType(item) === 'boolean'"
-            :value="item"
-            @change="updateArrayItem(index, ($event.target as HTMLSelectElement).value === 'true')"
-            :class="selectClass"
-          >
-            <option :value="true">true</option>
-            <option :value="false">false</option>
-          </select>
-          <div
-            v-else-if="getValueType(item) === 'null'"
-            class="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 italic"
-          >
-            null
-          </div>
-          <div v-else-if="getValueType(item) === 'map'" class="flex items-center gap-2">
+      <!-- Row Grid -->
+      <div class="py-1.5 pl-7">
+        <div class="grid grid-cols-12 gap-3 items-center text-sm pr-4">
+          <!-- Array index indicator -->
+          <div class="col-span-1 flex items-center">
             <span
-              class="text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded"
+              class="text-xs font-mono font-medium text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded"
             >
-              {{ Object.keys(item || {}).length }} field(s)
+              [{{ index }}]
             </span>
-            <button
-              @click="addNestedArrayItem(index, 'map')"
-              class="text-xs px-1 py-0.5 bg-blue-600 text-white rounded hover:bg-blue-700"
+          </div>
+
+          <!-- Array Item Type -->
+          <div class="col-span-2">
+            <select
+              :value="getValueType(item)"
+              @change="updateArrayItemType(index, ($event.target as HTMLSelectElement).value)"
+              :class="selectClass"
             >
-              <PlusIcon class="w-3 h-3" />
+              <option value="string">String</option>
+              <option value="number">Number</option>
+              <option value="boolean">Boolean</option>
+              <option value="null">Null</option>
+              <option value="map">Map</option>
+              <option value="array">Array</option>
+            </select>
+          </div>
+
+          <!-- Array Item Value -->
+          <div class="col-span-8">
+            <input
+              v-if="getValueType(item) === 'string'"
+              :value="item"
+              @input="updateArrayItem(index, ($event.target as HTMLInputElement).value)"
+              type="text"
+              placeholder="Value"
+              :class="inputClass"
+            />
+            <input
+              v-else-if="getValueType(item) === 'number'"
+              :value="item"
+              @input="updateArrayItem(index, Number(($event.target as HTMLInputElement).value))"
+              type="number"
+              step="any"
+              placeholder="0"
+              :class="inputClass"
+            />
+            <select
+              v-else-if="getValueType(item) === 'boolean'"
+              :value="item"
+              @change="updateArrayItem(index, ($event.target as HTMLSelectElement).value === 'true')"
+              :class="selectClass"
+            >
+              <option :value="true">true</option>
+              <option :value="false">false</option>
+            </select>
+            <div
+              v-else-if="getValueType(item) === 'null'"
+              class="px-2 py-1 text-xs text-gray-500 dark:text-gray-400 italic"
+            >
+              null
+            </div>
+            <div v-else-if="getValueType(item) === 'map'" class="flex items-center gap-2">
+              <span
+                class="text-xs text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-2 py-1 rounded font-medium"
+              >
+                {{ Object.keys(item || {}).length }} field(s)
+              </span>
+              <button
+                @click="addNestedArrayItem(index, 'map')"
+                class="text-xs px-1 py-0.5 bg-blue-600 text-white rounded hover:bg-blue-700"
+                title="Add field to nested map"
+              >
+                <PlusIcon class="w-3 h-3" />
+              </button>
+            </div>
+            <div v-else-if="getValueType(item) === 'array'" class="flex items-center gap-2">
+              <span
+                class="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded font-medium"
+              >
+                {{ (item || []).length }} item(s)
+              </span>
+              <button
+                @click="addNestedArrayItem(index, 'array')"
+                class="text-xs px-1 py-0.5 bg-green-600 text-white rounded hover:bg-green-700"
+                title="Add item to nested array"
+              >
+                <PlusIcon class="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+
+          <!-- Delete -->
+          <div class="col-span-1 flex justify-end">
+            <button
+              @click="deleteArrayItem(index)"
+              class="p-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+              title="Delete item"
+            >
+              <TrashIcon class="w-3.5 h-3.5" />
             </button>
           </div>
-          <div v-else-if="getValueType(item) === 'array'" class="flex items-center gap-2">
-            <span
-              class="text-xs text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30 px-2 py-1 rounded"
-            >
-              {{ (item || []).length }} item(s)
-            </span>
-            <button
-              @click="addNestedArrayItem(index, 'array')"
-              class="text-xs px-1 py-0.5 bg-green-600 text-white rounded hover:bg-green-700"
-            >
-              <PlusIcon class="w-3 h-3" />
-            </button>
-          </div>
-        </div>
-
-        <!-- Delete -->
-        <div class="col-span-1 flex justify-center">
-          <button
-            @click="deleteArrayItem(index)"
-            class="p-1 text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
-          >
-            <TrashIcon class="w-3 h-3" />
-          </button>
         </div>
       </div>
 
@@ -274,14 +339,56 @@ const isMap = computed(
 const isArray = computed(() => Array.isArray(props.value))
 
 const containerClass = computed(() => {
-  const color = currentColor.value
-  return `bg-${color}-50/20 dark:bg-${color}-900/5 border-l-2 border-${color}-400 dark:border-${color}-500 ml-4 mt-2`
+  return props.depth > 0 ? 'ml-6 mt-1' : 'mt-1'
 })
 
-const indicatorClass = computed(() => {
-  const color = currentColor.value
-  return `text-xs text-${color}-600 dark:text-${color}-400 font-mono`
+const treeColors = computed(() => {
+  const map: Record<string, { line: string; border: string }> = {
+    blue: {
+      line: 'bg-blue-400 dark:bg-blue-500',
+      border: 'border-blue-400 dark:border-blue-500',
+    },
+    purple: {
+      line: 'bg-purple-400 dark:bg-purple-500',
+      border: 'border-purple-400 dark:border-purple-500',
+    },
+    indigo: {
+      line: 'bg-indigo-400 dark:bg-indigo-500',
+      border: 'border-indigo-400 dark:border-indigo-500',
+    },
+    teal: {
+      line: 'bg-teal-400 dark:bg-teal-500',
+      border: 'border-teal-400 dark:border-teal-500',
+    },
+    emerald: {
+      line: 'bg-emerald-400 dark:bg-emerald-500',
+      border: 'border-emerald-400 dark:border-emerald-500',
+    },
+    cyan: {
+      line: 'bg-cyan-400 dark:bg-cyan-500',
+      border: 'border-cyan-400 dark:border-cyan-500',
+    },
+    sky: {
+      line: 'bg-sky-400 dark:bg-sky-500',
+      border: 'border-sky-400 dark:border-sky-500',
+    },
+    violet: {
+      line: 'bg-violet-400 dark:bg-violet-500',
+      border: 'border-violet-400 dark:border-violet-500',
+    },
+  }
+  return map[currentColor.value] || map.blue
 })
+
+const itemCount = computed(() => {
+  if (Array.isArray(props.value)) return props.value.length
+  if (props.value && typeof props.value === 'object') return Object.keys(props.value).length
+  return 0
+})
+
+function isLastItem(index: number): boolean {
+  return index === itemCount.value - 1
+}
 
 const inputClass = computed(() => {
   const color = currentColor.value
