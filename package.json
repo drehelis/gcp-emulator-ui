@@ -21,7 +21,7 @@
     "@heroicons/vue": "^2.1.5",
     "@tailwindcss/postcss": "^4.2.2",
     "@tanstack/vue-query": "^5.92.12",
-    "@vueuse/core": "^14.2.1",
+    "@vueuse/core": "^15.0.0",
     "@vueuse/head": "^2.0.0",
     "@vueuse/integrations": "^14.2.1",
     "apexcharts": "^7.0.0",
