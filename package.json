@@ -23,7 +23,7 @@
     "@tanstack/vue-query": "^5.92.12",
     "@vueuse/core": "^15.0.0",
     "@vueuse/head": "^2.0.0",
-    "@vueuse/integrations": "^14.2.1",
+    "@vueuse/integrations": "^15.0.0",
     "apexcharts": "^7.0.0",
     "axios": "^1.13.6",
     "chart.js": "^4.5.1",
