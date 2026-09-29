@@ -105,7 +105,8 @@ Currently supported runtime fields:
   "pubsub": {
     "pubsubPreConfiguredMsgAttr": {
       "key": "value"
-    }
+    },
+    "defaultProjectId": "my-gcp-project"
   }
 }
 ```
@@ -116,6 +117,16 @@ To set `pubsubPreConfiguredMsgAttr`, provide a JSON object in the `PUBSUB_PRE_CO
 docker run \
    --rm \
    --env PUBSUB_PRE_CONFIGURED_MSG_ATTR='{"source":"local","env":"dev"}' \
+   --publish 9090:80 \
+   ghcr.io/drehelis/gcp-emulator-ui:main
+```
+
+To set a default project selected on startup, use the `PUBSUB_DEFAULT_PROJECT_ID` environment variable:
+
+```bash
+docker run \
+   --rm \
+   --env PUBSUB_DEFAULT_PROJECT_ID=my-gcp-project \
    --publish 9090:80 \
    ghcr.io/drehelis/gcp-emulator-ui:main
 ```
@@ -157,6 +168,7 @@ docker run \
 | `VITE_DATASTORE_BASE_URL` | `/datastore` | Firestore datastore-mode emulator endpoint |
 | `VITE_STORAGE_BASE_URL` | `/storage` | Storage emulator endpoint |
 | `VITE_FILE_SERVER_BASE_URL` | `/fs` | File server endpoint for Datastore import/export operations |
+| `PUBSUB_DEFAULT_PROJECT_ID` | _(none)_ | GCP project ID selected by default on startup |
 
 ## Development
 
