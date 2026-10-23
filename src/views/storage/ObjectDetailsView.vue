@@ -204,8 +204,7 @@
               <div v-if="!isEditing" class="relative">
                 <pre
                   class="w-full h-[60vh] p-4 text-sm bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-200 dark:border-gray-700 rounded-lg overflow-auto font-mono whitespace-pre-wrap"
-                  >{{ fileContent }}</pre
-                >
+                  >{{ fileContent }}</pre>
               </div>
               <!-- Editor view -->
               <div v-else>
