@@ -28,10 +28,7 @@ export interface GCPProject extends BaseEntity {
 export type ProjectState = 'ACTIVE' | 'DELETE_REQUESTED'
 
 export type ProjectLifecycleState =
-  | 'LIFECYCLE_STATE_UNSPECIFIED'
-  | 'ACTIVE'
-  | 'DELETE_REQUESTED'
-  | 'DELETE_IN_PROGRESS'
+  'LIFECYCLE_STATE_UNSPECIFIED' | 'ACTIVE' | 'DELETE_REQUESTED' | 'DELETE_IN_PROGRESS'
 
 // Topic related types
 export interface PubSubTopic extends BaseEntity {
@@ -175,10 +172,7 @@ export interface OutputFormat {
 }
 
 export type CloudStorageConfigState =
-  | 'STATE_UNSPECIFIED'
-  | 'ACTIVE'
-  | 'PERMISSION_DENIED'
-  | 'NOT_FOUND'
+  'STATE_UNSPECIFIED' | 'ACTIVE' | 'PERMISSION_DENIED' | 'NOT_FOUND'
 
 export interface DeadLetterPolicy {
   deadLetterTopic?: string
