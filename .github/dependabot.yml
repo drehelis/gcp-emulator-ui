@@ -2,11 +2,11 @@ updates:
 - directories:
   - /
   groups:
-    npm-dependencies:
+    bun-dependencies:
       update-types:
       - minor
       - patch
-  package-ecosystem: npm
+  package-ecosystem: bun
   schedule:
     interval: daily
 - directory: /

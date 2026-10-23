@@ -131,10 +131,7 @@ export interface QueryResultBatch {
   entityResults: EntityResult[]
   endCursor?: string
   moreResults:
-    | 'NOT_FINISHED'
-    | 'MORE_RESULTS_AFTER_LIMIT'
-    | 'MORE_RESULTS_AFTER_CURSOR'
-    | 'NO_MORE_RESULTS'
+    'NOT_FINISHED' | 'MORE_RESULTS_AFTER_LIMIT' | 'MORE_RESULTS_AFTER_CURSOR' | 'NO_MORE_RESULTS'
   skippedResults?: number
   skippedCursor?: string
 }
@@ -179,10 +176,7 @@ export interface AvgAggregation {
 export interface AggregationResultBatch {
   aggregationResults: AggregationResult[]
   moreResults:
-    | 'NOT_FINISHED'
-    | 'MORE_RESULTS_AFTER_LIMIT'
-    | 'MORE_RESULTS_AFTER_CURSOR'
-    | 'NO_MORE_RESULTS'
+    'NOT_FINISHED' | 'MORE_RESULTS_AFTER_LIMIT' | 'MORE_RESULTS_AFTER_CURSOR' | 'NO_MORE_RESULTS'
   readTime?: string
 }
 

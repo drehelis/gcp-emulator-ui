@@ -158,33 +158,6 @@ docker run \
 | `VITE_STORAGE_BASE_URL` | `/storage` | Storage emulator endpoint |
 | `VITE_FILE_SERVER_BASE_URL` | `/fs` | File server endpoint for Datastore import/export operations |
 
-## Development
-
-### Project Structure
-
-```
-src/
-├── api/           # API client configurations
-├── assets/        # Static assets and styles
-├── components/    # Reusable Vue components
-├── composables/   # Vue composition functions
-├── layouts/       # Page layout components
-├── plugins/       # Vue plugins and global configurations
-├── router/        # Vue Router configuration
-├── stores/        # Pinia state management
-├── types/         # TypeScript type definitions
-├── utils/         # Utility functions and helpers
-└── views/         # Page components organized by feature
-```
-
-## Stack
-
-### Core Framework
-- **Vue 3** - Progressive JavaScript framework
-- **TypeScript** - Type-safe development
-- **Vite** - Fast build tool and dev server
-- **Tailwind CSS** - Utility-first CSS framework
-
 ## Credits
 
 ### Icons
