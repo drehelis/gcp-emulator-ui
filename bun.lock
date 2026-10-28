@@ -13,7 +13,7 @@
         "@vueuse/core": "^15.0.0",
         "@vueuse/head": "^2.0.0",
         "@vueuse/integrations": "^15.0.0",
-        "apexcharts": "^8.4.1",
+        "apexcharts": "^8.5.0",
         "axios": "^1.20.0",
         "chart.js": "^4.6.1",
         "chartjs-adapter-date-fns": "^3.0.0",
@@ -757,7 +757,7 @@
 
     "apex-commons": ["apex-commons@0.8.3", "", {}, "sha512-WdU5lblyL1ByI/nkFOJkSgJYenCsHmay0P3UIcnSeUiCyF1b30SvPSZLbyxOCUOry8IlL7M0/3GvsGbZTMm8FA=="],
 
-    "apexcharts": ["apexcharts@8.4.1", "", { "dependencies": { "apex-commons": "^0.8.3" } }, "sha512-29IbZ1rn3NRkDvete5EzZXy6yDSW7mjNXkytLpvaYHk0XbfsR+FvC7U78L3wMvJa699NBmix2z6r3Qm5YDvw0A=="],
+    "apexcharts": ["apexcharts@8.5.0", "", { "dependencies": { "apex-commons": "^0.8.3" } }, "sha512-mH9QiOwIeRGg635OzAc2mznuwrK9XHr9S1RcC26GNNOU6fUPe64cMc7hXGcM9bXz92nO4Ax7P6uxSYaTA7gBDw=="],
 
     "argparse": ["argparse@2.0.1", "", {}, "sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q=="],
 
