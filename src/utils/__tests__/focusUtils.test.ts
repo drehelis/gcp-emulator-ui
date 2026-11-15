@@ -11,7 +11,7 @@ describe('focusUtils', () => {
     const mockStyle = {
       getPropertyValue: vi.fn().mockImplementation(prop => {
         if (prop === '--highlight-transition-duration') return '1s'
-        if (prop === '--highlight-transition-timing') return 'ease'
+        if (prop === '--highlight-transition-timing') return 'linear'
         return ''
       }),
     }
@@ -26,7 +26,7 @@ describe('focusUtils', () => {
       const element = document.createElement('div')
       await applyFocusHighlight(element)
 
-      expect(element.style.transition).toBe('background-color 1s ease')
+      expect(element.style.transition).toBe('background-color 1s linear')
       expect(element.style.backgroundColor).toBe('rgba(59, 130, 246, 0.25)')
 
       vi.advanceTimersByTime(501)
