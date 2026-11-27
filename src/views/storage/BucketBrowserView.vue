@@ -729,8 +729,9 @@
                     </DialogTitle>
                     <div class="mt-2">
                       <p class="text-sm text-gray-500 dark:text-gray-400">
-                        Create a new file in <span class="font-medium">{{ bucketName }}</span
-                        >{{ currentPath ? `/${currentPath}` : '' }}
+                        Create a new file in <span class="font-medium">{{ bucketName }}</span>{{
+                          currentPath ? `/${currentPath}` : ''
+                        }}
                       </p>
                     </div>
                   </div>
