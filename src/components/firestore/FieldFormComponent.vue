@@ -36,13 +36,16 @@
         >
           <option value="string">String</option>
           <option value="number">Number</option>
+          <option value="decimal128">Decimal128</option>
           <option value="boolean">Boolean</option>
           <option value="null">Null</option>
           <option value="timestamp">Timestamp</option>
           <option value="map">Map</option>
           <option value="array">Array</option>
+          <option value="vector">Vector</option>
           <option value="geopoint">GeoPoint</option>
           <option value="reference">Reference</option>
+          <option value="bytes">Bytes</option>
         </select>
       </div>
 
@@ -152,6 +155,54 @@
           placeholder="projects/PROJECT_ID/databases/(default)/documents/COLLECTION/DOCUMENT"
           class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
         />
+
+        <!-- Bytes -->
+        <input
+          v-else-if="localFieldType === 'bytes'"
+          v-model="localFieldValue"
+          @input="updateValue"
+          type="text"
+          placeholder="Base64 encoded bytes (e.g. SGVsbG8=)"
+          class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+        />
+
+        <!-- Decimal128 -->
+        <div v-else-if="localFieldType === 'decimal128'" class="space-y-1">
+          <input
+            v-model="localFieldValue"
+            @input="updateValue"
+            type="text"
+            placeholder="High-precision decimal (e.g. 123456789.0123456789)"
+            :class="[
+              'w-full px-3 py-2 border rounded-md text-sm font-mono focus:outline-none focus:ring-2 focus:border-blue-500 dark:bg-gray-700 dark:text-white',
+              isValidDecimalValue
+                ? 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
+                : 'border-red-300 dark:border-red-600 focus:ring-red-500',
+            ]"
+          />
+          <div v-if="!isValidDecimalValue" class="text-xs text-red-600 dark:text-red-400">
+            Invalid Decimal128 value (use digits, optional decimal/exponent, NaN, or Infinity)
+          </div>
+        </div>
+
+        <!-- Vector -->
+        <div v-else-if="localFieldType === 'vector'" class="space-y-1">
+          <input
+            v-model="localFieldValue"
+            @input="updateValue"
+            type="text"
+            placeholder="Comma-separated numbers (e.g. 0.1, -0.25, 0.8)"
+            :class="[
+              'w-full px-3 py-2 border rounded-md text-sm font-mono focus:outline-none focus:ring-2 focus:border-blue-500 dark:bg-gray-700 dark:text-white',
+              isValidVectorValue
+                ? 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
+                : 'border-red-300 dark:border-red-600 focus:ring-red-500',
+            ]"
+          />
+          <div v-if="!isValidVectorValue" class="text-xs text-red-600 dark:text-red-400">
+            Invalid vector: enter comma-separated finite numbers
+          </div>
+        </div>
       </div>
     </div>
 
@@ -182,6 +233,7 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import FieldEditor from './FieldEditor.vue'
+import { useFirestoreFields } from '@/composables/useFirestoreFields'
 
 interface Props {
   fieldName?: string
@@ -205,10 +257,21 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<Emits>()
+const { getDefaultValue, parseVectorInput, isValidDecimal128 } = useFirestoreFields()
 
 // Computed properties
 const isArrayItem = computed(() => {
   return props.mode === 'add' && props.fieldPath?.includes('[new]')
+})
+
+const isValidDecimalValue = computed(() => {
+  if (localFieldType.value !== 'decimal128') return true
+  return isValidDecimal128(String(localFieldValue.value ?? ''))
+})
+
+const isValidVectorValue = computed(() => {
+  if (localFieldType.value !== 'vector') return true
+  return parseVectorInput(localFieldValue.value) !== null
 })
 
 // Validation for geopoint
@@ -256,32 +319,6 @@ watch(
     }
   }
 )
-
-// Helper function to get default value for each type
-const getDefaultValue = (type: string) => {
-  switch (type) {
-    case 'string':
-      return ''
-    case 'number':
-      return 0
-    case 'boolean':
-      return false
-    case 'null':
-      return null
-    case 'timestamp':
-      return new Date().toISOString().slice(0, 16)
-    case 'geopoint':
-      return { latitude: 0, longitude: 0 }
-    case 'reference':
-      return ''
-    case 'map':
-      return {}
-    case 'array':
-      return []
-    default:
-      return ''
-  }
-}
 
 // Handlers
 const handleTypeChange = () => {

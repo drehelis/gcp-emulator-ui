@@ -19,13 +19,16 @@
           <select v-model="localField.type" @change="handleTypeChange" class="firestore-select">
             <option value="string">String</option>
             <option value="number">Number</option>
+            <option value="decimal128">Decimal128</option>
             <option value="boolean">Boolean</option>
             <option value="null">Null</option>
             <option value="timestamp">Timestamp</option>
             <option value="map">Map</option>
             <option value="array">Array</option>
+            <option value="vector">Vector</option>
             <option value="geopoint">GeoPoint</option>
             <option value="reference">Reference</option>
+            <option value="bytes">Bytes</option>
           </select>
         </div>
 
@@ -83,6 +86,36 @@
             type="text"
             placeholder="projects/PROJECT_ID/databases/(default)/documents/..."
             class="firestore-input"
+          />
+
+          <!-- Bytes -->
+          <input
+            v-else-if="localField.type === 'bytes'"
+            v-model="localField.value"
+            @input="updateField"
+            type="text"
+            placeholder="Base64 encoded bytes (e.g. SGVsbG8=)"
+            class="firestore-input font-mono"
+          />
+
+          <!-- Decimal128 -->
+          <input
+            v-else-if="localField.type === 'decimal128'"
+            v-model="localField.value"
+            @input="updateField"
+            type="text"
+            placeholder="High-precision decimal (e.g. 123.456789)"
+            class="firestore-input font-mono"
+          />
+
+          <!-- Vector -->
+          <input
+            v-else-if="localField.type === 'vector'"
+            v-model="localField.value"
+            @input="updateField"
+            type="text"
+            placeholder="Comma-separated numbers (e.g. 0.1, -0.25, 0.8)"
+            class="firestore-input font-mono"
           />
 
           <div v-else-if="localField.type === 'geopoint'" class="grid grid-cols-2 gap-2">
@@ -255,6 +288,12 @@ function getDefaultValueForType(type: string): any {
       return []
     case 'geopoint':
       return { latitude: 0, longitude: 0 }
+    case 'bytes':
+      return ''
+    case 'decimal128':
+      return '0'
+    case 'vector':
+      return '0, 0'
     default:
       return ''
   }

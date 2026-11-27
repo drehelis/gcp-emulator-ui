@@ -15,6 +15,7 @@ export interface FirestoreValue {
   booleanValue?: boolean
   integerValue?: string
   doubleValue?: number
+  decimal128Value?: string
   timestampValue?: string
   stringValue?: string
   bytesValue?: string
@@ -23,12 +24,19 @@ export interface FirestoreValue {
     latitude: number
     longitude: number
   }
+  vectorValue?: {
+    values: FirestoreValue[]
+  }
   arrayValue?: {
     values: FirestoreValue[]
   }
   mapValue?: {
     fields: Record<string, FirestoreValue>
   }
+  fieldReferenceValue?: string
+  variableReferenceValue?: string
+  functionValue?: FirestorePipelineFunction
+  pipelineValue?: FirestorePipeline
 }
 
 // Collection Types
@@ -212,6 +220,53 @@ export interface FirestoreRunAggregationQueryResponse {
     aggregateFields: Record<string, FirestoreValue>
   }
   readTime?: string
+  transaction?: string
+}
+
+// Firestore Pipelines API Types
+export type FirestorePipelineWindowFunction =
+  | 'sum'
+  | 'average'
+  | 'count'
+  | 'minimum'
+  | 'maximum'
+  | 'first'
+  | 'last'
+  | 'array_agg'
+  | 'array_agg_distinct'
+  | 'rank'
+
+export interface FirestorePipelineFunction {
+  name: string
+  args?: FirestoreValue[]
+  options?: Record<string, FirestoreValue>
+}
+
+export interface FirestorePipelineStage {
+  name: string
+  args?: FirestoreValue[]
+  options?: Record<string, FirestoreValue>
+}
+
+export interface FirestorePipeline {
+  stages: FirestorePipelineStage[]
+}
+
+export interface FirestoreStructuredPipeline {
+  pipeline: FirestorePipeline
+  options?: Record<string, FirestoreValue>
+}
+
+export interface ExecutePipelineRequest {
+  structuredPipeline: FirestoreStructuredPipeline
+  transaction?: string
+  newTransaction?: TransactionOptions
+  readTime?: string
+}
+
+export interface ExecutePipelineResponse {
+  results?: FirestoreDocument[]
+  executionTime?: string
   transaction?: string
 }
 

@@ -345,6 +345,7 @@ export interface DatastoreEntityWithMetadata extends DatastoreEntity {
 export interface DatastoreKindWithMetadata {
   name: string
   entityCount: number
+  hasMore?: boolean | undefined
   bytes: number
   namespace?: string | undefined
   statistics?: KindStatistics | undefined

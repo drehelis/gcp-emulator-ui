@@ -8,6 +8,8 @@ import type {
   RunQueryResponse,
   FirestoreRunAggregationQueryRequest,
   FirestoreRunAggregationQueryResponse,
+  ExecutePipelineRequest,
+  ExecutePipelineResponse,
 } from '@/types'
 
 const firestoreClient = axios.create({
@@ -277,6 +279,21 @@ export const firestoreApi = {
     // The API may return an array; take the first result
     const data = Array.isArray(response.data) ? response.data[0] : response.data
     return data
+  },
+
+  // Execute a Firestore Pipeline against the Firestore emulator
+  async executePipeline(
+    parent: string,
+    request: ExecutePipelineRequest
+  ): Promise<ExecutePipelineResponse[]> {
+    const target = parent.endsWith('/documents') ? parent : `${parent}/documents`
+    const response = await firestoreClient.post(`/v1/${target}:executePipeline`, request)
+
+    if (Array.isArray(response.data)) {
+      return response.data
+    }
+
+    return response.data ? [response.data] : []
   },
 }
 

@@ -4,6 +4,35 @@
  */
 
 /**
+ * Extracts the most specific error message from an emulator / Google Cloud REST API error.
+ * Checks structured `error.response.data.error.message` (including array-wrapped streaming
+ * responses from Firestore endpoints) before falling back to `getMeaningfulErrorMessage`.
+ */
+export const extractApiErrorMessage = (error: any): string => {
+  if (!error) return 'Unknown error occurred'
+
+  const responseData = error.response?.data
+  const apiError = Array.isArray(responseData) ? responseData[0]?.error : responseData?.error
+
+  if (apiError?.message) {
+    if (apiError.status && !String(apiError.message).includes(apiError.status)) {
+      return `${apiError.status}: ${apiError.message}`
+    }
+    return String(apiError.message)
+  }
+
+  if (typeof responseData?.message === 'string' && responseData.message.trim()) {
+    return responseData.message
+  }
+
+  if (typeof responseData === 'string' && responseData.trim()) {
+    return responseData
+  }
+
+  return getMeaningfulErrorMessage(error)
+}
+
+/**
  * Converts generic HTTP errors into meaningful error messages
  * @param error - The error object from axios or other HTTP client
  * @returns A meaningful error message string

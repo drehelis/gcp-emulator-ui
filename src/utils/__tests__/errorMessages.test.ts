@@ -1,11 +1,77 @@
 import { describe, it, expect } from 'vitest'
 import {
+  extractApiErrorMessage,
   getMeaningfulErrorMessage,
   getPubSubErrorMessage,
   getStorageErrorMessage,
 } from '../errorMessages'
 
 describe('errorMessages utilities', () => {
+  describe('extractApiErrorMessage', () => {
+    it('extracts structured GCP emulator error with status prefix', () => {
+      const err = {
+        response: {
+          status: 400,
+          data: {
+            error: {
+              status: 'FAILED_PRECONDITION',
+              message: 'The query requires a composite index.',
+            },
+          },
+        },
+      }
+      expect(extractApiErrorMessage(err)).toBe(
+        'FAILED_PRECONDITION: The query requires a composite index.'
+      )
+    })
+
+    it('avoids duplicating status when already included in message', () => {
+      const err = {
+        response: {
+          data: {
+            error: {
+              status: 'INVALID_ARGUMENT',
+              message: 'INVALID_ARGUMENT: bad pipeline stage',
+            },
+          },
+        },
+      }
+      expect(extractApiErrorMessage(err)).toBe('INVALID_ARGUMENT: bad pipeline stage')
+    })
+
+    it('extracts error from array-wrapped streaming Firestore error responses', () => {
+      const err = {
+        response: {
+          data: [
+            {
+              error: {
+                status: 'UNIMPLEMENTED',
+                message: 'Unsupported window function',
+              },
+            },
+          ],
+        },
+      }
+      expect(extractApiErrorMessage(err)).toBe('UNIMPLEMENTED: Unsupported window function')
+    })
+
+    it('extracts top-level response data message or plain string', () => {
+      expect(extractApiErrorMessage({ response: { data: { message: 'Custom API error' } } })).toBe(
+        'Custom API error'
+      )
+      expect(extractApiErrorMessage({ response: { data: 'Plain error text' } })).toBe(
+        'Plain error text'
+      )
+    })
+
+    it('falls back to getMeaningfulErrorMessage and handles falsy input', () => {
+      expect(extractApiErrorMessage({ response: { status: 404 } })).toBe(
+        'NOT_FOUND: Resource not found'
+      )
+      expect(extractApiErrorMessage(null)).toBe('Unknown error occurred')
+    })
+  })
+
   describe('getMeaningfulErrorMessage', () => {
     it('returns predefined messages for status codes', () => {
       expect(getMeaningfulErrorMessage({ code: 409 })).toBe(

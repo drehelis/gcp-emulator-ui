@@ -1,4 +1,5 @@
 import { ref, computed } from 'vue'
+import { useFirestoreFields } from './useFirestoreFields'
 
 export interface Field {
   id: string
@@ -8,6 +9,7 @@ export interface Field {
 }
 
 export function useDocumentForm() {
+  const { createFirestoreValue } = useFirestoreFields()
   // Form state
   const documentId = ref('')
   const fields = ref<Field[]>([])
@@ -63,11 +65,22 @@ export function useDocumentForm() {
     return { stringValue: String(value) }
   }
 
+  const EXPLICIT_TYPES = new Set([
+    'timestamp',
+    'geopoint',
+    'reference',
+    'bytes',
+    'vector',
+    'decimal128',
+  ])
+
   const buildDocumentFields = () => {
     const documentFields: Record<string, any> = {}
     for (const field of fields.value) {
       if (field.name.trim()) {
-        documentFields[field.name] = buildFirestoreValue(field.value)
+        documentFields[field.name] = EXPLICIT_TYPES.has(field.type)
+          ? createFirestoreValue(field.type, field.value)
+          : buildFirestoreValue(field.value)
       }
     }
 

@@ -115,17 +115,25 @@ describe('useDatastoreStore', () => {
       expect(datastoreApi.getEntitiesByKind).toHaveBeenCalled() // called for counting
     })
 
-    it('handles 100+ entities in kind count', async () => {
-      vi.mocked(datastoreApi.listKinds).mockResolvedValue(['KindA'])
-      vi.mocked(datastoreApi.getEntitiesByKind).mockResolvedValue({
-        entities: Array(100).fill({}),
-        hasMore: true,
-      } as any)
+    it('handles 100+ entities in kind count using hasMore', async () => {
+      vi.mocked(datastoreApi.listKinds).mockResolvedValue(['KindA', 'KindExact'])
+      vi.mocked(datastoreApi.getEntitiesByKind)
+        .mockResolvedValueOnce({
+          entities: Array(100).fill({}),
+          hasMore: true,
+        } as any)
+        .mockResolvedValueOnce({
+          entities: Array(100).fill({}),
+          hasMore: false,
+        } as any)
 
       const store = useDatastoreStore()
       await store.loadKinds(projectId)
 
-      expect(store.kinds[0].entityCount).toBe(100)
+      expect(store.kinds[0]!.entityCount).toBe(100)
+      expect(store.kinds[0]!.hasMore).toBe(true)
+      expect(store.kinds[1]!.entityCount).toBe(100)
+      expect(store.kinds[1]!.hasMore).toBe(false)
     })
   })
 
