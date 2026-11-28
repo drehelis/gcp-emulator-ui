@@ -555,10 +555,14 @@ describe('useFirestoreFields', () => {
 
     it('creates Firestore values for bytes, decimal128, and vector', () => {
       expect(fields.createFirestoreValue('bytes', 'SGVsbG8=')).toEqual({ bytesValue: 'SGVsbG8=' })
+      expect(fields.createFirestoreValue('bytes', '')).toEqual({ bytesValue: '' })
+      expect(fields.createFirestoreValue('bytes', null)).toEqual({ bytesValue: '' })
       expect(fields.createFirestoreValue('decimal128', ' 123.456789 ')).toEqual({
         decimal128Value: '123.456789',
       })
       expect(fields.createFirestoreValue('decimal128', '')).toEqual({ decimal128Value: '0' })
+      expect(fields.createFirestoreValue('decimal128', null)).toEqual({ decimal128Value: '0' })
+      expect(fields.createFirestoreValue('decimal128', undefined)).toEqual({ decimal128Value: '0' })
       expect(fields.createFirestoreValue('vector', '0.1, -0.2, 0.3')).toEqual({
         mapValue: {
           fields: {
@@ -620,12 +624,22 @@ describe('useFirestoreFields', () => {
 
       expect(fields.isVectorValue(null)).toBe(false)
       expect(fields.extractVectorNumbers(null)).toEqual([])
+      expect(fields.extractVectorNumbers({})).toEqual([])
       expect(
         fields.extractVectorNumbers({ vectorValue: { values: [{ stringValue: 'bad' }] } })
       ).toEqual([])
       expect(fields.isDecimal128Value(null)).toBe(false)
       expect(fields.extractDecimal128String(null)).toBe('')
       expect(fields.extractDecimal128String({ stringValue: 'x' })).toBe('')
+      expect(
+        fields.extractDecimal128String({
+          mapValue: {
+            fields: {
+              __type__: { stringValue: '__decimal128__' },
+            },
+          },
+        })
+      ).toBe('')
     })
   })
 })

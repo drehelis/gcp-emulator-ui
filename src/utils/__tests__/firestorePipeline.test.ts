@@ -114,9 +114,12 @@ describe('firestorePipeline utilities', () => {
       })
     })
 
-    it('parses zero-arg functions and literals', () => {
+    it('parses zero-arg functions, trailing commas, and literals', () => {
       expect(parsePipelineExpression('rank()')).toEqual({
         functionValue: { name: 'rank', args: [] },
+      })
+      expect(parsePipelineExpression('concat($a, )')).toEqual({
+        functionValue: { name: 'concat', args: [{ fieldReferenceValue: 'a' }] },
       })
       expect(parsePipelineExpression('100')).toEqual({ integerValue: '100' })
     })
@@ -458,6 +461,50 @@ describe('firestorePipeline utilities', () => {
                       args: [{ fieldReferenceValue: 'amount' }],
                     },
                   },
+                },
+              },
+            },
+          ],
+        },
+      ])
+    })
+
+    it('handles fallback defaults for omitted stage fields, windowFunction, and unknown stage types', () => {
+      const result = buildStructuredPipeline({
+        collection: 'orders',
+        stages: [
+          { type: 'add_fields', alias: 'emptyField' },
+          { type: 'add_window_fields', alias: 'defaultSum' },
+          { type: 'add_window_fields', alias: 'rowCount', windowFunction: 'count' },
+          { type: 'unknown' as any, alias: 'ignoredStage' },
+        ],
+      })
+
+      expect(result.pipeline.stages).toEqual([
+        { name: 'collection', args: [{ referenceValue: '/orders' }] },
+        {
+          name: 'add_fields',
+          args: [{ mapValue: { fields: { emptyField: { nullValue: null } } } }],
+        },
+        {
+          name: 'add_window_fields',
+          args: [
+            {
+              mapValue: {
+                fields: {
+                  defaultSum: { functionValue: { name: 'sum', args: [] } },
+                },
+              },
+            },
+          ],
+        },
+        {
+          name: 'add_window_fields',
+          args: [
+            {
+              mapValue: {
+                fields: {
+                  rowCount: { functionValue: { name: 'count', args: [] } },
                 },
               },
             },

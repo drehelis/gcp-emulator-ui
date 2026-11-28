@@ -249,10 +249,7 @@ function buildWhereExpression(clause: PipelineWhereClause): FirestoreValue {
   }
 }
 
-function buildWindowStage(stage: PipelineStageConfig): FirestorePipelineStage | null {
-  const alias = stage.alias.trim()
-  if (!alias) return null
-
+function buildWindowStage(stage: PipelineStageConfig, alias: string): FirestorePipelineStage {
   const fnName: FirestorePipelineWindowFunction = stage.windowFunction || 'sum'
   const fieldMode = getWindowFunctionFieldMode(fnName)
   const fieldPath = stage.field?.trim() || ''
@@ -398,10 +395,7 @@ export function buildStructuredPipeline(params: BuildPipelineParams): FirestoreS
         ],
       })
     } else if (stage.type === 'add_window_fields') {
-      const windowStage = buildWindowStage(stage)
-      if (windowStage) {
-        stages.push(windowStage)
-      }
+      stages.push(buildWindowStage(stage, alias))
     } else if (stage.type === 'count' || stage.type === 'sum' || stage.type === 'avg') {
       const fnName = stage.type === 'avg' ? 'average' : stage.type
       const fieldPath = stage.field?.trim() || ''
