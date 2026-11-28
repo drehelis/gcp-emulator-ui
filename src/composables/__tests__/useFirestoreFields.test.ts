@@ -461,4 +461,185 @@ describe('useFirestoreFields', () => {
       expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/)
     })
   })
+
+  describe('Enterprise data types & doubleValue support', () => {
+    it('provides defaults for bytes, vector, and decimal128', () => {
+      expect(fields.getDefaultValue('bytes')).toBe('')
+      expect(fields.getDefaultValue('vector')).toBe('0, 0')
+      expect(fields.getDefaultValue('decimal128')).toBe('0')
+    })
+
+    it('identifies double, decimal128, and vector types', () => {
+      expect(fields.getFieldType({ doubleValue: 3.14 })).toBe('number')
+      expect(fields.getFieldType({ decimal128Value: '123.456' })).toBe('decimal128')
+      expect(
+        fields.getFieldType({
+          mapValue: {
+            fields: {
+              __type__: { stringValue: '__decimal128__' },
+              value: { stringValue: '999.0001' },
+            },
+          },
+        })
+      ).toBe('decimal128')
+      expect(
+        fields.getFieldType({
+          vectorValue: { values: [{ doubleValue: 0.1 }, { doubleValue: 0.2 }] },
+        })
+      ).toBe('vector')
+      expect(
+        fields.getFieldType({
+          mapValue: {
+            fields: {
+              __type__: { stringValue: '__vector__' },
+              value: { arrayValue: { values: [{ doubleValue: 1.5 }] } },
+            },
+          },
+        })
+      ).toBe('vector')
+      expect(fields.getFieldType(null)).toBe('unknown')
+    })
+
+    it('formats decimal128, vectors (short and truncated), and non-object values', () => {
+      expect(fields.formatFieldValue({ decimal128Value: '123456789.0123456789' })).toBe(
+        '123456789.0123456789'
+      )
+      expect(
+        fields.formatFieldValue({
+          mapValue: {
+            fields: {
+              __type__: { stringValue: '__decimal128__' },
+              value: { stringValue: '0.00001' },
+            },
+          },
+        })
+      ).toBe('0.00001')
+      expect(
+        fields.formatFieldValue({
+          vectorValue: { values: [{ doubleValue: 0.1 }, { integerValue: '2' }, 3] },
+        })
+      ).toBe('[0.1, 2, 3]')
+      expect(
+        fields.formatFieldValue({
+          mapValue: {
+            fields: {
+              __type__: { stringValue: '__vector__' },
+              value: {
+                arrayValue: {
+                  values: [1, 2, 3, 4, 5, 6, 7, 8].map(n => ({ doubleValue: n })),
+                },
+              },
+            },
+          },
+        })
+      ).toBe('[1, 2, 3, 4, 5, 6, … (8d)]')
+      expect(fields.formatFieldValue(null)).toBe('')
+    })
+
+    it('extracts editable values for double, bytes, decimal128, and vector', () => {
+      expect(fields.getEditableValue({ doubleValue: 2.5 })).toBe(2.5)
+      expect(fields.getEditableValue({ bytesValue: 'SGVsbG8=' })).toBe('SGVsbG8=')
+      expect(fields.getEditableValue({ decimal128Value: '42.00' })).toBe('42.00')
+      expect(
+        fields.getEditableValue({
+          mapValue: {
+            fields: {
+              __type__: { stringValue: '__vector__' },
+              value: { arrayValue: { values: [{ doubleValue: 0.25 }, { doubleValue: -0.5 }] } },
+            },
+          },
+        })
+      ).toBe('0.25, -0.5')
+      expect(fields.getEditableValue(null)).toBe('')
+    })
+
+    it('creates Firestore values for bytes, decimal128, and vector', () => {
+      expect(fields.createFirestoreValue('bytes', 'SGVsbG8=')).toEqual({ bytesValue: 'SGVsbG8=' })
+      expect(fields.createFirestoreValue('bytes', '')).toEqual({ bytesValue: '' })
+      expect(fields.createFirestoreValue('bytes', null)).toEqual({ bytesValue: '' })
+      expect(fields.createFirestoreValue('decimal128', ' 123.456789 ')).toEqual({
+        decimal128Value: '123.456789',
+      })
+      expect(fields.createFirestoreValue('decimal128', '')).toEqual({ decimal128Value: '0' })
+      expect(fields.createFirestoreValue('decimal128', null)).toEqual({ decimal128Value: '0' })
+      expect(fields.createFirestoreValue('decimal128', undefined)).toEqual({ decimal128Value: '0' })
+      expect(fields.createFirestoreValue('vector', '0.1, -0.2, 0.3')).toEqual({
+        mapValue: {
+          fields: {
+            __type__: { stringValue: '__vector__' },
+            value: {
+              arrayValue: {
+                values: [{ doubleValue: 0.1 }, { doubleValue: -0.2 }, { doubleValue: 0.3 }],
+              },
+            },
+          },
+        },
+      })
+      expect(fields.createFirestoreValue('vector', 'not-a-vector')).toEqual({
+        mapValue: {
+          fields: {
+            __type__: { stringValue: '__vector__' },
+            value: { arrayValue: { values: [] } },
+          },
+        },
+      })
+    })
+
+    it('converts bytes, decimal128, vector, and nested arrays from Firestore values', () => {
+      expect(fields.convertFromFirestoreValue({ bytesValue: 'AA==' })).toBe('AA==')
+      expect(fields.convertFromFirestoreValue({ decimal128Value: '99.99' })).toBe('99.99')
+      expect(
+        fields.convertFromFirestoreValue({
+          vectorValue: { values: [{ doubleValue: 1.0 }, { doubleValue: 2.0 }] },
+        })
+      ).toEqual([1, 2])
+      expect(
+        fields.convertFromFirestoreValue({
+          arrayValue: {
+            values: [
+              { arrayValue: { values: [{ integerValue: '1' }, { integerValue: '2' }] } },
+              { arrayValue: { values: [{ integerValue: '3' }] } },
+            ],
+          },
+        })
+      ).toEqual([[1, 2], [3]])
+    })
+
+    it('validates vector inputs and decimal128 strings accurately', () => {
+      expect(fields.parseVectorInput('[0.5, -1.25, 3]')).toEqual([0.5, -1.25, 3])
+      expect(fields.parseVectorInput([1, 2, 3])).toEqual([1, 2, 3])
+      expect(fields.parseVectorInput('')).toEqual([])
+      expect(fields.parseVectorInput([1, Infinity])).toBeNull()
+      expect(fields.parseVectorInput('1, abc')).toBeNull()
+      expect(fields.parseVectorInput('1, , 2')).toBeNull()
+      expect(fields.parseVectorInput(123 as any)).toBeNull()
+
+      expect(fields.isValidDecimal128('123.45')).toBe(true)
+      expect(fields.isValidDecimal128('-0.5e-10')).toBe(true)
+      expect(fields.isValidDecimal128('NaN')).toBe(true)
+      expect(fields.isValidDecimal128('-Infinity')).toBe(true)
+      expect(fields.isValidDecimal128('')).toBe(false)
+      expect(fields.isValidDecimal128('abc')).toBe(false)
+      expect(fields.isValidDecimal128(null as any)).toBe(false)
+
+      expect(fields.isVectorValue(null)).toBe(false)
+      expect(fields.extractVectorNumbers(null)).toEqual([])
+      expect(fields.extractVectorNumbers({})).toEqual([])
+      expect(
+        fields.extractVectorNumbers({ vectorValue: { values: [{ stringValue: 'bad' }] } })
+      ).toEqual([])
+      expect(fields.isDecimal128Value(null)).toBe(false)
+      expect(fields.extractDecimal128String(null)).toBe('')
+      expect(fields.extractDecimal128String({ stringValue: 'x' })).toBe('')
+      expect(
+        fields.extractDecimal128String({
+          mapValue: {
+            fields: {
+              __type__: { stringValue: '__decimal128__' },
+            },
+          },
+        })
+      ).toBe('')
+    })
+  })
 })

@@ -130,6 +130,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
       kinds.value = kindNames.map(name => ({
         name,
         entityCount: 0,
+        hasMore: false,
         bytes: 0,
         namespace: selectedNamespace.value,
         isExpanded: false,
@@ -148,12 +149,9 @@ export const useDatastoreStore = defineStore('datastore', () => {
               undefined,
               selectedDatabase.value
             )
-            // Update count reactively
+            // Update count and hasMore reactively using accurate MoreResultsType
             kind.entityCount = result.entities.length
-            // If we got exactly 100, there might be more - show 100+
-            if (result.entities.length === 100 && result.hasMore) {
-              kind.entityCount = 100 // UI can show "100+" if needed
-            }
+            kind.hasMore = result.hasMore
           } catch (error) {
             console.warn(`Failed to load count for kind ${kind.name}:`, error)
           }
@@ -187,6 +185,7 @@ export const useDatastoreStore = defineStore('datastore', () => {
       const kindMetadata = kinds.value.find(k => k.name === kind)
       if (kindMetadata) {
         kindMetadata.entityCount = kindEntities.length
+        kindMetadata.hasMore = result.hasMore
       }
 
       // Extract and track unique database IDs from entities

@@ -1018,6 +1018,7 @@ import {
   CheckIcon,
 } from '@heroicons/vue/24/outline'
 import { useDatastoreStore } from '@/stores/datastore'
+import { extractApiErrorMessage } from '@/utils/errorMessages'
 import { useAppStore } from '@/stores/app'
 import type { DatastoreEntity, RunQueryRequest, RunAggregationQueryRequest } from '@/types'
 import type { SelectOption } from '@/components/ui/CustomSelect.vue'
@@ -1170,10 +1171,11 @@ const databaseOptions = computed<SelectOption[]>(() =>
 
 const kindOptions = computed<SelectOption[]>(() =>
   kinds.value.map(kind => {
-    // Show "100+" if count is exactly 100 (might be more)
+    // Show "+" suffix when MoreResultsType indicates additional entities beyond the probe limit
     let badge = undefined
     if (kind.entityCount !== undefined && kind.entityCount > 0) {
-      badge = kind.entityCount >= 100 ? '100+' : `${kind.entityCount}`
+      const hasMore = kind.hasMore ?? kind.entityCount >= 100
+      badge = hasMore ? `${kind.entityCount}+` : `${kind.entityCount}`
     }
     return {
       value: kind.name,
@@ -1731,7 +1733,8 @@ const runQuery = async () => {
       currentPage.value = 1
       hasNextPage.value =
         response.batch.moreResults === 'MORE_RESULTS_AFTER_LIMIT' ||
-        response.batch.moreResults === 'MORE_RESULTS_AFTER_CURSOR'
+        response.batch.moreResults === 'MORE_RESULTS_AFTER_CURSOR' ||
+        response.batch.moreResults === 'NOT_FINISHED'
       currentCursor.value = response.batch.endCursor
 
       // Build columns from entity properties
@@ -1757,7 +1760,10 @@ const runQuery = async () => {
     }
   } catch (error: any) {
     console.error('[Query Builder] Query failed:', error)
-    appStore.showToast({ title: error.message || 'Query execution failed', type: 'error' })
+    appStore.showToast({
+      title: extractApiErrorMessage(error) || 'Query execution failed',
+      type: 'error',
+    })
   } finally {
     loading.value = false
   }

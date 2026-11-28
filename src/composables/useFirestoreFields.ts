@@ -20,6 +20,95 @@ export const useFirestoreFields = () => {
     array: { label: 'Array', defaultValue: [] },
     geopoint: { label: 'GeoPoint', defaultValue: { latitude: 0, longitude: 0 } },
     reference: { label: 'Reference', defaultValue: '' },
+    bytes: { label: 'Bytes', defaultValue: '' },
+    vector: { label: 'Vector', defaultValue: '0, 0' },
+    decimal128: { label: 'Decimal128', defaultValue: '0' },
+  }
+
+  /**
+   * Detects Firestore Vector values in either wire representation:
+   * - Standard map wrapper: `{ mapValue: { fields: { __type__: { stringValue: '__vector__' }, value: { arrayValue: ... } } } }`
+   * - Direct proto wrapper: `{ vectorValue: { values: [...] } }`
+   */
+  const isVectorValue = (value: any): boolean => {
+    if (!value || typeof value !== 'object') return false
+    if (value.vectorValue !== undefined) return true
+    return value.mapValue?.fields?.__type__?.stringValue === '__vector__'
+  }
+
+  /**
+   * Extracts numeric coordinates from a Firestore Vector value.
+   */
+  const extractVectorNumbers = (value: any): number[] => {
+    if (!value || typeof value !== 'object') return []
+
+    const rawValues =
+      value.vectorValue?.values || value.mapValue?.fields?.value?.arrayValue?.values || []
+
+    return rawValues
+      .map((item: any) => {
+        if (typeof item === 'number') return item
+        if (item?.doubleValue !== undefined) return Number(item.doubleValue)
+        if (item?.integerValue !== undefined) return Number(item.integerValue)
+        return Number.NaN
+      })
+      .filter((n: number) => !Number.isNaN(n))
+  }
+
+  /**
+   * Parses a comma-separated string or numeric array into a vector of finite numbers.
+   * Returns null if input contains non-numeric or non-finite entries.
+   */
+  const parseVectorInput = (input: string | number[]): number[] | null => {
+    if (Array.isArray(input)) {
+      const nums = input.map(Number)
+      return nums.every(n => Number.isFinite(n)) ? nums : null
+    }
+
+    if (typeof input !== 'string') return null
+    const trimmed = input
+      .trim()
+      .replace(/^\[|\]$/g, '')
+      .trim()
+    if (!trimmed) return []
+
+    const parts = trimmed.split(',').map(p => p.trim())
+    const nums = parts.map(p => (p === '' ? Number.NaN : Number(p)))
+    return nums.every(n => Number.isFinite(n)) ? nums : null
+  }
+
+  /**
+   * Detects Firestore Enterprise Decimal128 values in either direct or typed-map format.
+   */
+  const isDecimal128Value = (value: any): boolean => {
+    if (!value || typeof value !== 'object') return false
+    if (value.decimal128Value !== undefined) return true
+    return value.mapValue?.fields?.__type__?.stringValue === '__decimal128__'
+  }
+
+  /**
+   * Extracts string representation of a Decimal128 value without losing precision.
+   */
+  const extractDecimal128String = (value: any): string => {
+    if (!value || typeof value !== 'object') return ''
+    if (value.decimal128Value !== undefined) return String(value.decimal128Value)
+    if (value.mapValue?.fields?.__type__?.stringValue === '__decimal128__') {
+      return String(value.mapValue.fields.value?.stringValue ?? '')
+    }
+    return ''
+  }
+
+  /**
+   * Validates IEEE 754 Decimal128 string representation (decimal, scientific notation, NaN, +/-Infinity).
+   */
+  const isValidDecimal128 = (val: string): boolean => {
+    if (typeof val !== 'string') return false
+    const trimmed = val.trim()
+    if (!trimmed) return false
+    return (
+      /^[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?$/.test(trimmed) ||
+      /^[+-]?(Infinity|NaN)$/.test(trimmed)
+    )
   }
 
   /**
@@ -41,8 +130,11 @@ export const useFirestoreFields = () => {
    * @returns Field type string
    */
   const getFieldType = (value: any): string => {
+    if (!value || typeof value !== 'object') return 'unknown'
     if (value.stringValue !== undefined) return 'string'
-    if (value.integerValue !== undefined) return 'number'
+    if (value.integerValue !== undefined || value.doubleValue !== undefined) return 'number'
+    if (isDecimal128Value(value)) return 'decimal128'
+    if (isVectorValue(value)) return 'vector'
     if (value.booleanValue !== undefined) return 'boolean'
     if (value.timestampValue !== undefined) return 'timestamp'
     if (value.arrayValue !== undefined) return 'array'
@@ -60,8 +152,17 @@ export const useFirestoreFields = () => {
    * @returns Formatted string for display
    */
   const formatFieldValue = (value: any): string => {
+    if (!value || typeof value !== 'object') return String(value ?? '')
     if (value.stringValue !== undefined) return value.stringValue
     if (value.integerValue !== undefined) return value.integerValue
+    if (value.doubleValue !== undefined) return String(value.doubleValue)
+    if (isDecimal128Value(value)) return extractDecimal128String(value)
+    if (isVectorValue(value)) {
+      const nums = extractVectorNumbers(value)
+      const preview = nums.slice(0, 6).join(', ')
+      const suffix = nums.length > 6 ? `, … (${nums.length}d)` : ''
+      return `[${preview}${suffix}]`
+    }
     if (value.booleanValue !== undefined) return value.booleanValue.toString()
     if (value.timestampValue !== undefined) return value.timestampValue
     if (value.arrayValue !== undefined) {
@@ -86,11 +187,16 @@ export const useFirestoreFields = () => {
    * @returns Editable value for form inputs
    */
   const getEditableValue = (firestoreValue: any): any => {
+    if (!firestoreValue || typeof firestoreValue !== 'object') return ''
     if (firestoreValue.stringValue !== undefined) return firestoreValue.stringValue
     if (firestoreValue.integerValue !== undefined) return Number(firestoreValue.integerValue)
+    if (firestoreValue.doubleValue !== undefined) return Number(firestoreValue.doubleValue)
+    if (isDecimal128Value(firestoreValue)) return extractDecimal128String(firestoreValue)
+    if (isVectorValue(firestoreValue)) return extractVectorNumbers(firestoreValue).join(', ')
     if (firestoreValue.booleanValue !== undefined) return firestoreValue.booleanValue
     if (firestoreValue.timestampValue !== undefined) return firestoreValue.timestampValue
     if (firestoreValue.referenceValue !== undefined) return firestoreValue.referenceValue
+    if (firestoreValue.bytesValue !== undefined) return firestoreValue.bytesValue
     if (firestoreValue.nullValue !== undefined) return null
     if (firestoreValue.geoPointValue !== undefined)
       return `${firestoreValue.geoPointValue.latitude},${firestoreValue.geoPointValue.longitude}`
@@ -112,6 +218,30 @@ export const useFirestoreFields = () => {
         const num = Number(value || 0)
         return Number.isInteger(num) ? { integerValue: num.toString() } : { doubleValue: num }
       }
+
+      case 'decimal128': {
+        const str = value !== undefined && value !== null ? String(value).trim() : '0'
+        return { decimal128Value: str || '0' }
+      }
+
+      case 'vector': {
+        const nums = parseVectorInput(value) ?? []
+        return {
+          mapValue: {
+            fields: {
+              __type__: { stringValue: '__vector__' },
+              value: {
+                arrayValue: {
+                  values: nums.map(n => ({ doubleValue: n })),
+                },
+              },
+            },
+          },
+        }
+      }
+
+      case 'bytes':
+        return { bytesValue: String(value || '') }
 
       case 'boolean':
         return { booleanValue: Boolean(value) }
@@ -230,6 +360,18 @@ export const useFirestoreFields = () => {
       return firestoreValue
     }
 
+    if (isDecimal128Value(firestoreValue)) {
+      return extractDecimal128String(firestoreValue)
+    }
+
+    if (isVectorValue(firestoreValue)) {
+      return extractVectorNumbers(firestoreValue)
+    }
+
+    if ('bytesValue' in firestoreValue) {
+      return firestoreValue.bytesValue
+    }
+
     if ('stringValue' in firestoreValue) {
       return firestoreValue.stringValue
     }
@@ -341,5 +483,11 @@ export const useFirestoreFields = () => {
     // Validation and utilities
     isValidFieldName,
     generateTempFieldName,
+    isVectorValue,
+    extractVectorNumbers,
+    parseVectorInput,
+    isDecimal128Value,
+    extractDecimal128String,
+    isValidDecimal128,
   }
 }

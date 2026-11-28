@@ -182,11 +182,22 @@
             <!-- Pipeline Stages (Advanced) -->
             <div class="p-5">
               <div class="flex items-center justify-between mb-4">
-                <h3
-                  class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest"
-                >
-                  Aggregation Pipeline
-                </h3>
+                <div class="flex items-center gap-2">
+                  <h3
+                    class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest"
+                  >
+                    Aggregation Pipeline
+                  </h3>
+                  <a
+                    href="https://cloud.google.com/firestore/docs/query-data/pipeline-queries"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-[10px] font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                    title="Firestore Pipelines documentation"
+                  >
+                    Docs
+                  </a>
+                </div>
                 <button
                   @click="addPipelineStage"
                   class="text-[10px] bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-1 rounded border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors font-bold"
@@ -210,6 +221,7 @@
                   <div class="space-y-2">
                     <select
                       v-model="stage.type"
+                      @change="handleStageTypeChange(stage)"
                       class="text-xs font-bold text-gray-600 dark:text-gray-400 bg-transparent border-none focus:ring-0 w-full"
                     >
                       <option value="count">COUNT</option>
@@ -217,19 +229,83 @@
                       <option value="avg">AVG</option>
                       <option value="add_fields">ADD FIELDS</option>
                       <option value="let">LET</option>
+                      <option value="add_window_fields">ADD WINDOW FIELDS</option>
                     </select>
-                    <div class="flex gap-2">
+
+                    <!-- Standard Aggregation / Expression Stages -->
+                    <div v-if="stage.type !== 'add_window_fields'" class="flex gap-2">
                       <input
                         v-model="stage.alias"
                         placeholder="Alias (e.g. total)"
                         class="flex-1 text-xs p-1.5 bg-transparent border-b border-gray-200 dark:border-gray-700 focus:border-blue-500 outline-none"
                       />
                       <input
-                        v-if="['sum', 'avg', 'add_fields'].includes(stage.type)"
+                        v-if="['sum', 'avg', 'add_fields', 'let'].includes(stage.type)"
                         v-model="stage.field"
-                        :placeholder="stage.type === 'add_fields' ? 'Expression' : 'Field path'"
+                        :placeholder="
+                          stage.type === 'add_fields' || stage.type === 'let'
+                            ? 'Expr (e.g. $price, add($a, 1))'
+                            : 'Field path'
+                        "
                         class="flex-[2] text-xs p-1.5 bg-transparent border-b border-gray-200 dark:border-gray-700 focus:border-blue-500 outline-none"
                       />
+                    </div>
+
+                    <!-- Window Function Stage (add_window_fields) -->
+                    <div v-else class="space-y-2">
+                      <div class="flex gap-2">
+                        <input
+                          v-model="stage.alias"
+                          placeholder="Output field alias"
+                          class="flex-1 text-xs p-1.5 bg-transparent border-b border-gray-200 dark:border-gray-700 focus:border-blue-500 outline-none"
+                        />
+                        <select
+                          v-model="stage.windowFunction"
+                          aria-label="Window function"
+                          class="text-xs p-1 bg-transparent border-b border-gray-200 dark:border-gray-700 focus:border-blue-500 outline-none text-gray-700 dark:text-gray-300 font-mono"
+                        >
+                          <option
+                            v-for="wf in PIPELINE_WINDOW_FUNCTIONS"
+                            :key="wf.value"
+                            :value="wf.value"
+                          >
+                            {{ wf.label }}
+                          </option>
+                        </select>
+                      </div>
+
+                      <input
+                        v-if="getWindowFunctionFieldMode(stage.windowFunction) !== 'none'"
+                        v-model="stage.field"
+                        :placeholder="
+                          getWindowFunctionFieldMode(stage.windowFunction) === 'optional'
+                            ? 'Source field path (optional)'
+                            : 'Source field path'
+                        "
+                        class="w-full text-xs p-1.5 bg-transparent border-b border-gray-200 dark:border-gray-700 focus:border-blue-500 outline-none"
+                      />
+
+                      <input
+                        v-model="stage.partitionBy"
+                        placeholder="Partition by fields (comma-separated, optional)"
+                        class="w-full text-xs p-1.5 bg-transparent border-b border-gray-200 dark:border-gray-700 focus:border-blue-500 outline-none"
+                      />
+
+                      <div class="flex items-center gap-2">
+                        <input
+                          v-model="stage.orderByField"
+                          placeholder="Window order by field (optional)"
+                          class="flex-1 text-xs p-1.5 bg-transparent border-b border-gray-200 dark:border-gray-700 focus:border-blue-500 outline-none"
+                        />
+                        <select
+                          v-model="stage.orderByDirection"
+                          aria-label="Window order direction"
+                          class="text-xs p-1 bg-transparent border-none focus:ring-0 text-gray-500"
+                        >
+                          <option value="ASCENDING">ASC</option>
+                          <option value="DESCENDING">DESC</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -265,6 +341,12 @@
               >
                 {{ results.length }} items
               </span>
+              <span
+                v-if="usedPipelineApi"
+                class="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-[10px] font-semibold rounded-full uppercase"
+              >
+                Pipeline API
+              </span>
             </div>
             <div class="flex items-center gap-4 text-xs">
               <div
@@ -275,6 +357,24 @@
                 {{ aggregationResult }}
               </div>
             </div>
+          </div>
+
+          <!-- Error Banner -->
+          <div
+            v-if="queryError"
+            role="alert"
+            class="mx-5 mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start justify-between gap-3"
+          >
+            <p class="text-xs text-red-700 dark:text-red-300 font-mono break-words">
+              {{ queryError }}
+            </p>
+            <button
+              @click="queryError = null"
+              class="text-red-400 hover:text-red-600 dark:hover:text-red-200 flex-shrink-0"
+              aria-label="Dismiss error"
+            >
+              <XMarkIcon class="w-4 h-4" />
+            </button>
           </div>
 
           <!-- Results Content -->
@@ -399,12 +499,24 @@ import {
   CircleStackIcon,
 } from '@heroicons/vue/24/outline'
 import { useFirestoreStore } from '@/stores/firestore'
+import { useFirestoreFields } from '@/composables/useFirestoreFields'
 import firestoreApi from '@/api/firestore'
 import CustomSelect from '@/components/ui/CustomSelect.vue'
+import { extractApiErrorMessage } from '@/utils/errorMessages'
+import {
+  PIPELINE_WINDOW_FUNCTIONS,
+  buildStructuredPipeline,
+  extractPipelineDocuments,
+  getWindowFunctionFieldMode,
+  hasPipelineOnlyStages,
+  parseQueryLiteral,
+  type PipelineStageConfig,
+} from '@/utils/firestorePipeline'
 import type { FirestoreDocument, FirestoreQuery, FirestoreAggregation } from '@/types'
 
 const route = useRoute()
 const firestoreStore = useFirestoreStore()
+const { isVectorValue, isDecimal128Value, formatFieldValue } = useFirestoreFields()
 
 const currentProjectId = computed(() => route.params.projectId as string)
 const loading = ref(false)
@@ -412,6 +524,8 @@ const selectedCollection = ref('')
 const allDescendants = ref(false)
 const results = ref<FirestoreDocument[]>([])
 const aggregationResult = ref<string | null>(null)
+const queryError = ref<string | null>(null)
+const usedPipelineApi = ref(false)
 const limit = ref(50)
 
 // Standard Clauses
@@ -419,7 +533,7 @@ const whereClauses = ref<{ field: string; op: string; value: string }[]>([])
 const orderByClauses = ref<{ field: string; direction: 'ASCENDING' | 'DESCENDING' }[]>([])
 
 // Pipeline Stages
-const pipelineStages = ref<{ type: string; alias: string; field?: string }[]>([])
+const pipelineStages = ref<PipelineStageConfig[]>([])
 
 const collectionOptions = computed(() => {
   return firestoreStore.collections.map(c => ({
@@ -451,7 +565,18 @@ function removeOrderBy(idx: number) {
 }
 function addPipelineStage() {
   const nextAlias = `stage_${pipelineStages.value.length + 1}`
-  pipelineStages.value.push({ type: 'count', alias: nextAlias })
+  pipelineStages.value.push({
+    type: 'count',
+    alias: nextAlias,
+    windowFunction: 'sum',
+    orderByDirection: 'ASCENDING',
+  })
+}
+function handleStageTypeChange(stage: PipelineStageConfig) {
+  if (stage.type === 'add_window_fields') {
+    if (!stage.windowFunction) stage.windowFunction = 'sum'
+    if (!stage.orderByDirection) stage.orderByDirection = 'ASCENDING'
+  }
 }
 function removePipelineStage(idx: number) {
   pipelineStages.value.splice(idx, 1)
@@ -465,22 +590,14 @@ function formatValue(v: any): any {
   if (v.booleanValue !== undefined) return v.booleanValue
   if (v.timestampValue !== undefined) return v.timestampValue
   if (v.nullValue !== undefined) return 'null'
+  if (isDecimal128Value(v) || isVectorValue(v) || v.bytesValue !== undefined) {
+    return formatFieldValue(v)
+  }
+  if (v.geoPointValue !== undefined) return formatFieldValue(v)
   if (v.mapValue) return '{...}'
   if (v.arrayValue) return '[...]'
   if (v.referenceValue) return v.referenceValue.split('/').pop()
   return JSON.stringify(v)
-}
-
-function parseValue(val: string): any {
-  const trimmed = val.trim()
-  if (trimmed.toLowerCase() === 'true') return { booleanValue: true }
-  if (trimmed.toLowerCase() === 'false') return { booleanValue: false }
-  if (trimmed.toLowerCase() === 'null') return { nullValue: null }
-  if (!isNaN(Number(trimmed)) && trimmed !== '') {
-    if (trimmed.includes('.')) return { doubleValue: parseFloat(trimmed) }
-    return { integerValue: trimmed }
-  }
-  return { stringValue: val }
 }
 
 async function runQuery() {
@@ -489,9 +606,28 @@ async function runQuery() {
   loading.value = true
   results.value = []
   aggregationResult.value = null
+  queryError.value = null
+  usedPipelineApi.value = false
 
   try {
     const parent = `${firestoreStore.getCurrentDatabasePath(currentProjectId.value)}/documents`
+
+    // Execute via Firestore Pipelines API when pipeline-only stages are present
+    if (hasPipelineOnlyStages(pipelineStages.value)) {
+      const structuredPipeline = buildStructuredPipeline({
+        collection: selectedCollection.value,
+        allDescendants: allDescendants.value,
+        whereClauses: whereClauses.value,
+        orderByClauses: orderByClauses.value,
+        limit: limit.value,
+        stages: pipelineStages.value,
+      })
+
+      const responses = await firestoreApi.executePipeline(parent, { structuredPipeline })
+      results.value = extractPipelineDocuments(responses)
+      usedPipelineApi.value = true
+      return
+    }
 
     // Build StructuredQuery
     const query: FirestoreQuery = {
@@ -511,7 +647,7 @@ async function runQuery() {
           fieldFilter: {
             field: { fieldPath: w.field },
             op: w.op as any,
-            value: parseValue(w.value),
+            value: parseQueryLiteral(w.value),
           },
         }))
 
@@ -536,15 +672,13 @@ async function runQuery() {
         }))
     }
 
-    // Check if we have aggregation stages
+    // Check if we have standard aggregation stages (count / sum / avg)
     if (pipelineStages.value.length > 0) {
       const aggregations: FirestoreAggregation[] = pipelineStages.value.map(s => {
         const agg: FirestoreAggregation = { alias: s.alias }
         if (s.type === 'count') agg.count = {}
         else if (s.type === 'sum') agg.sum = { field: { fieldPath: s.field || '' } }
         else if (s.type === 'avg') agg.avg = { field: { fieldPath: s.field || '' } }
-        // Note: add_fields and let are handled differently in some SDKs/REST versions
-        // but here we map them to the basic aggregation types supported by our types
         return agg
       })
 
@@ -566,6 +700,7 @@ async function runQuery() {
     }
   } catch (error) {
     console.error('Query failed:', error)
+    queryError.value = extractApiErrorMessage(error)
   } finally {
     loading.value = false
   }

@@ -101,5 +101,30 @@ describe('useDocumentForm', () => {
       expect(result).toHaveProperty('created_at')
       expect(result.created_at.stringValue).toBe('2026-04-08T18:00:00.000Z')
     })
+
+    it('uses explicit Firestore types for Enterprise and special fields', () => {
+      const { fields, buildDocumentFields } = useDocumentForm()
+      fields.value = [
+        { id: '1', name: 'price', type: 'decimal128', value: '99.95' },
+        { id: '2', name: 'embedding', type: 'vector', value: '0.1, 0.2' },
+        { id: '3', name: 'raw', type: 'bytes', value: 'SGVsbG8=' },
+      ]
+
+      const result = buildDocumentFields()
+      expect(result.price).toEqual({ decimal128Value: '99.95' })
+      expect(result.embedding).toEqual({
+        mapValue: {
+          fields: {
+            __type__: { stringValue: '__vector__' },
+            value: {
+              arrayValue: {
+                values: [{ doubleValue: 0.1 }, { doubleValue: 0.2 }],
+              },
+            },
+          },
+        },
+      })
+      expect(result.raw).toEqual({ bytesValue: 'SGVsbG8=' })
+    })
   })
 })

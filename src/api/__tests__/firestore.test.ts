@@ -300,6 +300,57 @@ describe('firestoreApi', () => {
     })
   })
 
+  describe('executePipeline', () => {
+    it('calls :executePipeline endpoint appending /documents when omitted', async () => {
+      mockClient.post.mockResolvedValue({
+        data: [{ results: [{ name: 'doc1', fields: {} }] }],
+      })
+
+      const request = {
+        structuredPipeline: {
+          pipeline: {
+            stages: [{ name: 'collection', args: [{ referenceValue: '/orders' }] }],
+          },
+        },
+      }
+      const res = await firestoreApi.executePipeline('projects/p1/databases/(default)', request)
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        '/v1/projects/p1/databases/(default)/documents:executePipeline',
+        request
+      )
+      expect(res).toHaveLength(1)
+      expect(res[0]!.results?.[0]?.name).toBe('doc1')
+    })
+
+    it('does not duplicate /documents when parent already ends with /documents', async () => {
+      mockClient.post.mockResolvedValue({
+        data: { results: [{ name: 'doc2', fields: {} }] },
+      })
+
+      const request = { structuredPipeline: { pipeline: { stages: [] } } }
+      const res = await firestoreApi.executePipeline(
+        'projects/p1/databases/(default)/documents',
+        request
+      )
+
+      expect(mockClient.post).toHaveBeenCalledWith(
+        '/v1/projects/p1/databases/(default)/documents:executePipeline',
+        request
+      )
+      expect(res).toHaveLength(1)
+      expect(res[0]!.results?.[0]?.name).toBe('doc2')
+    })
+
+    it('returns empty array when response data is empty', async () => {
+      mockClient.post.mockResolvedValue({ data: null })
+      const res = await firestoreApi.executePipeline('projects/p1/databases/(default)', {
+        structuredPipeline: { pipeline: { stages: [] } },
+      })
+      expect(res).toEqual([])
+    })
+  })
+
   describe('helpers', () => {
     it('getDefaultDatabasePath returns correct path', () => {
       expect(firestoreApi.getDefaultDatabasePath('p1')).toBe('projects/p1/databases/(default)')

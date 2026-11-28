@@ -36,6 +36,7 @@
 import { computed, ref, watch } from 'vue'
 import BaseModal from '../ui/BaseModal.vue'
 import FieldFormComponent from './FieldFormComponent.vue'
+import { useFirestoreFields } from '@/composables/useFirestoreFields'
 
 interface Props {
   modelValue: boolean
@@ -71,6 +72,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<Emits>()
+const { getDefaultValue, parseVectorInput, isValidDecimal128 } = useFirestoreFields()
 
 // Local form state
 const fieldName = ref('')
@@ -119,6 +121,19 @@ const isFormValid = computed(() => {
     }
   }
 
+  // Validate Enterprise data types
+  if (fieldType.value === 'decimal128') {
+    if (!isValidDecimal128(String(fieldValue.value ?? ''))) {
+      return false
+    }
+  }
+
+  if (fieldType.value === 'vector') {
+    if (parseVectorInput(fieldValue.value) === null) {
+      return false
+    }
+  }
+
   return true
 })
 
@@ -137,32 +152,9 @@ const resetForm = () => {
   fieldName.value = props.initialFieldName || ''
   fieldType.value = props.initialFieldType || 'string'
   fieldValue.value =
-    props.initialFieldValue || getDefaultValueForType(props.initialFieldType || 'string')
-}
-
-const getDefaultValueForType = (type: string) => {
-  switch (type) {
-    case 'string':
-      return ''
-    case 'number':
-      return 0
-    case 'boolean':
-      return false
-    case 'null':
-      return null
-    case 'timestamp':
-      return new Date().toISOString().slice(0, 16)
-    case 'geopoint':
-      return { latitude: 0, longitude: 0 }
-    case 'reference':
-      return ''
-    case 'map':
-      return {}
-    case 'array':
-      return []
-    default:
-      return ''
-  }
+    props.mode === 'edit' && props.initialFieldValue !== undefined
+      ? props.initialFieldValue
+      : props.initialFieldValue || getDefaultValue(props.initialFieldType || 'string')
 }
 
 // Event handlers
